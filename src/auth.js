@@ -6,6 +6,7 @@ const formTitle = document.getElementById('formTitle');
 const formSubtitle = document.getElementById('formSubtitle');
 const clubInputGroup = document.getElementById('clubInputGroup');
 const confirmPasswordGroup = document.getElementById('confirmPasswordGroup');
+const tncGroup = document.getElementById('tncGroup'); // 👈 Tambahan baru
 const toggleText = document.getElementById('toggleText');
 const toggleBtn = document.getElementById('toggleBtn');
 const mainBtn = document.getElementById('mainBtn');
@@ -21,6 +22,7 @@ toggleBtn.addEventListener('click', () => {
         formSubtitle.innerText = "Sistem Manajemen Kompetisi Akuatik";
         clubInputGroup.classList.add('hidden');
         confirmPasswordGroup.classList.add('hidden');
+        tncGroup.classList.add('hidden'); // 👈 Sembunyikan saat login
         mainBtn.innerText = "Masuk ke Dashboard";
         toggleText.innerText = "Belum bermitra dengan kami?";
         toggleBtn.innerText = "Daftar sekarang";
@@ -29,11 +31,13 @@ toggleBtn.addEventListener('click', () => {
         formSubtitle.innerText = "Buat akun untuk memulai kompetisi Anda";
         clubInputGroup.classList.remove('hidden');
         confirmPasswordGroup.classList.remove('hidden');
+        tncGroup.classList.remove('hidden'); // 👈 Munculkan saat daftar
         mainBtn.innerText = "Buat Akun Sekarang";
         toggleText.innerText = "Sudah punya akun?";
         toggleBtn.innerText = "Masuk di sini";
     }
 });
+
 
 // 3. FUNGSI IKON MATA (Show/Hide Password)
 function setupEyeIcon(inputId, btnId) {
