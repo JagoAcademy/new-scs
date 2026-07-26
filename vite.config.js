@@ -12,9 +12,10 @@ export default defineConfig({
         eventDashboard: resolve(__dirname, 'event-dashboard.html'),
         settingsLomba: resolve(__dirname, 'settings-lomba.html'),
         pricing: resolve(__dirname, 'pricing.html'),
-        event: resolve(__dirname, 'event.html'),     // 👈 Jahitan Baru
-        rank: resolve(__dirname, 'rank.html'),       // 👈 Jahitan Baru
-        promosi: resolve(__dirname, 'promosi.html')  // 👈 Jahitan Baru
+        event: resolve(__dirname, 'event.html'),     
+        rank: resolve(__dirname, 'rank.html'),       
+        promosi: resolve(__dirname, 'promosi.html'), 
+        f1Profile: resolve(__dirname, 'f1-profile.html') // 👈 Masuk ke dalam sini ya!
       }
     }
   }
