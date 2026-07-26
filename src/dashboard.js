@@ -1,4 +1,6 @@
-import { supabaseClient } from './supabase.js';
+// Kita panggil nama aslinya, tapi kita "palsukan" panggilannya jadi supabase khusus di file ini aja
+import { supabaseClient as supabase } from './supabase.js';
+
 
 document.addEventListener('DOMContentLoaded', async () => {
     
