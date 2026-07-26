@@ -11,7 +11,10 @@ export default defineConfig({
         register: resolve(__dirname, 'register.html'),
         eventDashboard: resolve(__dirname, 'event-dashboard.html'),
         settingsLomba: resolve(__dirname, 'settings-lomba.html'),
-        pricing: resolve(__dirname, 'pricing.html') /* 👈 INI JAHITAN BARUNYA */
+        pricing: resolve(__dirname, 'pricing.html'),
+        event: resolve(__dirname, 'event.html'),     // 👈 Jahitan Baru
+        rank: resolve(__dirname, 'rank.html'),       // 👈 Jahitan Baru
+        promosi: resolve(__dirname, 'promosi.html')  // 👈 Jahitan Baru
       }
     }
   }

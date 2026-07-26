@@ -11,7 +11,6 @@
     <meta name="theme-color" content="#1e3a8a">
     <link rel="apple-touch-icon" href="/images/logo.png">
 
-    <!-- KUSTOM CSS UNTUK ANIMASI & SCROLLBAR -->
     <style>
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -40,7 +39,7 @@
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
     </a>
 
-    <!-- NAVBAR -->
+    <!-- NAVBAR (Menu Baru Ditambahkan) -->
     <nav class="bg-white/90 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 h-14 md:h-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
             <div class="flex justify-between items-center h-full">
@@ -51,20 +50,23 @@
                     </a>
                 </div>
                 
-                <!-- Menu Navigasi -->
+                <!-- Menu Navigasi B2C & B2B -->
                 <div class="hidden md:flex space-x-6 lg:space-x-8 items-center mr-24 md:mr-28">
-                    <a href="/#fitur" class="text-gray-600 hover:text-scsBlue font-medium text-sm">Fitur</a>
-                    <a href="/#ekosistem" class="text-gray-600 hover:text-scsBlue font-medium text-sm">Ekosistem</a>
+                    <a href="/event.html" class="text-gray-600 hover:text-scsBlue font-bold text-sm">Event</a>
+                    <a href="/rank.html" class="text-gray-600 hover:text-scsBlue font-bold text-sm flex items-center gap-1">
+                        Rank <span class="text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">HOT</span>
+                    </a>
+                    <a href="/promosi.html" class="text-gray-600 hover:text-scsBlue font-bold text-sm">Promosi</a>
                     <a href="/pricing.html" class="text-scsBlue font-extrabold text-sm">Harga</a> 
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- RUNNING TEXT ANNOUNCEMENT (Di-fix letaknya di bawah Navbar) -->
+    <!-- RUNNING TEXT -->
     <div class="fixed top-14 md:top-16 left-0 w-full bg-blue-950 shadow-md border-b border-blue-800 py-1.5 z-40 marquee-container">
         <div class="animate-marquee text-scsGold font-bold text-xs md:text-sm tracking-wide flex gap-12 items-center">
-            <span>📢 PROMO EKSKLUSIF: Daftarkan event Anda bulan ini, dapatkan jaminan dana sponsor dari Jago Renang Academy senilai Rp 500.000!</span>
+            <span>📢 PROMO EKSKLUSIF: Daftarkan event Anda bulan ini, dapatkan jaminan dana sponsor dari Jago Academy senilai Rp 500.000!</span>
             <span class="opacity-50 text-white">•</span>
             <span class="text-white">🔥 Kuota Terbatas untuk 5 Event Pertama!</span>
             <span class="opacity-50 text-white">•</span>
@@ -72,42 +74,110 @@
         </div>
     </div>
 
-    <!-- HERO SECTION (Padding-top ditambah biar nggak nabrak navbar & running text) -->
-    <section class="pt-28 md:pt-36 pb-12 lg:pb-16 bg-scsBlue text-white relative">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <!-- HERO SECTION SLIDER -->
+    <section class="pt-28 md:pt-36 pb-12 lg:pb-16 bg-scsBlue text-white relative overflow-hidden group">
+        
+        <!-- Panah Navigasi Hero -->
+        <button id="heroPrev" class="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-30 p-2 md:p-3 bg-white/10 hover:bg-white/30 rounded-full backdrop-blur-sm transition opacity-0 group-hover:opacity-100">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+        </button>
+        <button id="heroNext" class="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-30 p-2 md:p-3 bg-white/10 hover:bg-white/30 rounded-full backdrop-blur-sm transition opacity-0 group-hover:opacity-100">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+
+        <!-- Slider Track -->
+        <div id="heroTrack" class="flex w-[200%] transition-transform duration-700 ease-in-out">
             
-            <!-- LOGO SCS: CENTERED & BESAR -->
-            <div class="flex justify-center mb-8 md:mb-10">
-                <div class="bg-white p-3 md:p-4 rounded-3xl shadow-xl inline-block hover:scale-105 transition-transform duration-300">
-                    <img src="/images/logo.png" alt="SCS Logo" class="h-16 md:h-24 object-contain"> 
+            <!-- SLIDE 1: Main Copywriting -->
+            <div class="w-1/2 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center shrink-0">
+                <div class="flex justify-center mb-8 md:mb-10">
+                    <div class="bg-white p-3 md:p-4 rounded-3xl shadow-xl inline-block hover:scale-105 transition-transform duration-300">
+                        <img src="/images/logo.png" alt="SCS Logo" class="h-16 md:h-24 object-contain"> 
+                    </div>
+                </div>
+                <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 leading-tight flex flex-col items-center justify-center gap-4">
+                    <span>Selamat Tinggal</span>
+                    <span class="inline-flex items-center bg-white px-4 py-2 rounded-2xl shadow-2xl transform -rotate-2 mt-2">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/5b/Google_Forms_2020_Logo.svg" alt="Google Forms Logo" class="h-10 md:h-14 mr-3">
+                        <span class="text-gray-800 text-3xl md:text-5xl font-bold line-through decoration-red-500 decoration-4">Google Forms</span>
+                    </span>
+                </h1>
+                <p class="mt-8 text-lg md:text-2xl font-light text-gray-200 max-w-3xl mx-auto mb-10 leading-relaxed">
+                    Revolusi manajemen lomba renang Indonesia. Dari pendaftaran otomatis, filter atlet pro, hingga transparansi cashflow dalam satu dashboard.
+                </p>
+                <div class="flex flex-col items-center gap-4 pb-8">
+                    <a href="/auth.html" class="bg-scsGold text-scsBlue px-8 py-4 rounded-full font-bold text-lg hover:bg-yellow-500 transition shadow-xl inline-block hover:-translate-y-1">Buat Event Pertama (Gratis Trial)</a>
                 </div>
             </div>
 
-            <!-- Headline -->
-            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 leading-tight flex flex-col items-center justify-center gap-4">
-                <span>Selamat Tinggal</span>
-                <span class="inline-flex items-center bg-white px-4 py-2 rounded-2xl shadow-2xl transform -rotate-2 mt-2">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5b/Google_Forms_2020_Logo.svg" alt="Google Forms Logo" class="h-10 md:h-14 mr-3">
-                    <span class="text-gray-800 text-3xl md:text-5xl font-bold line-through decoration-red-500 decoration-4">Google Forms</span>
-                </span>
-            </h1>
-            
-            <p class="mt-8 text-lg md:text-2xl font-light text-gray-200 max-w-3xl mx-auto mb-10 leading-relaxed">
-                Revolusi manajemen lomba renang Indonesia. Dari pendaftaran otomatis, filter atlet pro, hingga transparansi cashflow dalam satu dashboard.
-            </p>
-            
-            <div class="flex flex-col items-center gap-4">
-                <div class="flex flex-col sm:flex-row justify-center gap-4 w-full">
-                    <a href="/auth.html" class="bg-scsGold text-scsBlue px-8 py-4 rounded-full font-bold text-lg hover:bg-yellow-500 transition shadow-xl inline-block hover:-translate-y-1">
-                        Buat Event Pertama (Gratis Trial)
-                    </a>
+            <!-- SLIDE 2: Testimoni -->
+            <div class="w-1/2 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center shrink-0 flex flex-col items-center justify-center">
+                <span class="text-5xl md:text-6xl mb-6">⭐⭐⭐⭐⭐</span>
+                <h2 class="text-2xl md:text-4xl font-extrabold mb-8 leading-relaxed max-w-4xl mx-auto italic">
+                    "Semenjak pakai ekosistem SCS, panitia udah nggak pernah lagi pusing ngurusin komplain salah input umur atlet. Cashflow event juga jadi transparan banget!"
+                </h2>
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 bg-blue-800 rounded-full flex items-center justify-center text-xl font-bold border-2 border-scsGold">A</div>
+                    <div class="text-left">
+                        <p class="font-bold text-xl text-scsGold">Coach Aditya</p>
+                        <p class="text-blue-200 text-sm">Ketua Panitia / Pelatih Regional</p>
+                    </div>
                 </div>
-                <a href="/pricing.html" class="text-blue-200 hover:text-white font-medium flex items-center gap-2 mt-2 group transition-colors">
-                    Lihat Paket Harga <span class="group-hover:translate-x-1 transition-transform">➔</span>
-                </a>
             </div>
+
+        </div>
+
+        <!-- Indikator Dots -->
+        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-30">
+            <button class="hero-dot w-3 h-3 rounded-full bg-white transition-all scale-125"></button>
+            <button class="hero-dot w-3 h-3 rounded-full bg-white/40 transition-all"></button>
         </div>
     </section>
+
+    <!-- SECTION HIGHLIGHT, FITUR, EKOSISTEM, FOOTER SAMA SEPERTI SEBELUMNYA -->
+    <!-- (Kamu bisa biarkan sisa kodenya sama persis seperti file sebelumnya) -->
+
+    <!-- SCRIPT GABUNGAN UNTUK HERO SLIDER & BANNER HIGHLIGHT -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- LOGIC HERO SLIDER ---
+            const heroTrack = document.getElementById('heroTrack');
+            const heroPrev = document.getElementById('heroPrev');
+            const heroNext = document.getElementById('heroNext');
+            const heroDots = document.querySelectorAll('.hero-dot');
+            let currentHeroSlide = 0;
+
+            function updateHeroSlider() {
+                heroTrack.style.transform = `translateX(-${currentHeroSlide * 50}%)`;
+                heroDots.forEach((dot, index) => {
+                    if(index === currentHeroSlide) {
+                        dot.classList.replace('bg-white/40', 'bg-white');
+                        dot.classList.add('scale-125');
+                    } else {
+                        dot.classList.replace('bg-white', 'bg-white/40');
+                        dot.classList.remove('scale-125');
+                    }
+                });
+            }
+
+            heroNext.addEventListener('click', () => {
+                currentHeroSlide = currentHeroSlide === 0 ? 1 : 0;
+                updateHeroSlider();
+            });
+
+            heroPrev.addEventListener('click', () => {
+                currentHeroSlide = currentHeroSlide === 0 ? 1 : 0;
+                updateHeroSlider();
+            });
+
+            // Auto-slide Hero setiap 8 detik
+            setInterval(() => {
+                currentHeroSlide = currentHeroSlide === 0 ? 1 : 0;
+                updateHeroSlider();
+            }, 8000);  // --- LOGIC HIGHLIGHT BANNER (myBCA style) ---
+            // (Tetap biarkan logic banner myBCA yang sebelumnya di sini)
+        });
+    </script>
 
     <!-- SECTION HIGHLIGHT: EVENT & SPONSOR (Ala myBCA) -->
     <section class="py-10 md:py-16 bg-white border-b border-gray-100 overflow-hidden relative">
