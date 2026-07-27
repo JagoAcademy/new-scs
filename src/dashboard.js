@@ -138,3 +138,116 @@ function renderAthleteTable(athletes) {
         tbody.innerHTML += row;
     });
 }
+// ==========================================
+// LOGIC UNTUK 3 TOMBOL AKSI CEPAT KLUB
+// ==========================================
+
+// Elemen Tombol & Modal
+const btnAddAthlete = document.getElementById('btnAddAthlete');
+const btnVerify = document.getElementById('btnVerify');
+const btnCreateEvent = document.getElementById('btnCreateEvent');
+const modalAddAthlete = document.getElementById('modalAddAthlete');
+const closeModalBtn = document.getElementById('closeModalBtn');
+const btnSaveAthlete = document.getElementById('btnSaveAthlete');
+
+// 1. TOMBOL BUAT EVENT -> Arahkan ke halaman Event
+if (btnCreateEvent) {
+    btnCreateEvent.addEventListener('click', () => {
+        window.location.href = '/event.html'; // Nanti kamu bisa ubah ke event-dashboard.html kalau diperlukan
+    });
+}
+
+// 2. TOMBOL VERIFIKASI -> Tampilkan alert sementara
+if (btnVerify) {
+    btnVerify.addEventListener('click', () => {
+        alert("Fitur Verifikasi Dokumen sedang dalam tahap integrasi. Segera hadir!");
+    });
+}
+
+// 3. TOMBOL TAMBAH ATLET -> Buka Tutup Modal
+if (btnAddAthlete && modalAddAthlete && closeModalBtn) {
+    btnAddAthlete.addEventListener('click', () => {
+        modalAddAthlete.classList.remove('hidden');
+        // Animasi pop-up pelan-pelan
+        setTimeout(() => modalAddAthlete.firstElementChild.classList.remove('scale-95'), 10);
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+        modalAddAthlete.firstElementChild.classList.add('scale-95');
+        setTimeout(() => modalAddAthlete.classList.add('hidden'), 200);
+    });
+}
+
+// 4. LOGIC SIMPAN ATLET & GENERATE F1 ID
+if (btnSaveAthlete) {
+    btnSaveAthlete.addEventListener('click', async () => {
+        const inputNama = document.getElementById('inputNama').value.trim();
+        const inputDOB = document.getElementById('inputDOB').value;
+        const inputGender = document.getElementById('inputGender').value;
+        const statusMsg = document.getElementById('statusMsg');
+
+        // Validasi input kosong
+        if (!inputNama || !inputDOB) {
+            statusMsg.innerText = "Nama dan Tanggal Lahir wajib diisi!";
+            statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block";
+            return;
+        }
+
+        // Tampilkan loading
+        btnSaveAthlete.innerText = "Memproses...";
+        btnSaveAthlete.disabled = true;
+
+        try {
+            // A. GENERATE F1 ID (Format: F1-YYMMxxx)
+            const dateObj = new Date(inputDOB);
+            const yy = dateObj.getFullYear().toString().slice(-2); // Ambil 2 digit tahun
+            const mm = ('0' + (dateObj.getMonth() + 1)).slice(-2); // Ambil 2 digit bulan (01-12)
+            const random3 = Math.floor(Math.random() * 900) + 100; // Random 100 - 999
+            const generatedF1Id = `F1-${yy}${mm}${random3}`;
+
+            // B. SUNTIK KE SUPABASE (Asumsi masuk ke Klub ID 1 / Jago Academy)
+            const dummyClubId = 1; 
+
+            const { error } = await supabase
+                .from('athletes')
+                .insert([{
+                    f1_id: generatedF1Id,
+                    full_name: inputNama,
+                    dob: inputDOB,
+                    gender: inputGender,
+                    club_id: dummyClubId
+                }]);
+
+            if (error) throw error;
+
+            // C. SUKSES! Kosongkan form dan reload data
+            statusMsg.innerText = `Berhasil! F1 ID: ${generatedF1Id}`;
+            statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-green-100 text-green-600 block";
+            
+            document.getElementById('inputNama').value = '';
+            document.getElementById('inputDOB').value = '';
+
+            // Reload tabel di background
+            setTimeout(() => {
+                modalAddAthlete.classList.add('hidden');
+                btnSaveAthlete.innerText = "Simpan & Generate F1 ID";
+                btnSaveAthlete.disabled = false;
+                statusMsg.classList.add('hidden');
+                
+                // Panggil ulang fungsi tarik data biar tabel langsung update otomatis!
+                if(typeof fetchDashboardData === 'function') {
+                    fetchDashboardData();
+                } else {
+                    location.reload(); // Fallback kalau fungsi tidak terbaca
+                }
+            }, 1500);
+
+        } catch (err) {
+            console.error(err);
+            statusMsg.innerText = "Gagal menyimpan data: " + err.message;
+            statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block";
+            btnSaveAthlete.innerText = "Simpan & Generate F1 ID";
+            btnSaveAthlete.disabled = false;
+        }
+    });
+}
