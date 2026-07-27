@@ -150,19 +150,88 @@ const modalAddAthlete = document.getElementById('modalAddAthlete');
 const closeModalBtn = document.getElementById('closeModalBtn');
 const btnSaveAthlete = document.getElementById('btnSaveAthlete');
 
-// 1. TOMBOL BUAT EVENT -> Arahkan ke halaman Event
-if (btnCreateEvent) {
+// ==========================================
+// LOGIC UNTUK 3 TOMBOL AKSI CEPAT KLUB
+// ==========================================
+
+// Elemen Tombol & Modal
+const btnAddAthlete = document.getElementById('btnAddAthlete');
+const btnVerify = document.getElementById('btnVerify');
+const btnCreateEvent = document.getElementById('btnCreateEvent');
+
+// Elemen Modal Event
+const modalCreateEvent = document.getElementById('modalCreateEvent');
+const closeModalEventBtn = document.getElementById('closeModalEventBtn');
+const btnSaveEvent = document.getElementById('btnSaveEvent');
+
+// 1. TOMBOL BUAT EVENT -> Buka Tutup Modal
+if (btnCreateEvent && modalCreateEvent && closeModalEventBtn) {
     btnCreateEvent.addEventListener('click', () => {
-        window.location.href = '/event.html'; // Nanti kamu bisa ubah ke event-dashboard.html kalau diperlukan
+        modalCreateEvent.classList.remove('hidden');
+        setTimeout(() => modalCreateEvent.firstElementChild.classList.remove('scale-95'), 10);
+    });
+
+    closeModalEventBtn.addEventListener('click', () => {
+        modalCreateEvent.firstElementChild.classList.add('scale-95');
+        setTimeout(() => modalCreateEvent.classList.add('hidden'), 200);
     });
 }
 
-// 2. TOMBOL VERIFIKASI -> Tampilkan alert sementara
-if (btnVerify) {
-    btnVerify.addEventListener('click', () => {
-        alert("Fitur Verifikasi Dokumen sedang dalam tahap integrasi. Segera hadir!");
+// LOGIC SIMPAN EVENT BARU
+if (btnSaveEvent) {
+    btnSaveEvent.addEventListener('click', async () => {
+        const inputEventName = document.getElementById('inputEventName').value.trim();
+        let inputSubdomain = document.getElementById('inputSubdomain').value.trim().toLowerCase();
+        const inputEventDate = document.getElementById('inputEventDate').value;
+        const statusMsg = document.getElementById('eventStatusMsg');
+
+        // Bersihkan subdomain dari karakter aneh (hanya boleh huruf, angka, dan strip)
+        inputSubdomain = inputSubdomain.replace(/[^a-z0-9-]/g, '');
+
+        if (!inputEventName || !inputSubdomain || !inputEventDate) {
+            statusMsg.innerText = "Semua kolom wajib diisi!";
+            statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block";
+            return;
+        }
+
+        btnSaveEvent.innerText = "Memproses...";
+        btnSaveEvent.disabled = true;
+
+        try {
+            // Asumsi Klub ID 1 (Jago Academy) yang membuat event
+            const dummyClubId = 1;
+
+            const { data, error } = await supabase
+                .from('events')
+                .insert([{
+                    event_name: inputEventName,
+                    subdomain: inputSubdomain,
+                    event_date: inputEventDate,
+                    club_id: dummyClubId
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            statusMsg.innerText = "Event berhasil dibuat! Mengalihkan ke Dashboard Event...";
+            statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-green-100 text-green-600 block";
+
+            // Jika sukses, lempar user ke halaman event-dashboard.html beserta ID event-nya
+            setTimeout(() => {
+                window.location.href = `/event-dashboard.html?id=${data.id}`;
+            }, 1500);
+
+        } catch (err) {
+            console.error(err);
+            statusMsg.innerText = "Gagal membuat event: " + err.message;
+            statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block";
+            btnSaveEvent.innerText = "Buat Event Sekarang";
+            btnSaveEvent.disabled = false;
+        }
     });
 }
+
 
 // 3. TOMBOL TAMBAH ATLET -> Buka Tutup Modal
 if (btnAddAthlete && modalAddAthlete && closeModalBtn) {
