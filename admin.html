@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin | SCS</title>
+    <link rel="stylesheet" href="/src/style.css">
+</head>
+<body class="bg-slate-900 min-h-screen font-sans text-slate-200 pb-20">
+
+    <!-- TOP NAV ADMIN -->
+    <nav class="bg-slate-950 border-b border-slate-800 p-4 sticky top-0 z-50 flex flex-col md:flex-row justify-between items-center shadow-lg gap-4">
+        <div class="flex items-center gap-3">
+            <span class="text-2xl">👑</span>
+            <div>
+                <h1 class="text-sm md:text-lg font-black text-white tracking-widest uppercase">SCS Super Admin</h1>
+                <p class="text-[10px] text-emerald-400 font-mono">System Control Panel</p>
+            </div>
+        </div>
+        
+        <!-- MENU NAVIGASI TAMBAHAN (ADS & BANK) -->
+        <div class="flex items-center gap-2 md:gap-3 flex-wrap justify-center">
+            <!-- Ads Settings (Garis Kuning) -->
+            <a href="/admin-ads.html" class="px-3 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/50 rounded-lg text-[10px] md:text-xs font-bold transition-colors flex items-center gap-2">
+                <span>🎯</span> Ads Settings
+            </a>
+            <!-- Sponsor Bank (Garis Hijau) -->
+            <a href="/sponsor-preview.html" class="px-3 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/50 rounded-lg text-[10px] md:text-xs font-bold transition-colors flex items-center gap-2">
+                <span>🏦</span> Sponsor Bank
+            </a>
+            <!-- Tombol Logout -->
+            <button id="btnAdminLogout" class="px-4 py-2 bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white rounded-lg text-[10px] md:text-xs font-bold transition-colors">Logout</button>
+        </div>
+    </nav>
+
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+        
+        <!-- SECTION 1: ANTRIAN VERIFIKASI AWAL F1 ID -->
+        <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
+            <div class="p-5 border-b border-slate-700 bg-slate-800/50 flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-extrabold text-white flex items-center gap-2">
+                        <span>⏳</span> F1 ID Verification Queues
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">Review dokumen akta dan foto untuk aktivasi awal atlet.</p>
+                </div>
+                <span id="badgeQueue" class="bg-emerald-500 text-slate-900 font-black px-3 py-1 rounded-full text-xs">0 Pending</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm whitespace-nowrap">
+                    <thead class="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider">
+                        <tr>
+                            <th class="p-4 font-bold">F1 ID & Nama</th>
+                            <th class="p-4 font-bold">Klub Asal</th>
+                            <th class="p-4 font-bold">Dokumen</th>
+                            <th class="p-4 font-bold text-center">Aksi Dewa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="queueTableBody" class="divide-y divide-slate-700/50">
+                        <tr><td colspan="4" class="p-8 text-center text-slate-500">Mencari antrian verifikasi...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECTION 1.5: ANTRIAN PERUBAHAN DATA (EDIT REQUESTS) -->
+        <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden border-l-4 border-l-amber-500">
+            <div class="p-5 border-b border-slate-700 bg-slate-800/50 flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-extrabold text-white flex items-center gap-2">
+                        <span>📝</span> F1 ID Edit Requests
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">Review usulan perubahan Nama, Tanggal Lahir, atau Gender.</p>
+                </div>
+                <span id="badgeEditQueue" class="bg-amber-500 text-slate-900 font-black px-3 py-1 rounded-full text-xs">0 Pending</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm whitespace-nowrap">
+                    <thead class="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider">
+                        <tr>
+                            <th class="p-4 font-bold">F1 ID</th>
+                            <th class="p-4 font-bold text-red-400">Data Lama</th>
+                            <th class="p-4 font-bold text-emerald-400">Usulan Baru</th>
+                            <th class="p-4 font-bold">Bukti Dokumen</th>
+                            <th class="p-4 font-bold text-center">Aksi Dewa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="editQueueTableBody" class="divide-y divide-slate-700/50">
+                        <tr><td colspan="5" class="p-8 text-center text-slate-500">Mencari usulan perubahan data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECTION 2: FULL CLUB MANAGER -->
+        <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
+            <div class="p-5 border-b border-slate-700 bg-slate-800/50">
+                <h2 class="text-xl font-extrabold text-white flex items-center gap-2">
+                    <span>🏢</span> Full Club Manager
+                </h2>
+                <p class="text-xs text-slate-400 mt-1">Database seluruh klub yang terdaftar di ekosistem SCS.</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm whitespace-nowrap">
+                    <thead class="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider">
+                        <tr>
+                            <th class="p-4 font-bold w-12 text-center">No</th>
+                            <th class="p-4 font-bold">Nama Klub</th>
+                            <th class="p-4 font-bold">Pelatih Kepala</th>
+                            <th class="p-4 font-bold">Asal Regional</th>
+                            <th class="p-4 font-bold text-center">Ranking</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clubTableBody" class="divide-y divide-slate-700/50">
+                        <tr><td colspan="5" class="p-8 text-center text-slate-500">Memuat database klub...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Panggil JS -->
+    <script type="module" src="/src/admin.js"></script>
+</body>
+</html>

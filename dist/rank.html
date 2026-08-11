@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>National Rank | SCS</title>
+    
+    <style>
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+  <script type="module" crossorigin src="/assets/rank-03975771.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/supabase-00114a9c.js">
+  <link rel="stylesheet" href="/assets/style-72907b93.css">
+</head>
+<body class="bg-slate-50 antialiased font-sans pt-24 pb-20">
+    
+    <!-- TOP NAVIGATION -->
+    <nav class="bg-white/90 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 h-14 md:h-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+            <div class="flex justify-between items-center h-full">
+                <div class="flex-shrink-0 flex items-center h-full py-1">
+                    <a href="/" class="block">
+                        <img class="max-h-12 md:max-h-14 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/logo.png" alt="SCS Logo">
+                    </a>
+                </div>
+                
+                <div class="hidden md:flex space-x-6 lg:space-x-8 items-center">
+                    <a href="/event.html" class="text-gray-600 hover:text-blue-900 font-bold text-sm">Event</a>
+                    <a href="/rank.html" class="text-blue-900 font-extrabold text-sm flex items-center gap-1">
+                        Rank <span class="text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">HOT</span>
+                    </a>
+                    <a href="/promosi.html" class="text-gray-600 hover:text-blue-900 font-bold text-sm">Promosi</a>
+                    <a href="/auth.html" class="bg-blue-900 text-white px-5 py-2 rounded-full font-bold text-sm hover:bg-blue-800 transition shadow-sm ml-4">Login SCS</a>
+                </div>
+                
+                <a href="/" class="md:hidden text-sm font-bold text-slate-500 hover:text-blue-600">&laquo; Beranda</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        
+        <!-- Header -->
+        <div class="text-center mb-10">
+            <span class="bg-red-100 text-red-600 font-extrabold px-4 py-1.5 rounded-full text-xs uppercase tracking-widest mb-4 inline-block">SCS National Database</span>
+            <h1 class="text-3xl md:text-4xl font-black text-blue-900 mb-3 tracking-tight">Leaderboard Atlet</h1>
+            <p class="text-slate-500 text-sm md:text-base max-w-lg mx-auto">Pantau peringkat catatan waktu terbaik (Personal Best) dari seluruh event resmi di ekosistem SCS.</p>
+        </div>
+
+        <!-- Filter Gender -->
+        <div class="flex justify-center gap-2 mb-6">
+            <div class="bg-white p-1.5 rounded-xl shadow-sm border border-slate-200 inline-flex" id="genderToggle">
+                <button class="px-6 py-2 rounded-lg font-black text-sm transition-all bg-blue-900 text-white shadow-md gender-btn" data-gender="Putra">👦 Putra</button>
+                <button class="px-6 py-2 rounded-lg font-bold text-sm text-slate-500 hover:text-slate-800 transition-all gender-btn" data-gender="Putri">👧 Putri</button>
+            </div>
+        </div>
+
+        <!-- Filter Nomor Lomba -->
+        <div class="flex gap-2 overflow-x-auto pb-4 hide-scrollbar mb-8 justify-start md:justify-center" id="filterContainer">
+            <p class="text-sm font-bold text-slate-400 py-2">Memuat kategori lomba...</p>
+        </div>
+
+        <!-- LOADING INDICATOR -->
+        <div id="loadingState" class="text-center py-20 hidden">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-900 mx-auto mb-4"></div>
+            <p class="text-slate-500 font-bold">Merekap catatan waktu nasional...</p>
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div id="emptyState" class="text-center py-20 hidden bg-white rounded-3xl border border-slate-100 shadow-sm mb-12">
+            <span class="text-5xl block mb-3 grayscale opacity-40">⏱️</span>
+            <p class="text-slate-500 font-bold">Belum ada catatan waktu di kategori ini.</p>
+        </div>
+
+        <!-- LEADERBOARD CONTENT -->
+        <div id="leaderboardContent" class="hidden">
+            <!-- Top 3 Podium -->
+            <div class="flex items-end justify-center gap-2 md:gap-6 mb-12" id="podiumContainer">
+                <!-- Disuntik JS -->
+            </div>
+
+            <!-- List Lanjutan -->
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-12">
+                <div id="listContainer" class="divide-y divide-slate-100">
+                    <!-- Disuntik JS -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    
+</body>
+</html>

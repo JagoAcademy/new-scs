@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html { 
+    scroll-behavior: smooth; 
+}
+
+/* PAKU BUMI ANTI MEGALODON */
+svg {
+    max-width: 32px !important;
+    max-height: 32px !important;
+    height: auto !important;
+}

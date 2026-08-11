@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCS Command Center | Login</title>
+    <link rel="stylesheet" href="/src/style.css">
+    <!-- PANGGIL GOOGLE SCRIPT DI HEAD BIAR NGGAK TELAT NONGOL -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4 font-sans selection:bg-blue-200">
+
+    <div class="max-w-4xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row h-max md:min-h-[550px]">
+        
+        <div class="md:w-5/12 bg-blue-900 p-8 md:p-12 text-white flex flex-col justify-between relative overflow-hidden">
+            <div class="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1519315901367-f34f927e1273?w=800&q=80')] bg-cover bg-center"></div>
+            <div class="absolute inset-0 bg-blue-900/60 backdrop-blur-sm"></div>
+
+            <div class="relative z-10">
+                <img src="/images/logo.png" alt="SCS Logo" class="h-10 mb-8 bg-white p-1 rounded-lg w-max">
+                <h1 class="text-3xl font-black mb-4 leading-tight tracking-tight">SCS COMMAND<br><span class="text-amber-400">CENTER</span></h1>
+                <p class="text-blue-100 text-sm leading-relaxed mb-6">
+                    Sistem manajemen klub renang pro. Kelola pendaftaran atlet, buku acara, hingga live result kejuaraan dalam satu dasbor terpadu.
+                </p>
+            </div>
+            
+            <div class="relative z-10 text-xs text-blue-300 font-bold">
+                &copy; 2026 FunSwimming. All rights reserved.
+            </div>
+        </div>
+
+        <div class="md:w-7/12 relative bg-white flex flex-col overflow-hidden min-h-[500px] md:min-h-full">
+            
+            <div id="formLoginContainer" class="p-8 md:p-12 transition-all duration-500 ease-in-out transform translate-x-0 opacity-100 h-full flex flex-col justify-center overflow-y-auto">
+                <h2 class="text-2xl font-black text-slate-800 mb-1">Selamat Datang! 👋</h2>
+                <p class="text-sm text-slate-500 mb-6 font-medium">Silakan masuk ke akun manajemen klub Anda.</p>
+                
+                <!-- CONTAINER TOMBOL GOOGLE -->
+                <div id="btnGoogleLogin" class="flex justify-center w-full mb-6"></div>
+
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="h-px bg-slate-200 flex-1"></div>
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Atau pakai Email</span>
+                    <div class="h-px bg-slate-200 flex-1"></div>
+                </div>
+                
+                <form id="formLogin" class="space-y-4" onsubmit="event.preventDefault();">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Email Akun</label>
+                        <input type="email" id="loginEmail" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold" placeholder="pelatih@klub.com">
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Kata Sandi</label>
+                            <a href="#" id="btnLupaSandi" class="text-[10px] font-bold text-blue-600 hover:underline">Lupa Sandi?</a>
+                        </div>
+                        <input type="password" id="loginPassword" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold" placeholder="••••••••">
+                    </div>
+                    
+                    <div id="loginErrorMsg" class="hidden bg-red-50 text-red-600 text-xs font-bold p-3 rounded-lg border border-red-100 text-center"></div>
+                    
+                    <button type="submit" id="btnLogin" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 mt-2 flex items-center justify-center gap-2">
+                        Masuk 🚀
+                    </button>
+                </form>
+
+                <p class="text-center text-sm text-slate-500 mt-6 font-medium">
+                    Belum mendaftar? 
+                    <button type="button" id="btnSwitchToRegister" class="text-blue-600 font-bold hover:underline">Buat Akun Klub</button>
+                </p>
+            </div>
+
+            <div id="formRegisterContainer" class="hidden absolute inset-0 p-8 md:p-12 transition-all duration-500 ease-in-out transform translate-x-full opacity-0 bg-white flex-col justify-center overflow-y-auto">
+                <h2 class="text-2xl font-black text-slate-800 mb-1">Registrasi Klub 🏆</h2>
+                <p class="text-sm text-slate-500 mb-6 font-medium">Bergabung dengan ekosistem SCS.</p>
+                
+                <form id="formRegister" class="space-y-4" onsubmit="event.preventDefault();">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Email Admin</label>
+                        <input type="email" id="regEmail" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold" placeholder="Gunakan email aktif">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Kata Sandi</label>
+                        <input type="password" id="regPassword" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold" placeholder="Minimal 6 karakter">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Ulangi Sandi</label>
+                        <input type="password" id="regConfirmPassword" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold" placeholder="Masukkan ulang sandi">
+                    </div>
+                    
+                    <div id="regAlertMsg" class="hidden text-xs font-bold p-3 rounded-lg border text-center leading-relaxed"></div>
+                    
+                    <button type="submit" id="btnRegister" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-95 mt-2 flex items-center justify-center gap-2">
+                        Daftarkan Via Email
+                    </button>
+                </form>
+
+                <p class="text-center text-sm text-slate-500 mt-6 font-medium">
+                    Sudah punya akun? 
+                    <button type="button" id="btnSwitchToLogin" class="text-blue-600 font-bold hover:underline">Masuk di sini</button>
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="modalResetPassword" class="fixed inset-0 bg-slate-900/80 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white p-6 rounded-3xl max-w-sm w-full shadow-2xl">
+            <h3 class="font-black text-slate-800 text-xl mb-2">Lupa Kata Sandi? 🔐</h3>
+            <p class="text-xs text-slate-500 mb-5 font-medium leading-relaxed">Masukkan email akun klub Anda. Kami akan mengirimkan tautan untuk membuat kata sandi baru.</p>
+
+            <div class="mb-4">
+                <input type="email" id="inputResetEmail" placeholder="pelatih@klub.com" class="w-full px-4 py-3 border border-slate-300 rounded-xl text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50">
+            </div>
+
+            <div id="resetAlertMsg" class="hidden text-xs font-bold p-3 rounded-xl border text-center mb-4 leading-relaxed"></div>
+
+            <div class="flex gap-3">
+                <button id="btnTutupReset" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3.5 rounded-xl text-sm transition-colors">Batal</button>
+                <button id="btnKirimReset" class="flex-1 bg-blue-900 hover:bg-blue-800 text-white font-bold py-3.5 rounded-xl text-sm shadow-md transition-colors flex items-center justify-center gap-2">Kirim Tautan</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/src/auth.js"></script>
+</body>
+</html>
