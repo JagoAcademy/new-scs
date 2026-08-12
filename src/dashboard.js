@@ -202,7 +202,8 @@ async function fetchDashboardData() {
                         <div class="border border-emerald-100 bg-white p-4 rounded-2xl shadow-sm hover:shadow-md hover:border-emerald-300 transition-all group flex flex-col justify-between">
                             <div>
                                 <h3 class="font-extrabold text-emerald-900 text-lg group-hover:text-emerald-700 transition">${ev.event_name}</h3>
-                                <p class="text-xs text-gray-500 mt-1 font-mono">🔗 ${ev.subdomain}.funswimming.my.id</p>
+                                <!-- UBAH IDENTITAS DOMAIN JADI F1SWIMMING -->
+                                <p class="text-xs text-gray-500 mt-1 font-mono">🔗 ${ev.subdomain}.f1swimming.com</p>
                                 <p class="text-xs text-gray-500 mt-1">📅 ${ev.event_date} s/d ${ev.end_date}</p>
                             </div>
                             <a href="/event-dashboard.html?id=${ev.id}" class="mt-4 bg-emerald-50 text-emerald-700 text-center text-xs font-bold py-2 rounded-lg hover:bg-emerald-600 hover:text-white transition">Masuk Panel Panitia &raquo;</a>

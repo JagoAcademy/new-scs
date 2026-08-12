@@ -35,7 +35,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        // HAPUS TEBAKAN LEBAY TENTANG KUOTA SELULER
         if (!msg || msg === '{}' || msg === '[object Object]') {
             return "Pendaftaran ditolak oleh server. Pastikan email valid dan kata sandi minimal 6 karakter.";
         }
@@ -88,11 +87,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // LOGIKA LOGIN GOOGLE (VERSI CUSTOM DOMAIN)
     // ==========================================
     if (btnGoogleLogin) {
-        btnGoogleLogin.innerHTML = ''; // Kosongkan text lama
-        btnGoogleLogin.className = 'flex justify-center w-full mt-2'; // Pastikan rata tengah
+        btnGoogleLogin.innerHTML = ''; 
+        btnGoogleLogin.className = 'flex justify-center w-full mt-2'; 
 
         const renderGoogleButton = () => {
-            // Cek apakah script Google dari HTML sudah selesai dimuat, kalau belum, tunggu 100ms
             if (typeof google === 'undefined' || !google.accounts) {
                 setTimeout(renderGoogleButton, 100); 
                 return;
@@ -128,7 +126,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             );
         };
 
-        // Eksekusi fungsinya
         renderGoogleButton();
     }
 
@@ -253,6 +250,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             alertMsg.classList.add('hidden');
 
             try {
+                // Membaca asal domain otomatis (contoh: https://f1swimming.com/dashboard.html)
                 const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email, {
                     redirectTo: window.location.origin + '/dashboard.html', 
                 });
