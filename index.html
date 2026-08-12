@@ -4,6 +4,7 @@
     <script>
         (function() {
             const host = window.location.hostname;
+            // SUDAH DIGANTI KE f1swimming.com BIAR NGGAK DITENDANG KE EVENT PUBLIC
             if (host !== 'f1swimming.com' && host !== 'www.f1swimming.com' && host !== 'localhost' && !host.includes('vercel.app')) {
                 window.location.replace('/event-public.html');
             }
@@ -45,14 +46,15 @@
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
     </a>
     
-    <!-- Tombol F1 ID Menempel di Kiri Bawah -->
-    <a href="/f1-profile.html" class="fixed bottom-8 md:bottom-12 left-0 z-[100] bg-red-600 text-white px-4 py-3 rounded-r-2xl shadow-[6px_6px_20px_rgba(220,38,38,0.3)] hover:bg-red-700 transition-all duration-300 border-y border-r border-red-800 flex items-center gap-3 group hover:pl-6 hover:shadow-[8px_8px_25px_rgba(220,38,38,0.5)]">
-        <div class="bg-white/20 p-2 rounded-xl group-hover:scale-110 transition-transform">
-            🪪
+    <!-- TOMBOL WHATSAPP (MENGGANTIKAN F1 ID) -->
+    <!-- Tinggal tambahin nomor lu setelah wa.me/ contoh: https://wa.me/628123456789 -->
+    <a href="https://wa.me/" target="_blank" class="fixed bottom-8 md:bottom-12 left-0 z-[100] bg-emerald-500 text-white px-4 py-3 rounded-r-2xl shadow-[6px_6px_20px_rgba(16,185,129,0.3)] hover:bg-emerald-600 transition-all duration-300 border-y border-r border-emerald-700 flex items-center gap-3 group hover:pl-6 hover:shadow-[8px_8px_25px_rgba(16,185,129,0.5)]">
+        <div class="bg-white/20 p-2 rounded-xl group-hover:scale-110 transition-transform text-lg">
+            💬
         </div>
         <div class="flex flex-col text-left">
-            <span class="text-[10px] uppercase tracking-widest text-red-200 font-black mb-0.5">KTP Digital Atlet</span>
-            <span class="text-sm md:text-base font-black leading-none drop-shadow-sm">Cek F1 ID &raquo;</span>
+            <span class="text-[10px] uppercase tracking-widest text-emerald-100 font-black mb-0.5">For Information</span>
+            <span class="text-sm md:text-base font-black leading-none drop-shadow-sm">WhatsApp &raquo;</span>
         </div>
     </a>
 
@@ -105,64 +107,65 @@
     </div>
 
     <!-- ============================================== -->
-    <!-- 1. HERO SECTION SPLIT SCREEN (DIAGONAL MOBILE) -->
+    <!-- 1. HERO SECTION SPLIT SCREEN                   -->
+    <!-- (Fixed Desktop Height & Kept Mobile Diagonal)  -->
     <!-- ============================================== -->
-    <section class="relative h-[calc(100vh-3.5rem)] md:h-auto md:min-h-screen flex flex-col md:flex-row overflow-hidden pt-14 md:pt-16 max-md:block">
+    <section class="relative w-full h-[calc(100vh-3.5rem)] md:h-screen pt-14 md:pt-16 flex max-md:block overflow-hidden">
         
         <!-- KIRI/ATAS: PORTAL SCS (PANITIA/KLUB) -->
-        <!-- max-md:clip-path memotong layar jadi segitiga kiri atas -->
-        <div class="w-full md:w-1/2 h-full bg-white absolute md:relative inset-0 md:inset-auto flex flex-col max-md:justify-start max-md:items-start max-md:pt-[15vh] max-md:pl-6 max-md:[clip-path:polygon(0_0,100%_0,0_100%)] md:justify-center md:items-center p-8 md:p-16 group transition-all duration-700 ease-in-out hover:md:w-[60%] z-20 md:border-r border-gray-200">
+        <div class="w-full md:w-1/2 h-full absolute md:relative inset-0 md:inset-auto bg-white z-20 flex flex-col max-md:justify-start max-md:items-start md:justify-center md:items-center p-8 md:p-16 max-md:pt-[15vh] max-md:pl-6 max-md:[clip-path:polygon(0_0,100%_0,0_100%)] md:border-r border-gray-200 transition-all duration-700 ease-in-out hover:md:w-[60%] group">
+            
             <div class="absolute inset-0 z-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
             
-            <div class="relative z-10 text-center max-md:text-left flex flex-col items-center max-md:items-start w-full max-md:max-w-[70%] md:max-w-lg transition-transform duration-500 group-hover:scale-105">
+            <div class="relative z-10 text-center max-md:text-left flex flex-col items-center max-md:items-start w-full max-md:max-w-[75%] md:max-w-lg transition-transform duration-500 group-hover:scale-105">
                 <span class="inline-block bg-blue-50 border border-blue-200 text-blue-700 px-5 py-1.5 max-md:px-3 max-md:py-1 rounded-full text-xs max-md:text-[9px] font-black tracking-wide shadow-sm mb-6 max-md:mb-3 animate-pulse">
                     🐊 Halo Arek-Arek Suroboyo!
                 </span>
                 
-                <h1 class="text-5xl md:text-6xl lg:text-7xl max-md:text-[40px] font-black text-blue-950 tracking-tight mb-2 max-md:mb-1 drop-shadow-sm">SCS</h1>
-                <h2 class="text-xl md:text-2xl max-md:text-xs font-bold text-slate-400 mb-6 max-md:mb-4 uppercase tracking-widest max-md:leading-tight">Swimming Competition<br class="hidden max-md:block">System</h2>
+                <h1 class="text-5xl md:text-6xl lg:text-7xl max-md:text-[45px] font-black text-blue-950 tracking-tight mb-2 max-md:mb-1 drop-shadow-sm">SCS</h1>
+                <h2 class="text-xl md:text-2xl max-md:text-[11px] font-bold text-slate-400 mb-6 max-md:mb-4 uppercase tracking-widest max-md:leading-tight">Swimming Competition<br class="hidden max-md:block">System</h2>
+                
                 <p class="text-sm md:text-base text-slate-500 mb-10 leading-relaxed font-medium max-md:hidden">
                     Revolusi manajemen kejuaraan renang. Dari pendaftaran, drawing seri otomatis, hingga hasil lomba dalam satu <span class="text-blue-600 font-bold">Command Center</span>.
                 </p>
                 
-                <a href="/auth.html" class="bg-blue-900 text-white px-8 py-4 max-md:px-6 max-md:py-2.5 rounded-full font-black text-sm max-md:text-xs md:text-base hover:bg-blue-800 transition shadow-[0_10px_20px_rgba(30,58,138,0.2)] hover:-translate-y-1 w-full max-w-xs flex items-center justify-center gap-2">
-                    Masuk Club/EO <span>&raquo;</span>
+                <a href="/auth.html" class="bg-blue-900 text-white px-8 py-4 max-md:px-6 max-md:py-3 rounded-full font-black text-sm max-md:text-[11px] md:text-base hover:bg-blue-800 transition shadow-[0_10px_20px_rgba(30,58,138,0.2)] hover:-translate-y-1 w-full max-w-xs flex items-center justify-center gap-2">
+                    Masuk Club / EO <span>&raquo;</span>
                 </a>
             </div>
         </div>
 
         <!-- KANAN/BAWAH: PORTAL F1 ID (ATLET / ORTU) -->
-        <!-- max-md:clip-path memotong layar jadi segitiga kanan bawah -->
-        <div class="w-full md:w-1/2 h-full bg-blue-950 absolute md:relative inset-0 md:inset-auto flex flex-col max-md:justify-end max-md:items-end max-md:pb-[15vh] max-md:pr-6 max-md:[clip-path:polygon(100%_0,100%_100%,0_100%)] md:justify-center md:items-center p-8 md:p-16 group transition-all duration-700 ease-in-out hover:md:w-[60%] z-10">
+        <div class="w-full md:w-1/2 h-full absolute md:relative inset-0 md:inset-auto bg-blue-950 z-10 flex flex-col max-md:justify-end max-md:items-end md:justify-center md:items-center p-8 md:p-16 max-md:pb-[15vh] max-md:pr-6 max-md:[clip-path:polygon(100%_0,100%_100%,0_100%)] transition-all duration-700 ease-in-out hover:md:w-[60%] group">
+            
             <div class="absolute inset-0 z-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
             <div class="absolute inset-0 bg-gradient-to-t from-red-900/40 to-transparent z-0"></div>
             
-            <div class="relative z-10 text-center max-md:text-right flex flex-col items-center max-md:items-end w-full max-md:max-w-[70%] md:max-w-lg transition-transform duration-500 group-hover:scale-105">
+            <div class="relative z-10 text-center max-md:text-right flex flex-col items-center max-md:items-end w-full max-md:max-w-[80%] md:max-w-lg transition-transform duration-500 group-hover:scale-105">
                 
                 <span class="max-md:hidden inline-block bg-red-500/20 border border-red-500/50 text-red-300 px-5 py-1.5 rounded-full text-xs font-black tracking-wide shadow-sm mb-6">
                     🪪 KTP Digital Atlet
                 </span>
                 
-                <!-- Menggunakan CSS Order khusus Mobile biar tombol di atas teks (sesuai coretan lu) -->
-                <a href="/f1-profile.html" class="max-md:order-1 bg-red-600 text-white px-8 py-4 max-md:px-6 max-md:py-2.5 rounded-full font-black text-sm max-md:text-xs md:text-base hover:bg-red-500 transition shadow-[0_10px_20px_rgba(220,38,38,0.3)] hover:-translate-y-1 w-full max-w-xs flex items-center justify-center gap-2 max-md:mb-4">
-                    Cek F1 ID Saya <span>&raquo;</span>
-                </a>
+                <h1 class="text-5xl md:text-6xl lg:text-7xl max-md:text-[45px] font-black text-white tracking-tight mb-2 max-md:mb-0 drop-shadow-lg max-md:order-3">F1 ID</h1>
                 
-                <h2 class="max-md:order-2 text-xl md:text-2xl max-md:text-[11px] font-bold text-red-400 mb-6 max-md:mb-1 uppercase tracking-widest drop-shadow-md max-md:leading-tight">Identitas Perenang<br class="hidden max-md:block">Indonesia</h2>
-                
-                <h1 class="max-md:order-3 text-5xl md:text-6xl lg:text-7xl max-md:text-[40px] font-black text-white tracking-tight mb-2 max-md:mb-0 drop-shadow-lg">F1 ID</h1>
+                <h2 class="text-xl md:text-2xl max-md:text-[10px] font-bold text-red-400 mb-6 max-md:mb-1 uppercase tracking-widest drop-shadow-md max-md:leading-tight max-md:order-2">Identitas Perenang<br class="hidden max-md:block">Indonesia</h2>
                 
                 <p class="max-md:hidden text-sm md:text-base text-slate-300 mb-10 leading-relaxed font-medium">
                     Satu ID seumur hidup. Simpan e-certificate, pantau catatan waktu terbaikmu, dan kuasai <span class="text-white font-bold border-b border-red-500">Leaderboard Nasional</span>.
                 </p>
                 
+                <a href="/f1-profile.html" class="bg-red-600 text-white px-8 py-4 max-md:px-6 max-md:py-3 rounded-full font-black text-sm max-md:text-[11px] md:text-base hover:bg-red-500 transition shadow-[0_10px_20px_rgba(220,38,38,0.3)] hover:-translate-y-1 w-full max-w-xs flex items-center justify-center gap-2 max-md:order-1 max-md:mb-3">
+                    Cek F1 ID Saya <span>&raquo;</span>
+                </a>
             </div>
         </div>
 
         <!-- Tombol "ATAU" (Hanya Desktop) -->
-        <div class="hidden md:flex absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-white rounded-full z-30 items-center justify-center shadow-2xl border-4 border-gray-100 text-slate-400 font-black text-[10px] tracking-widest pointer-events-none">
+        <div class="hidden md:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-white rounded-full z-30 items-center justify-center shadow-2xl border-4 border-gray-100 text-slate-400 font-black text-[10px] tracking-widest pointer-events-none mt-6">
             ATAU
         </div>
+
     </section>
 
     <!-- ============================================== -->
