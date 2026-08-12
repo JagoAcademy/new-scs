@@ -4,7 +4,6 @@
     <script>
         (function() {
             const host = window.location.hostname;
-            // SUDAH DIGANTI KE f1swimming.com BIAR NGGAK DITENDANG KE EVENT PUBLIC
             if (host !== 'f1swimming.com' && host !== 'www.f1swimming.com' && host !== 'localhost' && !host.includes('vercel.app')) {
                 window.location.replace('/event-public.html');
             }
@@ -13,26 +12,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SCS - Swimming Competition System</title>
-    
-    <!-- META SEO & OPEN GRAPH (Untuk Preview Link WA / Sosial Media) -->
     <meta name="description" content="Revolusi manajemen kejuaraan renang. Dari pendaftaran, drawing seri otomatis, hingga hasil lomba dalam satu Command Center.">
     <meta property="og:title" content="SCS - Swimming Competition System">
     <meta property="og:description" content="Revolusi manajemen kejuaraan renang di Indonesia. Dapatkan F1 ID Anda sekarang.">
-    <meta property="og:image" content="/public/images/f1meta.jpg">
-    <meta property="og:url" content="https://f1swimming.com/images/f1meta.jpg">
+    <meta property="og:image" content="https://f1swimming.com/images/f1meta.jpg">
+    <meta property="og:url" content="https://f1swimming.com">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="/public/images/f1meta.jpg">
-
+    <meta name="twitter:image" content="https://f1swimming.com/images/f1meta.jpg">
     <link rel="stylesheet" href="/src/style.css">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1e3a8a">
     <link rel="apple-touch-icon" href="/images/logo.png">
-
     <style>
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
         @keyframes marquee {
             0% { transform: translateX(100vw); }
             100% { transform: translateX(-100%); }
@@ -50,14 +44,11 @@
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans antialiased relative">
-
-    <!-- Tombol Auth Mengambang -->
     <a href="/auth.html" id="floatingAuthBtn" class="fixed top-3 right-14 md:top-4 md:right-6 z-[100] bg-scsBlue text-white font-extrabold px-5 py-1.5 text-xs md:text-sm rounded-full shadow-md hover:bg-blue-900 transition-all border border-blue-900 flex items-center gap-1.5">
         <span id="floatingAuthText">Masuk</span>
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
     </a>
     
-    <!-- TOMBOL WHATSAPP FLOATING DI KIRI BAWAH -->
     <a href="https://wa.me/" target="_blank" class="fixed bottom-6 left-6 md:bottom-8 md:left-8 z-[100] bg-[#25D366] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-[0_10px_20px_rgba(37,211,102,0.4)] hover:bg-[#1ebd5a] hover:-translate-y-1 hover:scale-105 transition-all duration-300 group">
         <svg class="w-8 h-8 fill-current" viewBox="0 0 24 24"><path d="M12.031 0C5.385 0 0 5.384 0 12.03c0 2.122.553 4.195 1.603 6.012L.266 23.36l5.474-1.44c1.764.954 3.738 1.458 5.753 1.458h.005c6.645 0 12.029-5.385 12.029-12.03S18.676 0 12.031 0zm.005 21.411c-1.785 0-3.528-.481-5.06-1.388l-.363-.214-3.766.988.997-3.673-.235-.375a10.052 10.052 0 01-1.542-5.35c0-5.556 4.524-10.08 10.086-10.08 2.693 0 5.221 1.05 7.121 2.956a10.06 10.06 0 012.952 7.119c0 5.555-4.523 10.075-10.08 10.075zm5.525-7.55c-.303-.152-1.792-.885-2.071-.987-.278-.1-.481-.152-.684.151-.202.304-.784.987-.96 1.189-.177.203-.355.228-.658.076-.303-.152-1.28-.472-2.438-1.332-.904-.672-1.512-1.503-1.69-1.807-.176-.303-.018-.467.133-.618.134-.135.303-.354.455-.53.152-.178.203-.304.304-.507.101-.203.05-.38-.025-.531-.076-.152-.684-1.644-.937-2.25-.246-.593-.496-.512-.684-.521-.176-.01-.38-.012-.583-.012-.202 0-.53.076-.809.38-.278.303-1.062 1.038-1.062 2.532s1.088 2.937 1.24 3.139c.152.203 2.14 3.272 5.185 4.536.724.3 1.288.479 1.728.613.725.23 1.385.197 1.905.12.583-.086 1.792-.733 2.044-1.442.253-.709.253-1.317.177-1.442-.076-.127-.279-.203-.583-.355z"/></svg>
         <span class="absolute top-0 right-0 flex h-3.5 w-3.5">
@@ -66,7 +57,6 @@
         </span>
     </a>
 
-    <!-- NAVBAR -->
     <nav class="bg-white/90 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 h-14 md:h-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
             <div class="flex justify-between items-center h-full">
@@ -92,7 +82,6 @@
         </div>
     </nav>
 
-    <!-- MOBILE MENU -->
     <div id="mobileMenu" class="fixed inset-0 bg-white z-[90] hidden flex-col pt-16 px-6">
         <div class="flex flex-col gap-6 text-center mt-10">
             <a href="/event.html" class="text-2xl font-black text-slate-800 border-b border-gray-100 pb-4">Kalender Event</a>
@@ -103,7 +92,6 @@
         <button id="closeMobileBtn" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-red-500 font-bold text-3xl">&times;</button>
     </div>
 
-    <!-- MARQUEE INFO -->
     <div class="fixed top-14 md:top-16 left-0 w-full bg-blue-950 shadow-md border-b border-blue-800 py-1.5 z-40 marquee-container">
         <div class="animate-marquee text-scsGold font-bold text-xs md:text-sm tracking-wide flex gap-12 items-center">
             <span>📢 EKSKLUSIF: Daftarkan event Anda bulan ini, Nikmati semua fitur SCS seperti : Form pendaftaran, dashboard panitia lengkap hingga generate buku acara dan sertifikat auto GRATIS!</span>
@@ -114,15 +102,8 @@
         </div>
     </div>
 
-    <!-- ============================================== -->
-    <!-- 1. HERO SECTION SPLIT SCREEN                   -->
-    <!-- (Clean Desktop + CLEAN Diagonal Mobile)        -->
-    <!-- ============================================== -->
     <section class="relative w-full h-[calc(100vh-3.5rem)] md:h-screen pt-14 md:pt-16 flex max-md:block overflow-hidden">
-        
-        <!-- KIRI/ATAS: PORTAL SCS (PANITIA/KLUB) -->
         <div class="w-full md:w-1/2 h-full absolute md:relative inset-0 md:inset-auto bg-white z-20 flex flex-col max-md:justify-start max-md:items-start md:justify-center md:items-start p-8 md:p-16 lg:px-20 max-md:pt-[15vh] max-md:pl-6 max-md:[clip-path:polygon(0_0,100%_0,0_100%)] md:border-r border-gray-200 transition-all duration-700 ease-in-out hover:md:w-[60%] group">
-            
             <div class="absolute inset-0 z-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
             
             <div class="relative z-10 text-center md:text-left flex flex-col items-center md:items-start w-full max-md:max-w-[85%] md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
@@ -133,8 +114,6 @@
                 <h1 class="text-5xl md:text-6xl lg:text-7xl max-md:text-[45px] font-black text-blue-950 tracking-tight mb-2 max-md:mb-1 drop-shadow-sm">SCS</h1>
                 <h2 class="text-xl md:text-2xl max-md:text-[11px] font-bold text-slate-400 mb-6 max-md:mb-4 uppercase tracking-widest max-md:leading-tight">Swimming Competition<br class="hidden max-md:block">System</h2>
                 
-                <!-- Teks deskripsi DIHAPUS TOTAL dari versi mobile biar gak nabrak garis miring -->
-                <!-- Full Text Khusus Desktop -->
                 <div class="hidden md:block mb-10 w-full pr-8">
                     <h3 class="text-3xl font-extrabold text-blue-900 mb-4">Stop Ribet Urus <span class="text-scsGold">Lomba Renang</span></h3>
                     <p class="text-base text-slate-500 mb-6 leading-relaxed font-medium">
@@ -149,21 +128,17 @@
                     </div>
                 </div>
                 
-                <!-- max-w-[220px] biar ukuran tombol di HP pas dan proporsional -->
                 <a href="/auth.html" class="bg-blue-900 text-white px-8 py-4 max-md:px-6 max-md:py-3 rounded-full font-black text-sm max-md:text-[11px] md:text-base hover:bg-blue-800 transition shadow-[0_10px_20px_rgba(30,58,138,0.2)] hover:-translate-y-1 w-full md:w-max max-md:max-w-[220px] flex items-center justify-center gap-2">
                     Masuk Club / EO <span>&raquo;</span>
                 </a>
             </div>
         </div>
 
-        <!-- KANAN/BAWAH: PORTAL F1 ID (ATLET / ORTU) -->
         <div class="w-full md:w-1/2 h-full absolute md:relative inset-0 md:inset-auto bg-blue-950 z-10 flex flex-col max-md:justify-end max-md:items-end md:justify-center md:items-end p-8 md:p-16 lg:px-20 max-md:pb-[15vh] max-md:pr-6 max-md:[clip-path:polygon(100%_0,100%_100%,0_100%)] transition-all duration-700 ease-in-out hover:md:w-[60%] group">
-            
             <div class="absolute inset-0 z-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
             <div class="absolute inset-0 bg-gradient-to-t from-red-900/40 to-transparent z-0"></div>
             
             <div class="relative z-10 text-center md:text-right flex flex-col items-center md:items-end w-full max-md:max-w-[85%] md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
-                
                 <span class="max-md:hidden inline-block bg-red-500/20 border border-red-500/50 text-red-300 px-5 py-1.5 rounded-full text-xs font-black tracking-wide shadow-sm mb-6">
                     🪪 KTP Digital Atlet
                 </span>
@@ -171,8 +146,6 @@
                 <h1 class="text-5xl md:text-6xl lg:text-7xl max-md:text-[45px] font-black text-white tracking-tight mb-2 max-md:mb-0 drop-shadow-lg max-md:order-3">F1 ID</h1>
                 <h2 class="text-xl md:text-2xl max-md:text-[10px] font-bold text-red-400 mb-6 max-md:mb-1 uppercase tracking-widest drop-shadow-md max-md:leading-tight max-md:order-2">Identitas Perenang<br class="hidden max-md:block">Indonesia</h2>
                 
-                <!-- Teks deskripsi DIHAPUS TOTAL dari versi mobile biar gak nabrak garis miring -->
-                <!-- Full Text Khusus Desktop -->
                 <div class="hidden md:block mb-10 w-full pl-8">
                     <h3 class="text-3xl font-extrabold text-white mb-4">Apa itu <span class="text-red-400">F1 ID?</span></h3>
                     <p class="text-base text-slate-300 leading-relaxed font-medium mb-2">
@@ -180,30 +153,20 @@
                     </p>
                 </div>
                 
-                <!-- max-w-[220px] biar ukuran tombol di HP pas dan proporsional -->
                 <a href="/f1-profile.html" class="bg-red-600 text-white px-8 py-4 max-md:px-6 max-md:py-3 rounded-full font-black text-sm max-md:text-[11px] md:text-base hover:bg-red-500 transition shadow-[0_10px_20px_rgba(220,38,38,0.3)] hover:-translate-y-1 w-full md:w-max max-md:max-w-[220px] flex items-center justify-center gap-2 max-md:order-1 max-md:mb-3">
                     Cek F1 ID Saya <span>&raquo;</span>
                 </a>
             </div>
         </div>
 
-        <!-- Tombol "ATAU" (Hanya Desktop) -->
         <div class="hidden md:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-white rounded-full z-30 items-center justify-center shadow-2xl border-4 border-gray-100 text-slate-400 font-black text-[10px] tracking-widest pointer-events-none mt-6">
             ATAU
         </div>
-
     </section>
 
-    <!-- ============================================== -->
-    <!-- 2. PRODUCT KNOWLEDGE                           -->
-    <!-- (Muncul di HP untuk menggantikan teks Hero)    -->
-    <!-- ============================================== -->
     <section class="py-16 md:py-24 bg-white border-b border-gray-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            
-            <!-- Edukasi Blok (Cuma muncul di HP karena Desktop udah pindah ke Hero) -->
             <div class="space-y-20 md:hidden mb-20">
-                <!-- Edukasi 1: EO & Panitia -->
                 <div class="flex flex-col items-center gap-10">
                     <div class="w-full text-center">
                         <span class="inline-block bg-amber-50 border border-amber-200 text-amber-700 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide shadow-sm mb-6">
@@ -229,7 +192,6 @@
                     </div>
                 </div>
 
-                <!-- Edukasi 2: F1 ID Atlet -->
                 <div class="flex flex-col items-center gap-10">
                     <div class="w-full text-center">
                         <span class="inline-block bg-blue-50 border border-blue-200 text-blue-700 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide shadow-sm mb-6 flex items-center justify-center gap-2">
@@ -251,7 +213,6 @@
                 </div>
             </div>
 
-            <!-- Edukasi 3: Testimoni (Tetap Muncul di Desktop & Mobile) -->
             <div class="bg-gradient-to-br from-blue-900 via-blue-950 to-slate-900 rounded-3xl p-10 md:p-16 text-center relative overflow-hidden shadow-2xl">
                 <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
                 
@@ -269,13 +230,9 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </section>
 
-    <!-- ============================================== -->
-    <!-- 3. CARA KERJA & FITUR                          -->
-    <!-- ============================================== -->
     <section class="py-16 md:py-20 bg-gray-50 border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800 mb-2">Bagaimana Cara Kerja SCS?</h2>
@@ -343,7 +300,6 @@
         </div>
     </section>
 
-    <!-- FOOTER -->
     <footer class="bg-gray-900 text-gray-400 py-12 border-t border-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <img src="/images/logo.png" alt="SCS Logo" class="h-14 mx-auto mb-6 opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0">
@@ -352,54 +308,40 @@
         </div>
     </footer>
 
-    <!-- ============================================== -->
-    <!-- MODAL CAMPAIGN SURABAYA (FREEMIUM)             -->
-    <!-- ============================================== -->
     <div id="modalCampaignSby" class="fixed inset-0 bg-slate-900/80 z-[150] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 relative border-2 border-blue-100">
-            
             <button id="closeCampaignBtn" class="absolute top-4 right-4 text-white/70 hover:text-white z-20 text-3xl font-black transition-colors drop-shadow-md">&times;</button>
-            
             <div class="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-950 p-8 text-center relative overflow-hidden">
                 <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
                 <div class="absolute -bottom-10 -right-10 text-9xl opacity-10 rotate-12">🐊</div>
-                
                 <span class="text-5xl block mb-2 relative z-10 drop-shadow-lg">🐊🦈</span>
                 <h2 class="text-2xl font-black text-white relative z-10 tracking-tight drop-shadow-md">Hai Arek-Arek Suroboyo!</h2>
             </div>
-            
             <div class="p-6 md:p-8 text-center relative bg-white">
                 <p class="text-sm text-slate-600 font-medium leading-relaxed mb-5">
                     Setelah SCS sukses memutar roda kejuaraan di berbagai kota, kini saatnya kalian yang kebagian coba <strong>ALL FITUR</strong> kami secara <span class="text-emerald-600 font-black">GRATIS!</span><br>
                     <span class="text-[10px] text-slate-400 block mt-1">(Kecuali modul cari sponsor ya ✌️)</span>
                 </p>
-                
                 <div class="bg-blue-50/50 border border-blue-100 p-4 rounded-2xl mb-6 text-left inline-block w-full shadow-inner">
                     <p class="text-xs text-blue-900 font-extrabold mb-2 flex items-center gap-2"><span>✅</span> Live Result Otomatis</p>
                     <p class="text-xs text-blue-900 font-extrabold mb-2 flex items-center gap-2"><span>✅</span> Auto-Generate Sertifikat & Piagam</p>
                     <p class="text-xs text-blue-900 font-extrabold flex items-center gap-2"><span>✅</span> Manajemen Heat, Seri & Lintasan</p>
                 </div>
-                
                 <div class="inline-block bg-gradient-to-r from-amber-200 to-yellow-400 px-5 py-2 rounded-full shadow-[0_0_20px_rgba(251,191,36,0.5)] border border-amber-300 mb-8 transform -rotate-3 hover:rotate-0 transition-transform cursor-default">
                     <span class="text-sm font-black text-amber-900 uppercase tracking-widest drop-shadow-sm">✨ FREEMIUM ✨<br><span class="text-[9px] block text-center">(Free Tapi Premium)</span></span>
                 </div>
-                
                 <button onclick="window.location.href='/auth.html'" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-[0_10px_20px_rgba(37,99,235,0.3)] transition-all active:scale-95 flex items-center justify-center gap-2 text-lg">
                     🚀 Buat Event Sekarang
                 </button>
-                
                 <button id="btnNantiSajaCampaign" class="mt-5 text-xs font-bold text-slate-400 hover:text-red-500 transition-colors">Nanti Saja, Masih Mau Liat-lihat</button>
             </div>
         </div>
     </div>
 
-    <!-- SCRIPT GABUNGAN: UI, POP-UP & CEK LOGIN SUPABASE -->
     <script type="module">
         import { supabaseClient } from '/src/supabase.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
-            
-            // 1. LOGIC MODAL CAMPAIGN SURABAYA
             const modalCampaign = document.getElementById('modalCampaignSby');
             const closeBtn = document.getElementById('closeCampaignBtn');
             const nantiSajaBtn = document.getElementById('btnNantiSajaCampaign');
@@ -423,7 +365,6 @@
                 if (nantiSajaBtn) nantiSajaBtn.addEventListener('click', closeModal);
             }
 
-            // 2. CEK STATUS LOGIN
             try {
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 const floatBtn = document.getElementById('floatingAuthBtn');
@@ -440,7 +381,6 @@
                 console.error("Gagal cek auth:", err);
             }
 
-            // 3. LOGIC BURGER MENU MOBILE
             const mobileMenuBtn = document.getElementById('mobileMenuBtn');
             const mobileMenu = document.getElementById('mobileMenu');
             const closeMobileBtn = document.getElementById('closeMobileBtn');
@@ -459,6 +399,5 @@
             if(closeMobileBtn) closeMobileBtn.addEventListener('click', toggleMobile);
         });
     </script>
- 
 </body>
 </html>
