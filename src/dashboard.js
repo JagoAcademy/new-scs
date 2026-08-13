@@ -1,8 +1,5 @@
 import { supabaseClient } from './supabase.js';
 
-// ==========================================
-// STATE GLOBAL UNTUK APLIKASI
-// ==========================================
 let allAthletes = [];
 let filteredAthletes = []; 
 let currentPage = 1;
@@ -13,7 +10,7 @@ let currentClubData = null;
 document.addEventListener('DOMContentLoaded', async () => {
     const logoutAction = async () => {
         await supabaseClient.auth.signOut();
-        window.location.href = '/auth.html';
+        window.location.href = '/'; 
     };
     
     const logoutBtn = document.getElementById('logoutBtn');
@@ -80,9 +77,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     fetchDashboardData();
 });
 
-// ==========================================
-// 1. FUNGSI TARIK DATA DASHBOARD
-// ==========================================
 async function fetchDashboardData() {
     try {
         const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
@@ -154,7 +148,6 @@ async function fetchDashboardData() {
         currentClubId = clubData.id; 
         currentClubData = clubData; 
 
-        // RENDER PROFIL KLUB
         const displayName = clubData.short_name || clubData.club_name;
         
         const clubNameEl = document.getElementById('clubNameDisplay');
@@ -182,7 +175,6 @@ async function fetchDashboardData() {
         if (mobileLogoEl) mobileLogoEl.src = finalLogo;
         if (editLogoPreview) editLogoPreview.src = finalLogo;
 
-        // TARIK DATA EVENT
         const { data: eventsData, error: eventsErr } = await supabaseClient
             .from('events')
             .select('*')
@@ -195,14 +187,12 @@ async function fetchDashboardData() {
         if (eventContainer) {
             let evHTML = '';
             
-            // 1. Tampilkan Event Milik Klub
             if (eventsData && eventsData.length > 0) {
                 eventsData.forEach(ev => {
                     evHTML += `
                         <div class="border border-emerald-100 bg-white p-4 rounded-2xl shadow-sm hover:shadow-md hover:border-emerald-300 transition-all group flex flex-col justify-between">
                             <div>
                                 <h3 class="font-extrabold text-emerald-900 text-lg group-hover:text-emerald-700 transition">${ev.event_name}</h3>
-                                <!-- UBAH IDENTITAS DOMAIN JADI F1SWIMMING -->
                                 <p class="text-xs text-gray-500 mt-1 font-mono">🔗 ${ev.subdomain}.f1swimming.com</p>
                                 <p class="text-xs text-gray-500 mt-1">📅 ${ev.event_date} s/d ${ev.end_date}</p>
                             </div>
@@ -214,7 +204,6 @@ async function fetchDashboardData() {
                 evHTML += `<p class="text-sm text-gray-500 italic">Belum ada event lomba yang dibuat.</p>`;
             }
 
-            // 2. Tambahkan "Trik Hybrid" (Card Pintasan Kalender Publik)
             evHTML += `
                 <div class="border-2 border-dashed border-blue-200 bg-blue-50/50 p-4 rounded-2xl hover:border-blue-400 transition-all group flex flex-col justify-center items-center text-center">
                     <span class="text-3xl mb-2 group-hover:scale-110 transition-transform">🌍</span>
@@ -227,7 +216,6 @@ async function fetchDashboardData() {
             eventContainer.innerHTML = evHTML;
         }
 
-        // TARIK DATA ATLET
         const { data: athletesData, error: athletesError } = await supabaseClient
             .from('athletes')
             .select('*')
@@ -238,12 +226,10 @@ async function fetchDashboardData() {
         const totalAtletEl = document.getElementById('valTotalAtlet');
         if (totalAtletEl) totalAtletEl.innerText = athletesData.length;
 
-        // Hitung Pending F1 ID
         let pendingCount = athletesData.filter(a => a.is_verified === false).length;
         const pendingEl = document.getElementById('valF1Pending');
         if (pendingEl) pendingEl.innerText = pendingCount;
 
-        // URUTKAN ALFABET DAN RESET FILTER
         allAthletes = athletesData.sort((a, b) => a.full_name.localeCompare(b.full_name));
         filteredAthletes = [...allAthletes]; 
         currentPage = 1;
@@ -257,9 +243,6 @@ async function fetchDashboardData() {
     }
 }
 
-// ==========================================
-// 2. FUNGSI RENDER TABEL & PAGINATION (LOGIKA F1 ID EMAS)
-// ==========================================
 function renderAthleteTable() {
     const tbody = document.getElementById('athleteTableBody');
     const pageInd = document.getElementById('pageIndicator');
@@ -287,7 +270,6 @@ function renderAthleteTable() {
         const genderIcon = atlet.gender === 'Putra' ? '👦 Putra' : '👧 Putri';
         const avatarUrl = atlet.foto_url ? atlet.foto_url : `https://ui-avatars.com/api/?name=${encodeURIComponent(atlet.full_name)}&background=f3f4f6&color=374151`;
         
-        // ✨ LOGIKA EMAS UNTUK F1 ID & STATUS
         const isEmas = atlet.is_verified;
         
         const statusDokumen = isEmas 
@@ -306,7 +288,6 @@ function renderAthleteTable() {
             ? "font-mono font-black text-amber-500 hover:text-amber-400 transition-colors cursor-pointer drop-shadow-[0_0_2px_rgba(245,158,11,0.3)]"
             : "font-mono font-bold text-gray-700 hover:text-blue-600 transition-colors cursor-pointer";
 
-        // MENGUBAH URL DARI f1-profile.html KE f1-id.html
         const row = `
             <tr class="hover:bg-blue-50/50 transition-colors group border-b border-gray-50">
                 <td class="p-4 text-center font-bold text-gray-400">${actualIndex}</td>
@@ -352,10 +333,6 @@ function renderAthleteTable() {
     if(btnNext) btnNext.disabled = currentPage === totalPages;
 }
 
-
-// ==========================================
-// 2.5 LOGIKA UNIFIED: EDIT & VERIFIKASI (MAKER-CHECKER)
-// ==========================================
 const modalEditVerify = document.getElementById('modalEditVerify');
 const closeModalEditVerifyBtn = document.getElementById('closeModalEditVerifyBtn');
 const btnSaveEditVerify = document.getElementById('btnSaveEditVerify');
@@ -415,7 +392,6 @@ if(btnSaveEditVerify) {
             return;
         }
 
-        // Cek apakah ada perubahan data krusial
         const dataBerubah = (newName !== atlet.full_name) || (newDOB !== atlet.dob) || (newGender !== atlet.gender);
         
         if ((!atlet.akta_url && !aktaFile) || (dataBerubah && !aktaFile && !atlet.akta_url)) {
@@ -455,7 +431,6 @@ if(btnSaveEditVerify) {
             }
 
             if (dataBerubah) {
-                // MASUK ANTRIAN MAKER-CHECKER (f1_edit_requests)
                 const { error: editErr } = await supabaseClient
                     .from('f1_edit_requests')
                     .insert({
@@ -473,7 +448,6 @@ if(btnSaveEditVerify) {
                 statusMsg.innerHTML = "✅ <strong>Usulan Edit Terkirim!</strong><br><span class='text-xs font-normal'>Menunggu persetujuan Admin Pusat. Data di layar belum berubah hingga di-ACC.</span>";
                 statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-amber-100 text-amber-700 block mt-2";
             } else {
-                // UPDATE BIASA (CUMA NAMBAH FOTO/AKTA PERTAMA KALI)
                 const { error: updateError } = await supabaseClient
                     .from('athletes')
                     .update({ 
@@ -510,9 +484,6 @@ if(btnSaveEditVerify) {
     });
 }
 
-// ==========================================
-// 3. LOGIC MODAL PENGATURAN KLUB & AKUN
-// ==========================================
 const btnEditProfilKlub = document.getElementById('btnEditProfilKlub');
 const mobileBtnEditProfil = document.getElementById('mobileBtnEditProfil');
 const modalEditProfile = document.getElementById('modalEditProfile');
@@ -549,21 +520,18 @@ async function loadProvinsi() {
 }
 loadProvinsi(); 
 
-// Logika change untuk Form Profil Klub
 if (elProvinsi) {
     elProvinsi.addEventListener('change', async function() {
         handleProvinsiChange(this, elKota);
     });
 }
 
-// Logika change untuk Form Buat Event
 if (eventProvinsi) {
     eventProvinsi.addEventListener('change', async function() {
         handleProvinsiChange(this, eventKota);
     });
 }
 
-// Fungsi reusable untuk narik data Kota berdasarkan Provinsi yang dipilih
 async function handleProvinsiChange(provElement, kotaElement) {
     const selectedOption = provElement.options[provElement.selectedIndex];
     const provId = selectedOption.getAttribute('data-id');
@@ -752,9 +720,6 @@ if (btnSaveAuthInfo) {
     });
 }
 
-// ==========================================
-// 4. LOGIC MODAL TAMBAH ATLET & BUAT EVENT
-// ==========================================
 const btnAddAthlete = document.getElementById('btnAddAthlete');
 const modalAddAthlete = document.getElementById('modalAddAthlete');
 const closeModalBtn = document.getElementById('closeModalBtn');
@@ -943,7 +908,7 @@ if (btnProsesExcel) {
                     throw error;
                 }
 
-                statusMsg.innerText = `BOOM! Berhasil import ${athletesToInsert.length} atlet baru!`;
+                statusMsg.innerText = `Berhasil import ${athletesToInsert.length} atlet baru!`;
                 statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-green-100 text-green-600 block mt-3";
 
                 document.getElementById('inputExcel').value = '';
@@ -1063,13 +1028,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 secretBtn.style.transform = "scale(1.1)";
             } 
             else if (clickCount === 3) {
-                secretBtn.style.color = "#ef4444"; // Merah
+                secretBtn.style.color = "#ef4444"; 
                 secretBtn.style.textShadow = "0 0 15px rgba(239,68,68,0.8)";
                 secretBtn.style.transform = "scale(1.2)";
                 
-
                 sessionStorage.setItem('aztec_key', 'buka_sesame');
-
 
                 setTimeout(() => {
                     window.location.href = '/admin.html';
@@ -1078,7 +1041,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 clickCount = 0;
                 return;
             }
-
 
             clickTimer = setTimeout(() => {
                 clickCount = 0;
