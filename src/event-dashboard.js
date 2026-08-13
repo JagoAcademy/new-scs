@@ -25,12 +25,9 @@ async function loadEventDashboard() {
         eventConfigData = eventData.config || {};
 
         document.getElementById('headerEventName').innerText = eventData.event_name;
-        document.getElementById('headerSubdomain').innerText = `${eventData.subdomain}.funswimming.my.id`;
+        document.getElementById('headerSubdomain').innerText = `${eventData.subdomain}.f1swimming.com`;
 
-        // ==========================================
-        // 1. LINK COPY PENDAFTARAN
-        // ==========================================
-        const publicLink = `https://${eventData.subdomain}.funswimming.my.id?id=${currentEventId}`;
+        const publicLink = `https://${eventData.subdomain}.f1swimming.com?id=${currentEventId}`;
         const linkInput = document.getElementById('publicLinkInput');
         if (linkInput) linkInput.value = publicLink;
 
@@ -49,10 +46,7 @@ async function loadEventDashboard() {
             });
         }
 
-        // ==========================================
-        // 2. LINK COPY LIVE RESULT
-        // ==========================================
-        const publicResultLink = `https://${eventData.subdomain}.funswimming.my.id/result?id=${currentEventId}`;
+        const publicResultLink = `https://${eventData.subdomain}.f1swimming.com/result?id=${currentEventId}`;
         const resultLinkInput = document.getElementById('publicResultLinkInput');
         if (resultLinkInput) resultLinkInput.value = publicResultLink;
 
@@ -71,12 +65,10 @@ async function loadEventDashboard() {
             });
         }
 
-        // --- NAVIGASI HALAMAN PANITIA ---
         document.getElementById('btnSettingsLomba').onclick = () => window.location.href = `/settings-lomba.html?id=${currentEventId}`;
         document.getElementById('btnLiveResult').onclick = () => window.location.href = `/live-result.html?id=${currentEventId}`;
         document.getElementById('btnDataPeserta').onclick = () => window.location.href = `/event-peserta.html?id=${currentEventId}`;
 
-        // --- LOGIKA MODAL PUSAT CETAK ---
         document.getElementById('btnPusatCetak').onclick = () => {
             document.getElementById('modalPusatCetak').classList.remove('hidden');
         };
@@ -85,7 +77,6 @@ async function loadEventDashboard() {
             document.getElementById('modalPusatCetak').classList.add('hidden');
         };
 
-        // Navigasi Cetak Buku Acara
         document.getElementById('btnMenuBukuAcara').onclick = () => {
             let lanes = prompt("Berapa jumlah lintasan kolam yang digunakan?", "8");
             if (lanes) {
@@ -93,17 +84,14 @@ async function loadEventDashboard() {
             }
         };
 
-        // Navigasi Heat Builder (Drag & Drop)
         document.getElementById('btnMenuHeatBuilder').onclick = () => {
             window.location.href = `/book/heat-builder.html?id=${currentEventId}`;
         };
 
-        // NAVIGASI BARU: Cetak PDF
         document.getElementById('btnMenuCetakPDF').onclick = () => {
             window.location.href = `/book/print-startlist.html?id=${currentEventId}`;
         };
 
-        // Navigasi Cetak Hasil Lomba
         document.getElementById('btnMenuHasilLomba').onclick = () => {
             window.location.href = `/book/event-result.html?id=${currentEventId}`;
         };
@@ -116,9 +104,6 @@ async function loadEventDashboard() {
     }
 }
 
-// ===============================================
-// LOAD STATISTIK
-// ===============================================
 async function loadEventStats() {
     try {
         const { count: countPeserta, error: errPeserta } = await supabaseClient
@@ -140,7 +125,7 @@ async function loadEventStats() {
             document.getElementById('statKategori').innerText = uniqueEvents.size;
         }
     } catch (error) {
-        // Silent catch untuk UX yang lebih bersih
+        // Error diam-diam untuk UX mulus
     }
 }
 
@@ -164,9 +149,6 @@ function setCompleteBadge(elementId) {
     }
 }
 
-// ===============================================
-// LOGIKA MODAL CONFIG LAINNYA
-// ===============================================
 document.getElementById('btnConfigLanding').onclick = () => { document.getElementById('valLandingText').value = eventConfigData.landing_text || ""; document.getElementById('modalLanding').classList.remove('hidden'); };
 document.getElementById('btnConfigEntry').onclick = () => { document.getElementById('valEntryLimit').value = eventConfigData.entry_limit || ""; document.getElementById('modalEntry').classList.remove('hidden'); };
 document.getElementById('btnConfigTiket').onclick = () => { document.getElementById('valTiketHarga').value = eventConfigData.tiket_harga || ""; document.getElementById('valTiketWA').value = eventConfigData.tiket_wa || ""; document.getElementById('modalTiket').classList.remove('hidden'); };
