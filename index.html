@@ -41,6 +41,18 @@
             white-space: nowrap;
             width: 100%;
         }
+        @keyframes neon-blue {
+            0% { box-shadow: 0 0 5px rgba(30, 58, 138, 0.4), 0 0 10px rgba(30, 58, 138, 0.2); }
+            50% { box-shadow: 0 0 15px rgba(30, 58, 138, 0.8), 0 0 35px rgba(30, 58, 138, 0.6); }
+            100% { box-shadow: 0 0 5px rgba(30, 58, 138, 0.4), 0 0 10px rgba(30, 58, 138, 0.2); }
+        }
+        @keyframes neon-red {
+            0% { box-shadow: 0 0 5px rgba(220, 38, 38, 0.4), 0 0 10px rgba(220, 38, 38, 0.2); }
+            50% { box-shadow: 0 0 15px rgba(220, 38, 38, 0.8), 0 0 35px rgba(220, 38, 38, 0.6); }
+            100% { box-shadow: 0 0 5px rgba(220, 38, 38, 0.4), 0 0 10px rgba(220, 38, 38, 0.2); }
+        }
+        .neon-glow-blue { animation: neon-blue 3s infinite ease-in-out; }
+        .neon-glow-red { animation: neon-red 3s infinite ease-in-out; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans antialiased relative">
@@ -108,8 +120,8 @@
             <div class="absolute inset-0 z-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
             
             <div class="relative z-10 text-left flex flex-col items-start w-full max-md:max-w-full md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
-                <span class="inline-block bg-blue-50 border border-blue-200 text-blue-700 px-5 py-1.5 max-md:px-3 max-md:py-1 rounded-full text-xs max-md:text-[9px] font-black tracking-wide shadow-sm mb-6 max-md:mb-3 animate-pulse">
-                    🐊 Halo Arek-Arek Suroboyo!
+                <span class="inline-block bg-red-50 border border-red-200 text-red-700 px-5 py-1.5 max-md:px-3 max-md:py-1 rounded-full text-xs max-md:text-[9px] font-black tracking-wide shadow-sm mb-6 max-md:mb-3 animate-pulse">
+                    🇮🇩 Merdeka dari bayar fitur PRO, Rasakan Mudahnya
                 </span>
                 
                 <h1 class="text-5xl md:text-6xl lg:text-7xl max-md:text-[45px] font-black text-blue-950 tracking-tight mb-2 max-md:mb-1 drop-shadow-sm">SCS</h1>
@@ -135,7 +147,7 @@
                     </div>
                 </div>
                 
-                <a href="/auth.html" class="bg-blue-900 text-white px-8 py-4 max-md:px-0 max-md:pl-8 max-md:py-3.5 rounded-full font-black text-sm max-md:text-[11px] md:text-base hover:bg-blue-800 transition shadow-[0_10px_20px_rgba(30,58,138,0.2)] hover:-translate-y-1 w-full md:w-max max-md:w-[320px] flex items-center justify-center max-md:justify-start gap-2">
+                <a href="/auth.html" class="bg-blue-900 text-white px-8 py-4 max-md:px-0 max-md:pl-8 max-md:py-3.5 rounded-full font-black text-sm max-md:text-[11px] md:text-base hover:bg-blue-800 transition hover:-translate-y-1 w-full md:w-max max-md:w-[320px] flex items-center justify-center max-md:justify-start gap-2 neon-glow-blue">
                     Masuk Club / EO <span>&raquo;</span>
                 </a>
             </div>
@@ -145,12 +157,12 @@
             <div class="absolute inset-0 z-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
             <div class="absolute inset-0 bg-gradient-to-t from-red-900/40 to-transparent z-0"></div>
             
-            <div class="relative z-10 text-right flex flex-col items-end w-full max-md:max-w-[85%] md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
+            <div class="relative z-10 text-right flex flex-col items-end w-full max-md:max-w-full md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
                 <span class="max-md:hidden inline-block bg-red-500/20 border border-red-500/50 text-red-300 px-5 py-1.5 rounded-full text-xs font-black tracking-wide shadow-sm mb-6">
                     🪪 KTP Digital Atlet
                 </span>
                 
-                <a href="/f1-profile.html" class="bg-red-600 text-white px-8 py-4 max-md:px-0 max-md:pr-8 max-md:py-3.5 rounded-full font-black text-sm max-md:text-[11px] md:text-base hover:bg-red-500 transition shadow-[0_10px_20px_rgba(220,38,38,0.3)] hover:-translate-y-1 w-full md:w-max max-md:w-[320px] flex items-center justify-center max-md:justify-end gap-2 max-md:order-1 max-md:mb-4">
+                <a href="/f1-profile.html" class="bg-red-600 text-white px-8 py-4 max-md:px-0 max-md:pr-8 max-md:py-3.5 rounded-full font-black text-sm max-md:text-[11px] md:text-base hover:bg-red-500 transition hover:-translate-y-1 w-full md:w-max max-md:w-[320px] flex items-center justify-center max-md:justify-end gap-2 max-md:order-1 max-md:mb-4 neon-glow-red">
                     Cek F1 ID Saya <span>&raquo;</span>
                 </a>
                 
@@ -263,7 +275,6 @@
         </div>
     </section>
 
-    <!-- FOOTER UPDATE: PADDING & PT TEKNOLOGI PRESTASI INDONESIA -->
     <footer class="bg-gray-900 text-gray-400 pt-12 pb-28 md:pb-12 border-t border-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <img src="/images/logo.png" alt="SCS Logo" class="h-14 mx-auto mb-6 opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0">
