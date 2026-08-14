@@ -74,6 +74,87 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    const btnOpenTestimoni = document.getElementById('btnOpenTestimoni');
+    const modalTestimoni = document.getElementById('modalTestimoni');
+    const closeModalTestimoniBtn = document.getElementById('closeModalTestimoniBtn');
+    const btnKirimTestimoni = document.getElementById('btnKirimTestimoni');
+
+    if(btnOpenTestimoni && modalTestimoni && closeModalTestimoniBtn) {
+        btnOpenTestimoni.addEventListener('click', () => {
+            modalTestimoni.classList.remove('hidden');
+            setTimeout(() => modalTestimoni.firstElementChild.classList.remove('scale-95'), 10);
+        });
+
+        closeModalTestimoniBtn.addEventListener('click', () => {
+            modalTestimoni.firstElementChild.classList.add('scale-95');
+            setTimeout(() => modalTestimoni.classList.add('hidden'), 200);
+        });
+    }
+
+    if (btnKirimTestimoni) {
+        btnKirimTestimoni.addEventListener('click', async () => {
+            const text = document.getElementById('inputKlubTesti').value.trim();
+            const name = document.getElementById('inputKlubTestiName').value.trim();
+            const role = document.getElementById('inputKlubTestiRole').value.trim();
+            const statusMsg = document.getElementById('testiStatusMsg');
+
+            if (!text || !name || !role) {
+                statusMsg.innerText = "Mohon lengkapi semua kolom!";
+                statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block mt-2";
+                return;
+            }
+
+            btnKirimTestimoni.innerText = "Mengirim...";
+            btnKirimTestimoni.disabled = true;
+
+            try {
+                if (!currentClubId || !currentClubData) {
+                    throw new Error("Data klub belum siap, coba refresh halaman.");
+                }
+
+                let currentTesti = currentClubData.testimony || [];
+                if (typeof currentTesti === 'string') {
+                    try { currentTesti = JSON.parse(currentTesti); } catch(e) { currentTesti = []; }
+                }
+
+                const newTesti = {
+                    text, name, role,
+                    timestamp: new Date().toISOString(),
+                    isPublished: false 
+                };
+
+                currentTesti.push(newTesti);
+
+                const { error: updateError } = await supabaseClient
+                    .from('clubs')
+                    .update({ testimony: currentTesti })
+                    .eq('id', currentClubId);
+
+                if (updateError) throw updateError;
+
+                statusMsg.innerHTML = "✅ <strong>Terima kasih!</strong><br><span class='text-xs font-normal'>Testimoni Anda berhasil dikirim dan menunggu antrean tayang.</span>";
+                statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-green-100 text-green-700 block mt-2";
+                
+                document.getElementById('inputKlubTesti').value = '';
+                document.getElementById('inputKlubTestiName').value = '';
+                document.getElementById('inputKlubTestiRole').value = '';
+
+                setTimeout(() => {
+                    closeModalTestimoniBtn.click();
+                    btnKirimTestimoni.innerText = "Kirim Testimoni 🚀";
+                    btnKirimTestimoni.disabled = false;
+                    statusMsg.classList.add('hidden');
+                }, 3000);
+
+            } catch (err) {
+                statusMsg.innerText = "Gagal: " + err.message;
+                statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block mt-2";
+                btnKirimTestimoni.innerText = "Kirim Testimoni 🚀";
+                btnKirimTestimoni.disabled = false;
+            }
+        });
+    }
+
     fetchDashboardData();
 });
 
