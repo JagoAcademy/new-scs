@@ -53,8 +53,6 @@
         }
         .neon-glow-blue { animation: neon-blue 3s infinite ease-in-out; }
         .neon-glow-red { animation: neon-red 3s infinite ease-in-out; }
-        
-        /* CSS Animasi Testimoni Super Smooth */
         @keyframes slideInfinte {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
@@ -203,26 +201,15 @@
         </div>
     </section>
 
-    <!-- SECTION TESTIMONI DINAMIS -->
-    <section class="py-16 md:py-24 bg-white border-b border-gray-100 overflow-hidden">
+    <section id="testi-section" class="py-16 md:py-24 bg-white border-b border-gray-100 overflow-hidden" style="display: none;">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-8">
             <h2 class="text-2xl md:text-3xl font-extrabold text-blue-900 mb-2">Dipercaya Klub & EO Seluruh Indonesia</h2>
             <p class="text-slate-500 text-sm">Review jujur dari pahlawan lapangan yang merdeka dari kertas.</p>
         </div>
-
-        <!-- Carousel Container -->
         <div class="relative w-full overflow-hidden flex flex-col justify-center items-center py-6">
-            <!-- Blur overlay -->
             <div class="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
             <div class="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
-            
-            <!-- Track Carousel -->
-            <div id="dynamicTestiTrack" class="flex gap-6 w-max animate-slider">
-                <!-- Loading State -->
-                <div class="animate-pulse bg-slate-100 w-80 h-40 rounded-3xl"></div>
-                <div class="animate-pulse bg-slate-100 w-80 h-40 rounded-3xl"></div>
-                <div class="animate-pulse bg-slate-100 w-80 h-40 rounded-3xl"></div>
-            </div>
+            <div id="dynamicTestiTrack" class="flex gap-6 w-max animate-slider"></div>
         </div>
     </section>
 
@@ -306,7 +293,6 @@
         import { supabaseClient } from '/src/supabase.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
-            // Setup Tombol Float Login
             try {
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 const floatBtn = document.getElementById('floatingAuthBtn');
@@ -320,7 +306,6 @@
                 }
             } catch (err) {}
 
-            // Setup Menu Mobile
             const mobileMenuBtn = document.getElementById('mobileMenuBtn');
             const mobileMenu = document.getElementById('mobileMenu');
             const closeMobileBtn = document.getElementById('closeMobileBtn');
@@ -336,33 +321,24 @@
             if(mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMobile);
             if(closeMobileBtn) closeMobileBtn.addEventListener('click', toggleMobile);
 
-            // --- LOGIKA MESIN PENARIK TESTIMONI KEBUT SEMUA DATA ---
             try {
-                // FIX UTAMA: Kita panggil seluruh data TANPA filter `.not('is', null)`. 
-                // Karena database Postgres kadang bandel ngebaca kolom JSONB yang null vs empty array.
-                const { data: events, error } = await supabaseClient
-                    .from('events')
+                const { data: clubsData, error } = await supabaseClient
+                    .from('clubs')
                     .select('id, testimony');
 
                 if (error) throw error;
 
                 let allTestimonials = [];
                 
-                // Saring mentah-mentah pakai otak Javascript biar gak meleset
-                if (events && events.length > 0) {
-                    events.forEach(ev => {
-                        let testiList = ev.testimony;
-                        
-                        if (!testiList) return; // Kalau kosong/null, lewati
-                        
-                        // Parse kalau bentuknya string aneh dari DB
+                if (clubsData && clubsData.length > 0) {
+                    clubsData.forEach(c => {
+                        let testiList = c.testimony;
+                        if (!testiList) return; 
                         if (typeof testiList === 'string') {
                             try { testiList = JSON.parse(testiList); } catch(e) { return; }
                         }
-                        
                         if (Array.isArray(testiList)) {
                             testiList.forEach(t => {
-                                // Ambil yang isPublished = true
                                 if (t && (t.isPublished === true || String(t.isPublished) === 'true')) {
                                     allTestimonials.push(t);
                                 }
@@ -371,20 +347,18 @@
                     });
                 }
 
-                // Urutkan dari yang terbaru di-input ke bank
                 allTestimonials.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
 
                 const track = document.getElementById('dynamicTestiTrack');
+                const section = document.getElementById('testi-section');
 
                 if (allTestimonials.length > 0) {
-                    // TRIK INFINITE SCROLL: 
-                    // Kalau data cuma 2, kita gandain array-nya jadi panjang biar layar ketutup semua.
+                    section.style.display = 'block';
                     let displayTestimonials = [...allTestimonials];
                     while (displayTestimonials.length < 6) {
                         displayTestimonials = displayTestimonials.concat(allTestimonials);
                     }
 
-                    // Bikin Blueprint HTML Card
                     const generateCardsHTML = (testiArray) => {
                         return testiArray.map(t => `
                             <div class="bg-gradient-to-br from-blue-900 via-blue-950 to-slate-900 rounded-3xl p-8 w-[320px] md:w-[450px] shadow-xl shrink-0 flex flex-col justify-between relative overflow-hidden group">
@@ -405,25 +379,10 @@
                     };
 
                     const cardsHTML = generateCardsHTML(displayTestimonials);
-                    
-                    // Render dobel 2 lapis untuk trigger CSS infinite scroll mulus (bergeser 50%)
                     track.innerHTML = cardsHTML + cardsHTML;
                 } else {
-                    // Tampilan Fallback Darurat
-                    track.innerHTML = `
-                        <div class="bg-gradient-to-br from-blue-900 via-blue-950 to-slate-900 rounded-3xl p-8 w-[320px] md:w-[450px] shadow-xl shrink-0 flex flex-col justify-between relative overflow-hidden">
-                            <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-                            <span class="text-3xl text-scsGold mb-4 relative z-10 block">⭐⭐⭐⭐⭐</span>
-                            <p class="text-sm md:text-base font-medium mb-6 italic text-slate-200 relative z-10 leading-relaxed">"Semenjak pakai ekosistem SCS, panitia udah nggak pernah lagi pusing ngurusin tumpukan kertas. F1 ID bener-bener ngerubah cara kita lomba!"</p>
-                            <div class="flex items-center gap-3 relative z-10 border-t border-white/10 pt-4 mt-auto">
-                                <div class="w-10 h-10 bg-white text-blue-900 rounded-full flex items-center justify-center font-black shadow-inner">F</div>
-                                <div>
-                                    <p class="font-bold text-scsGold text-sm">Coach Fajar Aditya</p>
-                                    <p class="text-slate-400 text-[10px] uppercase tracking-wider">Head Coach Jago Renang Academy</p>
-                                </div>
-                            </div>
-                        </div>
-                    `;
+                    track.innerHTML = '';
+                    section.style.display = 'none';
                 }
 
             } catch (err) {
