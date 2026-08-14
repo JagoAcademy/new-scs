@@ -38,7 +38,15 @@ function renderTestiList(eventId) {
         return;
     }
 
-    const ev = allEvents.find(e => e.id === eventId);
+    // FIX: Gunakan String() agar tipe data angka dan teks bisa cocok
+    const ev = allEvents.find(e => String(e.id) === String(eventId));
+    
+    // Cegah crash jika event tidak ditemukan
+    if (!ev) {
+        container.innerHTML = '<p class="text-sm text-red-500">Event tidak ditemukan di memori.</p>';
+        return;
+    }
+
     currentTestimonies = ev.testimony || [];
 
     if (currentTestimonies.length === 0) {
@@ -47,10 +55,10 @@ function renderTestiList(eventId) {
     }
 
     container.innerHTML = currentTestimonies.map((t, idx) => `
-        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl relative">
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl relative mt-2">
             <button onclick="window.deleteTesti(${idx})" class="absolute top-2 right-2 text-red-500 hover:bg-red-100 p-1 rounded font-bold text-xs">Hapus</button>
             <p class="text-sm text-slate-700 italic mb-2">"${t.text}"</p>
-            <p class="text-xs font-bold text-slate-900">${t.name} <span class="text-slate-400 font-normal">\vert{} ${t.role}</span></p>
+            <p class="text-xs font-bold text-slate-900">${t.name} <span class="text-slate-400 font-normal">| ${t.role}</span></p>
         </div>
     `).join('');
 }
@@ -65,7 +73,7 @@ async function saveTestimony() {
 
     if (!eventId || !text || !name || !role) {
         statusMsg.innerText = "Semua form wajib diisi!";
-        statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block";
+        statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block mt-2";
         return;
     }
 
@@ -83,9 +91,12 @@ async function saveTestimony() {
 
         if (error) throw error;
 
-        // Update local state
-        const evIndex = allEvents.findIndex(e => e.id === eventId);
-        allEvents[evIndex].testimony = updatedTestimonies;
+        // FIX: Gunakan String() untuk findIndex
+        const evIndex = allEvents.findIndex(e => String(e.id) === String(eventId));
+        
+        if(evIndex !== -1) {
+            allEvents[evIndex].testimony = updatedTestimonies;
+        }
 
         statusMsg.innerText = "✅ Testimoni berhasil disuntik ke Landing Page!";
         statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-green-100 text-green-700 block mt-3";
@@ -116,8 +127,13 @@ window.deleteTesti = async function(idx) {
 
     try {
         await supabaseClient.from('events').update({ testimony: currentTestimonies }).eq('id', eventId);
-        const evIndex = allEvents.findIndex(e => e.id === eventId);
-        allEvents[evIndex].testimony = currentTestimonies;
+        
+        // FIX: Gunakan String() untuk findIndex
+        const evIndex = allEvents.findIndex(e => String(e.id) === String(eventId));
+        if(evIndex !== -1) {
+            allEvents[evIndex].testimony = currentTestimonies;
+        }
+        
         renderTestiList(eventId);
     } catch (err) {
         alert("Gagal menghapus testi!");
