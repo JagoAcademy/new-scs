@@ -336,31 +336,34 @@
             if(mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMobile);
             if(closeMobileBtn) closeMobileBtn.addEventListener('click', toggleMobile);
 
-            // --- LOGIKA MESIN PENARIK TESTIMONI ---
+            // --- LOGIKA MESIN PENARIK TESTIMONI KEBUT SEMUA DATA ---
             try {
-                // Sengaja fetch TANPA filter biar nggak di-block bug PostgREST
+                // FIX UTAMA: Kita panggil seluruh data TANPA filter `.not('is', null)`. 
+                // Karena database Postgres kadang bandel ngebaca kolom JSONB yang null vs empty array.
                 const { data: events, error } = await supabaseClient
                     .from('events')
-                    .select('testimony');
+                    .select('id, testimony');
 
                 if (error) throw error;
 
                 let allTestimonials = [];
                 
-                // Looping semua event dan saring manual pakai Javascript
-                if (events) {
+                // Saring mentah-mentah pakai otak Javascript biar gak meleset
+                if (events && events.length > 0) {
                     events.forEach(ev => {
                         let testiList = ev.testimony;
                         
-                        // Parse JSON kalau formatnya balikin string dari Supabase
+                        if (!testiList) return; // Kalau kosong/null, lewati
+                        
+                        // Parse kalau bentuknya string aneh dari DB
                         if (typeof testiList === 'string') {
-                            try { testiList = JSON.parse(testiList); } catch(e) { testiList = []; }
+                            try { testiList = JSON.parse(testiList); } catch(e) { return; }
                         }
                         
                         if (Array.isArray(testiList)) {
                             testiList.forEach(t => {
-                                // Pastikan tarik yang "Sedang Tayang" aja (boolean true atau text 'true')
-                                if (t.isPublished === true || String(t.isPublished) === 'true') {
+                                // Ambil yang isPublished = true
+                                if (t && (t.isPublished === true || String(t.isPublished) === 'true')) {
                                     allTestimonials.push(t);
                                 }
                             });
@@ -368,21 +371,20 @@
                     });
                 }
 
-                // Urutkan dari yang terbaru (Descending Timestamp)
+                // Urutkan dari yang terbaru di-input ke bank
                 allTestimonials.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
 
                 const track = document.getElementById('dynamicTestiTrack');
 
                 if (allTestimonials.length > 0) {
                     // TRIK INFINITE SCROLL: 
-                    // Kalau data cuma 1 atau 2, animasi carousel bakal bolong/patah.
-                    // Jadi kita cloning array-nya sampai isinya cukup buat menuhi lebar layar.
+                    // Kalau data cuma 2, kita gandain array-nya jadi panjang biar layar ketutup semua.
                     let displayTestimonials = [...allTestimonials];
-                    while (displayTestimonials.length < 8) {
+                    while (displayTestimonials.length < 6) {
                         displayTestimonials = displayTestimonials.concat(allTestimonials);
                     }
 
-                    // Mapping Card HTML
+                    // Bikin Blueprint HTML Card
                     const generateCardsHTML = (testiArray) => {
                         return testiArray.map(t => `
                             <div class="bg-gradient-to-br from-blue-900 via-blue-950 to-slate-900 rounded-3xl p-8 w-[320px] md:w-[450px] shadow-xl shrink-0 flex flex-col justify-between relative overflow-hidden group">
@@ -404,10 +406,10 @@
 
                     const cardsHTML = generateCardsHTML(displayTestimonials);
                     
-                    // Render dobel 2 lapis untuk trigger CSS infinite scroll mulus
+                    // Render dobel 2 lapis untuk trigger CSS infinite scroll mulus (bergeser 50%)
                     track.innerHTML = cardsHTML + cardsHTML;
                 } else {
-                    // Tampilan Fallback (Mencegah layar kosong kalau admin lupa nge-live-in testi)
+                    // Tampilan Fallback Darurat
                     track.innerHTML = `
                         <div class="bg-gradient-to-br from-blue-900 via-blue-950 to-slate-900 rounded-3xl p-8 w-[320px] md:w-[450px] shadow-xl shrink-0 flex flex-col justify-between relative overflow-hidden">
                             <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
