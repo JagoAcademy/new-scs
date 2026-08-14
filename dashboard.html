@@ -12,6 +12,25 @@
     <style>
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* nion */
+        @keyframes neon-merah-putih {
+            0% {
+                box-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(239, 68, 68, 0.2);
+                border-color: rgba(239, 68, 68, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.9), 0 0 20px rgba(239, 68, 68, 0.7), 0 0 35px rgba(239, 68, 68, 0.5);
+                border-color: rgba(239, 68, 68, 0.8);
+            }
+            100% {
+                box-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(239, 68, 68, 0.2);
+                border-color: rgba(239, 68, 68, 0.3);
+            }
+        }
+        .neon-merah-putih {
+            animation: neon-merah-putih 2.5s infinite ease-in-out;
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen font-sans pb-20">
@@ -133,14 +152,15 @@
                 </div>
             </button>
             
-            <button id="btnCreateEvent" class="bg-white border-2 border-gray-200 text-gray-800 p-5 rounded-2xl text-left shadow-sm hover:shadow-md hover:border-scsBlue transition-all duration-300 transform hover:-translate-y-1 group">
-                <span class="absolute top-4 right-4 bg-emerald-100 text-emerald-700 text-[10px] font-extrabold px-2 py-1 rounded-full border border-emerald-200">PANITIA</span>
+            <!-- TOMBOL BUAT LOMBA DENGAN EFEK NEON MERAH WHITE -->
+            <button id="btnCreateEvent" class="bg-white border-2 text-gray-800 p-5 rounded-2xl text-left transition-all duration-300 transform hover:-translate-y-1 group neon-merah-putih">
+                <span class="absolute top-4 right-4 bg-red-100 text-red-700 text-[10px] font-extrabold px-2 py-1 rounded-full border border-red-200 group-hover:bg-red-500 group-hover:text-white transition-colors">PANITIA</span>
                 <span class="text-3xl block mb-2 group-hover:scale-110 transition-transform origin-left">🚀</span>
-                <h3 class="font-bold text-lg group-hover:text-scsBlue transition-colors">Buat Event / Lomba</h3>
-                <p class="text-gray-500 text-xs md:text-sm mt-1">Setup landing page dan pendaftaran event Anda.</p>
+                <h3 class="font-bold text-lg group-hover:text-red-600 transition-colors">Buat Event / Lomba</h3>
+                <p class="text-gray-500 text-xs md:text-sm mt-1 group-hover:text-gray-600 transition-colors">Setup landing page dan pendaftaran event Anda.</p>
             </button>
 
-            <!-- TOMBOL BARU: BANTU ISI TESTIMONI -->
+            <!-- TOMBOL BANTU ISI TESTIMONI -->
             <button id="btnOpenTestimoni" class="bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-5 rounded-2xl text-left shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden group">
                 <span class="absolute right-4 top-4 text-white/10 text-6xl group-hover:scale-110 transition-transform origin-bottom-right">💬</span>
                 <div class="relative z-10">
@@ -208,6 +228,10 @@
         </div>
     </div>
 
+
+    <!-- ==============================================================
+         AREA MODAL
+         ============================================================== -->
     <!-- MODAL ONBOARDING -->
     <div id="modalOnboarding" class="fixed inset-0 bg-blue-900/95 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-md">
         <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col">
