@@ -53,6 +53,18 @@
         }
         .neon-glow-blue { animation: neon-blue 3s infinite ease-in-out; }
         .neon-glow-red { animation: neon-red 3s infinite ease-in-out; }
+        
+        /* CSS Animasi Testimoni */
+        @keyframes slideInfinte {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-slider {
+            animation: slideInfinte 30s linear infinite;
+        }
+        .animate-slider:hover {
+            animation-play-state: paused;
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans antialiased relative">
@@ -169,7 +181,6 @@
                 <h2 class="max-md:order-2 text-xl md:text-2xl max-md:text-[11px] font-bold text-red-400 mb-6 max-md:mb-1 uppercase tracking-widest drop-shadow-md max-md:leading-tight">Identitas Perenang<br class="hidden max-md:block">Indonesia</h2>
                 <h1 class="max-md:order-3 text-5xl md:text-6xl lg:text-7xl max-md:text-[45px] font-black text-white tracking-tight mb-2 max-md:mb-0 drop-shadow-lg">F1 ID</h1>
                 
-                <!-- FIX TEXT POTONG: MAX-WIDTH 60% BUKAN 85% LAGI -->
                 <div class="md:hidden w-full max-w-[60%] mt-4 max-md:order-4">
                     <p class="text-[10px] text-slate-300 leading-relaxed font-medium">
                         Satu ID seumur hidup. Simpan e-certificate dan pantau catatan waktu terbaikmu!
@@ -190,21 +201,25 @@
         </div>
     </section>
 
-    <section class="py-16 md:py-24 bg-white border-b border-gray-100 hidden md:block">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="bg-gradient-to-br from-blue-900 via-blue-950 to-slate-900 rounded-3xl p-10 md:p-16 text-center relative overflow-hidden shadow-2xl">
-                <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-                <span class="text-5xl md:text-6xl mb-6 drop-shadow-sm block relative z-10">⭐⭐⭐⭐⭐</span>
-                <h3 class="text-xl md:text-3xl font-extrabold mb-8 leading-relaxed max-w-4xl mx-auto italic text-white relative z-10">
-                    "Semenjak pakai ekosistem SCS, panitia udah nggak pernah lagi pusing ngurusin tumpukan kertas. F1 ID bener-bener ngerubah cara kita lomba!"
-                </h3>
-                <div class="flex flex-col md:flex-row items-center justify-center gap-4 relative z-10">
-                    <div class="w-16 h-16 bg-white text-blue-900 rounded-full flex items-center justify-center text-2xl font-black shadow-[0_0_20px_rgba(255,255,255,0.3)]">A</div>
-                    <div class="text-center md:text-left">
-                        <p class="font-black text-xl text-scsGold tracking-wide">Coach Aditya</p>
-                        <p class="text-slate-300 text-sm font-medium mt-1 bg-white/10 px-3 py-1 rounded-full">Head Coach Jago Renang Academy</p>
-                    </div>
-                </div>
+    <!-- SECTION TESTIMONI DINAMIS -->
+    <section class="py-16 md:py-24 bg-white border-b border-gray-100 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-8">
+            <h2 class="text-2xl md:text-3xl font-extrabold text-blue-900 mb-2">Dipercaya Klub & EO Seluruh Indonesia</h2>
+            <p class="text-slate-500 text-sm">Review jujur dari pahlawan lapangan yang merdeka dari kertas.</p>
+        </div>
+
+        <!-- Carousel Container (CSS Animation Infinite) -->
+        <div class="relative w-full overflow-hidden flex flex-col justify-center items-center py-6">
+            <!-- Blur overlay di kiri kanan biar transisinya halus -->
+            <div class="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
+            <div class="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+            
+            <!-- Track Carousel -->
+            <div id="dynamicTestiTrack" class="flex gap-6 w-max animate-slider hover:animation-paused">
+                <!-- Data Placeholder saat loading (akan disuntik dari JS) -->
+                <div class="animate-pulse bg-slate-100 w-80 h-40 rounded-2xl"></div>
+                <div class="animate-pulse bg-slate-100 w-80 h-40 rounded-2xl"></div>
+                <div class="animate-pulse bg-slate-100 w-80 h-40 rounded-2xl"></div>
             </div>
         </div>
     </section>
@@ -321,6 +336,70 @@
 
             if(mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMobile);
             if(closeMobileBtn) closeMobileBtn.addEventListener('click', toggleMobile);
+
+            // --- LOGIKA TARIK BANK TESTIMONI DINAMIS ---
+            try {
+                const { data: events, error } = await supabaseClient
+                    .from('events')
+                    .select('testimony')
+                    .not('testimony', 'is', null);
+
+                if (error) throw error;
+
+                let allTestimonials = [];
+                events.forEach(ev => {
+                    if (Array.isArray(ev.testimony) && ev.testimony.length > 0) {
+                        allTestimonials = allTestimonials.concat(ev.testimony);
+                    }
+                });
+
+                const track = document.getElementById('dynamicTestiTrack');
+
+                if (allTestimonials.length > 0) {
+                    const generateCardsHTML = (testiArray) => {
+                        return testiArray.map(t => `
+                            <div class="bg-gradient-to-br from-blue-900 via-blue-950 to-slate-900 rounded-3xl p-8 w-[320px] md:w-[450px] shadow-xl shrink-0 flex flex-col justify-between relative overflow-hidden">
+                                <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                                <span class="text-3xl text-scsGold mb-4 relative z-10">⭐⭐⭐⭐⭐</span>
+                                <p class="text-sm md:text-base font-medium mb-6 italic text-slate-200 relative z-10">"${t.text}"</p>
+                                <div class="flex items-center gap-3 relative z-10 border-t border-white/10 pt-4 mt-auto">
+                                    <div class="w-10 h-10 bg-white text-blue-900 rounded-full flex items-center justify-center font-black shadow-inner">
+                                        ${t.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-scsGold text-sm">${t.name}</p>
+                                        <p class="text-slate-400 text-[10px]">${t.role}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+                    };
+
+                    const cardsHTML = generateCardsHTML(allTestimonials);
+                    
+                    // Render 2 kali lipat buat animasi infinite yang mulus (gak putus)
+                    track.innerHTML = cardsHTML + cardsHTML;
+                } else {
+                    // Default / Fallback Data (Jika belum ada yang disuntik dari admin)
+                    track.innerHTML = `
+                        <div class="bg-gradient-to-br from-blue-900 via-blue-950 to-slate-900 rounded-3xl p-8 w-[320px] md:w-[450px] shadow-xl shrink-0 flex flex-col justify-between relative overflow-hidden">
+                            <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                            <span class="text-3xl text-scsGold mb-4 relative z-10">⭐⭐⭐⭐⭐</span>
+                            <p class="text-sm md:text-base font-medium mb-6 italic text-slate-200 relative z-10">"Semenjak pakai ekosistem SCS, panitia udah nggak pernah lagi pusing ngurusin tumpukan kertas. F1 ID bener-bener ngerubah cara kita lomba!"</p>
+                            <div class="flex items-center gap-3 relative z-10 border-t border-white/10 pt-4 mt-auto">
+                                <div class="w-10 h-10 bg-white text-blue-900 rounded-full flex items-center justify-center font-black shadow-inner">F</div>
+                                <div>
+                                    <p class="font-bold text-scsGold text-sm">Coach Fajar Aditya</p>
+                                    <p class="text-slate-400 text-[10px]">Head Coach Jago Renang Academy</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+            } catch (err) {
+                console.error("Gagal menarik data testimoni:", err);
+            }
         });
     </script>
 </body>

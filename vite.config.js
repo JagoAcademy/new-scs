@@ -37,6 +37,7 @@ export default defineConfig({
         printStartList: resolve(__dirname, 'book/print-startlist.html'), // Cetak PDF Buku Startlist (A4)
         eventResult: resolve(__dirname, 'book/event-result.html'), // Hasil Resmi Per Nomor Lomba
         eventSertifikatSetup: resolve(__dirname, 'book/event-sertifikat.html'), // Dapur Admin Setup Koordinat Sertifikat
+        clubTestimony: resolve (___dirname, 'admin-testi.html'),
 
         // --- 5. SUPER ADMIN PUSAT ---
         admin: resolve(__dirname, 'admin.html'), // Panel Kontrol Super Admin SCS
