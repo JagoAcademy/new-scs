@@ -96,6 +96,64 @@ async function loadEventDashboard() {
             window.location.href = `/book/event-result.html?id=${currentEventId}`;
         };
 
+        // ==========================================
+        // 🟢 SUNTIKAN BARU: LOGIKA EXPORT TO EXCEL
+        // ==========================================
+        const btnExcel = document.getElementById('btnMenuCetakExcel');
+        if(btnExcel) {
+            btnExcel.onclick = async () => {
+                const originalHtml = btnExcel.innerHTML;
+                btnExcel.innerHTML = '<div class="text-emerald-700 font-bold text-sm py-2 text-center w-full">Mengekspor Data... ⏳</div>';
+                
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('event_registrations')
+                        .select(`
+                            id,
+                            event_id,
+                            athlete_id,
+                            event_number,
+                            entry_time,
+                            status_pembayaran,
+                            athletes ( full_name, dob, gender, f1_id )
+                        `)
+                        .eq('event_id', currentEventId);
+                        
+                    if (error) throw error;
+                    
+                    if (!data || data.length === 0) {
+                        alert("Belum ada data pendaftar untuk event ini.");
+                        btnExcel.innerHTML = originalHtml;
+                        return;
+                    }
+
+                    // Mapping Data mentah ke format Tabel Excel
+                    const excelData = data.map((row, index) => ({
+                        'No': index + 1,
+                        'F1 ID': row.athletes?.f1_id || '-',
+                        'Nama Lengkap Atlet': row.athletes?.full_name || '-',
+                        'Jenis Kelamin': row.athletes?.gender || '-',
+                        'Tanggal Lahir': row.athletes?.dob || '-',
+                        'Nomor Lomba': row.event_number || '-',
+                        'Entry Time / Seed': row.entry_time || '00:00:00',
+                        'Status Pembayaran': row.status_pembayaran || '-'
+                    }));
+
+                    // Konversi ke Excel file
+                    const ws = XLSX.utils.json_to_sheet(excelData);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "Data_Pendaftar");
+                    XLSX.writeFile(wb, `Data_Register_Event_${currentEventId}.xlsx`);
+                    
+                } catch (err) {
+                    console.error(err);
+                    alert("Gagal mengekspor data: " + err.message);
+                } finally {
+                    btnExcel.innerHTML = originalHtml;
+                }
+            };
+        }
+
         updateConfigBadges();
         
         await loadEventStats();
@@ -138,10 +196,10 @@ function updateConfigBadges() {
     if (eventConfigData.landing_text) { setCompleteBadge('badgeLanding'); completedCount++; }
     if (eventConfigData.entry_limit) { setCompleteBadge('badgeEntry'); completedCount++; }
     if (eventConfigData.tiket_harga) { setCompleteBadge('badgeTiket'); completedCount++; }
-    if (eventConfigData.sponsor_name) { setCompleteBadge('badgeSponsor'); completedCount++; }
-
-    const percent = (completedCount / 4) * 100;
-    document.getElementById('statSetup').innerText = `${percent}% Selesai`;
+    
+    // 🟡 SUNTIKAN BARU: Sponsor dihapus dari hitungan config karena jadi fitur PRO murni
+    const percent = (completedCount / 3) * 100;
+    document.getElementById('statSetup').innerText = `${percent.toFixed(0)}% Selesai`;
     document.getElementById('barSetup').style.width = `${percent}%`;
 }
 
@@ -153,10 +211,18 @@ function setCompleteBadge(elementId) {
     }
 }
 
+// 🟡 SUNTIKAN BARU: Penyesuaian Trigger Modal Config
+// Modal Standar
 document.getElementById('btnConfigLanding').onclick = () => { document.getElementById('valLandingText').value = eventConfigData.landing_text || ""; document.getElementById('modalLanding').classList.remove('hidden'); };
 document.getElementById('btnConfigEntry').onclick = () => { document.getElementById('valEntryLimit').value = eventConfigData.entry_limit || ""; document.getElementById('modalEntry').classList.remove('hidden'); };
 document.getElementById('btnConfigTiket').onclick = () => { document.getElementById('valTiketHarga').value = eventConfigData.tiket_harga || ""; document.getElementById('valTiketWA').value = eventConfigData.tiket_wa || ""; document.getElementById('modalTiket').classList.remove('hidden'); };
-document.getElementById('btnConfigSponsor').onclick = () => { document.getElementById('valSponsorName').value = eventConfigData.sponsor_name || ""; document.getElementById('modalSponsor').classList.remove('hidden'); };
+
+// Modal PRO
+const btnFina = document.getElementById('btnFinaGenerator');
+if(btnFina) btnFina.onclick = () => { document.getElementById('modalFina').classList.remove('hidden'); };
+const btnSponsorPro = document.getElementById('btnConfigSponsor');
+if(btnSponsorPro) btnSponsorPro.onclick = () => { document.getElementById('modalSponsor').classList.remove('hidden'); };
+
 
 document.querySelectorAll('.btn-close-modal').forEach(btn => btn.onclick = (e) => e.target.closest('.fixed').classList.add('hidden'));
 
@@ -185,7 +251,7 @@ async function saveConfigToJSONB(key, valueObj, modalId, btnSaveId) {
 document.getElementById('btnSaveLanding').onclick = () => saveConfigToJSONB('landing', { landing_text: document.getElementById('valLandingText').value }, 'modalLanding', 'btnSaveLanding');
 document.getElementById('btnSaveEntry').onclick = () => saveConfigToJSONB('entry', { entry_limit: document.getElementById('valEntryLimit').value }, 'modalEntry', 'btnSaveEntry');
 document.getElementById('btnSaveTiket').onclick = () => saveConfigToJSONB('tiket', { tiket_harga: document.getElementById('valTiketHarga').value, tiket_wa: document.getElementById('valTiketWA').value }, 'modalTiket', 'btnSaveTiket');
-document.getElementById('btnSaveSponsor').onclick = () => saveConfigToJSONB('sponsor', { sponsor_name: document.getElementById('valSponsorName').value }, 'modalSponsor', 'btnSaveSponsor');
+
 
 // ==========================================
 // FITUR TIM PANITIA (COLLAB)
