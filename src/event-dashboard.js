@@ -97,7 +97,7 @@ async function loadEventDashboard() {
         };
 
         // ==========================================
-        // 🟢 SUNTIKAN BARU: LOGIKA EXPORT TO EXCEL (FIXED)
+        // 🟢 SUNTIKAN BARU: LOGIKA EXPORT TO EXCEL (SUPER FIXED)
         // ==========================================
         const btnExcel = document.getElementById('btnMenuCetakExcel');
         if(btnExcel) {
@@ -106,7 +106,7 @@ async function loadEventDashboard() {
                 btnExcel.innerHTML = '<div class="text-emerald-700 font-bold text-sm py-2 text-center w-full">Mengekspor Data... ⏳</div>';
                 
                 try {
-                    // Tarikan 1: Ambil data pendaftaran
+                    // Tarik data langsung HANYA dari tabel event_registrations (karena datanya udah komplit di situ)
                     const { data: regData, error: regError } = await supabaseClient
                         .from('event_registrations')
                         .select('*')
@@ -120,34 +120,33 @@ async function loadEventDashboard() {
                         return;
                     }
 
-                    // Ambil daftar unik athlete_id buat ditarik datanya
-                    const athleteIds = [...new Set(regData.map(r => r.athlete_id))];
-
-                    // Tarikan 2: Ambil data nama & info atlet berdasarkan ID-nya
-                    const { data: athletesData, error: athError } = await supabaseClient
-                        .from('athletes')
-                        .select('id, full_name, dob, gender, f1_id')
-                        .in('id', athleteIds);
-                        
-                    if (athError) throw athError;
-
-                    // Bikin peta (dictionary) buat gampang nyocokin ID dengan Nama
-                    const athleteMap = {};
-                    athletesData.forEach(a => {
-                        athleteMap[a.id] = a;
-                    });
-
-                    // Gabungin data pendaftaran dengan data atlet untuk diekspor
+                    // Mapping Data mentah ke format Tabel Excel
                     const excelData = regData.map((row, index) => {
-                        const atlet = athleteMap[row.athlete_id] || {};
+                        
+                        // Ekstrak array JSONB nomor lomba jadi teks pakai koma
+                        let daftarLomba = "Tidak ada lomba";
+                        if (row.nomor_lomba && Array.isArray(row.nomor_lomba)) {
+                            // Cek apakah bentuknya object {gaya: '...', waktu: '...'} atau cuma string biasa
+                            if(typeof row.nomor_lomba[0] === 'object' && row.nomor_lomba[0] !== null) {
+                                daftarLomba = row.nomor_lomba.map(n => n.gaya).join(', ');
+                            } else {
+                                daftarLomba = row.nomor_lomba.join(', ');
+                            }
+                        }
+
+                        // Trik "Not Registered" ala SCS
+                        let statusF1 = row.f1_id ? row.f1_id : 'Non-F1 (Guest)';
+
                         return {
                             'No': index + 1,
-                            'F1 ID': atlet.f1_id || '-',
-                            'Nama Lengkap Atlet': atlet.full_name || '-',
-                            'Jenis Kelamin': atlet.gender || '-',
-                            'Tanggal Lahir': atlet.dob || '-',
-                            'Nomor Lomba': row.event_number || '-',
-                            'Entry Time / Seed': row.entry_time || '00:00:00',
+                            'F1 ID / Status': statusF1,
+                            'Nama Peserta': row.nama_peserta || '-',
+                            'Klub Asal': row.klub_asal || '-',
+                            'Jenis Kelamin': row.gender || '-',
+                            'Tanggal Lahir': row.tanggal_lahir || '-',
+                            'Kelompok Umur': row.kelompok_umur || '-',
+                            'Daftar Nomor Lomba': daftarLomba,
+                            'Total Biaya': row.total_biaya || 0,
                             'Status Pembayaran': row.status_pembayaran || '-'
                         };
                     });
@@ -166,6 +165,7 @@ async function loadEventDashboard() {
                 }
             };
         }
+
 
 
         updateConfigBadges();
