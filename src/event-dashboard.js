@@ -97,7 +97,7 @@ async function loadEventDashboard() {
         };
 
         // ==========================================
-        // 🟢 SUNTIKAN BARU: LOGIKA EXPORT TO EXCEL
+        // 🟢 SUNTIKAN BARU: LOGIKA EXPORT TO EXCEL (FIXED)
         // ==========================================
         const btnExcel = document.getElementById('btnMenuCetakExcel');
         if(btnExcel) {
@@ -106,40 +106,53 @@ async function loadEventDashboard() {
                 btnExcel.innerHTML = '<div class="text-emerald-700 font-bold text-sm py-2 text-center w-full">Mengekspor Data... ⏳</div>';
                 
                 try {
-                    const { data, error } = await supabaseClient
+                    // Tarikan 1: Ambil data pendaftaran
+                    const { data: regData, error: regError } = await supabaseClient
                         .from('event_registrations')
-                        .select(`
-                            id,
-                            event_id,
-                            athlete_id,
-                            event_number,
-                            entry_time,
-                            status_pembayaran,
-                            athletes ( full_name, dob, gender, f1_id )
-                        `)
+                        .select('*')
                         .eq('event_id', currentEventId);
                         
-                    if (error) throw error;
+                    if (regError) throw regError;
                     
-                    if (!data || data.length === 0) {
+                    if (!regData || regData.length === 0) {
                         alert("Belum ada data pendaftar untuk event ini.");
                         btnExcel.innerHTML = originalHtml;
                         return;
                     }
 
-                    // Mapping Data mentah ke format Tabel Excel
-                    const excelData = data.map((row, index) => ({
-                        'No': index + 1,
-                        'F1 ID': row.athletes?.f1_id || '-',
-                        'Nama Lengkap Atlet': row.athletes?.full_name || '-',
-                        'Jenis Kelamin': row.athletes?.gender || '-',
-                        'Tanggal Lahir': row.athletes?.dob || '-',
-                        'Nomor Lomba': row.event_number || '-',
-                        'Entry Time / Seed': row.entry_time || '00:00:00',
-                        'Status Pembayaran': row.status_pembayaran || '-'
-                    }));
+                    // Ambil daftar unik athlete_id buat ditarik datanya
+                    const athleteIds = [...new Set(regData.map(r => r.athlete_id))];
 
-                    // Konversi ke Excel file
+                    // Tarikan 2: Ambil data nama & info atlet berdasarkan ID-nya
+                    const { data: athletesData, error: athError } = await supabaseClient
+                        .from('athletes')
+                        .select('id, full_name, dob, gender, f1_id')
+                        .in('id', athleteIds);
+                        
+                    if (athError) throw athError;
+
+                    // Bikin peta (dictionary) buat gampang nyocokin ID dengan Nama
+                    const athleteMap = {};
+                    athletesData.forEach(a => {
+                        athleteMap[a.id] = a;
+                    });
+
+                    // Gabungin data pendaftaran dengan data atlet untuk diekspor
+                    const excelData = regData.map((row, index) => {
+                        const atlet = athleteMap[row.athlete_id] || {};
+                        return {
+                            'No': index + 1,
+                            'F1 ID': atlet.f1_id || '-',
+                            'Nama Lengkap Atlet': atlet.full_name || '-',
+                            'Jenis Kelamin': atlet.gender || '-',
+                            'Tanggal Lahir': atlet.dob || '-',
+                            'Nomor Lomba': row.event_number || '-',
+                            'Entry Time / Seed': row.entry_time || '00:00:00',
+                            'Status Pembayaran': row.status_pembayaran || '-'
+                        };
+                    });
+
+                    // Konversi ke Excel file menggunakan library XLSX
                     const ws = XLSX.utils.json_to_sheet(excelData);
                     const wb = XLSX.utils.book_new();
                     XLSX.utils.book_append_sheet(wb, ws, "Data_Pendaftar");
@@ -153,6 +166,7 @@ async function loadEventDashboard() {
                 }
             };
         }
+
 
         updateConfigBadges();
         
