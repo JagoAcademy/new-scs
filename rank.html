@@ -11,11 +11,12 @@
     <style>
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        /* Custom Dropdown Arrow */
+        
+        /* Custom Dropdown Arrow biar elegan */
         select {
             -webkit-appearance: none;
             -moz-appearance: none;
-            background-image: url("data:image/svg+xml;utf8,<svg fill='%231e3a8a' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+            background-image: url("data:image/svg+xml;utf8,<svg fill='%2364748b' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
             background-repeat: no-repeat;
             background-position-x: 95%;
             background-position-y: 50%;
@@ -57,150 +58,57 @@
             <p class="text-slate-500 text-sm md:text-base max-w-lg mx-auto">Pantau 10 besar peringkat catatan waktu terbaik (Personal Best) dari seluruh event resmi di ekosistem SCS.</p>
         </div>
 
-        <!-- Filter Gender (Tanpa Icon, Putra Biru, Putri Pink) -->
-        <div class="flex justify-center gap-3 mb-6">
-            <!-- Tombol Putra (Aktif - Biru) -->
-            <button class="px-8 py-2.5 rounded-full font-black text-sm transition-all bg-blue-600 text-white shadow-lg shadow-blue-200">
+        <!-- Filter Gender (Putra = Biru, Putri = Pink) -->
+        <div class="flex justify-center gap-3 mb-6" id="genderToggle">
+            <!-- Active State Putra -->
+            <button data-gender="Putra" class="gender-btn active px-10 py-2.5 rounded-full font-black text-sm transition-all bg-blue-600 text-white shadow-lg shadow-blue-200 border border-blue-600">
                 Putra
             </button>
-            <!-- Tombol Putri (Inaktif - Pink) -->
-            <button class="px-8 py-2.5 rounded-full font-bold text-sm transition-all bg-white text-pink-500 border border-pink-200 shadow-sm hover:bg-pink-50 hover:text-pink-600">
+            <!-- Inactive State Putri -->
+            <button data-gender="Putri" class="gender-btn px-10 py-2.5 rounded-full font-bold text-sm transition-all bg-white text-pink-500 border border-pink-200 shadow-sm hover:bg-pink-50 hover:text-pink-600">
                 Putri
             </button>
         </div>
 
-        <!-- Filter Nomor Lomba (Dropdown Elegan) -->
-        <div class="flex justify-center mb-12">
-            <div class="relative w-full max-w-xs">
-                <select class="w-full px-6 py-3.5 bg-white border-2 border-blue-900/10 rounded-2xl font-black text-blue-900 shadow-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 text-center text-sm cursor-pointer transition-all">
-                    <option value="25m Gaya Bebas" selected>25m Gaya Bebas</option>
-                    <option value="50m Gaya Bebas">50m Gaya Bebas</option>
-                    <option value="100m Gaya Bebas">100m Gaya Bebas</option>
-                    <option value="50m Gaya Dada">50m Gaya Dada</option>
-                    <option value="50m Gaya Punggung">50m Gaya Punggung</option>
-                </select>
+        <!-- Filter 2 Dropdown (Jarak & Gaya) -->
+        <div class="flex justify-center mb-12 px-2">
+            <div class="flex gap-2 w-full max-w-md">
+                <!-- Dropdown Jarak -->
+                <div class="relative w-1/3">
+                    <select id="selectDistance" class="w-full pl-4 pr-8 py-3.5 bg-white border border-slate-200 rounded-xl font-bold text-slate-700 shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-sm cursor-pointer transition-all">
+                        <option value="25m">25m</option>
+                        <option value="50m" selected>50m</option>
+                        <option value="100m">100m</option>
+                        <option value="200m">200m</option>
+                        <option value="400m">400m</option>
+                        <option value="800m">800m</option>
+                        <option value="1500m">1500m</option>
+                    </select>
+                </div>
+                <!-- Dropdown Gaya -->
+                <div class="relative w-2/3">
+                    <select id="selectStroke" class="w-full pl-4 pr-8 py-3.5 bg-white border border-slate-200 rounded-xl font-bold text-slate-700 shadow-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-sm cursor-pointer transition-all">
+                        <option value="Gaya Bebas" selected>Gaya Bebas</option>
+                        <option value="Gaya Dada">Gaya Dada</option>
+                        <option value="Gaya Punggung">Gaya Punggung</option>
+                        <option value="Gaya Kupu-kupu">Gaya Kupu-kupu</option>
+                        <option value="Gaya Ganti">Gaya Ganti</option>
+                    </select>
+                </div>
             </div>
         </div>
 
-        <!-- LEADERBOARD CONTENT (DUMMY 10 BESAR) -->
+        <!-- LEADERBOARD CONTENT (Diisi otomatis oleh JS) -->
         <div id="leaderboardContent">
-            <!-- Top 3 Podium -->
-            <div class="flex items-end justify-center gap-2 md:gap-6 mb-12">
-                
-                <!-- RANK 2 (KIRI) -->
-                <div class="bg-white rounded-t-3xl shadow-lg w-28 md:w-40 flex flex-col items-center p-4 md:p-5 border-t-4 border-slate-300 relative h-40 md:h-44 justify-end hover:-translate-y-2 transition-transform cursor-pointer">
-                    <div class="absolute -top-6 w-12 h-12 bg-slate-100 rounded-full border-2 border-white flex items-center justify-center font-black text-slate-500 shadow-sm text-lg">#2</div>
-                    <p class="font-bold text-xs md:text-sm text-center text-slate-800 line-clamp-1 w-full truncate">Rafisqy hafiz a...</p>
-                    <p class="text-slate-400 text-[8px] md:text-[9px] uppercase tracking-wider truncate w-full text-center mt-1">JAGO RENANG ACADEMY</p>
-                    <p class="font-black text-base md:text-lg text-blue-900 mt-2">00:21.00</p>
-                </div>
-
-                <!-- RANK 1 (TENGAH) -->
-                <div class="bg-white rounded-t-3xl shadow-2xl w-32 md:w-48 flex flex-col items-center p-4 md:p-6 border-t-4 border-amber-400 relative h-48 md:h-56 justify-end z-10 transform scale-105 hover:scale-110 transition-transform cursor-pointer">
-                    <div class="absolute -top-8 w-16 h-16 bg-gradient-to-br from-amber-300 to-yellow-500 rounded-full border-4 border-white flex items-center justify-center font-black text-white shadow-md text-2xl">#1</div>
-                    <p class="font-black text-sm md:text-base text-center text-slate-900 line-clamp-2 leading-tight w-full truncate">Jazreel</p>
-                    <p class="text-slate-500 text-[9px] md:text-[10px] uppercase tracking-wider truncate w-full text-center mt-1.5">JAGO RENANG ACADEMY</p>
-                    <p class="font-black text-xl md:text-2xl text-blue-900 mt-3">00:20.00</p>
-                </div>
-
-                <!-- RANK 3 (KANAN) -->
-                <div class="bg-white rounded-t-3xl shadow-lg w-28 md:w-40 flex flex-col items-center p-4 md:p-5 border-t-4 border-orange-600 relative h-36 md:h-40 justify-end hover:-translate-y-2 transition-transform cursor-pointer">
-                    <div class="absolute -top-6 w-12 h-12 bg-orange-50 rounded-full border-2 border-white flex items-center justify-center font-black text-orange-700 shadow-sm text-lg">#3</div>
-                    <p class="font-bold text-xs md:text-sm text-center text-slate-800 line-clamp-1 w-full truncate">Mochammad...</p>
-                    <p class="text-slate-400 text-[8px] md:text-[9px] uppercase tracking-wider truncate w-full text-center mt-1">JAGO RENANG ACADEMY</p>
-                    <p class="font-black text-base md:text-lg text-blue-900 mt-2">00:22.00</p>
-                </div>
-
+            <!-- Top 3 Podium Container -->
+            <div id="podiumContainer" class="flex items-end justify-center gap-2 md:gap-6 mb-12">
+                <!-- Disuntik JS -->
             </div>
 
             <!-- List Lanjutan (Rank 4 sampai 10) -->
             <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-12">
-                <div class="divide-y divide-slate-100">
-                    
-                    <!-- Rank 4 -->
-                    <div class="flex items-center justify-between p-4 md:p-6 hover:bg-blue-50 transition-colors cursor-pointer group">
-                        <div class="flex items-center gap-4 md:gap-6 min-w-0">
-                            <span class="font-black text-slate-300 w-6 text-center text-lg group-hover:text-blue-400 transition-colors">4</span>
-                            <div class="min-w-0">
-                                <p class="font-extrabold text-slate-800 text-sm md:text-base truncate">Alresa Syawal putra ariyanto</p>
-                                <p class="text-[10px] md:text-xs text-slate-500 font-bold uppercase tracking-wider truncate mt-1">🏠 JAGO RENANG ACADEMY</p>
-                            </div>
-                        </div>
-                        <div class="font-mono font-black text-blue-900 text-base md:text-lg shrink-0 ml-4">00:30.00</div>
-                    </div>
-
-                    <!-- Rank 5 -->
-                    <div class="flex items-center justify-between p-4 md:p-6 hover:bg-blue-50 transition-colors cursor-pointer group">
-                        <div class="flex items-center gap-4 md:gap-6 min-w-0">
-                            <span class="font-black text-slate-300 w-6 text-center text-lg group-hover:text-blue-400 transition-colors">5</span>
-                            <div class="min-w-0">
-                                <p class="font-extrabold text-slate-800 text-sm md:text-base truncate">Muhammad Arroyan Dylan alfarizqi</p>
-                                <p class="text-[10px] md:text-xs text-slate-500 font-bold uppercase tracking-wider truncate mt-1">🏠 JAGO RENANG ACADEMY</p>
-                            </div>
-                        </div>
-                        <div class="font-mono font-black text-blue-900 text-base md:text-lg shrink-0 ml-4">00:31.00</div>
-                    </div>
-
-                    <!-- Rank 6 -->
-                    <div class="flex items-center justify-between p-4 md:p-6 hover:bg-blue-50 transition-colors cursor-pointer group">
-                        <div class="flex items-center gap-4 md:gap-6 min-w-0">
-                            <span class="font-black text-slate-300 w-6 text-center text-lg group-hover:text-blue-400 transition-colors">6</span>
-                            <div class="min-w-0">
-                                <p class="font-extrabold text-slate-800 text-sm md:text-base truncate">M Athalla Rafif Ramadhan</p>
-                                <p class="text-[10px] md:text-xs text-slate-500 font-bold uppercase tracking-wider truncate mt-1">🏠 JAGO RENANG ACADEMY</p>
-                            </div>
-                        </div>
-                        <div class="font-mono font-black text-blue-900 text-base md:text-lg shrink-0 ml-4">00:33.00</div>
-                    </div>
-
-                    <!-- Rank 7 -->
-                    <div class="flex items-center justify-between p-4 md:p-6 hover:bg-blue-50 transition-colors cursor-pointer group">
-                        <div class="flex items-center gap-4 md:gap-6 min-w-0">
-                            <span class="font-black text-slate-300 w-6 text-center text-lg group-hover:text-blue-400 transition-colors">7</span>
-                            <div class="min-w-0">
-                                <p class="font-extrabold text-slate-800 text-sm md:text-base truncate">Athafariz Ikhsan Pradipta</p>
-                                <p class="text-[10px] md:text-xs text-slate-500 font-bold uppercase tracking-wider truncate mt-1">🏠 JAGO RENANG ACADEMY</p>
-                            </div>
-                        </div>
-                        <div class="font-mono font-black text-blue-900 text-base md:text-lg shrink-0 ml-4">00:40.00</div>
-                    </div>
-
-                    <!-- Rank 8 -->
-                    <div class="flex items-center justify-between p-4 md:p-6 hover:bg-blue-50 transition-colors cursor-pointer group">
-                        <div class="flex items-center gap-4 md:gap-6 min-w-0">
-                            <span class="font-black text-slate-300 w-6 text-center text-lg group-hover:text-blue-400 transition-colors">8</span>
-                            <div class="min-w-0">
-                                <p class="font-extrabold text-slate-800 text-sm md:text-base truncate">Nicholas alvarendra antares</p>
-                                <p class="text-[10px] md:text-xs text-slate-500 font-bold uppercase tracking-wider truncate mt-1">🏠 JAGO RENANG ACADEMY</p>
-                            </div>
-                        </div>
-                        <div class="font-mono font-black text-blue-900 text-base md:text-lg shrink-0 ml-4">00:41.00</div>
-                    </div>
-
-                    <!-- Rank 9 -->
-                    <div class="flex items-center justify-between p-4 md:p-6 hover:bg-blue-50 transition-colors cursor-pointer group">
-                        <div class="flex items-center gap-4 md:gap-6 min-w-0">
-                            <span class="font-black text-slate-300 w-6 text-center text-lg group-hover:text-blue-400 transition-colors">9</span>
-                            <div class="min-w-0">
-                                <p class="font-extrabold text-slate-800 text-sm md:text-base truncate">Matthew Gevarel</p>
-                                <p class="text-[10px] md:text-xs text-slate-500 font-bold uppercase tracking-wider truncate mt-1">🏠 JAGO RENANG ACADEMY</p>
-                            </div>
-                        </div>
-                        <div class="font-mono font-black text-blue-900 text-base md:text-lg shrink-0 ml-4">00:44.00</div>
-                    </div>
-
-                    <!-- Rank 10 -->
-                    <div class="flex items-center justify-between p-4 md:p-6 hover:bg-blue-50 transition-colors cursor-pointer group">
-                        <div class="flex items-center gap-4 md:gap-6 min-w-0">
-                            <span class="font-black text-slate-300 w-6 text-center text-lg group-hover:text-blue-400 transition-colors">10</span>
-                            <div class="min-w-0">
-                                <p class="font-extrabold text-slate-800 text-sm md:text-base truncate">Gibran Dirgantara</p>
-                                <p class="text-[10px] md:text-xs text-slate-500 font-bold uppercase tracking-wider truncate mt-1">🏠 JAGO RENANG ACADEMY</p>
-                            </div>
-                        </div>
-                        <div class="font-mono font-black text-blue-900 text-base md:text-lg shrink-0 ml-4">00:45.50</div>
-                    </div>
-
+                <div id="listContainer" class="divide-y divide-slate-100">
+                    <!-- Disuntik JS -->
                 </div>
             </div>
             
@@ -211,5 +119,7 @@
 
     </div>
 
+    <!-- Panggil Dummy Script (Tanpa Supabase) -->
+    <script src="/src/rank.js"></script>
 </body>
 </html>
