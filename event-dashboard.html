@@ -14,6 +14,7 @@
 </head>
 <body class="bg-slate-50 min-h-screen font-sans text-slate-800">
 
+    <!-- Top Navigation -->
     <nav class="bg-slate-900 text-white shadow-md px-4 md:px-6 py-3 flex justify-between items-center sticky top-0 z-50">
         <a href="/dashboard.html" class="flex items-center gap-2 text-slate-300 hover:text-white transition text-sm font-medium">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
@@ -23,6 +24,7 @@
         <div class="text-[10px] md:text-xs font-bold tracking-widest text-slate-400 uppercase">SCS Command Center</div>
     </nav>
 
+    <!-- Main Content Container -->
     <div class="max-w-5xl mx-auto px-4 sm:px-6 pb-20 pt-6">
         
         <!-- 1. HEADER CARD -->
@@ -140,7 +142,7 @@
         </div>
 
         <!-- 4. SECTION: EVENT CONFIGURATION (MODALS) -->
-        <div>
+        <div class="mb-10">
             <div class="flex items-center gap-3 mb-5">
                 <div class="p-1.5 bg-orange-100 rounded-md text-orange-600 shrink-0">⚙️</div>
                 <h2 class="text-xs md:text-sm font-bold text-slate-600 uppercase tracking-widest shrink-0">Event Config (Pra-Lomba JSONB)</h2>
@@ -204,50 +206,92 @@
                 </button>
             </div>
         </div>
+
+        <!-- 5. SECTION BARU: TIM PANITIA (COLLAB) -->
+        <div>
+            <div class="flex items-center gap-3 mb-5 mt-10">
+                <div class="p-1.5 bg-purple-100 rounded-md text-purple-600 shrink-0">👥</div>
+                <h2 class="text-xs md:text-sm font-bold text-slate-600 uppercase tracking-widest shrink-0">Tim Panitia (Collab)</h2>
+                <div class="flex-1 h-px bg-slate-300"></div>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-5 md:p-8">
+                <p class="text-sm text-slate-500 mb-6 font-medium">Undang akun SCS klub atau EO lain (via Email) untuk mengelola event ini bersama. Mereka akan mendapat akses ke Command Center ini dari Dashboard mereka.</p>
+                
+                <!-- Form Invite -->
+                <div class="flex flex-col md:flex-row gap-3 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                    <div class="flex-1">
+                        <input type="email" id="inputCollabEmail" class="w-full px-4 py-3.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-purple-500 outline-none text-sm font-bold text-slate-700" placeholder="Masukkan Email Akun SCS Teman...">
+                    </div>
+                    <div class="w-full md:w-1/3">
+                        <select id="inputCollabRole" class="w-full px-4 py-3.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-purple-500 outline-none text-sm bg-white font-bold text-slate-700">
+                            <option value="Co-Admin">Co-Admin</option>
+                            <option value="Tim Pendaftaran">Admin Pendaftaran</option>
+                            <option value="Wasit / Timer">Wasit / Timer</option>
+                            <option value="Tukang Cetak">Tukang Cetak</option>
+                        </select>
+                    </div>
+                    <button id="btnInviteCollab" class="bg-purple-600 text-white px-6 py-3.5 rounded-xl font-bold text-sm hover:bg-purple-700 transition shadow-md whitespace-nowrap">
+                        Undang Panitia 🚀
+                    </button>
+                </div>
+                <div id="collabStatusMsg" class="hidden text-sm font-bold text-center rounded-lg p-3 mb-4"></div>
+
+                <!-- Daftar Panitia Container -->
+                <div class="space-y-3" id="collabListContainer">
+                    <!-- Data disuntik oleh JS -->
+                    <div class="animate-pulse flex gap-4 items-center bg-slate-50 p-4 rounded-xl">
+                        <div class="w-10 h-10 bg-slate-200 rounded-full"></div>
+                        <div class="w-1/2 h-4 bg-slate-200 rounded"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- Modals Config Lomba -->
     <div id="modalLanding" class="fixed inset-0 bg-black/60 z-[70] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
-            <h3 class="font-extrabold text-lg mb-4">Seting Landing Page</h3>
-            <textarea id="valLandingText" rows="4" class="w-full border rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Tulis ucapan selamat datang..."></textarea>
-            <div class="flex gap-2 mt-4">
-                <button class="btn-close-modal flex-1 bg-slate-200 py-3 rounded-xl font-bold">Batal</button>
-                <button id="btnSaveLanding" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold">Simpan</button>
+        <div class="bg-white rounded-3xl w-full max-w-md p-6 md:p-8 shadow-2xl">
+            <h3 class="font-extrabold text-lg mb-4 text-blue-900">Seting Landing Page</h3>
+            <textarea id="valLandingText" rows="4" class="w-full border border-gray-300 rounded-xl p-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Tulis ucapan selamat datang..."></textarea>
+            <div class="flex gap-3 mt-5">
+                <button class="btn-close-modal flex-1 bg-slate-100 text-slate-600 py-3.5 rounded-xl font-bold hover:bg-slate-200 transition">Batal</button>
+                <button id="btnSaveLanding" class="flex-1 bg-blue-600 text-white py-3.5 rounded-xl font-bold shadow-md hover:bg-blue-700 transition">Simpan</button>
             </div>
         </div>
     </div>
 
     <div id="modalEntry" class="fixed inset-0 bg-black/60 z-[70] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
-            <h3 class="font-extrabold text-lg mb-4">Seting Entry Time</h3>
-            <input type="text" id="valEntryLimit" class="w-full border rounded-xl p-3 outline-none focus:ring-2 focus:ring-indigo-500 text-sm mb-2" placeholder="Contoh: 00:45:00 (Maksimal waktu)">
-            <div class="flex gap-2 mt-4">
-                <button class="btn-close-modal flex-1 bg-slate-200 py-3 rounded-xl font-bold">Batal</button>
-                <button id="btnSaveEntry" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold">Simpan</button>
+        <div class="bg-white rounded-3xl w-full max-w-md p-6 md:p-8 shadow-2xl">
+            <h3 class="font-extrabold text-lg mb-4 text-indigo-900">Seting Entry Time</h3>
+            <input type="text" id="valEntryLimit" class="w-full border border-gray-300 rounded-xl p-4 outline-none focus:ring-2 focus:ring-indigo-500 text-sm mb-2 font-mono" placeholder="Contoh: 00:45:00">
+            <div class="flex gap-3 mt-5">
+                <button class="btn-close-modal flex-1 bg-slate-100 text-slate-600 py-3.5 rounded-xl font-bold hover:bg-slate-200 transition">Batal</button>
+                <button id="btnSaveEntry" class="flex-1 bg-indigo-600 text-white py-3.5 rounded-xl font-bold shadow-md hover:bg-indigo-700 transition">Simpan</button>
             </div>
         </div>
     </div>
 
     <div id="modalTiket" class="fixed inset-0 bg-black/60 z-[70] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
-            <h3 class="font-extrabold text-lg mb-4">Seting Tiket & Info</h3>
-            <input type="number" id="valTiketHarga" class="w-full border rounded-xl p-3 outline-none focus:ring-2 focus:ring-emerald-500 text-sm mb-3" placeholder="Harga Pendaftaran (Rp)">
-            <input type="text" id="valTiketWA" class="w-full border rounded-xl p-3 outline-none focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="No WhatsApp Panitia (628...)">
-            <div class="flex gap-2 mt-4">
-                <button class="btn-close-modal flex-1 bg-slate-200 py-3 rounded-xl font-bold">Batal</button>
-                <button id="btnSaveTiket" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold">Simpan</button>
+        <div class="bg-white rounded-3xl w-full max-w-md p-6 md:p-8 shadow-2xl">
+            <h3 class="font-extrabold text-lg mb-4 text-emerald-900">Seting Tiket & Info</h3>
+            <input type="number" id="valTiketHarga" class="w-full border border-gray-300 rounded-xl p-4 outline-none focus:ring-2 focus:ring-emerald-500 text-sm mb-3" placeholder="Harga Pendaftaran (Rp)">
+            <input type="text" id="valTiketWA" class="w-full border border-gray-300 rounded-xl p-4 outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-mono" placeholder="No WhatsApp Panitia (628...)">
+            <div class="flex gap-3 mt-5">
+                <button class="btn-close-modal flex-1 bg-slate-100 text-slate-600 py-3.5 rounded-xl font-bold hover:bg-slate-200 transition">Batal</button>
+                <button id="btnSaveTiket" class="flex-1 bg-emerald-600 text-white py-3.5 rounded-xl font-bold shadow-md hover:bg-emerald-700 transition">Simpan</button>
             </div>
         </div>
     </div>
 
     <div id="modalSponsor" class="fixed inset-0 bg-black/60 z-[70] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
-            <h3 class="font-extrabold text-lg mb-4">Data Sponsor</h3>
-            <input type="text" id="valSponsorName" class="w-full border rounded-xl p-3 outline-none focus:ring-2 focus:ring-amber-500 text-sm mb-2" placeholder="Nama Perusahaan Sponsor">
-            <div class="flex gap-2 mt-4">
-                <button class="btn-close-modal flex-1 bg-slate-200 py-3 rounded-xl font-bold">Batal</button>
-                <button id="btnSaveSponsor" class="flex-1 bg-amber-600 text-white py-3 rounded-xl font-bold">Simpan</button>
+        <div class="bg-white rounded-3xl w-full max-w-md p-6 md:p-8 shadow-2xl">
+            <h3 class="font-extrabold text-lg mb-4 text-amber-900">Data Sponsor Resmi</h3>
+            <input type="text" id="valSponsorName" class="w-full border border-gray-300 rounded-xl p-4 outline-none focus:ring-2 focus:ring-amber-500 text-sm mb-2" placeholder="Nama Perusahaan Sponsor">
+            <div class="flex gap-3 mt-5">
+                <button class="btn-close-modal flex-1 bg-slate-100 text-slate-600 py-3.5 rounded-xl font-bold hover:bg-slate-200 transition">Batal</button>
+                <button id="btnSaveSponsor" class="flex-1 bg-amber-600 text-white py-3.5 rounded-xl font-bold shadow-md hover:bg-amber-700 transition">Simpan</button>
             </div>
         </div>
     </div>

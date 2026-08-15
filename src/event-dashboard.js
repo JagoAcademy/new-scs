@@ -97,7 +97,11 @@ async function loadEventDashboard() {
         };
 
         updateConfigBadges();
+        
         await loadEventStats();
+        
+        // Panggil sistem baru: Load Panitia Collab
+        await loadCollaborators();
 
     } catch (err) {
         alert("Gagal memuat data event.");
@@ -183,6 +187,141 @@ document.getElementById('btnSaveEntry').onclick = () => saveConfigToJSONB('entry
 document.getElementById('btnSaveTiket').onclick = () => saveConfigToJSONB('tiket', { tiket_harga: document.getElementById('valTiketHarga').value, tiket_wa: document.getElementById('valTiketWA').value }, 'modalTiket', 'btnSaveTiket');
 document.getElementById('btnSaveSponsor').onclick = () => saveConfigToJSONB('sponsor', { sponsor_name: document.getElementById('valSponsorName').value }, 'modalSponsor', 'btnSaveSponsor');
 
+// ==========================================
+// FITUR TIM PANITIA (COLLAB)
+// ==========================================
+async function loadCollaborators() {
+    const container = document.getElementById('collabListContainer');
+    if (!container) return;
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('event_collaborators')
+            .select('id, role, user_id')
+            .eq('event_id', currentEventId);
+
+        if (error) throw error;
+
+        if (data.length === 0) {
+            container.innerHTML = `
+                <div class="bg-slate-50 border border-slate-100 rounded-2xl p-8 text-center">
+                    <span class="text-4xl block mb-3 opacity-40">📭</span>
+                    <p class="text-sm text-slate-500 font-bold">Belum ada kolaborator tambahan. Anda mengurus event ini sendirian.</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        for (const collab of data) {
+            // Coba ambil nama klubnya dari tabel clubs
+            const { data: clubData } = await supabaseClient
+                .from('clubs')
+                .select('club_name')
+                .eq('owner_id', collab.user_id)
+                .single();
+            
+            const displayName = clubData ? clubData.club_name : 'User Terdaftar SCS';
+
+            html += `
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 md:p-5 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-purple-300 transition group gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center font-black text-xl shadow-inner shrink-0">
+                            ${displayName.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <p class="font-extrabold text-slate-800 text-sm md:text-base">${displayName}</p>
+                            <span class="inline-block mt-1 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase tracking-wider">${collab.role}</span>
+                        </div>
+                    </div>
+                    <button onclick="window.removeCollab('${collab.id}')" class="w-full sm:w-auto text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 hover:text-red-700 px-5 py-2.5 rounded-xl transition md:opacity-0 group-hover:opacity-100 border border-transparent hover:border-red-200">
+                        Cabut Akses ❌
+                    </button>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+
+    } catch (err) {
+        container.innerHTML = `<p class="text-sm text-red-500 font-bold text-center py-4">Gagal memuat daftar panitia: ${err.message}</p>`;
+    }
+}
+
+// Tombol Undang Panitia
+const btnInvite = document.getElementById('btnInviteCollab');
+if (btnInvite) {
+    btnInvite.addEventListener('click', async () => {
+        const email = document.getElementById('inputCollabEmail').value.trim();
+        const role = document.getElementById('inputCollabRole').value;
+        const statusMsg = document.getElementById('collabStatusMsg');
+
+        if (!email) {
+            statusMsg.innerText = "Masukkan alamat email teman lu Bos!";
+            statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block mb-4";
+            statusMsg.classList.remove('hidden');
+            return;
+        }
+
+        btnInvite.innerText = "Mencari Akun...";
+        btnInvite.disabled = true;
+
+        try {
+            // 1. Panggil fungsi RPC rahasia untuk cari User_ID dari Email
+            const { data: targetUserId, error: rpcError } = await supabaseClient.rpc('get_user_id_by_email', { user_email: email });
+            
+            if (rpcError) throw rpcError;
+            
+            if (!targetUserId) {
+                throw new Error("Gagal! Email ini belum terdaftar di sistem SCS.");
+            }
+
+            // 2. Suntik ke tabel event_collaborators
+            const { error: insertError } = await supabaseClient
+                .from('event_collaborators')
+                .insert([{
+                    event_id: currentEventId,
+                    user_id: targetUserId,
+                    role: role
+                }]);
+
+            if (insertError) {
+                if (insertError.code === '23505') throw new Error("Orang ini udah jadi panitia di event ini!");
+                throw insertError;
+            }
+
+            statusMsg.innerHTML = "✅ <strong>Mantap!</strong> Teman lu resmi dapet akses ke Command Center ini.";
+            statusMsg.className = "text-sm text-center rounded-lg p-3 bg-green-100 text-green-700 block mb-4";
+            statusMsg.classList.remove('hidden');
+            
+            document.getElementById('inputCollabEmail').value = '';
+            
+            loadCollaborators();
+
+        } catch (err) {
+            statusMsg.innerText = err.message;
+            statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block mb-4";
+            statusMsg.classList.remove('hidden');
+        } finally {
+            btnInvite.innerText = "Undang Panitia 🚀";
+            btnInvite.disabled = false;
+            setTimeout(() => statusMsg.classList.add('hidden'), 4000);
+        }
+    });
+}
+
+// Fungsi Hapus Global
+window.removeCollab = async function(collabId) {
+    if(!confirm("Yakin mau cabut akses orang ini? Mereka nggak akan bisa buka Command Center ini lagi dari akun mereka.")) return;
+    try {
+        const { error } = await supabaseClient.from('event_collaborators').delete().eq('id', collabId);
+        if (error) throw error;
+        loadCollaborators();
+    } catch (err) {
+        alert("Gagal menghapus: " + err.message);
+    }
+}
+
+// INIT
 loadEventDashboard();
 const btnMenuSertifikat = document.getElementById('btnMenuSertifikat');
 if (btnMenuSertifikat) {
