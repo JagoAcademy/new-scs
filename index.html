@@ -81,11 +81,13 @@
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans antialiased relative">
     
+    <!-- FLOATING AUTH BTN (Z-INDEX 100) -->
     <a href="/auth.html" id="floatingAuthBtn" class="fixed top-3 right-14 md:top-4 md:right-6 z-[100] bg-scsBlue text-white font-extrabold px-5 py-1.5 text-xs md:text-sm rounded-full shadow-md hover:bg-blue-900 transition-all border border-blue-900 flex items-center gap-1.5">
         <span id="floatingAuthText">Login</span>
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
     </a>
     
+    <!-- FLOATING WA BTN -->
     <a href="https://wa.me/" target="_blank" class="fixed bottom-6 left-6 md:bottom-8 md:left-8 z-[100] bg-[#25D366] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-[0_10px_20px_rgba(37,211,102,0.4)] hover:bg-[#1ebd5a] hover:-translate-y-1 hover:scale-105 transition-all duration-300 group">
         <svg class="w-8 h-8 fill-current" viewBox="0 0 24 24"><path d="M12.031 0C5.385 0 0 5.384 0 12.03c0 2.122.553 4.195 1.603 6.012L.266 23.36l5.474-1.44c1.764.954 3.738 1.458 5.753 1.458h.005c6.645 0 12.029-5.385 12.029-12.03S18.676 0 12.031 0zm.005 21.411c-1.785 0-3.528-.481-5.06-1.388l-.363-.214-3.766.988.997-3.673-.235-.375a10.052 10.052 0 01-1.542-5.35c0-5.556 4.524-10.08 10.086-10.08 2.693 0 5.221 1.05 7.121 2.956a10.06 10.06 0 012.952 7.119c0 5.555-4.523 10.075-10.08 10.075zm5.525-7.55c-.303-.152-1.792-.885-2.071-.987-.278-.1-.481-.152-.684.151-.202.304-.784.987-.96 1.189-.177.203-.355.228-.658.076-.303-.152-1.28-.472-2.438-1.332-.904-.672-1.512-1.503-1.69-1.807-.176-.303-.018-.467.133-.618.134-.135.303-.354.455-.53.152-.178.203-.304.304-.507.101-.203.05-.38-.025-.531-.076-.152-.684-1.644-.937-2.25-.246-.593-.496-.512-.684-.521-.176-.01-.38-.012-.583-.012-.202 0-.53.076-.809.38-.278.303-1.062 1.038-1.062 2.532s1.088 2.937 1.24 3.139c.152.203 2.14 3.272 5.185 4.536.724.3 1.288.479 1.728.613.725.23 1.385.197 1.905.12.583-.086 1.792-.733 2.044-1.442.253-.709.253-1.317.177-1.442-.076-.127-.279-.203-.583-.355z"/></svg>
         <span class="absolute top-0 right-0 flex h-3.5 w-3.5">
@@ -94,6 +96,7 @@
         </span>
     </a>
 
+    <!-- TOP NAVBAR -->
     <nav class="bg-white/90 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 h-14 md:h-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
             <div class="flex justify-between items-center h-full">
@@ -119,15 +122,60 @@
         </div>
     </nav>
 
-    <div id="mobileMenu" class="fixed inset-0 bg-white z-[90] hidden flex-col pt-16 px-6">
-        <div class="flex flex-col gap-6 text-center mt-10">
-            <a href="/event.html" class="text-2xl font-black text-slate-800 border-b border-gray-100 pb-4">Kalender Event</a>
-            <a href="/rank.html" class="text-2xl font-black text-slate-800 border-b border-gray-100 pb-4 flex items-center justify-center gap-2">Leaderboard <span class="text-xs bg-red-500 text-white px-2 py-1 rounded-full animate-pulse">HOT</span></a>
-            <a href="/promosi.html" class="text-2xl font-black text-slate-800 border-b border-gray-100 pb-4">Promosi Bisnis</a>
-            <a href="/pricing.html" class="text-2xl font-black text-scsBlue">Harga & Layanan</a>
+    <!-- NEW MOBILE MENU (Z-INDEX 110) -->
+    <div id="mobileMenu" class="fixed inset-0 bg-white z-[110] hidden flex-col pt-6 pb-8 px-6 transition-all duration-300">
+        
+        <!-- Mobile Header (Logo & Close Btn) -->
+        <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+            <img src="/images/logo.png" alt="SCS Logo" class="h-8">
+            <button id="closeMobileBtn" class="p-2 text-slate-400 hover:text-red-500 bg-slate-50 rounded-full transition-colors active:scale-95">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
         </div>
-        <button id="closeMobileBtn" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-red-500 font-bold text-3xl">&times;</button>
+
+        <!-- Menu Navigation List -->
+        <div class="flex flex-col gap-2">
+            <a href="/event.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-700 font-black hover:bg-blue-50 hover:text-scsBlue active:bg-blue-100 transition-colors group">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 text-scsBlue flex items-center justify-center text-xl group-hover:scale-110 transition-transform">📅</div>
+                <span class="text-lg">Kalender Event</span>
+            </a>
+            
+            <a href="/rank.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-700 font-black hover:bg-blue-50 hover:text-scsBlue active:bg-blue-100 transition-colors group">
+                <div class="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">🏆</div>
+                <span class="text-lg flex-1">Leaderboard</span>
+                <span class="text-[10px] bg-red-500 text-white px-2 py-1 rounded-full animate-pulse tracking-widest uppercase">Hot</span>
+            </a>
+            
+            <a href="/promosi.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-700 font-black hover:bg-blue-50 hover:text-scsBlue active:bg-blue-100 transition-colors group">
+                <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">📢</div>
+                <span class="text-lg">Promosi Bisnis</span>
+            </a>
+            
+            <a href="/pricing.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-700 font-black hover:bg-blue-50 hover:text-scsBlue active:bg-blue-100 transition-colors group">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">🏷️</div>
+                <span class="text-lg">Harga & Layanan</span>
+            </a>
+        </div>
+
+        <!-- Mobile Footer & Call to Action (Thumb Zone) -->
+        <div class="mt-auto pt-6 border-t border-gray-100 flex flex-col gap-6">
+            <a href="/auth.html" id="mobileAuthBtn" class="w-full bg-scsBlue text-white font-extrabold px-6 py-4 rounded-2xl shadow-[0_10px_20px_rgba(30,58,138,0.2)] hover:bg-blue-900 active:scale-95 transition-all text-center flex items-center justify-center gap-2 text-lg">
+                <span id="mobileAuthText">Login Akun</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </a>
+            
+            <div class="text-center text-xs text-slate-400 font-medium">
+                <p class="mb-3 uppercase tracking-widest font-bold text-[10px] text-slate-300">PT. Teknologi Prestasi Indonesia</p>
+                <div class="flex justify-center gap-6 mb-3">
+                    <a href="#" class="hover:text-scsBlue transition-colors font-bold">Instagram</a>
+                    <a href="#" class="hover:text-scsBlue transition-colors font-bold">WhatsApp</a>
+                    <a href="#" class="hover:text-scsBlue transition-colors font-bold">Email</a>
+                </div>
+                <p>&copy; 2026 F1 Swimming - F1 ID</p>
+            </div>
+        </div>
     </div>
+    <!-- END NEW MOBILE MENU -->
 
     <div class="fixed top-14 md:top-16 left-0 w-full bg-blue-950 shadow-md border-b border-blue-800 py-1.5 z-40 marquee-container">
         <div class="animate-marquee text-scsGold font-bold text-xs md:text-sm tracking-wide flex gap-12 items-center">
@@ -139,6 +187,7 @@
         </div>
     </div>
 
+    <!-- HERO SECTION -->
     <section class="relative w-full h-[calc(100vh-3.5rem)] md:h-screen pt-14 md:pt-16 flex max-md:block overflow-hidden">
         <div class="w-full md:w-1/2 h-full absolute md:relative inset-0 md:inset-auto bg-white z-20 flex flex-col max-md:justify-start max-md:items-start md:justify-center md:items-start p-8 md:p-16 lg:px-20 max-md:pt-[15vh] max-md:pl-6 max-md:pr-0 max-md:[clip-path:polygon(0_0,100%_0,0_100%)] md:border-r border-gray-200 transition-all duration-700 ease-in-out hover:md:w-[60%] group">
             <div class="absolute inset-0 z-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
@@ -213,6 +262,7 @@
         </div>
     </section>
 
+    <!-- OTHER SECTIONS (TESTI, FITUR, DLL) -->
     <section id="testi-section" class="py-16 md:py-24 bg-white border-b border-gray-100 overflow-hidden" style="display: none;">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-8">
             <h2 class="text-2xl md:text-3xl font-extrabold text-blue-900 mb-2">Dipercaya Klub & EO Seluruh Indonesia</h2>
@@ -307,6 +357,8 @@
         document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const { data: { session } } = await supabaseClient.auth.getSession();
+                
+                // Logic Floating Button
                 const floatBtn = document.getElementById('floatingAuthBtn');
                 const floatText = document.getElementById('floatingAuthText');
                 if (session && floatBtn) {
@@ -316,11 +368,23 @@
                     floatBtn.classList.replace('hover:bg-blue-900', 'hover:bg-emerald-700');
                     floatText.innerText = 'Ke Dashboard';
                 }
+
+                // Logic Mobile Menu Auth Button
+                const mobileAuthBtn = document.getElementById('mobileAuthBtn');
+                const mobileAuthText = document.getElementById('mobileAuthText');
+                if (session && mobileAuthBtn) {
+                    mobileAuthBtn.href = '/dashboard.html';
+                    mobileAuthBtn.classList.replace('bg-scsBlue', 'bg-emerald-600');
+                    mobileAuthBtn.classList.replace('hover:bg-blue-900', 'hover:bg-emerald-700');
+                    mobileAuthText.innerText = 'Ke Dashboard';
+                }
+
             } catch (err) {}
 
             const mobileMenuBtn = document.getElementById('mobileMenuBtn');
             const mobileMenu = document.getElementById('mobileMenu');
             const closeMobileBtn = document.getElementById('closeMobileBtn');
+            
             function toggleMobile() {
                 if (mobileMenu.classList.contains('hidden')) {
                     mobileMenu.classList.remove('hidden');
