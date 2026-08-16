@@ -5,14 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="pageTitle">Pendaftaran Lomba | SCS</title>
     <link rel="stylesheet" href="/src/style.css">
-    <!-- Script Cloudflare Turnstile (Anti-Robot) -->
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body id="pageBody" class="bg-slate-50 min-h-screen font-sans text-slate-800 pb-20 relative">
 
     <div id="bgOverlay" class="fixed inset-0 z-[-1] bg-cover bg-center opacity-10 hidden"></div>
 
-    <!-- HEADER STICKY (Tingginya udah disesuaikan biar muat Tanggal & Lokasi) -->
+    <!-- HEADER STICKY -->
     <div id="headerBannerContainer" class="w-full bg-blue-900 bg-cover bg-center shadow-lg sticky top-0 z-50 h-40 md:h-48 transition-all border-b-4 border-amber-400">
         <div class="absolute inset-0 bg-gradient-to-t from-slate-900/95 via-slate-900/50 to-transparent flex flex-col justify-end p-4 md:p-6">
             <h1 id="publicEventName" class="text-xl md:text-3xl font-black text-white tracking-tight drop-shadow-md truncate">Memuat Event...</h1>
@@ -48,9 +46,9 @@
             <p id="infoDiskon" class="text-blue-200 text-xs mt-1 font-bold relative z-10"></p>
         </div>
 
-        <!-- FORM PENDAFTARAN ATLET -->
+        <!-- FORM PENDAFTARAN PESERTA -->
         <div class="bg-white/95 backdrop-blur-md text-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl border border-slate-200 space-y-5">
-            <h2 class="text-xl font-extrabold text-blue-900 border-b border-slate-100 pb-3">Formulir Pendaftaran Atlet</h2>
+            <h2 class="text-xl font-extrabold text-blue-900 border-b border-slate-100 pb-3">Formulir Pendaftaran Peserta</h2>
             
             <div id="loginBar" class="flex flex-col sm:flex-row justify-between sm:items-center bg-indigo-50 text-indigo-900 p-3.5 rounded-xl border border-indigo-100 gap-3 transition-all">
                 <div class="flex items-center gap-2">
@@ -86,10 +84,10 @@
             </div>
 
             <div id="areaPencarianAtlet">
-                <label class="block text-xs font-bold text-slate-600 mb-1">Nama Atlet (Atau Pilih dari Data)</label>
-                <input type="text" id="inputCariAtlet" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold" placeholder="Ketik Nama Atlet...">
+                <label class="block text-xs font-bold text-slate-600 mb-1">Nama Peserta (Atau Pilih dari Data)</label>
+                <input type="text" id="inputCariAtlet" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold" placeholder="Ketik Nama Peserta...">
                 <select id="dropdownAtlet" class="hidden w-full px-4 py-3 bg-emerald-50 border border-emerald-400 rounded-xl text-sm font-bold text-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner">
-                    <option value="">-- Pilih Atlet dari Data Kamu --</option>
+                    <option value="">-- Pilih Peserta dari Data Kamu --</option>
                 </select>
             </div>
 
@@ -124,7 +122,7 @@
                     <span class="text-[10px] font-bold bg-amber-200 text-amber-800 px-2 py-0.5 rounded uppercase tracking-wider">Wajib Upload</span>
                 </div>
                 <p class="text-xs text-amber-800 leading-relaxed mb-4">
-                    Sistem mendeteksi data atlet belum diverifikasi. Untuk menjaga sportivitas, mohon unggah foto/scan Akta Kelahiran asli.
+                    Sistem mendeteksi data peserta belum diverifikasi. Untuk menjaga sportivitas, mohon unggah foto/scan Akta Kelahiran asli.
                 </p>
                 <input type="file" id="inputAkta" accept="image/*" class="w-full text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200 mb-4 cursor-pointer transition-colors outline-none">
                 
@@ -135,12 +133,7 @@
                 </div>
             </div>
 
-            <!-- CAPTCHA WIDGET -->
-            <div class="flex justify-center mt-4">
-                <div class="cf-turnstile" data-sitekey="1x00000000000000000000AA"></div>
-            </div>
-
-            <!-- TOMBOL UTAMA -->
+            <!-- TOMBOL UTAMA (CAPTCHA SUDAH DIHAPUS) -->
             <button id="btnKirimPendaftaran" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl shadow-lg transition-all mt-4 flex items-center justify-center gap-2 text-lg">
                 Daftar, Bayar di Antrian
             </button>
@@ -151,14 +144,14 @@
             <h2 class="text-xl font-extrabold text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
                 💳 Daftar Menunggu Pembayaran
             </h2>
-            <p class="text-xs text-slate-500 mb-5">Centang atlet yang ingin dibayar. Anda bisa membayar sekaligus (borongan) dengan 1 struk transfer.</p>
+            <p class="text-xs text-slate-500 mb-5">Centang peserta yang ingin dibayar. Anda bisa membayar sekaligus (borongan) dengan 1 struk transfer.</p>
             
             <div class="overflow-x-auto mb-6">
                 <table class="w-full text-left border-collapse min-w-[400px]">
                     <thead>
                         <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-wider border-b border-slate-200">
                             <th class="p-3 w-10 text-center"><input type="checkbox" id="checkAllTagihan" class="w-4 h-4 rounded text-blue-600 cursor-pointer"></th>
-                            <th class="p-3">Nama Atlet</th>
+                            <th class="p-3">Nama Peserta</th>
                             <th class="p-3 text-center">Nomor</th>
                             <th class="p-3 text-right">Biaya</th>
                         </tr>

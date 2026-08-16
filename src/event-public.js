@@ -307,7 +307,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const dropdown = document.getElementById('dropdownAtlet');
             dropdown.classList.remove('hidden');
 
-            dropdown.innerHTML = '<option value="">-- Pilih Atlet dari Data Kamu --</option>';
+            dropdown.innerHTML = '<option value="">-- Pilih Peserta dari Data Kamu --</option>';
             (athletes || []).forEach(atlet => {
                 const tgl = atlet.dob || ''; 
                 const jk = atlet.gender || ''; 
@@ -367,13 +367,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         let nomor_wa_pic = null; 
         let requiresAktaUpload = false;
 
-        const turnstileResp = document.querySelector('[name="cf-turnstile-response"]');
-        if (turnstileResp && !turnstileResp.value) {
-            return alert("Mohon selesaikan Captcha (centang kotak keamanan) terlebih dahulu!");
-        }
+        // Validasi Turnstile Dihapus Sesuai Permintaan
 
         if (isKlubLoggedIn) {
-            if(dropdownAtlet.value === "") return alert("Pilih atlet terlebih dahulu!");
+            if(dropdownAtlet.value === "") return alert("Pilih peserta terlebih dahulu!");
             
             f1_id = dropdownAtlet.value;
             nama_peserta = dropdownAtlet.options[dropdownAtlet.selectedIndex].getAttribute('data-name');
@@ -386,7 +383,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
             if(!inputKlubManual) return alert("Nama Klub/Sekolah wajib diisi!");
             if(!inputWhatsapp) return alert("Nomor WhatsApp wajib diisi agar panitia bisa menghubungi Anda!");
-            if(!inputManualName) return alert("Nama Atlet wajib diisi!");
+            if(!inputManualName) return alert("Nama Peserta wajib diisi!");
             
             klub_asal = inputKlubManual; 
             nomor_wa_pic = inputWhatsapp; 
@@ -399,7 +396,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const gender = document.getElementById('inputGender').value;
         
         if(!tanggal_lahir || !gender) return alert("Lengkapi Tanggal Lahir dan Jenis Kelamin!");
-        if(kelompok_umur === "Di Luar Rentang KU") return alert("Usia atlet tidak masuk kelompok umur yang dilombakan.");
+        if(kelompok_umur === "Di Luar Rentang KU") return alert("Usia peserta tidak masuk kelompok umur yang dilombakan.");
 
         const checkboxesNomor = Array.from(document.querySelectorAll('input[name="nomor_lomba"]:checked'));
         const selectedNomor = checkboxesNomor.map(cb => cb.value);
@@ -455,7 +452,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (insertError) throw insertError;
 
-            if (window.turnstile) turnstile.reset();
+            // Reset Turnstile Dihapus Sesuai Permintaan
 
             if (!isKlubLoggedIn && insertedData && insertedData.length > 0) {
                 let guestIds = JSON.parse(localStorage.getItem(`scs_guest_${currentEvent.id}`) || '[]');
