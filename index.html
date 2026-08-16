@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <script>
+  <script>
         (function() {
             const host = window.location.hostname;
-            if (host !== 'funswimming.my.id' && host !== 'www.funswimming.my.id' && host !== 'localhost' && !host.includes('vercel.app')) {
+            // Update domain ke f1swimming.com
+            if (host !== 'f1swimming.com' && host !== 'www.f1swimming.com' && host !== 'localhost' && !host.includes('vercel.app')) {
                 window.location.replace('/event-public.html');
             }
         })();
