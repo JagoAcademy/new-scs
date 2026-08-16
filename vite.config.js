@@ -20,11 +20,12 @@ export default defineConfig({
         result: resolve(__dirname, 'result.html'), // Hasil resmi perlombaan
         cetakSertifikat: resolve(__dirname, 'cetak-sertifikat.html'), // Halaman Cetak Sertifikat Peserta
         sponsorship: resolve(__dirname, 'sponsorship.html'),
+        pitch: resolve(__dirname, 'pitch.html'), // <--- TAMBAHAN: Web-Based Pitch Deck Nestle 🚀
 
         // --- 2. DASHBOARD KLUB / PELATIH ---
         dashboard: resolve(__dirname, 'dashboard.html'), // Command Center Manajemen Klub
         f1Profile: resolve(__dirname, 'f1-profile.html'), // Landing Page F1 ID / Edukasi
-        f1Id: resolve(__dirname, 'f1-id.html'), // <--- TAMBAHAN BARU: Brankas Profil F1 ID
+        f1Id: resolve(__dirname, 'f1-id.html'), // Brankas Profil F1 ID
 
         // --- 3. DASHBOARD EO / PANITIA LOMBA ---
         eventDashboard: resolve(__dirname, 'event-dashboard.html'), // Panel Utama Command Center 1 Event
@@ -37,7 +38,7 @@ export default defineConfig({
         printStartList: resolve(__dirname, 'book/print-startlist.html'), // Cetak PDF Buku Startlist (A4)
         eventResult: resolve(__dirname, 'book/event-result.html'), // Hasil Resmi Per Nomor Lomba
         eventSertifikatSetup: resolve(__dirname, 'book/event-sertifikat.html'), // Dapur Admin Setup Koordinat Sertifikat
-        clubTestimony: resolve (__dirname, 'admin-testi.html'),
+        clubTestimony: resolve (__dirname, 'admin-testi.html'), // Testimoni Klub
 
         // --- 5. SUPER ADMIN PUSAT ---
         admin: resolve(__dirname, 'admin.html'), // Panel Kontrol Super Admin SCS
