@@ -5,32 +5,58 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 🪤 1. THE AZTEC SECRET (JEBAKAN BATMAN)
     // ==========================================
     if (sessionStorage.getItem('aztec_key') !== 'buka_sesame') {
-        document.body.innerHTML = `
-            <div style="height:100vh;width:100vw;display:flex;flex-direction:column;align-items:center;justify-content:center;background-color:#0f172a;color:#f87171;font-family:sans-serif;text-align:center;position:fixed;top:0;left:0;z-index:999999;">
-                <span style="font-size:6rem;margin-bottom:20px;">🗿</span>
-                <h1 style="font-size:3rem;font-weight:900;text-transform:uppercase;">Boss Pintunya ga disini 🤣</h1>
-            </div>`;
-        setTimeout(() => window.location.replace('/dashboard.html'), 2500);
+        tendangUser();
         return;
     }
 
     // ==========================================
-    // 2. CEK SESI LOGIN SUPABASE
+    // 🛡️ 2. TRUE SERVER-SIDE AUTH VERIFICATION
     // ==========================================
-    const { data: { session }, error } = await supabaseClient.auth.getSession();
-    if (error || !session) {
+    // Menggunakan getUser() akan memaksa request ke server Supabase untuk 
+    // memvalidasi Token JWT, BUKAN ngecek local storage yang bisa di-hack.
+    const { data: { user }, error } = await supabaseClient.auth.getUser();
+
+    if (error || !user) {
         window.location.replace('/auth.html');
         return;
     }
 
-    // Logout
+    // Pengecekan otoritas berdasarkan respon murni dari server backend
+    if (user.email !== 'radityaraja@gmail.com') {
+        tendangUserAsing(user.email);
+        return;
+    }
+
+    // Logout Action
     document.getElementById('btnAdminLogout').addEventListener('click', async () => {
         await supabaseClient.auth.signOut();
         window.location.replace('/auth.html');
     });
 
+    // Jika lolos validasi server, baru load data
     loadAdminData();
 });
+
+// Fungsi untuk animasi nendang user asing
+function tendangUserAsing(email) {
+    document.body.innerHTML = `
+        <div style="height:100vh;width:100vw;display:flex;flex-direction:column;align-items:center;justify-content:center;background-color:#0f172a;color:#f87171;font-family:sans-serif;text-align:center;position:fixed;top:0;left:0;z-index:999999;">
+            <span style="font-size:6rem;margin-bottom:20px;">🛑</span>
+            <h1 style="font-size:2rem;font-weight:900;text-transform:uppercase;margin-bottom:10px;">Akses Ditolak!</h1>
+            <p style="color:#94a3b8;">Sistem mendeteksi email Anda (${email}) tidak terotorisasi.</p>
+        </div>`;
+    setTimeout(() => window.location.replace('/dashboard.html'), 3000);
+}
+
+// Fungsi untuk jebakan batman
+function tendangUser() {
+    document.body.innerHTML = `
+        <div style="height:100vh;width:100vw;display:flex;flex-direction:column;align-items:center;justify-content:center;background-color:#0f172a;color:#f87171;font-family:sans-serif;text-align:center;position:fixed;top:0;left:0;z-index:999999;">
+            <span style="font-size:6rem;margin-bottom:20px;">🗿</span>
+            <h1 style="font-size:3rem;font-weight:900;text-transform:uppercase;">Boss Pintunya ga disini 🤣</h1>
+        </div>`;
+    setTimeout(() => window.location.replace('/dashboard.html'), 2500);
+}
 
 async function loadAdminData() {
     try {
@@ -63,16 +89,15 @@ async function loadAdminData() {
 
     } catch (error) {
         console.error("Gagal memuat admin:", error);
-        alert("Gagal memuat data admin: " + error.message);
     }
 }
 
 // Render Antrian Awal
 function renderQueues(queues) {
     const tbody = document.getElementById('queueTableBody');
-    document.getElementById('badgeQueue').innerText = `${queues.length} Pending`;
+    document.getElementById('badgeQueue').innerText = `${queues ? queues.length : 0} Pending`;
 
-    if (queues.length === 0) {
+    if (!queues || queues.length === 0) {
         tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-500 font-bold">Tidak ada antrian verifikasi awal.</td></tr>`;
         return;
     }
@@ -105,9 +130,9 @@ function renderQueues(queues) {
 // Render Edit Requests (Before vs After)
 function renderEditQueues(edits) {
     const tbody = document.getElementById('editQueueTableBody');
-    document.getElementById('badgeEditQueue').innerText = `${edits.length} Pending`;
+    document.getElementById('badgeEditQueue').innerText = `${edits ? edits.length : 0} Pending`;
 
-    if (edits.length === 0) {
+    if (!edits || edits.length === 0) {
         tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500 font-bold">Tidak ada usulan perubahan data. Server aman! ☕</td></tr>`;
         return;
     }
@@ -147,7 +172,7 @@ function renderEditQueues(edits) {
 // Render Clubs
 function renderClubs(clubs) {
     const tbody = document.getElementById('clubTableBody');
-    if (clubs.length === 0) {
+    if (!clubs || clubs.length === 0) {
         tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500">Belum ada klub.</td></tr>`;
         return;
     }
@@ -194,12 +219,12 @@ window.approveEdit = async (id, f1_id, new_name, new_dob, new_gender, new_foto_u
     try {
         // 1. ALGORITMA BEDAH F1 ID (AUTO-FIX TAHUN)
         let updated_f1_id = f1_id; 
-        const newYearStr = new_dob.split('-')[0]; // Misal: "2021"
+        const newYearStr = new_dob.split('-')[0];
         
         if (newYearStr && newYearStr.length === 4) {
-            const newYearCode = newYearStr.substring(2, 4); // Ambil "21"
-            const uniqueSuffix = f1_id.substring(5); // Ambil buntutnya, misal "12345"
-            updated_f1_id = `F1-${newYearCode}${uniqueSuffix}`; // Jahit jadi "F1-2112345"
+            const newYearCode = newYearStr.substring(2, 4);
+            const uniqueSuffix = f1_id.substring(5);
+            updated_f1_id = `F1-${newYearCode}${uniqueSuffix}`;
         }
 
         // 2. SUNTIK EMAS CROWN 👑
@@ -209,15 +234,15 @@ window.approveEdit = async (id, f1_id, new_name, new_dob, new_gender, new_foto_u
         const { error: errUpdate } = await supabaseClient
             .from('athletes')
             .update({
-                f1_id: updated_f1_id,  // Update F1 ID baru
-                full_name: namaSultan, // Update nama + crown
+                f1_id: updated_f1_id,  
+                full_name: namaSultan, 
                 dob: new_dob,
                 gender: new_gender,
                 foto_url: new_foto_url,
                 akta_url: new_akta_url,
                 is_verified: true
             })
-            .eq('f1_id', f1_id); // Target baris pakai f1_id yang lama
+            .eq('f1_id', f1_id);
 
         if (errUpdate) throw errUpdate;
 
@@ -230,7 +255,7 @@ window.approveEdit = async (id, f1_id, new_name, new_dob, new_gender, new_foto_u
         if (errQueue) throw errQueue;
 
         alert(`BAM! Data berhasil diubah!\nF1 ID otomatis di-update menjadi: ${updated_f1_id} 👑`);
-        loadAdminData(); // Refresh UI
+        loadAdminData(); 
     } catch (err) {
         console.error(err);
         alert("Gagal ACC Edit: " + err.message);
