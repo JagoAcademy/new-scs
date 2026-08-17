@@ -96,19 +96,27 @@
     <nav class="bg-white/90 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 h-14 md:h-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
             <div class="flex justify-between items-center h-full">
+                <!-- KIRI: Logo + F1 ID Garis Hijau (Mobile) -->
                 <div class="flex-shrink-0 flex items-center h-full py-1">
-                    <a href="/" class="block">
+                    <a href="/" class="block shrink-0">
                         <img class="max-h-12 md:max-h-14 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/logo.png" alt="SCS Logo">
                     </a>
+                    
+                    <!-- Ini yang lu request: F1 ID Garis Hijau di Mobile -->
+                    <a href="/f1-profile.html" class="md:hidden ml-4 text-emerald-600 font-black text-[13px] border-b-[2px] border-emerald-500 pb-0.5 hover:text-emerald-700 transition-colors">F1 ID</a>
                 </div>
                 
+                <!-- KANAN: Menu Desktop -->
                 <div class="hidden md:flex space-x-6 lg:space-x-8 items-center mr-32 md:mr-40">
                     <a href="/event.html" class="text-gray-600 hover:text-scsBlue font-bold text-sm">Event</a>
                     <a href="/rank.html" class="text-gray-600 hover:text-scsBlue font-bold text-sm flex items-center gap-1">
                         Rank <span class="text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">HOT</span>
                     </a>
                     <a href="/promosi.html" class="text-gray-600 hover:text-scsBlue font-bold text-sm">Promosi</a>
-                    <a href="/f1-profile.html" class="text-gray-600 hover:text-scsBlue font-bold text-sm">F1 ID</a>
+                    
+                    <!-- F1 ID Garis Hijau di Desktop -->
+                    <a href="/f1-profile.html" class="text-emerald-600 font-black text-sm border-b-2 border-emerald-500 pb-1 hover:text-emerald-700 transition-colors">F1 ID</a>
+                    
                     <a href="#fitur" class="text-gray-600 hover:text-scsBlue font-bold text-sm">Tentang SCS</a> 
                 </div>
 
@@ -142,12 +150,13 @@
                 <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">📢</div>
                 <span class="text-lg">Promosi</span>
             </a>
-            <a href="/f1-profile.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-700 font-black hover:bg-blue-50 hover:text-scsBlue transition-colors group">
-                <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">🪪</div>
+            <!-- F1 ID Aksen Hijau di Mobile Menu -->
+            <a href="/f1-profile.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-emerald-700 font-black bg-emerald-50/60 hover:bg-emerald-100 border border-emerald-100 transition-colors group">
+                <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">🪪</div>
                 <span class="text-lg">F1 ID</span>
             </a>
             <a href="#fitur" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-700 font-black hover:bg-blue-50 hover:text-scsBlue transition-colors group" onclick="document.getElementById('mobileMenu').classList.add('hidden'); document.getElementById('mobileMenu').classList.remove('flex');">
-                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">ℹ️</div>
+                <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">ℹ️</div>
                 <span class="text-lg">Tentang SCS</span>
             </a>
         </div>
@@ -170,7 +179,7 @@
         </div>
     </div>
 
-    <!-- HERO SECTION (CUTTING/SPLIT IS BACK & FIXED TEXT!) -->
+    <!-- HERO SECTION (CUTTING/SPLIT) -->
     <section class="relative w-full h-[calc(100vh-3.5rem)] md:h-screen pt-14 md:pt-16 flex max-md:block overflow-hidden">
         
         <!-- LEFT: SCS -->
@@ -262,7 +271,7 @@
     <!-- TESTIMONI MAHAKARYA -->
     <section id="testi-section" class="py-16 bg-white border-b border-gray-100 overflow-hidden" style="display: none;">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-8">
-            <h2 class="text-2xl md:text-3xl font-extrabold text-blue-900 mb-2">Dipercaya Klub & EO Seluruh Indonesia</h2>
+            <h2 class="text-2xl md:text-3xl font-extrabold text-blue-900 mb-2">Dipercaya Klub & EO</h2>
             <p class="text-slate-500 text-sm font-medium">Review jujur dari pahlawan lapangan yang telah beralih ke digital.</p>
         </div>
         <div class="relative w-full overflow-hidden flex flex-col justify-center items-center py-6">
@@ -426,7 +435,7 @@
     <!-- FINAL CTA -->
     <section class="py-24 bg-gradient-to-b from-blue-900 to-blue-950 text-center px-4">
         <h2 class="text-4xl md:text-5xl font-black text-white mb-6">Siap Menjalankan Event Berikutnya?</h2>
-        <p class="text-blue-200 text-lg mb-10 font-medium">Bergabung dengan ekosistem kompetisi renang paling modern di Indonesia.</p>
+        <p class="text-blue-200 text-lg mb-10 font-medium">Bergabung dengan ekosistem kompetisi renang paling modern.</p>
         <a href="/auth.html" class="inline-block bg-white text-blue-900 font-black px-10 py-4 rounded-full text-lg hover:bg-slate-100 transition-all hover:scale-105 shadow-[0_0_30px_rgba(255,255,255,0.2)]">
             Mulai Buat Event Sekarang
         </a>
