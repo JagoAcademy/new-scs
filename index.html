@@ -82,11 +82,11 @@
     <nav class="bg-white/90 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 h-14 md:h-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
             <div class="flex justify-between items-center h-full">
-                <!-- KIRI: Logo SCS bersanding dengan Logo F1 (Sudah Di-Pasin presisi) -->
+                <!-- KIRI: Logo SCS bersanding dengan Logo F1 -->
                 <div class="flex-shrink-0 flex items-center h-full py-1">
-                    <a href="/" class="flex items-center gap-3 md:gap-5 shrink-0">
-                        <img class="h-7 md:h-10 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/logo.png" alt="SCS Logo">
-                        <img class="h-5 md:h-7 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/logof1.png" alt="F1 Logo">
+                    <a href="/" class="flex items-center gap-2.5 md:gap-4 shrink-0">
+                        <img class="max-h-9 md:max-h-12 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/logo.png" alt="SCS Logo">
+                        <img class="max-h-8 md:max-h-10 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/logof1.png" alt="F1 Logo">
                     </a>
                 </div>
                 
@@ -97,9 +97,7 @@
                         Rank <span class="text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">HOT</span>
                     </a>
                     <a href="/promosi.html" class="text-gray-600 hover:text-scsBlue font-bold text-sm">Promosi</a>
-                    
-                    <a href="/f1-profile.html" class="text-emerald-600 font-black text-sm border-b-2 border-emerald-500 pb-1 hover:text-emerald-700 transition-colors">F1 ID</a>
-                    
+                    <a href="/f1-profile.html" class="text-gray-600 hover:text-scsBlue font-bold text-sm">F1 ID</a>
                     <a href="#fitur" class="text-gray-600 hover:text-scsBlue font-bold text-sm">Tentang SCS</a> 
                 </div>
 
@@ -112,8 +110,8 @@
 
     <!-- MOBILE MENU -->
     <div id="mobileMenu" class="fixed inset-0 bg-white z-[110] hidden flex-col pt-6 pb-8 px-6 transition-all duration-300">
-        <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
-            <img src="/images/logo.png" alt="SCS Logo" class="h-8">
+        <!-- Header Menu Mobile (Tanpa Logo SCS) -->
+        <div class="flex justify-end items-center mb-6 border-b border-gray-100 pb-4">
             <button id="closeMobileBtn" class="p-2 text-slate-400 hover:text-red-500 bg-slate-50 rounded-full transition-colors active:scale-95">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
@@ -133,6 +131,7 @@
                 <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">📢</div>
                 <span class="text-lg">Promosi</span>
             </a>
+            <!-- F1 ID Aksen Hijau -->
             <a href="/f1-profile.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-emerald-700 font-black bg-emerald-50/60 hover:bg-emerald-100 border border-emerald-100 transition-colors group">
                 <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">🪪</div>
                 <span class="text-lg">F1 ID</span>
@@ -160,7 +159,14 @@
             
             <div class="relative z-10 text-left flex flex-col items-start w-full max-md:max-w-full md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
                 
-                <h1 class="text-5xl md:text-6xl lg:text-7xl max-md:text-[45px] font-black text-blue-950 tracking-tight mb-1 md:mb-2 drop-shadow-sm">SCS</h1>
+                <!-- Tag Indonesia Balik Lagi -->
+                <span class="inline-block bg-slate-100 border border-slate-200 text-slate-700 px-5 py-1.5 max-md:px-3 max-md:py-1 rounded-full text-xs max-md:text-[9px] font-black tracking-wide shadow-sm mb-6 max-md:mb-3">
+                    🇮🇩 Dibangun untuk kompetisi renang Indonesia
+                </span>
+                
+                <div class="flex items-center gap-3 mb-1 md:mb-2">
+                    <h1 class="text-5xl md:text-6xl lg:text-7xl max-md:text-[45px] font-black text-blue-950 tracking-tight drop-shadow-sm">SCS</h1>
+                </div>
                 
                 <h2 class="text-xl md:text-2xl max-md:text-[11px] font-bold text-slate-400 mb-4 md:mb-2 uppercase tracking-widest max-md:leading-tight">Swimming Competition<br class="hidden max-md:block">System</h2>
                 
@@ -197,6 +203,11 @@
             <div class="absolute inset-0 bg-gradient-to-t from-red-900/40 to-transparent z-0"></div>
             
             <div class="relative z-10 text-right flex flex-col items-end w-full max-md:max-w-full md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
+                
+                <!-- Tag Infrastruktur Balik Lagi -->
+                <span class="inline-block bg-red-500/20 border border-red-500/50 text-red-300 px-5 py-1.5 max-md:px-3 max-md:py-1 rounded-full text-xs max-md:text-[9px] font-black tracking-wide shadow-sm mb-6 max-md:mb-4 max-md:order-0">
+                    🪪 Infrastruktur Data Atlet
+                </span>
                 
                 <a href="/f1-profile.html" class="bg-red-600 text-white px-8 py-4 max-md:px-0 max-md:pr-8 max-md:py-3.5 rounded-full font-black text-sm max-md:text-[11px] md:text-base hover:bg-red-500 transition hover:-translate-y-1 w-full md:w-max max-md:w-[320px] flex items-center justify-center max-md:justify-end gap-2 max-md:order-1 max-md:mb-4 neon-glow-red">
                     Cek F1 ID Saya <span>&raquo;</span>
