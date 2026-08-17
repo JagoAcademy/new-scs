@@ -82,16 +82,12 @@
     <nav class="bg-white/90 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 h-14 md:h-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
             <div class="flex justify-between items-center h-full">
-                <!-- KIRI: Logo SCS + Logo F1 + F1 ID Garis Hijau (Mobile) -->
+                <!-- KIRI: Logo SCS bersanding dengan Logo F1 (Diperbesar) -->
                 <div class="flex-shrink-0 flex items-center h-full py-1">
-                    <a href="/" class="flex items-center gap-1.5 md:gap-3 shrink-0">
+                    <a href="/" class="flex items-center gap-2.5 md:gap-4 shrink-0">
                         <img class="max-h-9 md:max-h-12 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/logo.png" alt="SCS Logo">
-                        <!-- Tambahan Logo F1 -->
-                        <img class="max-h-5 md:max-h-7 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/logof1.png" alt="F1 Logo">
+                        <img class="max-h-8 md:max-h-10 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/logof1.png" alt="F1 Logo">
                     </a>
-                    
-                    <!-- F1 ID Garis Hijau di Mobile -->
-                    <a href="/f1-profile.html" class="md:hidden ml-3 text-emerald-600 font-black text-[13px] border-b-[2px] border-emerald-500 pb-0.5 hover:text-emerald-700 transition-colors">F1 ID</a>
                 </div>
                 
                 <!-- KANAN: Menu Desktop -->
@@ -138,7 +134,6 @@
                 <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">📢</div>
                 <span class="text-lg">Promosi</span>
             </a>
-            <!-- F1 ID Aksen Hijau di Mobile Menu -->
             <a href="/f1-profile.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-emerald-700 font-black bg-emerald-50/60 hover:bg-emerald-100 border border-emerald-100 transition-colors group">
                 <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">🪪</div>
                 <span class="text-lg">F1 ID</span>
@@ -166,19 +161,16 @@
             
             <div class="relative z-10 text-left flex flex-col items-start w-full max-md:max-w-full md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
                 
-                <div class="flex items-center gap-3 mb-1 md:mb-2">
-                    <h1 class="text-5xl md:text-6xl lg:text-7xl max-md:text-[45px] font-black text-blue-950 tracking-tight drop-shadow-sm">SCS</h1>
-                    <img src="/images/logof1.png" alt="F1 Swimming Logo" class="h-8 md:h-12 lg:h-14 object-contain">
-                </div>
-                
+                <h1 class="text-5xl md:text-6xl lg:text-7xl max-md:text-[45px] font-black text-blue-950 tracking-tight mb-1 md:mb-2 drop-shadow-sm">SCS</h1>
                 <h2 class="text-xl md:text-2xl max-md:text-[11px] font-bold text-slate-400 mb-4 md:mb-2 uppercase tracking-widest max-md:leading-tight">Swimming Competition<br class="hidden max-md:block">System</h2>
                 
-                <!-- MOBILE TEXT (Width dibatasi max-w-[60%] agar tidak nyentuh garis miring) -->
+                <!-- MOBILE TEXT -->
                 <div class="md:hidden w-full max-w-[60%] pr-2 mb-6">
                     <p class="text-[10px] text-scsBlue font-bold mb-1 uppercase tracking-wide leading-tight">Event &bull; Registration &bull; Heat &bull; Result</p>
                     <p class="text-[10px] text-slate-500 leading-relaxed font-medium">Satu sistem untuk menjalankan kompetisi renang dari pendaftaran hingga hasil akhir.</p>
                 </div>
                 
+                <!-- DESKTOP TEXT -->
                 <div class="hidden md:block mb-10 w-full pr-8 mt-2">
                     <p class="text-sm font-bold text-scsBlue mb-3 tracking-wide uppercase">Event &bull; Registration &bull; Heat &bull; Live Result &bull; Certificate &bull; F1 ID</p>
                     <p class="text-base text-slate-500 mb-6 leading-relaxed font-medium">
@@ -193,7 +185,6 @@
                     </div>
                 </div>
                 
-                <!-- MOBILE BUTTON (Width dipendekin ke 250px agar aman dari garis potong) -->
                 <a href="/auth.html" class="bg-blue-900 text-white px-8 py-4 max-md:px-0 max-md:pl-6 max-md:py-3.5 rounded-full font-black text-sm max-md:text-[11px] md:text-base hover:bg-blue-800 transition hover:-translate-y-1 w-full md:w-max max-md:w-[250px] flex items-center justify-center max-md:justify-start gap-2 neon-glow-blue">
                     Login Club / EO <span>&raquo;</span>
                 </a>
