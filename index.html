@@ -15,7 +15,7 @@
     
     <!-- SEO Meta Tags -->
     <meta name="description" content="SCS (Swimming Competition System) - Satu sistem untuk menjalankan kompetisi renang dari pendaftaran hingga hasil akhir.">
-    <meta name="keywords" content="Sistem kejuaraan renang, lomba renang anak Surabaya, daftar lomba renang online, F1 ID renang, aplikasi pertandingan renang">
+    <meta name="keywords" content="Sistem kejuaraan renang, daftar lomba renang online, F1 ID renang, aplikasi pertandingan renang">
     <meta name="author" content="Fajar Aditya">
 
     <!-- Open Graph / WhatsApp / Facebook -->
@@ -160,32 +160,34 @@
         </div>
     </div>
 
-    <!-- HERO SECTION (CUTTING/SPLIT) -->
-    <section class="relative w-full h-[calc(100vh-3.5rem)] md:h-screen pt-14 md:pt-16 flex max-md:block overflow-hidden">
+    <div class="fixed top-14 md:top-16 left-0 w-full bg-blue-950 shadow-md border-b border-blue-800 py-1.5 z-40 marquee-container">
+        <div class="animate-marquee text-scsGold font-bold text-xs md:text-sm tracking-wide flex gap-12 items-center">
+            <span>📢 EKSKLUSIF: Daftarkan event Anda bulan ini, Nikmati semua fitur SCS seperti : Form pendaftaran, dashboard panitia lengkap hingga generate buku acara dan sertifikat auto GRATIS!</span>
+            <span class="opacity-50 text-white">•</span>
+            <span class="text-white">🔥 Kuota Terbatas untuk 5 Event Pertama!</span>
+            <span class="opacity-50 text-white">•</span>
+            <span>🏅 SCS - Revolusi Manajemen Lomba Renang Indonesia</span>
+        </div>
+    </div>
+
+    <!-- HERO SECTION (STACKED ON MOBILE, SPLIT ON DESKTOP) -->
+    <section class="relative w-full min-h-[calc(100vh-3.5rem)] md:h-screen pt-14 md:pt-16 flex flex-col md:flex-row overflow-hidden">
         
         <!-- LEFT: SCS -->
-        <div class="w-full md:w-1/2 h-full absolute md:relative inset-0 md:inset-auto bg-white z-20 flex flex-col max-md:justify-start max-md:items-start md:justify-center md:items-start p-8 md:p-16 lg:px-20 max-md:pt-[12vh] max-md:pl-6 max-md:pr-0 max-md:[clip-path:polygon(0_0,100%_0,0_100%)] md:border-r border-gray-200 transition-all duration-700 ease-in-out hover:md:w-[60%] group">
+        <div class="w-full md:w-1/2 flex-1 relative bg-white z-20 flex flex-col justify-center items-start p-6 py-12 md:p-16 lg:px-20 md:border-r border-gray-200 transition-all duration-700 ease-in-out hover:md:w-[60%] group">
             <div class="absolute inset-0 z-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
             
-            <div class="relative z-10 text-left flex flex-col items-start w-full max-md:max-w-full md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
-                <span class="inline-block bg-slate-100 border border-slate-200 text-slate-700 px-5 py-1.5 max-md:px-3 max-md:py-1 rounded-full text-xs max-md:text-[9px] font-black tracking-wide shadow-sm mb-6 max-md:mb-3">
-                    🇮🇩 Dibangun untuk kompetisi renang Indonesia
-                </span>
+            <div class="relative z-10 text-left flex flex-col items-start w-full md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
                 
-                <h1 class="text-5xl md:text-6xl lg:text-7xl max-md:text-[45px] font-black text-blue-950 tracking-tight mb-2 max-md:mb-1 drop-shadow-sm">SCS</h1>
-                <h2 class="text-xl md:text-2xl max-md:text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest max-md:leading-tight">Swimming Competition System</h2>
+                <h1 class="text-5xl md:text-6xl lg:text-7xl font-black text-blue-950 tracking-tight mb-1 md:mb-2 drop-shadow-sm">SCS</h1>
+                <h2 class="text-lg md:text-2xl font-bold text-slate-400 mb-4 md:mb-2 uppercase tracking-widest leading-tight">Swimming Competition System</h2>
                 
-                <div class="md:hidden w-full max-w-[85%] mb-6">
-                    <p class="text-[10px] text-scsBlue font-bold mb-1">Event • Registration • Heat • Live Result</p>
-                    <p class="text-[10px] text-slate-500 leading-relaxed font-medium">Satu sistem untuk menjalankan kompetisi dari awal hingga akhir.</p>
-                </div>
-                
-                <div class="hidden md:block mb-10 w-full pr-8 mt-2">
-                    <p class="text-sm font-bold text-scsBlue mb-3 tracking-wide uppercase">Event &bull; Registration &bull; Heat &bull; Live Result &bull; Certificate &bull; F1 ID</p>
-                    <p class="text-base text-slate-500 mb-6 leading-relaxed font-medium">
+                <div class="w-full mb-6 md:mb-10">
+                    <p class="text-[10px] md:text-sm font-bold text-scsBlue mb-2 md:mb-3 tracking-wide uppercase">Event &bull; Registration &bull; Heat &bull; Live Result &bull; Certificate &bull; F1 ID</p>
+                    <p class="text-xs md:text-base text-slate-500 leading-relaxed font-medium">
                         Satu sistem untuk menjalankan kompetisi renang dari pendaftaran hingga hasil akhir.
                     </p>
-                    <div class="flex flex-wrap gap-3 lg:gap-4 text-xs lg:text-sm text-slate-600 font-bold bg-slate-50 p-3 lg:p-4 rounded-xl border border-slate-100 w-max">
+                    <div class="hidden md:flex flex-wrap gap-3 lg:gap-4 text-xs lg:text-sm text-slate-600 font-bold bg-slate-50 p-3 lg:p-4 rounded-xl border border-slate-100 w-max mt-6">
                         <span class="flex items-center gap-1.5"><span class="text-scsGold text-lg lg:text-xl">🏊‍♂️</span> 3.500+ Atlet</span>
                         <span class="text-slate-300">|</span>
                         <span class="flex items-center gap-1.5"><span class="text-scsGold text-lg lg:text-xl">🏆</span> 40+ Event</span>
@@ -194,40 +196,36 @@
                     </div>
                 </div>
                 
-                <a href="/auth.html" class="bg-blue-900 text-white px-8 py-4 max-md:px-0 max-md:pl-8 max-md:py-3.5 rounded-full font-black text-sm max-md:text-[11px] md:text-base hover:bg-blue-800 transition hover:-translate-y-1 w-full md:w-max max-md:w-[320px] flex items-center justify-center max-md:justify-start gap-2 neon-glow-blue">
+                <a href="/auth.html" class="bg-blue-900 text-white px-8 py-3.5 md:py-4 rounded-full font-black text-sm md:text-base hover:bg-blue-800 transition hover:-translate-y-1 w-full md:w-max flex items-center justify-center gap-2 neon-glow-blue">
                     Login Club / EO <span>&raquo;</span>
                 </a>
             </div>
         </div>
 
         <!-- RIGHT: F1 ID -->
-        <div class="w-full md:w-1/2 h-full absolute md:relative inset-0 md:inset-auto bg-blue-950 z-10 flex flex-col max-md:justify-end max-md:items-end md:justify-center md:items-end p-8 md:p-16 lg:px-20 max-md:pb-[12vh] max-md:pl-0 max-md:pr-6 max-md:[clip-path:polygon(100%_0,100%_100%,0_100%)] transition-all duration-700 ease-in-out hover:md:w-[60%] group">
+        <div class="w-full md:w-1/2 flex-1 relative bg-blue-950 z-10 flex flex-col justify-center items-start md:items-end text-left md:text-right p-6 py-12 md:p-16 lg:px-20 transition-all duration-700 ease-in-out hover:md:w-[60%] group border-t-4 border-scsGold md:border-t-0">
             <div class="absolute inset-0 z-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-            <div class="absolute inset-0 bg-gradient-to-t from-red-900/40 to-transparent z-0"></div>
+            <div class="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-l from-red-900/40 to-transparent z-0"></div>
             
-            <div class="relative z-10 text-right flex flex-col items-end w-full max-md:max-w-full md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
-                <span class="max-md:hidden inline-block bg-red-500/20 border border-red-500/50 text-red-300 px-5 py-1.5 rounded-full text-xs font-black tracking-wide shadow-sm mb-6">
+            <div class="relative z-10 flex flex-col items-start md:items-end w-full md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
+                <span class="hidden md:inline-block bg-red-500/20 border border-red-500/50 text-red-300 px-5 py-1.5 rounded-full text-xs font-black tracking-wide shadow-sm mb-6">
                     🪪 Infrastruktur Data Atlet
                 </span>
                 
-                <a href="/f1-profile.html" class="bg-red-600 text-white px-8 py-4 max-md:px-0 max-md:pr-8 max-md:py-3.5 rounded-full font-black text-sm max-md:text-[11px] md:text-base hover:bg-red-500 transition hover:-translate-y-1 w-full md:w-max max-md:w-[320px] flex items-center justify-center max-md:justify-end gap-2 max-md:order-1 max-md:mb-4 neon-glow-red">
-                    Cek F1 ID Saya <span>&raquo;</span>
-                </a>
+                <h2 class="text-lg md:text-2xl font-bold text-red-400 mb-1 uppercase tracking-widest drop-shadow-md leading-tight">Identitas Digital Perenang</h2>
+                <h1 class="text-5xl md:text-6xl lg:text-7xl font-black text-white tracking-tight mb-4 drop-shadow-lg">F1 ID</h1>
                 
-                <h2 class="max-md:order-2 text-xl md:text-2xl max-md:text-[11px] font-bold text-red-400 mb-6 max-md:mb-1 uppercase tracking-widest drop-shadow-md max-md:leading-tight">Identitas Perenang<br class="hidden max-md:block">Indonesia</h2>
-                <h1 class="max-md:order-3 text-5xl md:text-6xl lg:text-7xl max-md:text-[45px] font-black text-white tracking-tight mb-2 max-md:mb-0 drop-shadow-lg">F1 ID</h1>
-                
-                <div class="md:hidden w-full max-w-[60%] mt-4 max-md:order-4">
-                    <p class="text-[10px] text-slate-300 leading-relaxed font-medium">Satu identitas untuk seluruh perjalanan kompetisi atlet.</p>
-                </div>
-
-                <div class="hidden md:block mb-10 w-full pl-8 max-md:order-4 mt-3">
-                    <h3 class="text-3xl font-extrabold text-white mb-4">Satu <span class="text-red-400">Identitas.</span></h3>
-                    <p class="text-base text-slate-300 leading-relaxed font-medium mb-2">
-                        Daftar → Bertanding → Dapat Hasil → Simpan Sertifikat → Bangun Rekam Jejak.<br>
+                <div class="w-full mb-8 md:mb-10">
+                    <h3 class="hidden md:block text-3xl font-extrabold text-white mb-4">Satu <span class="text-red-400">Identitas.</span></h3>
+                    <p class="text-xs md:text-base text-slate-300 leading-relaxed font-medium mb-2">
+                        Daftar → Bertanding → Dapat Hasil → Simpan Sertifikat → Bangun Rekam Jejak.<br class="hidden md:block">
                         Tidak perlu membuat identitas baru di setiap event.
                     </p>
                 </div>
+
+                <a href="/f1-profile.html" class="bg-red-600 text-white px-8 py-3.5 md:py-4 rounded-full font-black text-sm md:text-base hover:bg-red-500 transition hover:-translate-y-1 w-full md:w-max flex items-center justify-center gap-2 neon-glow-red">
+                    Cek F1 ID Saya <span>&raquo;</span>
+                </a>
             </div>
         </div>
 
@@ -237,93 +235,91 @@
     </section>
 
     <!-- TRUST BANNER -->
-    <div class="bg-blue-900 border-t border-b border-blue-950 py-4 w-full">
-        <div class="max-w-7xl mx-auto px-4 flex flex-wrap justify-center items-center gap-4 md:gap-8 text-xs md:text-sm font-bold tracking-widest uppercase">
-            <span class="text-white drop-shadow-md">Built for Indonesian Swimming</span>
+    <div class="bg-blue-900 border-t border-b border-blue-950 py-3 md:py-4 w-full">
+        <div class="max-w-7xl mx-auto px-4 flex flex-wrap justify-center items-center gap-3 md:gap-8 text-[10px] md:text-sm font-bold tracking-widest uppercase">
+            <span class="text-white drop-shadow-md">Built for Competitive Swimming</span>
             <span class="text-blue-500 hidden md:inline">•</span>
             <span class="text-blue-200">SCS</span>
             <span class="text-blue-500">•</span>
             <span class="text-blue-200">F1 ID</span>
             <span class="text-blue-500">•</span>
             <span class="text-blue-200">Live Result</span>
-            <span class="text-blue-500">•</span>
-            <span class="text-blue-200">Digital Certificate</span>
         </div>
     </div>
 
     <!-- TESTIMONI MAHAKARYA -->
-    <section id="testi-section" class="py-16 bg-white border-b border-gray-100 overflow-hidden" style="display: none;">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-8">
-            <h2 class="text-2xl md:text-3xl font-extrabold text-blue-900 mb-2">Dipercaya Klub & EO Seluruh Indonesia</h2>
-            <p class="text-slate-500 text-sm font-medium">Review jujur dari pahlawan lapangan yang telah beralih ke digital.</p>
+    <section id="testi-section" class="py-10 md:py-16 bg-white border-b border-gray-100 overflow-hidden" style="display: none;">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-6 md:mb-8">
+            <h2 class="text-xl md:text-3xl font-extrabold text-blue-900 mb-2">Dipercaya Klub & EO</h2>
+            <p class="text-slate-500 text-xs md:text-sm font-medium">Review jujur dari pahlawan lapangan yang telah beralih ke digital.</p>
         </div>
-        <div class="relative w-full overflow-hidden flex flex-col justify-center items-center py-6">
-            <div class="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
-            <div class="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
-            <div id="dynamicTestiTrack" class="flex gap-6 w-max animate-slider"></div>
+        <div class="relative w-full overflow-hidden flex flex-col justify-center items-center py-4 md:py-6">
+            <div class="absolute left-0 top-0 bottom-0 w-12 md:w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
+            <div class="absolute right-0 top-0 bottom-0 w-12 md:w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+            <div id="dynamicTestiTrack" class="flex gap-4 md:gap-6 w-max animate-slider"></div>
         </div>
     </section>
 
     <!-- HOW IT WORKS: THE WORKFLOW -->
-    <section class="py-16 md:py-24 bg-gray-50 border-b border-gray-200">
+    <section class="py-12 md:py-24 bg-gray-50 border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 class="text-3xl md:text-4xl font-black text-slate-800 mb-4 tracking-tight">Dari Event Dibuat hingga Prestasi Tercatat</h2>
-            <p class="text-slate-500 text-lg mb-16 font-medium">SCS bukan sekadar fitur, melainkan satu alur kerja yang terhubung sepenuhnya.</p>
+            <h2 class="text-2xl md:text-4xl font-black text-slate-800 mb-3 md:mb-4 tracking-tight">Dari Event Dibuat hingga Prestasi Tercatat</h2>
+            <p class="text-slate-500 text-sm md:text-lg mb-8 md:mb-16 font-medium px-4">SCS bukan sekadar fitur, melainkan satu alur kerja yang terhubung sepenuhnya.</p>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 relative text-left">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-10 relative text-left">
                 <!-- Step 1 -->
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-                    <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-xl mb-6 text-scsBlue font-black border border-blue-100">1</div>
-                    <h4 class="font-bold text-slate-800 text-xl mb-3">Buat Event</h4>
-                    <p class="text-sm text-slate-500 leading-relaxed font-medium">EO menyiapkan detail event dan nomor lomba di dalam dashboard terpusat.</p>
+                <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-blue-50 rounded-xl flex items-center justify-center text-lg md:text-xl mb-4 md:mb-6 text-scsBlue font-black border border-blue-100">1</div>
+                    <h4 class="font-bold text-slate-800 text-lg md:text-xl mb-2 md:mb-3">Buat Event</h4>
+                    <p class="text-xs md:text-sm text-slate-500 leading-relaxed font-medium">EO menyiapkan detail event dan nomor lomba di dalam dashboard terpusat.</p>
                 </div>
                 <!-- Step 2 -->
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-                    <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-xl mb-6 text-scsBlue font-black border border-blue-100">2</div>
-                    <h4 class="font-bold text-slate-800 text-xl mb-3">Klub & Atlet Mendaftar</h4>
-                    <p class="text-sm text-slate-500 leading-relaxed font-medium">Pendaftaran terhubung langsung dengan F1 ID. Tidak perlu ketik data manual berulang.</p>
+                <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-blue-50 rounded-xl flex items-center justify-center text-lg md:text-xl mb-4 md:mb-6 text-scsBlue font-black border border-blue-100">2</div>
+                    <h4 class="font-bold text-slate-800 text-lg md:text-xl mb-2 md:mb-3">Klub & Atlet Mendaftar</h4>
+                    <p class="text-xs md:text-sm text-slate-500 leading-relaxed font-medium">Pendaftaran terhubung langsung dengan F1 ID. Tidak perlu ketik data manual berulang.</p>
                 </div>
                 <!-- Step 3 -->
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-                    <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-xl mb-6 text-scsBlue font-black border border-blue-100">3</div>
-                    <h4 class="font-bold text-slate-800 text-xl mb-3">Pembayaran Terverifikasi</h4>
-                    <p class="text-sm text-slate-500 leading-relaxed font-medium">Administrasi peserta lebih mudah dikontrol dengan sistem verifikasi yang transparan.</p>
+                <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-blue-50 rounded-xl flex items-center justify-center text-lg md:text-xl mb-4 md:mb-6 text-scsBlue font-black border border-blue-100">3</div>
+                    <h4 class="font-bold text-slate-800 text-lg md:text-xl mb-2 md:mb-3">Pembayaran Terverifikasi</h4>
+                    <p class="text-xs md:text-sm text-slate-500 leading-relaxed font-medium">Administrasi peserta lebih mudah dikontrol dengan sistem verifikasi yang transparan.</p>
                 </div>
                 <!-- Step 4 -->
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-                    <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-xl mb-6 text-scsBlue font-black border border-blue-100">4</div>
-                    <h4 class="font-bold text-slate-800 text-xl mb-3">Heat & Lane Otomatis</h4>
-                    <p class="text-sm text-slate-500 leading-relaxed font-medium">Drawing dan penyusunan seri (Seed) dilakukan sistem tanpa pekerjaan manual yang rawan error.</p>
+                <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-blue-50 rounded-xl flex items-center justify-center text-lg md:text-xl mb-4 md:mb-6 text-scsBlue font-black border border-blue-100">4</div>
+                    <h4 class="font-bold text-slate-800 text-lg md:text-xl mb-2 md:mb-3">Heat & Lane Otomatis</h4>
+                    <p class="text-xs md:text-sm text-slate-500 leading-relaxed font-medium">Drawing dan penyusunan seri (Seed) dilakukan sistem tanpa pekerjaan manual yang rawan error.</p>
                 </div>
                 <!-- Step 5 -->
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-                    <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-xl mb-6 text-scsBlue font-black border border-blue-100">5</div>
-                    <h4 class="font-bold text-slate-800 text-xl mb-3">Live Result</h4>
-                    <p class="text-sm text-slate-500 leading-relaxed font-medium">Hasil pertandingan dapat dipantau secara real-time dari tribun oleh pelatih dan orang tua.</p>
+                <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-blue-50 rounded-xl flex items-center justify-center text-lg md:text-xl mb-4 md:mb-6 text-scsBlue font-black border border-blue-100">5</div>
+                    <h4 class="font-bold text-slate-800 text-lg md:text-xl mb-2 md:mb-3">Live Result</h4>
+                    <p class="text-xs md:text-sm text-slate-500 leading-relaxed font-medium">Hasil pertandingan dapat dipantau secara real-time dari tribun oleh pelatih dan orang tua.</p>
                 </div>
                 <!-- Step 6 -->
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow bg-gradient-to-br from-white to-blue-50/50">
-                    <div class="w-12 h-12 bg-scsBlue rounded-xl flex items-center justify-center text-xl mb-6 text-white font-black shadow-md">6</div>
-                    <h4 class="font-bold text-slate-800 text-xl mb-3">Prestasi Tersimpan</h4>
-                    <p class="text-sm text-slate-500 leading-relaxed font-medium">E-Certificate dan catatan waktu langsung terhubung ke profil F1 ID atlet secara permanen.</p>
+                <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow bg-gradient-to-br from-white to-blue-50/50">
+                    <div class="w-10 h-10 md:w-12 md:h-12 bg-scsBlue rounded-xl flex items-center justify-center text-lg md:text-xl mb-4 md:mb-6 text-white font-black shadow-md">6</div>
+                    <h4 class="font-bold text-slate-800 text-lg md:text-xl mb-2 md:mb-3">Prestasi Tersimpan</h4>
+                    <p class="text-xs md:text-sm text-slate-500 leading-relaxed font-medium">E-Certificate dan catatan waktu langsung terhubung ke profil F1 ID atlet secara permanen.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- F1 ID: THE MOAT -->
-    <section class="py-20 md:py-28 bg-blue-950 text-white relative overflow-hidden">
+    <section class="py-12 md:py-28 bg-blue-950 text-white relative overflow-hidden">
         <div class="absolute inset-0 z-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
         <div class="absolute right-0 top-0 w-96 h-96 bg-red-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-30 translate-x-1/2 -translate-y-1/2"></div>
         
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-            <span class="inline-block bg-white/10 text-red-300 font-bold uppercase tracking-widest text-xs px-4 py-1.5 rounded-full mb-6 border border-white/20">Identitas Perenang Indonesia</span>
-            <h2 class="text-4xl md:text-6xl font-black mb-6 tracking-tight drop-shadow-lg">F1 ID</h2>
-            <p class="text-xl md:text-2xl text-blue-200 mb-12 font-medium max-w-3xl mx-auto leading-relaxed">
+        <div class="max-w-5xl mx-auto px-6 sm:px-6 lg:px-8 text-center relative z-10">
+            <span class="inline-block bg-white/10 text-red-300 font-bold uppercase tracking-widest text-[10px] md:text-xs px-4 py-1.5 rounded-full mb-4 border border-white/20">Identitas Digital Perenang</span>
+            <h2 class="text-4xl md:text-6xl font-black mb-4 tracking-tight drop-shadow-lg">F1 ID</h2>
+            <p class="text-sm md:text-2xl text-blue-200 mb-8 font-medium max-w-3xl mx-auto leading-relaxed">
                 Satu identitas untuk perjalanan kompetisi seorang perenang. Tidak perlu lagi membuat identitas baru di setiap event.
             </p>
             
-            <div class="flex flex-wrap justify-center items-center gap-4 md:gap-6 text-sm md:text-base font-bold text-white/90">
+            <div class="hidden md:flex flex-wrap justify-center items-center gap-4 md:gap-6 text-sm md:text-base font-bold text-white/90">
                 <span class="bg-white/5 px-4 py-2 rounded-lg border border-white/10">Daftar</span>
                 <span class="text-red-400">→</span>
                 <span class="bg-white/5 px-4 py-2 rounded-lg border border-white/10">Bertanding</span>
@@ -335,102 +331,102 @@
                 <span class="bg-white/10 px-4 py-2 rounded-lg border border-white/20 text-scsGold">Bangun Rekam Jejak</span>
             </div>
             
-            <div class="mt-16">
-                <a href="/f1-profile.html" class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold px-8 py-4 rounded-full transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)]">
-                    Cek F1 ID Sekarang <span class="text-xl">→</span>
+            <div class="mt-8 md:mt-16">
+                <a href="/f1-profile.html" class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold px-8 py-3.5 md:py-4 rounded-full transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)] text-sm md:text-base w-full md:w-auto justify-center">
+                    Cek F1 ID Sekarang <span class="text-lg md:text-xl">→</span>
                 </a>
             </div>
         </div>
     </section>
 
     <!-- PROBLEM TO SOLUTION -->
-    <section class="py-16 md:py-24 bg-white border-b border-gray-100">
+    <section class="py-12 md:py-24 bg-white border-b border-gray-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <span class="text-red-500 font-bold tracking-widest text-xs md:text-sm mb-3 block uppercase">Dibangun dari Masalah Nyata di Lapangan</span>
-            <h2 class="text-3xl md:text-4xl font-extrabold text-slate-800 mb-16 max-w-4xl mx-auto leading-tight">
+            <span class="text-red-500 font-bold tracking-widest text-[10px] md:text-sm mb-2 block uppercase">Dibangun dari Masalah Nyata di Lapangan</span>
+            <h2 class="text-xl md:text-4xl font-extrabold text-slate-800 mb-10 md:mb-16 max-w-4xl mx-auto leading-tight px-2">
                 Kompetisi renang tidak seharusnya menghabiskan waktu panitia untuk pekerjaan administratif yang berulang.
             </h2>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 text-left relative">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 text-left relative">
                 <!-- Konektor Line Desktop -->
                 <div class="hidden md:block absolute top-8 left-[15%] right-[15%] h-0.5 bg-gray-100 -z-10"></div>
                 
                 <div>
-                    <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-2xl mx-auto mb-6 shadow-sm border border-red-100">❌</div>
-                    <h4 class="font-bold text-center text-slate-800 text-lg mb-3">Pendaftaran Berantakan</h4>
-                    <p class="text-sm text-slate-500 text-center leading-relaxed font-medium">Data peserta tersebar di Excel, salah ketik nama, hingga sulitnya mengontrol verifikasi pembayaran.</p>
+                    <div class="w-12 h-12 md:w-16 md:h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-xl md:text-2xl mx-auto mb-4 shadow-sm border border-red-100">❌</div>
+                    <h4 class="font-bold text-center text-slate-800 text-base md:text-lg mb-2">Pendaftaran Berantakan</h4>
+                    <p class="text-xs md:text-sm text-slate-500 text-center leading-relaxed font-medium px-4">Data peserta tersebar di Excel, salah ketik nama, hingga sulitnya mengontrol verifikasi pembayaran.</p>
                 </div>
                 <div>
-                    <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-2xl mx-auto mb-6 shadow-sm border border-red-100">⏳</div>
-                    <h4 class="font-bold text-center text-slate-800 text-lg mb-3">Drawing & Administrasi Lama</h4>
-                    <p class="text-sm text-slate-500 text-center leading-relaxed font-medium">Pekerjaan yang sama (menyusun heat, membuat buku acara) harus dilakukan berulang kali secara manual.</p>
+                    <div class="w-12 h-12 md:w-16 md:h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-xl md:text-2xl mx-auto mb-4 shadow-sm border border-red-100">⏳</div>
+                    <h4 class="font-bold text-center text-slate-800 text-base md:text-lg mb-2">Drawing & Administrasi Lama</h4>
+                    <p class="text-xs md:text-sm text-slate-500 text-center leading-relaxed font-medium px-4">Pekerjaan yang sama (menyusun heat, membuat buku acara) harus dilakukan berulang kali secara manual.</p>
                 </div>
                 <div>
-                    <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-2xl mx-auto mb-6 shadow-sm border border-red-100">🕳️</div>
-                    <h4 class="font-bold text-center text-slate-800 text-lg mb-3">Hasil Tidak Berkelanjutan</h4>
-                    <p class="text-sm text-slate-500 text-center leading-relaxed font-medium">Setelah event selesai, data prestasi sering berhenti dan hilang sebagai tumpukan kertas atau file PDF.</p>
+                    <div class="w-12 h-12 md:w-16 md:h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-xl md:text-2xl mx-auto mb-4 shadow-sm border border-red-100">🕳️</div>
+                    <h4 class="font-bold text-center text-slate-800 text-base md:text-lg mb-2">Hasil Tidak Berkelanjutan</h4>
+                    <p class="text-xs md:text-sm text-slate-500 text-center leading-relaxed font-medium px-4">Setelah event selesai, data prestasi sering berhenti dan hilang sebagai tumpukan kertas atau file PDF.</p>
                 </div>
             </div>
             
-            <div class="mt-16 bg-blue-50 border border-blue-100 rounded-3xl p-8 max-w-3xl mx-auto">
-                <p class="text-lg md:text-xl font-bold text-scsBlue">SCS mengubahnya menjadi satu alur digital yang rapi, transparan, dan permanen.</p>
+            <div class="mt-10 md:mt-16 bg-blue-50 border border-blue-100 rounded-2xl md:rounded-3xl p-6 md:p-8 max-w-3xl mx-auto">
+                <p class="text-sm md:text-xl font-bold text-scsBlue leading-relaxed">SCS mengubahnya menjadi satu alur digital yang rapi, transparan, dan permanen.</p>
             </div>
         </div>
     </section>
 
     <!-- CORE FEATURES -->
-    <section id="fitur" class="pt-20 pb-24 bg-gray-50 border-b border-gray-200">
+    <section id="fitur" class="pt-16 pb-20 md:pt-20 md:pb-24 bg-gray-50 border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-extrabold text-scsBlue mb-4 tracking-tight">Kenapa SCS?</h2>
+            <div class="text-center mb-10 md:mb-16">
+                <h2 class="text-2xl md:text-4xl font-extrabold text-scsBlue mb-2 tracking-tight">Kenapa SCS?</h2>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 border-t-4 border-t-red-500 hover:-translate-y-2 hover:shadow-xl transition duration-300">
-                    <div class="w-14 h-14 bg-red-50 rounded-xl flex items-center justify-center mb-6 text-2xl shadow-inner border border-red-100">🪪</div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">F1 ID Terverifikasi</h3>
-                    <p class="text-gray-600 leading-relaxed font-medium text-sm">Identitas atlet tunggal yang terhubung langsung dengan database nasional SCS. Selamat tinggal pemalsuan data.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10">
+                <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 border-t-4 border-t-red-500 hover:-translate-y-2 hover:shadow-xl transition duration-300">
+                    <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center mb-4 text-xl shadow-inner border border-red-100">🪪</div>
+                    <h3 class="text-lg md:text-xl font-bold text-gray-900 mb-2">F1 ID Terverifikasi</h3>
+                    <p class="text-gray-600 leading-relaxed font-medium text-xs md:text-sm">Identitas atlet tunggal yang terhubung langsung dengan database nasional SCS. Selamat tinggal pemalsuan data.</p>
                 </div>
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 border-t-4 border-t-scsBlue hover:-translate-y-2 hover:shadow-xl transition duration-300">
-                    <div class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mb-6 text-2xl shadow-inner border border-blue-100">🚀</div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Kompetisi Lebih Otomatis</h3>
-                    <p class="text-gray-600 leading-relaxed font-medium text-sm">Dari pendaftaran, drawing seri, hingga cetak sertifikat. Lakukan semuanya tanpa pekerjaan manual berulang.</p>
+                <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 border-t-4 border-t-scsBlue hover:-translate-y-2 hover:shadow-xl transition duration-300">
+                    <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-4 text-xl shadow-inner border border-blue-100">🚀</div>
+                    <h3 class="text-lg md:text-xl font-bold text-gray-900 mb-2">Kompetisi Lebih Otomatis</h3>
+                    <p class="text-gray-600 leading-relaxed font-medium text-xs md:text-sm">Dari pendaftaran, drawing seri, hingga cetak sertifikat. Lakukan semuanya tanpa pekerjaan manual berulang.</p>
                 </div>
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 border-t-4 border-t-scsGold hover:-translate-y-2 hover:shadow-xl transition duration-300">
-                    <div class="w-14 h-14 bg-yellow-50 rounded-xl flex items-center justify-center mb-6 text-2xl shadow-inner border border-yellow-100">⏱️</div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Live Result & Rekam Jejak</h3>
-                    <p class="text-gray-600 leading-relaxed font-medium text-sm">Hasil pertandingan dapat dipantau seketika dan tersimpan permanen sebagai bagian dari perjalanan karier atlet.</p>
+                <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 border-t-4 border-t-scsGold hover:-translate-y-2 hover:shadow-xl transition duration-300">
+                    <div class="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center mb-4 text-xl shadow-inner border border-yellow-100">⏱️</div>
+                    <h3 class="text-lg md:text-xl font-bold text-gray-900 mb-2">Live Result & Rekam Jejak</h3>
+                    <p class="text-gray-600 leading-relaxed font-medium text-xs md:text-sm">Hasil pertandingan dapat dipantau seketika dan tersimpan permanen sebagai bagian dari perjalanan karier atlet.</p>
                 </div>
             </div>
         </div>
     </section>
     
     <!-- SPONSOR MONETIZATION -->
-    <section class="py-20 bg-white">
-        <div class="max-w-4xl mx-auto px-4 text-center">
-            <span class="text-4xl mb-4 block">🤝</span>
-            <h2 class="text-3xl font-extrabold text-slate-800 mb-4">Berikan Brand Anda Ruang di Dalam Kompetisi</h2>
-            <p class="text-lg text-slate-500 mb-8 font-medium">Bukan sekadar spanduk di pinggir kolam. Sponsor Dashboard SCS memungkinkan brand hadir secara digital di halaman Live Result, KTP F1 ID, dan e-certificate yang dilihat ribuan pasang mata orang tua.</p>
-            <a href="/promosi.html" class="text-scsBlue font-bold hover:underline">Pelajari Solusi Promosi SCS &rarr;</a>
+    <section class="py-16 md:py-20 bg-white">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <span class="text-3xl md:text-4xl mb-3 block">🤝</span>
+            <h2 class="text-xl md:text-3xl font-extrabold text-slate-800 mb-3">Berikan Brand Anda Ruang di Dalam Kompetisi</h2>
+            <p class="text-sm md:text-lg text-slate-500 mb-6 font-medium leading-relaxed">Bukan sekadar spanduk di pinggir kolam. Sponsor Dashboard SCS memungkinkan brand hadir secara digital di halaman Live Result, KTP F1 ID, dan e-certificate yang dilihat ribuan pasang mata orang tua.</p>
+            <a href="/promosi.html" class="text-scsBlue font-bold hover:underline text-sm md:text-base">Pelajari Solusi Promosi SCS &rarr;</a>
         </div>
     </section>
 
     <!-- FINAL CTA -->
-    <section class="py-24 bg-gradient-to-b from-blue-900 to-blue-950 text-center px-4">
-        <h2 class="text-4xl md:text-5xl font-black text-white mb-6">Siap Menjalankan Event Berikutnya?</h2>
-        <p class="text-blue-200 text-lg mb-10 font-medium">Bergabung dengan ekosistem kompetisi renang paling modern di Indonesia.</p>
-        <a href="/auth.html" class="inline-block bg-white text-blue-900 font-black px-10 py-4 rounded-full text-lg hover:bg-slate-100 transition-all hover:scale-105 shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+    <section class="py-16 md:py-24 bg-gradient-to-b from-blue-900 to-blue-950 text-center px-6">
+        <h2 class="text-2xl md:text-5xl font-black text-white mb-4">Siap Menjalankan Event Berikutnya?</h2>
+        <p class="text-blue-200 text-sm md:text-lg mb-8 font-medium">Bergabung dengan ekosistem kompetisi renang paling modern di Indonesia.</p>
+        <a href="/auth.html" class="inline-block w-full md:w-auto bg-white text-blue-900 font-black px-8 py-3.5 md:py-4 rounded-full text-sm md:text-lg hover:bg-slate-100 transition-all md:hover:scale-105 shadow-[0_0_30px_rgba(255,255,255,0.2)]">
             Mulai Buat Event Sekarang
         </a>
     </section>
 
-    <footer class="bg-gray-950 text-gray-400 pt-16 pb-28 md:pb-16 border-t border-gray-900">
+    <footer class="bg-gray-950 text-gray-400 pt-12 md:pt-16 pb-28 md:pb-16 border-t border-gray-900">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <img src="/images/logo.png" alt="SCS Logo" class="h-16 mx-auto mb-8 opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0">
-            <p class="text-xs text-slate-400 font-bold mb-2 uppercase tracking-widest">PT. Teknologi Prestasi Indonesia</p>
-            <p class="font-medium text-slate-400 text-sm md:text-base mb-6">&copy; 2026 F1 Swimming - F1 ID. All rights reserved.</p>
-            <div class="inline-block bg-white/5 border border-white/10 px-6 py-3 rounded-xl">
-                <p class="text-xs md:text-sm text-slate-300 font-black tracking-widest uppercase">Didesain oleh orang lapangan, untuk orang lapangan.</p>
+            <img src="/images/logo.png" alt="SCS Logo" class="h-12 md:h-16 mx-auto mb-6 md:mb-8 opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0">
+            <p class="text-[10px] md:text-xs text-slate-400 font-bold mb-1 md:mb-2 uppercase tracking-widest">PT. Teknologi Prestasi Indonesia</p>
+            <p class="font-medium text-slate-400 text-xs md:text-base mb-6">&copy; 2026 F1 Swimming - F1 ID. All rights reserved.</p>
+            <div class="inline-block bg-white/5 border border-white/10 px-4 md:px-6 py-2 md:py-3 rounded-xl">
+                <p class="text-[9px] md:text-sm text-slate-300 font-black tracking-widest uppercase">Didesain oleh orang lapangan, untuk orang lapangan.</p>
             </div>
         </div>
     </footer>
@@ -521,17 +517,17 @@
 
                     const generateCardsHTML = (testiArray) => {
                         return testiArray.map(t => `
-                            <div class="bg-gradient-to-br from-blue-900 via-blue-950 to-slate-900 rounded-3xl p-8 w-[320px] md:w-[450px] shadow-xl shrink-0 flex flex-col justify-between relative overflow-hidden group">
+                            <div class="bg-gradient-to-br from-blue-900 via-blue-950 to-slate-900 rounded-3xl p-6 md:p-8 w-[280px] md:w-[450px] shadow-xl shrink-0 flex flex-col justify-between relative overflow-hidden group">
                                 <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] group-hover:opacity-20 transition-opacity"></div>
-                                <span class="text-3xl text-scsGold mb-4 relative z-10 block">⭐⭐⭐⭐⭐</span>
-                                <p class="text-sm md:text-base font-medium mb-6 italic text-slate-200 relative z-10 leading-relaxed">"${t.text}"</p>
+                                <span class="text-2xl md:text-3xl text-scsGold mb-3 md:mb-4 relative z-10 block">⭐⭐⭐⭐⭐</span>
+                                <p class="text-xs md:text-base font-medium mb-4 md:mb-6 italic text-slate-200 relative z-10 leading-relaxed">"${t.text}"</p>
                                 <div class="flex items-center gap-3 relative z-10 border-t border-white/10 pt-4 mt-auto">
-                                    <div class="w-10 h-10 bg-white text-blue-900 rounded-full flex items-center justify-center font-black shadow-inner">
+                                    <div class="w-8 h-8 md:w-10 md:h-10 bg-white text-blue-900 rounded-full flex items-center justify-center font-black shadow-inner text-sm md:text-base">
                                         ${t.name ? t.name.charAt(0).toUpperCase() : 'U'}
                                     </div>
                                     <div>
-                                        <p class="font-bold text-scsGold text-sm">${t.name || 'User'}</p>
-                                        <p class="text-slate-400 text-[10px] uppercase tracking-wider">${t.role || ''}</p>
+                                        <p class="font-bold text-scsGold text-xs md:text-sm">${t.name || 'User'}</p>
+                                        <p class="text-slate-400 text-[9px] md:text-[10px] uppercase tracking-wider">${t.role || ''}</p>
                                     </div>
                                 </div>
                             </div>
