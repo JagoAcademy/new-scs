@@ -35,26 +35,34 @@
 </head>
 <body class="bg-gray-50 min-h-screen font-sans pb-20">
 
-    <!-- TOP NAV -->
-    <nav class="bg-white shadow-sm p-4 flex justify-between items-center border-b sticky top-0 z-50">
-        <div class="flex items-center gap-3">
-            <a href="/" class="hover:scale-105 transition-transform duration-200 shrink-0">
-                <img src="/images/logo.png" alt="SCS Logo" class="h-8 md:h-10">
+    <!-- TOP NAV (SUDAH DIROMBAK) -->
+    <nav class="bg-white shadow-sm p-3 md:p-4 flex justify-between items-center border-b sticky top-0 z-50">
+        
+        <!-- KIRI: Logo Klub | SCS COMMAND CENTER [Logo SCS di Desktop] -->
+        <div class="flex items-center gap-2 md:gap-3 overflow-hidden">
+            <!-- Logo Klub dipindah ke kiri -->
+            <a href="#" class="shrink-0">
+                <img src="" id="clubLogoDisplay" alt="Club Logo" class="w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-200 shadow-sm object-cover bg-white">
             </a>
-            <div class="hidden sm:block border-l-2 border-gray-200 pl-3 ml-1">
-                <h1 id="secretAdminTrigger" class="text-sm md:text-lg font-black text-blue-900 tracking-tight cursor-pointer select-none transition-all">SCS COMMAND CENTER</h1>
+            
+            <div class="border-l-2 border-gray-200 pl-2 md:pl-3 flex items-center gap-2 shrink-0">
+                <h1 id="secretAdminTrigger" class="text-[11px] sm:text-sm md:text-lg font-black text-blue-900 tracking-tight cursor-pointer select-none transition-all uppercase whitespace-nowrap">SCS COMMAND CENTER</h1>
+                <!-- Logo SCS: Hanya tampil di Desktop -->
+                <img src="/images/logo.png" alt="SCS Logo" class="hidden md:block h-4 md:h-6 object-contain">
             </div>
         </div>
         
+        <!-- KANAN: Desktop Menu (Info Klub & Dropdown) -->
         <div class="hidden md:flex items-center gap-4">
             <div class="relative group cursor-pointer">
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 bg-white hover:bg-gray-50 p-1.5 px-3 rounded-xl border border-gray-100 transition-colors shadow-sm">
                     <div class="text-right">
                         <p class="text-sm font-extrabold text-gray-800" id="clubNameDisplay">Memuat...</p>
                         <div class="flex items-center justify-end gap-1 mt-0.5" id="clubBadges"></div>
                     </div>
-                    <img src="" id="clubLogoDisplay" alt="Club Logo" class="w-11 h-11 rounded-full border-2 border-scsGold shadow-sm object-cover bg-white">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
                 </div>
+                
                 <div class="absolute right-0 mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden transform origin-top-right group-hover:scale-100 scale-95">
                     <div class="p-3 border-b border-gray-50 bg-gray-50/50">
                         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Manajemen Klub</p>
@@ -67,9 +75,10 @@
             </div>
         </div>
 
-        <div class="md:hidden flex items-center">
+        <!-- KANAN: Mobile Burger Menu -->
+        <div class="md:hidden flex items-center shrink-0 ml-2">
             <button id="mobileMenuToggle" class="text-gray-700 p-2 focus:outline-none bg-gray-50 rounded-lg border border-gray-200">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"></path></svg>
             </button>
         </div>
     </nav>
