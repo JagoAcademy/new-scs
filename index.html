@@ -39,20 +39,6 @@
     <style>
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        @keyframes marquee {
-            0% { transform: translateX(100vw); }
-            100% { transform: translateX(-100%); }
-        }
-        .animate-marquee {
-            display: inline-block;
-            white-space: nowrap;
-            animation: marquee 25s linear infinite; 
-        }
-        .marquee-container {
-            overflow: hidden;
-            white-space: nowrap;
-            width: 100%;
-        }
         @keyframes neon-blue {
             0% { box-shadow: 0 0 5px rgba(30, 58, 138, 0.4), 0 0 10px rgba(30, 58, 138, 0.2); }
             50% { box-shadow: 0 0 15px rgba(30, 58, 138, 0.8), 0 0 35px rgba(30, 58, 138, 0.6); }
@@ -96,14 +82,16 @@
     <nav class="bg-white/90 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 h-14 md:h-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
             <div class="flex justify-between items-center h-full">
-                <!-- KIRI: Logo + F1 ID Garis Hijau (Mobile) -->
+                <!-- KIRI: Logo SCS + Logo F1 + F1 ID Garis Hijau (Mobile) -->
                 <div class="flex-shrink-0 flex items-center h-full py-1">
-                    <a href="/" class="block shrink-0">
-                        <img class="max-h-12 md:max-h-14 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/logo.png" alt="SCS Logo">
+                    <a href="/" class="flex items-center gap-1.5 md:gap-3 shrink-0">
+                        <img class="max-h-9 md:max-h-12 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/logo.png" alt="SCS Logo">
+                        <!-- Tambahan Logo F1 -->
+                        <img class="max-h-5 md:max-h-7 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/logof1.png" alt="F1 Logo">
                     </a>
                     
-                    <!-- Ini yang lu request: F1 ID Garis Hijau di Mobile -->
-                    <a href="/f1-profile.html" class="md:hidden ml-4 text-emerald-600 font-black text-[13px] border-b-[2px] border-emerald-500 pb-0.5 hover:text-emerald-700 transition-colors">F1 ID</a>
+                    <!-- F1 ID Garis Hijau di Mobile -->
+                    <a href="/f1-profile.html" class="md:hidden ml-3 text-emerald-600 font-black text-[13px] border-b-[2px] border-emerald-500 pb-0.5 hover:text-emerald-700 transition-colors">F1 ID</a>
                 </div>
                 
                 <!-- KANAN: Menu Desktop -->
@@ -166,16 +154,6 @@
                 <span id="mobileAuthText">Login / Dashboard</span>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
             </a>
-        </div>
-    </div>
-
-    <div class="fixed top-14 md:top-16 left-0 w-full bg-blue-950 shadow-md border-b border-blue-800 py-1.5 z-40 marquee-container">
-        <div class="animate-marquee text-scsGold font-bold text-xs md:text-sm tracking-wide flex gap-12 items-center">
-            <span>📢 EKSKLUSIF: Daftarkan event Anda bulan ini, Nikmati semua fitur SCS seperti : Form pendaftaran, dashboard panitia lengkap hingga generate buku acara dan sertifikat auto GRATIS!</span>
-            <span class="opacity-50 text-white">•</span>
-            <span class="text-white">🔥 Kuota Terbatas untuk 5 Event Pertama!</span>
-            <span class="opacity-50 text-white">•</span>
-            <span>🏅 SCS - Revolusi Manajemen Lomba Renang Indonesia</span>
         </div>
     </div>
 
