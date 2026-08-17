@@ -74,6 +74,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // --- AUTO EMAIL TEMPLATE UNTUK UPGRADE PRO ---
+    const upgradeAction = () => {
+        if (!currentClubData) return;
+        const subject = encodeURIComponent(`Pengajuan Upgrade SCS PRO - ${currentClubData.club_name}`);
+        const body = encodeURIComponent(`Halo Tim F1 Swimming,
+
+Kami ingin mengajukan upgrade akun klub kami ke tier SCS PRO.
+Berikut detail klub kami:
+- Nama Klub: ${currentClubData.club_name || '-'}
+- Head Coach: ${currentClubData.coach_name || '-'}
+- No WhatsApp: ${currentClubData.contact_wa || '-'}
+- Kota/Provinsi: ${currentClubData.kota_asal || '-'} / ${currentClubData.provinsi || '-'}
+
+Mohon informasi lebih lanjut mengenai biaya dan proses aktivasinya.
+Terima kasih.`);
+        window.location.href = `mailto:support@f1swimming.com?subject=${subject}&body=${body}`;
+    };
+
+    const btnUpgradeTier = document.getElementById('btnUpgradeTier');
+    const mobileBtnUpgradeTier = document.getElementById('mobileBtnUpgradeTier');
+    if (btnUpgradeTier) btnUpgradeTier.addEventListener('click', upgradeAction);
+    if (mobileBtnUpgradeTier) mobileBtnUpgradeTier.addEventListener('click', upgradeAction);
+
     const btnOpenTestimoni = document.getElementById('btnOpenTestimoni');
     const modalTestimoni = document.getElementById('modalTestimoni');
     const closeModalTestimoniBtn = document.getElementById('closeModalTestimoniBtn');
@@ -310,6 +333,13 @@ async function fetchDashboardData() {
         let pendingCount = athletesData.filter(a => a.is_verified === false).length;
         const pendingEl = document.getElementById('valF1Pending');
         if (pendingEl) pendingEl.innerText = pendingCount;
+
+        // --- HITUNG POIN KLUB OTOMATIS ---
+        const totalAtlet = athletesData.length;
+        const verifiedAtlet = athletesData.filter(a => a.is_verified).length;
+        const totalPoin = (totalAtlet * 5) + (verifiedAtlet * 5);
+        const poinEl = document.getElementById('valPoinKlub');
+        if (poinEl) poinEl.innerText = totalPoin.toLocaleString('id-ID');
 
         allAthletes = athletesData.sort((a, b) => a.full_name.localeCompare(b.full_name));
         filteredAthletes = [...allAthletes]; 
