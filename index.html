@@ -15,7 +15,7 @@
     
     <!-- SEO Meta Tags -->
     <meta name="description" content="SCS (Swimming Competition System) - Satu sistem untuk menjalankan kompetisi renang dari pendaftaran hingga hasil akhir.">
-    <meta name="keywords" content="Sistem kejuaraan renang, lomba renang anak Surabaya, daftar lomba renang online, F1 ID renang, aplikasi pertandingan renang">
+    <meta name="keywords" content="Sistem kejuaraan renang, daftar lomba renang online, F1 ID renang, aplikasi pertandingan renang">
     <meta name="author" content="Fajar Aditya">
 
     <!-- Open Graph / WhatsApp / Facebook -->
@@ -160,7 +160,17 @@
         </div>
     </div>
 
-    <!-- HERO SECTION (CUTTING/SPLIT) -->
+    <div class="fixed top-14 md:top-16 left-0 w-full bg-blue-950 shadow-md border-b border-blue-800 py-1.5 z-40 marquee-container">
+        <div class="animate-marquee text-scsGold font-bold text-xs md:text-sm tracking-wide flex gap-12 items-center">
+            <span>📢 EKSKLUSIF: Daftarkan event Anda bulan ini, Nikmati semua fitur SCS seperti : Form pendaftaran, dashboard panitia lengkap hingga generate buku acara dan sertifikat auto GRATIS!</span>
+            <span class="opacity-50 text-white">•</span>
+            <span class="text-white">🔥 Kuota Terbatas untuk 5 Event Pertama!</span>
+            <span class="opacity-50 text-white">•</span>
+            <span>🏅 SCS - Revolusi Manajemen Lomba Renang Indonesia</span>
+        </div>
+    </div>
+
+    <!-- HERO SECTION (CUTTING/SPLIT IS BACK & FIXED TEXT!) -->
     <section class="relative w-full h-[calc(100vh-3.5rem)] md:h-screen pt-14 md:pt-16 flex max-md:block overflow-hidden">
         
         <!-- LEFT: SCS -->
@@ -168,16 +178,18 @@
             <div class="absolute inset-0 z-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
             
             <div class="relative z-10 text-left flex flex-col items-start w-full max-md:max-w-full md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
-                <span class="inline-block bg-slate-100 border border-slate-200 text-slate-700 px-5 py-1.5 max-md:px-3 max-md:py-1 rounded-full text-xs max-md:text-[9px] font-black tracking-wide shadow-sm mb-6 max-md:mb-3">
-                    🇮🇩 Dibangun untuk kompetisi renang Indonesia
-                </span>
                 
-                <h1 class="text-5xl md:text-6xl lg:text-7xl max-md:text-[45px] font-black text-blue-950 tracking-tight mb-2 max-md:mb-1 drop-shadow-sm">SCS</h1>
-                <h2 class="text-xl md:text-2xl max-md:text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest max-md:leading-tight">Swimming Competition System</h2>
+                <div class="flex items-center gap-3 mb-1 md:mb-2">
+                    <h1 class="text-5xl md:text-6xl lg:text-7xl max-md:text-[45px] font-black text-blue-950 tracking-tight drop-shadow-sm">SCS</h1>
+                    <img src="/images/logof1.png" alt="F1 Swimming Logo" class="h-8 md:h-12 lg:h-14 object-contain">
+                </div>
                 
-                <div class="md:hidden w-full max-w-[85%] mb-6">
-                    <p class="text-[10px] text-scsBlue font-bold mb-1">Event • Registration • Heat • Live Result</p>
-                    <p class="text-[10px] text-slate-500 leading-relaxed font-medium">Satu sistem untuk menjalankan kompetisi dari awal hingga akhir.</p>
+                <h2 class="text-xl md:text-2xl max-md:text-[11px] font-bold text-slate-400 mb-4 md:mb-2 uppercase tracking-widest max-md:leading-tight">Swimming Competition<br class="hidden max-md:block">System</h2>
+                
+                <!-- MOBILE TEXT (Width dibatasi max-w-[60%] agar tidak nyentuh garis miring) -->
+                <div class="md:hidden w-full max-w-[60%] pr-2 mb-6">
+                    <p class="text-[10px] text-scsBlue font-bold mb-1 uppercase tracking-wide leading-tight">Event &bull; Registration &bull; Heat &bull; Result</p>
+                    <p class="text-[10px] text-slate-500 leading-relaxed font-medium">Satu sistem untuk menjalankan kompetisi renang dari pendaftaran hingga hasil akhir.</p>
                 </div>
                 
                 <div class="hidden md:block mb-10 w-full pr-8 mt-2">
@@ -194,7 +206,8 @@
                     </div>
                 </div>
                 
-                <a href="/auth.html" class="bg-blue-900 text-white px-8 py-4 max-md:px-0 max-md:pl-8 max-md:py-3.5 rounded-full font-black text-sm max-md:text-[11px] md:text-base hover:bg-blue-800 transition hover:-translate-y-1 w-full md:w-max max-md:w-[320px] flex items-center justify-center max-md:justify-start gap-2 neon-glow-blue">
+                <!-- MOBILE BUTTON (Width dipendekin ke 250px agar aman dari garis potong) -->
+                <a href="/auth.html" class="bg-blue-900 text-white px-8 py-4 max-md:px-0 max-md:pl-6 max-md:py-3.5 rounded-full font-black text-sm max-md:text-[11px] md:text-base hover:bg-blue-800 transition hover:-translate-y-1 w-full md:w-max max-md:w-[250px] flex items-center justify-center max-md:justify-start gap-2 neon-glow-blue">
                     Login Club / EO <span>&raquo;</span>
                 </a>
             </div>
@@ -206,15 +219,12 @@
             <div class="absolute inset-0 bg-gradient-to-t from-red-900/40 to-transparent z-0"></div>
             
             <div class="relative z-10 text-right flex flex-col items-end w-full max-md:max-w-full md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
-                <span class="max-md:hidden inline-block bg-red-500/20 border border-red-500/50 text-red-300 px-5 py-1.5 rounded-full text-xs font-black tracking-wide shadow-sm mb-6">
-                    🪪 Infrastruktur Data Atlet
-                </span>
                 
                 <a href="/f1-profile.html" class="bg-red-600 text-white px-8 py-4 max-md:px-0 max-md:pr-8 max-md:py-3.5 rounded-full font-black text-sm max-md:text-[11px] md:text-base hover:bg-red-500 transition hover:-translate-y-1 w-full md:w-max max-md:w-[320px] flex items-center justify-center max-md:justify-end gap-2 max-md:order-1 max-md:mb-4 neon-glow-red">
                     Cek F1 ID Saya <span>&raquo;</span>
                 </a>
                 
-                <h2 class="max-md:order-2 text-xl md:text-2xl max-md:text-[11px] font-bold text-red-400 mb-6 max-md:mb-1 uppercase tracking-widest drop-shadow-md max-md:leading-tight">Identitas Perenang<br class="hidden max-md:block">Indonesia</h2>
+                <h2 class="max-md:order-2 text-xl md:text-2xl max-md:text-[11px] font-bold text-red-400 mb-6 max-md:mb-1 uppercase tracking-widest drop-shadow-md max-md:leading-tight">Identitas Digital <br class="hidden max-md:block">Perenang</h2>
                 <h1 class="max-md:order-3 text-5xl md:text-6xl lg:text-7xl max-md:text-[45px] font-black text-white tracking-tight mb-2 max-md:mb-0 drop-shadow-lg">F1 ID</h1>
                 
                 <div class="md:hidden w-full max-w-[60%] mt-4 max-md:order-4">
@@ -239,15 +249,13 @@
     <!-- TRUST BANNER -->
     <div class="bg-blue-900 border-t border-b border-blue-950 py-4 w-full">
         <div class="max-w-7xl mx-auto px-4 flex flex-wrap justify-center items-center gap-4 md:gap-8 text-xs md:text-sm font-bold tracking-widest uppercase">
-            <span class="text-white drop-shadow-md">Built for Indonesian Swimming</span>
+            <span class="text-white drop-shadow-md">Built for Competitive Swimming</span>
             <span class="text-blue-500 hidden md:inline">•</span>
             <span class="text-blue-200">SCS</span>
             <span class="text-blue-500">•</span>
             <span class="text-blue-200">F1 ID</span>
             <span class="text-blue-500">•</span>
             <span class="text-blue-200">Live Result</span>
-            <span class="text-blue-500">•</span>
-            <span class="text-blue-200">Digital Certificate</span>
         </div>
     </div>
 
@@ -317,7 +325,7 @@
         <div class="absolute right-0 top-0 w-96 h-96 bg-red-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-30 translate-x-1/2 -translate-y-1/2"></div>
         
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-            <span class="inline-block bg-white/10 text-red-300 font-bold uppercase tracking-widest text-xs px-4 py-1.5 rounded-full mb-6 border border-white/20">Identitas Perenang Indonesia</span>
+            <span class="inline-block bg-white/10 text-red-300 font-bold uppercase tracking-widest text-xs px-4 py-1.5 rounded-full mb-6 border border-white/20">Identitas Digital Perenang</span>
             <h2 class="text-4xl md:text-6xl font-black mb-6 tracking-tight drop-shadow-lg">F1 ID</h2>
             <p class="text-xl md:text-2xl text-blue-200 mb-12 font-medium max-w-3xl mx-auto leading-relaxed">
                 Satu identitas untuk perjalanan kompetisi seorang perenang. Tidak perlu lagi membuat identitas baru di setiap event.
