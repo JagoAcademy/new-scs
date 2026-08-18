@@ -82,11 +82,11 @@
     <nav class="bg-white/90 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 h-14 md:h-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
             <div class="flex justify-between items-center h-full">
-                <!-- KIRI: Logo SCS bersanding dengan Logo F1 (Tinggi Diselaraskan) -->
+                <!-- KIRI: Logo SCS Diet (Lebih Kecil) & F1 ID (Dominan) -->
                 <div class="flex-shrink-0 flex items-center h-full py-1">
                     <a href="/" class="flex items-center gap-3 md:gap-4 shrink-0">
-                        <img class="h-7 md:h-9 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/logo.png" alt="SCS Logo">
-                        <div class="h-5 md:h-7 w-px bg-slate-300"></div>
+                        <img class="h-5 md:h-6 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/logo.png" alt="SCS Logo">
+                        <div class="h-5 md:h-6 w-px bg-slate-300"></div>
                         <img class="h-7 md:h-9 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/logof1.png" alt="F1 Logo">
                     </a>
                 </div>
@@ -198,7 +198,7 @@
                 </div>
                 
                 <!-- Tombol Dirampingkan (Diet Padding) -->
-                <a href="/auth.html" class="bg-blue-900 text-white px-8 py-2.5 md:py-3 max-md:px-0 max-md:pl-6 rounded-full font-black text-sm max-md:text-[11px] md:text-sm hover:bg-blue-800 transition hover:-translate-y-1 w-full md:w-max max-md:w-[250px] flex items-center justify-center max-md:justify-start gap-2 neon-glow-blue">
+                <a href="/auth.html" class="bg-blue-900 text-white px-8 py-2 md:py-2.5 max-md:px-0 max-md:pl-6 rounded-full font-black text-sm max-md:text-[11px] md:text-sm hover:bg-blue-800 transition hover:-translate-y-1 w-full md:w-max max-md:w-[220px] flex items-center justify-center max-md:justify-start gap-2 neon-glow-blue">
                     Login Club / EO <span>&raquo;</span>
                 </a>
             </div>
@@ -216,7 +216,7 @@
                 </span>
                 
                 <!-- Tombol Dirampingkan (Diet Padding) -->
-                <a href="/f1-profile.html" class="bg-red-600 text-white px-8 py-2.5 md:py-3 max-md:px-0 max-md:pr-6 rounded-full font-black text-sm max-md:text-[11px] md:text-sm hover:bg-red-500 transition hover:-translate-y-1 w-full md:w-max max-md:w-[250px] flex items-center justify-center max-md:justify-end gap-2 max-md:order-1 max-md:mb-4 neon-glow-red">
+                <a href="/f1-profile.html" class="bg-red-600 text-white px-8 py-2 md:py-2.5 max-md:px-0 max-md:pr-6 rounded-full font-black text-sm max-md:text-[11px] md:text-sm hover:bg-red-500 transition hover:-translate-y-1 w-full md:w-max max-md:w-[220px] flex items-center justify-center max-md:justify-end gap-2 max-md:order-1 max-md:mb-4 neon-glow-red">
                     Cek F1 ID Saya <span>&raquo;</span>
                 </a>
                 
@@ -256,7 +256,7 @@
     </div>
 
     <!-- TESTIMONI MAHAKARYA -->
-    <section id="testi-section" class="py-16 bg-white border-b border-gray-100 overflow-hidden" style="display: none;">
+    <section id="testi-section" class="pt-16 pb-8 bg-white overflow-hidden" style="display: none;">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-8">
             <h2 class="text-2xl md:text-3xl font-extrabold text-blue-900 mb-2">Dipercaya Klub & EO</h2>
             <p class="text-slate-500 text-sm font-medium">Review jujur dari pahlawan lapangan yang telah beralih ke digital.</p>
@@ -265,6 +265,23 @@
             <div class="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
             <div class="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
             <div id="dynamicTestiTrack" class="flex gap-6 w-max animate-slider"></div>
+        </div>
+    </section>
+
+    <!-- PRO CLUBS SHOWCASE (BARU) -->
+    <section id="pro-clubs-section" class="pb-16 bg-white overflow-hidden border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 text-center mb-6 mt-4">
+            <span class="inline-block bg-yellow-50 text-yellow-700 font-black px-4 py-1.5 rounded-full text-[10px] tracking-widest uppercase mb-3 border border-yellow-200 shadow-sm">SCS PRO Members</span>
+            <h3 class="text-xl md:text-2xl font-black text-blue-950">Jajaran Klub Elit & Profesional</h3>
+            <p class="text-xs md:text-sm text-slate-500 mt-1 font-medium">Bergabung bersama klub-klub yang telah memaksimalkan efisiensi dengan fitur PRO SCS.</p>
+        </div>
+        <div class="relative w-full overflow-hidden flex items-center py-4">
+            <div class="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
+            <div class="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+            <!-- Ditambahkan style animation-duration biar slidernya santai -->
+            <div id="dynamicProTrack" class="flex gap-4 md:gap-5 w-max animate-slider" style="animation-duration: 35s;">
+                <!-- Disuntik JS -->
+            </div>
         </div>
     </section>
 
@@ -524,7 +541,11 @@
             if(mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMobile);
             if(closeMobileBtn) closeMobileBtn.addEventListener('click', toggleMobile);
 
+            // ===============================================
+            // SCRIPT UNTUK RENDER TESTIMONI & PRO CLUBS (DUMMY)
+            // ===============================================
             try {
+                // 1. Render Testimoni dari DB
                 const { data: clubsData, error } = await supabaseClient
                     .from('clubs')
                     .select('id, testimony');
@@ -588,11 +609,29 @@
                     section.style.display = 'none';
                 }
 
+                // 2. Render PRO Clubs (Dummy List - Nanti bisa diganti nembak dari Admin Testi)
+                const dummyProClubs = [
+                    "Jago Renang Academy", "Millennium Aquatic", "Petrokimia Gresik",
+                    "Hiu Surabaya", "JAQ Swimming", "Kompak Team", "Bagus Juara Academy", "DENIRA AKUATIK"
+                ];
+                
+                const proTrack = document.getElementById('dynamicProTrack');
+                if (proTrack) {
+                    let proHtml = dummyProClubs.map(club => `
+                        <div class="bg-white border border-slate-200 px-5 md:px-6 py-2.5 md:py-3 rounded-2xl shadow-sm flex items-center gap-3 shrink-0 group hover:border-scsGold transition-colors cursor-default">
+                            <div class="w-7 h-7 md:w-8 md:h-8 rounded-full bg-slate-50 flex items-center justify-center text-scsGold text-sm md:text-base shadow-inner border border-slate-100 group-hover:bg-yellow-50">👑</div>
+                            <span class="font-bold text-slate-700 text-xs md:text-sm whitespace-nowrap">${club}</span>
+                        </div>
+                    `).join('');
+                    
+                    // Duplicate konten biar scrollnya nyambung (infinite loop)
+                    proTrack.innerHTML = proHtml + proHtml + proHtml; 
+                }
+
             } catch (err) {
-                console.error("Gagal menarik data testimoni:", err);
+                console.error("Gagal memuat komponen slider:", err);
             }
         });
     </script>
 </body>
 </html>
-
