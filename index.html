@@ -82,7 +82,7 @@
     <nav class="bg-white/90 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 h-14 md:h-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
             <div class="flex justify-between items-center h-full">
-                <!-- KIRI: Logo SCS Diet (Lebih Kecil) & F1 ID (Dominan) -->
+                <!-- KIRI: Logo SCS Diet & F1 ID (Dominan) -->
                 <div class="flex-shrink-0 flex items-center h-full py-1">
                     <a href="/" class="flex items-center gap-3 md:gap-4 shrink-0">
                         <img class="h-5 md:h-6 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/logo.png" alt="SCS Logo">
@@ -215,8 +215,8 @@
                     🪪 Infrastruktur Data Atlet
                 </span>
                 
-                <!-- Tombol Dirampingkan (Diet Padding) -->
-                <a href="/f1-profile.html" class="bg-red-600 text-white px-8 py-2 md:py-2.5 max-md:px-0 max-md:pr-6 rounded-full font-black text-sm max-md:text-[11px] md:text-sm hover:bg-red-500 transition hover:-translate-y-1 w-full md:w-max max-md:w-[220px] flex items-center justify-center max-md:justify-end gap-2 max-md:order-1 max-md:mb-4 neon-glow-red">
+                <!-- Tombol Overlap (Di Atas Teks) & Dinaikkan (mb-8) Biar Motong Lebih Keren! -->
+                <a href="/f1-profile.html" class="bg-red-600 text-white px-8 py-2 md:py-2.5 max-md:px-0 max-md:pr-6 rounded-full font-black text-sm max-md:text-[11px] md:text-sm hover:bg-red-500 transition hover:-translate-y-1 w-full md:w-max max-md:w-[220px] flex items-center justify-center max-md:justify-end gap-2 max-md:order-1 max-md:mb-8 md:mb-4 neon-glow-red">
                     Cek F1 ID Saya <span>&raquo;</span>
                 </a>
                 
@@ -268,7 +268,7 @@
         </div>
     </section>
 
-    <!-- PRO CLUBS SHOWCASE (BARU) -->
+    <!-- PRO CLUBS SHOWCASE -->
     <section id="pro-clubs-section" class="pb-16 bg-white overflow-hidden border-b border-gray-100">
         <div class="max-w-7xl mx-auto px-4 text-center mb-6 mt-4">
             <span class="inline-block bg-yellow-50 text-yellow-700 font-black px-4 py-1.5 rounded-full text-[10px] tracking-widest uppercase mb-3 border border-yellow-200 shadow-sm">SCS PRO Members</span>
@@ -278,7 +278,6 @@
         <div class="relative w-full overflow-hidden flex items-center py-4">
             <div class="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
             <div class="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
-            <!-- Ditambahkan style animation-duration biar slidernya santai -->
             <div id="dynamicProTrack" class="flex gap-4 md:gap-5 w-max animate-slider" style="animation-duration: 35s;">
                 <!-- Disuntik JS -->
             </div>
@@ -462,27 +461,22 @@
         </div>
     </footer>
 
-    <!-- MODAL VISI MISI KAMI (ANTI-KEPOTONG DI MOBILE) -->
+    <!-- MODAL VISI MISI KAMI -->
     <div id="modalVisiMisi" class="fixed inset-0 z-[150] bg-blue-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white rounded-3xl w-full max-w-2xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
-            <!-- Tombol Close (X) - Selalu di atas -->
             <button onclick="document.getElementById('modalVisiMisi').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 font-bold text-3xl transition-colors z-30 bg-white/80 rounded-full w-10 h-10 flex items-center justify-center leading-none shadow-sm">&times;</button>
             
-            <!-- Konten Modal (Bisa Di-scroll di HP) -->
             <div class="p-6 md:p-10 overflow-y-auto hide-scrollbar relative z-10 w-full text-center">
-                <!-- Dekorasi Efek Cahaya (Ikut Scroll) -->
                 <div class="absolute -right-10 -top-10 w-40 h-40 bg-red-50 rounded-full blur-3xl -z-10"></div>
                 <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-blue-50 rounded-full blur-3xl -z-10"></div>
                 
                 <h2 class="text-2xl md:text-3xl font-black text-blue-900 mb-6 md:mb-8 tracking-tight">Visi & Misi Kami</h2>
                 
-                <!-- Box Visi -->
                 <div class="text-left mb-6 bg-red-50/50 p-5 md:p-6 rounded-2xl border border-red-100 shadow-sm">
                     <h3 class="font-extrabold text-lg text-red-600 mb-2 border-b border-red-200 pb-2 flex items-center gap-2"><span>🎯</span> Visi</h3>
                     <p class="text-sm font-bold text-slate-700 italic leading-relaxed">"Menjadi infrastruktur digital utama yang menghubungkan, mengotomatisasi, dan memajukan seluruh ekosistem olahraga renang di Indonesia, dari akar rumput hingga podium tertinggi."</p>
                 </div>
 
-                <!-- Box Misi -->
                 <div class="text-left space-y-4 bg-blue-50/50 p-5 md:p-6 rounded-2xl border border-blue-100 shadow-sm">
                     <h3 class="font-extrabold text-lg text-scsBlue mb-3 border-b border-blue-200 pb-2 flex items-center gap-2"><span>🚀</span> Misi</h3>
                     <p class="text-sm font-medium text-slate-700 leading-relaxed"><strong class="text-blue-900 font-black">1. Mendisrupsi Birokrasi:</strong> Menghapus proses manual yang membebani penyelenggara event (EO) dan klub melalui otomasi sistem terpadu.</p>
@@ -502,7 +496,6 @@
             try {
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 
-                // Logic Floating Button
                 const floatBtn = document.getElementById('floatingAuthBtn');
                 const floatText = document.getElementById('floatingAuthText');
                 if (session && floatBtn) {
@@ -513,7 +506,6 @@
                     floatText.innerText = 'Ke Dashboard';
                 }
 
-                // Logic Mobile Menu Auth Button
                 const mobileAuthBtn = document.getElementById('mobileAuthBtn');
                 const mobileAuthText = document.getElementById('mobileAuthText');
                 if (session && mobileAuthBtn) {
@@ -541,11 +533,7 @@
             if(mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMobile);
             if(closeMobileBtn) closeMobileBtn.addEventListener('click', toggleMobile);
 
-            // ===============================================
-            // SCRIPT UNTUK RENDER TESTIMONI & PRO CLUBS (DUMMY)
-            // ===============================================
             try {
-                // 1. Render Testimoni dari DB
                 const { data: clubsData, error } = await supabaseClient
                     .from('clubs')
                     .select('id, testimony');
@@ -609,7 +597,7 @@
                     section.style.display = 'none';
                 }
 
-                // 2. Render PRO Clubs (Dummy List - Nanti bisa diganti nembak dari Admin Testi)
+                // Render PRO Clubs 
                 const dummyProClubs = [
                     "Jago Renang Academy", "Millennium Aquatic", "Petrokimia Gresik",
                     "Hiu Surabaya", "JAQ Swimming", "Kompak Team", "Bagus Juara Academy", "DENIRA AKUATIK"
@@ -624,7 +612,6 @@
                         </div>
                     `).join('');
                     
-                    // Duplicate konten biar scrollnya nyambung (infinite loop)
                     proTrack.innerHTML = proHtml + proHtml + proHtml; 
                 }
 
