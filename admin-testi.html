@@ -20,7 +20,7 @@
             <a href="/dashboard.html" class="bg-white border border-slate-200 text-slate-600 px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-50 transition-colors shadow-sm">&laquo; Kembali</a>
         </div>
 
-        <!-- SUNTIKAN BARU: MANAJEMEN PRO CLUB -->
+        <!-- MANAJEMEN PRO CLUB -->
         <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 md:p-8 mb-8 overflow-hidden relative">
             <div class="absolute -right-10 -top-10 w-40 h-40 bg-yellow-50 rounded-full blur-3xl pointer-events-none"></div>
             
@@ -49,7 +49,6 @@
                         </tr>
                     </thead>
                     <tbody id="proClubList" class="divide-y divide-slate-50">
-                        <!-- List Disuntik via JS -->
                         <tr>
                             <td colspan="3" class="text-center py-8 text-sm text-slate-400 font-bold italic">Memuat database klub...</td>
                         </tr>
@@ -57,17 +56,22 @@
                 </table>
             </div>
 
-            <!-- Pagination Container -->
-            <div class="flex justify-between items-center mt-6 pt-4 border-t border-slate-100 relative z-10">
+            <!-- Pagination & TOMBOL TIUP -->
+            <div class="flex flex-col md:flex-row justify-between items-center mt-6 pt-4 border-t border-slate-100 relative z-10 gap-4">
                 <p class="text-[11px] font-bold tracking-widest text-slate-400 uppercase" id="proPaginationInfo">Menampilkan 0 Klub</p>
-                <div class="flex gap-2">
-                    <button id="btnPrevPro" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 transition shadow-sm disabled:opacity-50">Prev</button>
-                    <button id="btnNextPro" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 transition shadow-sm disabled:opacity-50">Next</button>
+                <div class="flex items-center gap-3">
+                    <!-- Tombol Sakti Tiup ke Supabase (Awalnya Disembunyikan) -->
+                    <button id="btnSavePro" onclick="window.saveProToSupabase()" class="hidden px-5 py-2 rounded-xl bg-green-500 hover:bg-green-600 text-white text-xs font-bold transition shadow-lg animate-bounce border border-green-600">Tiup ke Supabase 🚀</button>
+                    
+                    <div class="flex gap-2">
+                        <button id="btnPrevPro" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 transition shadow-sm disabled:opacity-50">Prev</button>
+                        <button id="btnNextPro" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 transition shadow-sm disabled:opacity-50">Next</button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Dashboard Testimoni (Tetap Dibiarkan) -->
+        <!-- Dashboard Testimoni Lama -->
         <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="p-6 md:p-8 border-b border-slate-100 bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <h2 class="text-lg font-extrabold text-slate-800 flex items-center gap-2"><span>🗂️</span> Dashboard Testimoni Lama</h2>
