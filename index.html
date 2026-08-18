@@ -82,11 +82,12 @@
     <nav class="bg-white/90 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 h-14 md:h-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
             <div class="flex justify-between items-center h-full">
-                <!-- KIRI: Logo SCS bersanding dengan Logo F1 -->
+                <!-- KIRI: Logo SCS bersanding dengan Logo F1 (Tinggi Diselaraskan) -->
                 <div class="flex-shrink-0 flex items-center h-full py-1">
-                    <a href="/" class="flex items-center gap-2.5 md:gap-4 shrink-0">
-                        <img class="max-h-9 md:max-h-12 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/logo.png" alt="SCS Logo">
-                        <img class="max-h-8 md:max-h-10 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/logof1.png" alt="F1 Logo">
+                    <a href="/" class="flex items-center gap-3 md:gap-4 shrink-0">
+                        <img class="h-7 md:h-9 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/logo.png" alt="SCS Logo">
+                        <div class="h-5 md:h-7 w-px bg-slate-300"></div>
+                        <img class="h-7 md:h-9 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/logof1.png" alt="F1 Logo">
                     </a>
                 </div>
                 
@@ -98,6 +99,7 @@
                     </a>
                     <a href="/promosi.html" class="text-gray-600 hover:text-scsBlue font-bold text-sm">Promosi</a>
                     <a href="/f1-profile.html" class="text-gray-600 hover:text-scsBlue font-bold text-sm">F1 ID</a>
+                    <a href="javascript:void(0)" onclick="document.getElementById('modalVisiMisi').classList.remove('hidden')" class="text-gray-600 hover:text-scsBlue font-bold text-sm">Visi & Misi Kami</a>
                     <a href="#fitur" class="text-gray-600 hover:text-scsBlue font-bold text-sm">Tentang SCS</a> 
                 </div>
 
@@ -110,14 +112,14 @@
 
     <!-- MOBILE MENU -->
     <div id="mobileMenu" class="fixed inset-0 bg-white z-[110] hidden flex-col pt-6 pb-8 px-6 transition-all duration-300">
-        <!-- Header Menu Mobile (Tanpa Logo SCS) -->
+        <!-- Header Menu Mobile -->
         <div class="flex justify-end items-center mb-6 border-b border-gray-100 pb-4">
             <button id="closeMobileBtn" class="p-2 text-slate-400 hover:text-red-500 bg-slate-50 rounded-full transition-colors active:scale-95">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
         </div>
 
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-2 overflow-y-auto hide-scrollbar pb-20">
             <a href="/event.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-700 font-black hover:bg-blue-50 hover:text-scsBlue transition-colors group">
                 <div class="w-10 h-10 rounded-xl bg-blue-50 text-scsBlue flex items-center justify-center text-xl group-hover:scale-110 transition-transform">📅</div>
                 <span class="text-lg">Event</span>
@@ -136,13 +138,18 @@
                 <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">🪪</div>
                 <span class="text-lg">F1 ID</span>
             </a>
+            <!-- Menu Baru: Visi & Misi -->
+            <a href="javascript:void(0)" onclick="document.getElementById('modalVisiMisi').classList.remove('hidden'); document.getElementById('mobileMenu').classList.add('hidden'); document.getElementById('mobileMenu').classList.remove('flex');" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-700 font-black hover:bg-blue-50 hover:text-scsBlue transition-colors group">
+                <div class="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">🎯</div>
+                <span class="text-lg">Visi & Misi Kami</span>
+            </a>
             <a href="#fitur" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-700 font-black hover:bg-blue-50 hover:text-scsBlue transition-colors group" onclick="document.getElementById('mobileMenu').classList.add('hidden'); document.getElementById('mobileMenu').classList.remove('flex');">
                 <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">ℹ️</div>
                 <span class="text-lg">Tentang SCS</span>
             </a>
         </div>
 
-        <div class="mt-auto pt-6 border-t border-gray-100 flex flex-col gap-6">
+        <div class="mt-auto pt-6 border-t border-gray-100 flex flex-col gap-6 bg-white z-10">
             <a href="/auth.html" id="mobileAuthBtn" class="w-full bg-scsBlue text-white font-extrabold px-6 py-4 rounded-2xl shadow-[0_10px_20px_rgba(30,58,138,0.2)] hover:bg-blue-900 active:scale-95 transition-all text-center flex items-center justify-center gap-2 text-lg">
                 <span id="mobileAuthText">Daftar / Login</span>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
@@ -159,7 +166,6 @@
             
             <div class="relative z-10 text-left flex flex-col items-start w-full max-md:max-w-full md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
                 
-                <!-- Tag Indonesia Balik Lagi -->
                 <span class="inline-block bg-slate-100 border border-slate-200 text-slate-700 px-5 py-1.5 max-md:px-3 max-md:py-1 rounded-full text-xs max-md:text-[9px] font-black tracking-wide shadow-sm mb-6 max-md:mb-3">
                     🇮🇩 Dibangun untuk kompetisi renang Indonesia
                 </span>
@@ -191,7 +197,8 @@
                     </div>
                 </div>
                 
-                <a href="/auth.html" class="bg-blue-900 text-white px-8 py-3.5 max-md:px-0 max-md:pl-6 rounded-full font-black text-sm max-md:text-[11px] md:text-sm hover:bg-blue-800 transition hover:-translate-y-1 w-full md:w-max max-md:w-[250px] flex items-center justify-center max-md:justify-start gap-2 neon-glow-blue">
+                <!-- Tombol Dirampingkan (Diet Padding) -->
+                <a href="/auth.html" class="bg-blue-900 text-white px-8 py-2.5 md:py-3 max-md:px-0 max-md:pl-6 rounded-full font-black text-sm max-md:text-[11px] md:text-sm hover:bg-blue-800 transition hover:-translate-y-1 w-full md:w-max max-md:w-[250px] flex items-center justify-center max-md:justify-start gap-2 neon-glow-blue">
                     Login Club / EO <span>&raquo;</span>
                 </a>
             </div>
@@ -204,12 +211,12 @@
             
             <div class="relative z-10 text-right flex flex-col items-end w-full max-md:max-w-full md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
                 
-                <!-- Tag Infrastruktur: DIsembunyikan di Mobile pakai max-md:hidden -->
                 <span class="max-md:hidden inline-block bg-red-500/20 border border-red-500/50 text-red-300 px-5 py-1.5 rounded-full text-xs font-black tracking-wide shadow-sm mb-6">
                     🪪 Infrastruktur Data Atlet
                 </span>
                 
-                <a href="/f1-profile.html" class="bg-red-600 text-white px-8 py-3.5 max-md:px-0 max-md:pr-6 rounded-full font-black text-sm max-md:text-[11px] md:text-sm hover:bg-red-500 transition hover:-translate-y-1 w-full md:w-max max-md:w-[250px] flex items-center justify-center max-md:justify-end gap-2 max-md:order-1 max-md:mb-4 neon-glow-red">
+                <!-- Tombol Dirampingkan (Diet Padding) -->
+                <a href="/f1-profile.html" class="bg-red-600 text-white px-8 py-2.5 md:py-3 max-md:px-0 max-md:pr-6 rounded-full font-black text-sm max-md:text-[11px] md:text-sm hover:bg-red-500 transition hover:-translate-y-1 w-full md:w-max max-md:w-[250px] flex items-center justify-center max-md:justify-end gap-2 max-md:order-1 max-md:mb-4 neon-glow-red">
                     Cek F1 ID Saya <span>&raquo;</span>
                 </a>
                 
@@ -429,7 +436,7 @@
             
             <!-- TOMBOL TRIGGER VISI MISI (MODAL) -->
             <div class="mb-10">
-                <button onclick="document.getElementById('modalVisiMisi').classList.remove('hidden')" class="text-scsBlue hover:text-white font-bold transition-colors underline decoration-dashed underline-offset-4 cursor-pointer">Lihat Visi & Misi SCS</button>
+                <button onclick="document.getElementById('modalVisiMisi').classList.remove('hidden')" class="text-scsBlue hover:text-white font-bold transition-colors underline decoration-dashed underline-offset-4 cursor-pointer">Lihat Visi & Misi Kami</button>
             </div>
 
             <div class="inline-block bg-white/5 border border-white/10 px-6 py-3 rounded-xl">
@@ -438,18 +445,19 @@
         </div>
     </footer>
 
-    <!-- MODAL VISI MISI (SUNTIKAN BARU) -->
+    <!-- MODAL VISI MISI KAMI (ANTI-KEPOTONG DI MOBILE) -->
     <div id="modalVisiMisi" class="fixed inset-0 z-[150] bg-blue-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 transition-opacity">
-        <div class="bg-white rounded-3xl w-full max-w-2xl shadow-2xl p-8 md:p-10 relative overflow-hidden text-left">
-            <!-- Dekorasi Efek Cahaya -->
-            <div class="absolute -right-10 -top-10 w-40 h-40 bg-red-50 rounded-full blur-3xl"></div>
-            <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-blue-50 rounded-full blur-3xl"></div>
+        <div class="bg-white rounded-3xl w-full max-w-2xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
+            <!-- Tombol Close (X) - Selalu di atas -->
+            <button onclick="document.getElementById('modalVisiMisi').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 font-bold text-3xl transition-colors z-30 bg-white/80 rounded-full w-10 h-10 flex items-center justify-center leading-none shadow-sm">&times;</button>
             
-            <!-- Tombol Close (X) -->
-            <button onclick="document.getElementById('modalVisiMisi').classList.add('hidden')" class="absolute top-6 right-6 text-slate-400 hover:text-red-500 font-bold text-3xl transition-colors z-20 leading-none">&times;</button>
-            
-            <div class="relative z-10 text-center">
-                <h2 class="text-3xl font-black text-blue-900 mb-8 tracking-tight">Visi & Misi SCS</h2>
+            <!-- Konten Modal (Bisa Di-scroll di HP) -->
+            <div class="p-6 md:p-10 overflow-y-auto hide-scrollbar relative z-10 w-full text-center">
+                <!-- Dekorasi Efek Cahaya (Ikut Scroll) -->
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-red-50 rounded-full blur-3xl -z-10"></div>
+                <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-blue-50 rounded-full blur-3xl -z-10"></div>
+                
+                <h2 class="text-2xl md:text-3xl font-black text-blue-900 mb-6 md:mb-8 tracking-tight">Visi & Misi Kami</h2>
                 
                 <!-- Box Visi -->
                 <div class="text-left mb-6 bg-red-50/50 p-5 md:p-6 rounded-2xl border border-red-100 shadow-sm">
