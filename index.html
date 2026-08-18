@@ -142,16 +142,19 @@
 
     <section class="relative w-full h-[calc(100vh-3.5rem)] md:h-screen pt-14 md:pt-16 flex max-md:block overflow-hidden">
         
-        <div class="w-full md:w-1/2 h-full absolute md:relative inset-0 md:inset-auto bg-white z-20 flex flex-col max-md:justify-start max-md:items-start md:justify-center md:items-start p-8 md:p-16 lg:px-20 max-md:pt-[6vh] max-md:pl-4 md:max-md:pl-6 max-md:pr-0 max-md:[clip-path:polygon(0_0,100%_0,0_100%)] md:border-r border-gray-200 transition-all duration-700 ease-in-out hover:md:w-[60%] group">
+        <!-- PADDING TOP DIPERBESAR (pt-[12vh]) AGAR TEKS TURUN DARI NAVBAR -->
+        <div class="w-full md:w-1/2 h-full absolute md:relative inset-0 md:inset-auto bg-white z-20 flex flex-col max-md:justify-start max-md:items-start md:justify-center md:items-start p-8 md:p-16 lg:px-20 max-md:pt-[12vh] max-md:pl-4 md:max-md:pl-6 max-md:pr-0 max-md:[clip-path:polygon(0_0,100%_0,0_100%)] md:border-r border-gray-200 transition-all duration-700 ease-in-out hover:md:w-[60%] group">
             <div class="absolute inset-0 z-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
             
             <div class="relative z-10 text-left flex flex-col items-start w-full max-md:max-w-full md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
-                <span class="inline-block bg-slate-100 border border-slate-200 text-slate-700 px-5 py-1.5 max-md:px-3 max-md:py-1 rounded-full text-xs max-md:text-[9px] font-black tracking-wide shadow-sm mb-6 max-md:mb-3">
+                
+                <!-- BADGE DIHAPUS DI MOBILE (hidden md:inline-block) UNTUK MEMBERI RUANG -->
+                <span class="hidden md:inline-block bg-slate-100 border border-slate-200 text-slate-700 px-5 py-1.5 rounded-full text-xs font-black tracking-wide shadow-sm mb-6">
                     🇮🇩 Dibangun untuk kompetisi renang Indonesia
                 </span>
                 
                 <div class="flex items-center gap-3 mb-1 md:mb-2">
-                    <h1 class="text-5xl md:text-6xl lg:text-7xl max-md:text-[45px] font-black text-blue-950 tracking-tight drop-shadow-sm">SCS</h1>
+                    <h1 class="text-5xl md:text-6xl lg:text-7xl max-md:text-[45px] font-black text-blue-950 tracking-tight drop-shadow-sm leading-none">SCS</h1>
                 </div>
                 
                 <h2 class="text-xl md:text-2xl max-md:text-[11px] font-bold text-slate-400 mb-4 md:mb-2 uppercase tracking-widest max-md:leading-tight">Swimming Competition<br class="hidden max-md:block">System</h2>
@@ -175,7 +178,8 @@
                     </div>
                 </div>
                 
-                <div class="flex flex-col items-center w-[240px] mt-2 md:mt-4">
+                <!-- TOMBOL BERADA DI POSISI NATURAL -->
+                <div class="flex flex-col items-center w-[240px] mt-2 md:mt-4 max-md:-translate-x-4 relative z-20">
                     <a href="/auth.html" class="bg-blue-900 text-white rounded-full font-black text-[13px] md:text-sm hover:bg-blue-800 transition hover:-translate-y-1 w-full h-[50px] flex items-center justify-center gap-2 neon-glow-blue shadow-xl">
                         Login Club / EO <span>&raquo;</span>
                     </a>
@@ -193,7 +197,7 @@
                     🪪 Infrastruktur Data Atlet
                 </span>
                 
-                <div class="flex flex-col items-center w-[240px] max-md:self-end max-md:order-1 max-md:relative max-md:z-20 max-md:-translate-y-6 md:mb-4">
+                <div class="flex flex-col items-center w-[240px] max-md:self-end max-md:order-1 max-md:relative max-md:z-20 max-md:-translate-y-12 md:mb-4">
                     <p class="text-[8px] md:text-[9px] font-bold text-red-300 mb-2 tracking-widest uppercase text-center w-full">Presented by : <span class="text-white font-black text-[9px] md:text-[10px]">OG</span></p>
                     <a href="/f1-profile.html" class="bg-red-600 text-white rounded-full font-black text-[13px] md:text-sm hover:bg-red-500 transition hover:-translate-y-1 w-full h-[50px] flex items-center justify-center gap-2 neon-glow-red shadow-xl">
                         Cek F1 ID Saya <span>&raquo;</span>
