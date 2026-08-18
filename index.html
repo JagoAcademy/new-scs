@@ -12,30 +12,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SCS - Swimming Competition System & F1 ID</title>
-    
-    <!-- SEO Meta Tags -->
     <meta name="description" content="SCS (Swimming Competition System) - Satu sistem untuk menjalankan kompetisi renang dari pendaftaran hingga hasil akhir.">
     <meta name="keywords" content="Sistem kejuaraan renang, daftar lomba renang online, F1 ID renang, aplikasi pertandingan renang">
     <meta name="author" content="Fajar Aditya">
-
-    <!-- Open Graph / WhatsApp / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://f1swimming.com">
     <meta property="og:title" content="SCS | Swimming Competition System & F1 ID">
     <meta property="og:description" content="Satu sistem untuk menjalankan kompetisi renang dari pendaftaran hingga hasil akhir. Didesain oleh orang lapangan, untuk orang lapangan.">
     <meta property="og:image" content="https://f1swimming.com/images/f1meta.jpg">
-    
-    <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="SCS | Swimming Competition System & F1 ID">
     <meta name="twitter:description" content="Satu sistem untuk menjalankan kompetisi renang dari pendaftaran hingga hasil akhir.">
     <meta name="twitter:image" content="https://f1swimming.com/images/f1meta.jpg">
-
     <link rel="stylesheet" href="/src/style.css">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1e3a8a">
     <link rel="apple-touch-icon" href="/images/logo.png">
-    
     <style>
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -81,9 +73,9 @@
             <div class="flex justify-between items-center h-full">
                 <div class="flex-shrink-0 flex items-center h-full py-1">
                     <a href="/" class="flex items-center gap-3 md:gap-4 shrink-0">
-                        <img class="h-5 md:h-6 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/logo.png" alt="SCS Logo">
+                        <img class="max-h-5 md:max-h-6 w-auto object-contain hover:scale-105 transition-transform duration-200 shrink-0" src="/images/logo.png" alt="SCS Logo">
                         <div class="h-5 md:h-6 w-px bg-slate-300"></div>
-                        <img class="h-7 md:h-9 w-auto object-contain hover:scale-105 transition-transform duration-200" src="/images/f1logo.png" alt="F1 Logo">
+                        <img class="max-h-6 md:max-h-8 w-auto object-contain hover:scale-105 transition-transform duration-200 shrink-0" src="/images/f1logo.png" alt="F1 Logo">
                     </a>
                 </div>
                 
@@ -148,7 +140,6 @@
         </div>
     </div>
 
-    <!-- HERO SECTION -->
     <section class="relative w-full h-[calc(100vh-3.5rem)] md:h-screen pt-14 md:pt-16 flex max-md:block overflow-hidden">
         
         <div class="w-full md:w-1/2 h-full absolute md:relative inset-0 md:inset-auto bg-white z-20 flex flex-col max-md:justify-start max-md:items-start md:justify-center md:items-start p-8 md:p-16 lg:px-20 max-md:pt-[12vh] max-md:pl-6 max-md:pr-0 max-md:[clip-path:polygon(0_0,100%_0,0_100%)] md:border-r border-gray-200 transition-all duration-700 ease-in-out hover:md:w-[60%] group">
@@ -184,8 +175,7 @@
                     </div>
                 </div>
                 
-                <!-- TOMBOL BIRU: Tinggi dipaksa identik 50px di mobile -->
-                <a href="/auth.html" class="bg-blue-900 text-white px-8 md:py-3.5 max-md:px-0 rounded-full font-black text-sm max-md:text-[12px] md:text-sm hover:bg-blue-800 transition hover:-translate-y-1 w-full md:w-max max-md:w-[250px] max-md:h-[50px] flex items-center justify-center gap-2 neon-glow-blue max-md:mt-4 shadow-xl">
+                <a href="/auth.html" class="bg-blue-900 text-white px-8 md:py-3.5 max-md:px-0 rounded-full font-black text-sm max-md:text-[12px] md:text-sm hover:bg-blue-800 transition hover:-translate-y-1 w-full md:w-max max-md:w-[220px] max-md:h-[48px] flex items-center justify-center gap-2 neon-glow-blue max-md:mt-0 shadow-xl">
                     Login Club / EO <span>&raquo;</span>
                 </a>
             </div>
@@ -200,9 +190,8 @@
                     🪪 Infrastruktur Data Atlet
                 </span>
                 
-                <!-- TOMBOL MERAH: Tinggi dipaksa identik 50px di mobile -->
                 <div class="w-full md:w-max max-md:flex max-md:justify-end max-md:order-1 max-md:relative max-md:z-20 max-md:-translate-y-8">
-                    <a href="/f1-profile.html" class="bg-red-600 text-white px-8 md:py-3.5 max-md:px-0 rounded-full font-black text-sm max-md:text-[12px] md:text-sm hover:bg-red-500 transition hover:-translate-y-1 w-full max-md:w-[250px] max-md:h-[50px] flex items-center justify-center gap-2 md:mb-4 neon-glow-red shadow-xl">
+                    <a href="/f1-profile.html" class="bg-red-600 text-white px-8 md:py-3.5 max-md:px-0 rounded-full font-black text-sm max-md:text-[12px] md:text-sm hover:bg-red-500 transition hover:-translate-y-1 w-full max-md:w-[220px] max-md:h-[48px] flex items-center justify-center gap-2 md:mb-4 neon-glow-red shadow-xl">
                         Cek F1 ID Saya <span>&raquo;</span>
                     </a>
                 </div>
@@ -418,9 +407,9 @@
     <footer class="bg-gray-950 text-gray-400 pt-16 pb-28 md:pb-16 border-t border-gray-900 relative">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
             <div class="flex justify-center items-center gap-4 mb-8 opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0 cursor-pointer">
-                <img src="/images/logo.png" alt="SCS Logo" class="h-10 md:h-12 w-auto object-contain">
+                <img src="/images/logo.png" alt="SCS Logo" class="max-h-10 md:max-h-12 w-auto object-contain shrink-0">
                 <div class="h-8 w-px bg-slate-600"></div>
-                <img src="/images/f1logo.png" alt="F1 Logo" class="h-12 md:h-14 w-auto object-contain">
+                <img src="/images/f1logo.png" alt="F1 Logo" class="max-h-10 md:max-h-12 w-auto object-contain shrink-0">
             </div>
 
             <p class="text-xs text-slate-400 font-bold mb-2 uppercase tracking-widest">PT. Teknologi Prestasi Indonesia</p>
