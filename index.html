@@ -71,7 +71,6 @@
     <nav class="bg-white/90 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 h-14 md:h-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
             <div class="flex justify-between items-center h-full">
-                <!-- LOGO KEMBAR SIMETRIS -->
                 <div class="flex-shrink-0 flex items-center h-full py-1">
                     <a href="/" class="flex items-center gap-3 md:gap-4 shrink-0">
                         <img class="h-5 md:h-6 w-auto object-contain hover:scale-105 transition-transform duration-200 shrink-0" src="/images/logo.png" alt="SCS Logo">
@@ -143,7 +142,7 @@
 
     <section class="relative w-full h-[calc(100vh-3.5rem)] md:h-screen pt-14 md:pt-16 flex max-md:block overflow-hidden">
         
-        <div class="w-full md:w-1/2 h-full absolute md:relative inset-0 md:inset-auto bg-white z-20 flex flex-col max-md:justify-start max-md:items-start md:justify-center md:items-start p-8 md:p-16 lg:px-20 max-md:pt-[12vh] max-md:pl-4 md:max-md:pl-6 max-md:pr-0 max-md:[clip-path:polygon(0_0,100%_0,0_100%)] md:border-r border-gray-200 transition-all duration-700 ease-in-out hover:md:w-[60%] group">
+        <div class="w-full md:w-1/2 h-full absolute md:relative inset-0 md:inset-auto bg-white z-20 flex flex-col max-md:justify-start max-md:items-start md:justify-center md:items-start p-8 md:p-16 lg:px-20 max-md:pt-[6vh] max-md:pl-4 md:max-md:pl-6 max-md:pr-0 max-md:[clip-path:polygon(0_0,100%_0,0_100%)] md:border-r border-gray-200 transition-all duration-700 ease-in-out hover:md:w-[60%] group">
             <div class="absolute inset-0 z-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
             
             <div class="relative z-10 text-left flex flex-col items-start w-full max-md:max-w-full md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
@@ -176,10 +175,12 @@
                     </div>
                 </div>
                 
-                <!-- TOMBOL BIRU: Identik mutlak + Digeser 16px ke kiri biar lolos diagonal -->
-                <a href="/auth.html" class="bg-blue-900 text-white rounded-full font-black text-[13px] md:text-sm hover:bg-blue-800 transition hover:-translate-y-1 w-[240px] h-[50px] flex items-center justify-center gap-2 neon-glow-blue max-md:mt-0 max-md:-translate-x-4 shadow-xl">
-                    Login Club / EO <span>&raquo;</span>
-                </a>
+                <div class="flex flex-col items-center w-[240px] mt-2 md:mt-4">
+                    <a href="/auth.html" class="bg-blue-900 text-white rounded-full font-black text-[13px] md:text-sm hover:bg-blue-800 transition hover:-translate-y-1 w-full h-[50px] flex items-center justify-center gap-2 neon-glow-blue shadow-xl">
+                        Login Club / EO <span>&raquo;</span>
+                    </a>
+                    <p class="text-[8px] md:text-[9px] font-bold text-slate-400 mt-2 tracking-widest uppercase text-center w-full">Systeming by : <span class="text-blue-900 font-black text-[9px] md:text-[10px]">SEIKO</span></p>
+                </div>
             </div>
         </div>
 
@@ -192,9 +193,9 @@
                     🪪 Infrastruktur Data Atlet
                 </span>
                 
-                <!-- TOMBOL MERAH: Identik mutlak -->
-                <div class="w-full md:w-max max-md:flex max-md:justify-end max-md:order-1 max-md:relative max-md:z-20 max-md:-translate-y-12">
-                    <a href="/f1-profile.html" class="bg-red-600 text-white rounded-full font-black text-[13px] md:text-sm hover:bg-red-500 transition hover:-translate-y-1 w-[240px] h-[50px] flex items-center justify-center gap-2 md:mb-4 neon-glow-red shadow-xl">
+                <div class="flex flex-col items-center w-[240px] max-md:self-end max-md:order-1 max-md:relative max-md:z-20 max-md:-translate-y-6 md:mb-4">
+                    <p class="text-[8px] md:text-[9px] font-bold text-red-300 mb-2 tracking-widest uppercase text-center w-full">Presented by : <span class="text-white font-black text-[9px] md:text-[10px]">NESTLÉ</span></p>
+                    <a href="/f1-profile.html" class="bg-red-600 text-white rounded-full font-black text-[13px] md:text-sm hover:bg-red-500 transition hover:-translate-y-1 w-full h-[50px] flex items-center justify-center gap-2 neon-glow-red shadow-xl">
                         Cek F1 ID Saya <span>&raquo;</span>
                     </a>
                 </div>
