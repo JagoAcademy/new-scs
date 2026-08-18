@@ -421,16 +421,54 @@
         </a>
     </section>
 
-    <footer class="bg-gray-950 text-gray-400 pt-16 pb-28 md:pb-16 border-t border-gray-900">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <footer class="bg-gray-950 text-gray-400 pt-16 pb-28 md:pb-16 border-t border-gray-900 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
             <img src="/images/logo.png" alt="SCS Logo" class="h-16 mx-auto mb-8 opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0">
             <p class="text-xs text-slate-400 font-bold mb-2 uppercase tracking-widest">PT. Teknologi Prestasi Indonesia</p>
-            <p class="font-medium text-slate-400 text-sm md:text-base mb-6">&copy; 2026 F1 Swimming - F1 ID. All rights reserved.</p>
+            <p class="font-medium text-slate-500 text-sm md:text-base mb-8">&copy; 2026 F1 Swimming - F1 ID. All rights reserved.</p>
+            
+            <!-- TOMBOL TRIGGER VISI MISI (MODAL) -->
+            <div class="mb-10">
+                <button onclick="document.getElementById('modalVisiMisi').classList.remove('hidden')" class="text-scsBlue hover:text-white font-bold transition-colors underline decoration-dashed underline-offset-4 cursor-pointer">Lihat Visi & Misi SCS</button>
+            </div>
+
             <div class="inline-block bg-white/5 border border-white/10 px-6 py-3 rounded-xl">
                 <p class="text-xs md:text-sm text-slate-300 font-black tracking-widest uppercase">Didesain oleh orang lapangan, untuk orang lapangan.</p>
             </div>
         </div>
     </footer>
+
+    <!-- MODAL VISI MISI (SUNTIKAN BARU) -->
+    <div id="modalVisiMisi" class="fixed inset-0 z-[150] bg-blue-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white rounded-3xl w-full max-w-2xl shadow-2xl p-8 md:p-10 relative overflow-hidden text-left">
+            <!-- Dekorasi Efek Cahaya -->
+            <div class="absolute -right-10 -top-10 w-40 h-40 bg-red-50 rounded-full blur-3xl"></div>
+            <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-blue-50 rounded-full blur-3xl"></div>
+            
+            <!-- Tombol Close (X) -->
+            <button onclick="document.getElementById('modalVisiMisi').classList.add('hidden')" class="absolute top-6 right-6 text-slate-400 hover:text-red-500 font-bold text-3xl transition-colors z-20 leading-none">&times;</button>
+            
+            <div class="relative z-10 text-center">
+                <h2 class="text-3xl font-black text-blue-900 mb-8 tracking-tight">Visi & Misi SCS</h2>
+                
+                <!-- Box Visi -->
+                <div class="text-left mb-6 bg-red-50/50 p-5 md:p-6 rounded-2xl border border-red-100 shadow-sm">
+                    <h3 class="font-extrabold text-lg text-red-600 mb-2 border-b border-red-200 pb-2 flex items-center gap-2"><span>🎯</span> Visi</h3>
+                    <p class="text-sm font-bold text-slate-700 italic leading-relaxed">"Menjadi infrastruktur digital utama yang menghubungkan, mengotomatisasi, dan memajukan seluruh ekosistem olahraga renang di Indonesia, dari akar rumput hingga podium tertinggi."</p>
+                </div>
+
+                <!-- Box Misi -->
+                <div class="text-left space-y-4 bg-blue-50/50 p-5 md:p-6 rounded-2xl border border-blue-100 shadow-sm">
+                    <h3 class="font-extrabold text-lg text-scsBlue mb-3 border-b border-blue-200 pb-2 flex items-center gap-2"><span>🚀</span> Misi</h3>
+                    <p class="text-sm font-medium text-slate-700 leading-relaxed"><strong class="text-blue-900 font-black">1. Mendisrupsi Birokrasi:</strong> Menghapus proses manual yang membebani penyelenggara event (EO) dan klub melalui otomasi sistem terpadu.</p>
+                    <p class="text-sm font-medium text-slate-700 leading-relaxed"><strong class="text-blue-900 font-black">2. Identitas Tunggal:</strong> Menghadirkan F1 ID sebagai paspor digital abadi, mengeliminasi manipulasi data umur.</p>
+                    <p class="text-sm font-medium text-slate-700 leading-relaxed"><strong class="text-blue-900 font-black">3. Keamanan Big Data:</strong> Menjaga privasi infrastruktur data atlet tingkat nasional secara legal dan profesional.</p>
+                    <p class="text-sm font-medium text-slate-700 leading-relaxed"><strong class="text-blue-900 font-black">4. Ekosistem Ekonomi:</strong> Membuka peluang komersial bagi klub, penyelenggara, dan sponsor.</p>
+                    <p class="text-sm font-medium text-slate-700 leading-relaxed"><strong class="text-blue-900 font-black">5. Memberdayakan Akar Rumput:</strong> Memberikan akses teknologi kelas dunia kepada seluruh klub dan atlet di daerah.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
         import { supabaseClient } from '/src/supabase.js';
