@@ -15,30 +15,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadClubsData();
 
     // Event Listeners PRO Club
-    document.getElementById('searchClubPro').addEventListener('input', (e) => {
-        searchQuery = e.target.value.toLowerCase();
-        currentPage = 1; // Reset ke halaman 1 tiap kali nyari
-        renderProClubManager();
-    });
-
-    document.getElementById('btnPrevPro').addEventListener('click', () => {
-        if (currentPage > 1) {
-            currentPage--;
+    const searchInput = document.getElementById('searchClubPro');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.toLowerCase();
+            currentPage = 1; // Reset ke halaman 1 tiap kali nyari
             renderProClubManager();
-        }
-    });
+        });
+    }
 
-    document.getElementById('btnNextPro').addEventListener('click', () => {
-        const totalPages = Math.ceil(filteredClubs.length / itemsPerPage);
-        if (currentPage < totalPages) {
-            currentPage++;
-            renderProClubManager();
-        }
-    });
+    const btnPrev = document.getElementById('btnPrevPro');
+    if (btnPrev) {
+        btnPrev.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderProClubManager();
+            }
+        });
+    }
+
+    const btnNext = document.getElementById('btnNextPro');
+    if (btnNext) {
+        btnNext.addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredClubs.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderProClubManager();
+            }
+        });
+    }
 
     // Event Listeners Testimoni
-    document.getElementById('tabLive').addEventListener('click', () => switchTab('live'));
-    document.getElementById('tabAll').addEventListener('click', () => switchTab('all'));
+    const tabLive = document.getElementById('tabLive');
+    if (tabLive) tabLive.addEventListener('click', () => switchTab('live'));
+    
+    const tabAll = document.getElementById('tabAll');
+    if (tabAll) tabAll.addEventListener('click', () => switchTab('all'));
 });
 
 // Tarik data klub sekalian bawa status "is_pro"
@@ -57,7 +69,12 @@ async function loadClubsData() {
         
     } catch (err) {
         console.error("Gagal memuat data:", err);
-        document.getElementById('proClubList').innerHTML = `<tr><td colspan="3" class="text-center py-8 text-sm text-red-500 font-bold">Gagal memuat database klub! Pastikan kolom 'is_pro' sudah ditambahkan di SQL.</td></tr>`;
+        // TAMPILKAN ERROR ASLI KE LAYAR BIAR KETAHUAN PENYAKITNYA
+        const errMsg = err.message || JSON.stringify(err);
+        const listContainer = document.getElementById('proClubList');
+        if (listContainer) {
+            listContainer.innerHTML = `<tr><td colspan="3" class="text-center py-8 text-sm text-red-600 font-black uppercase">ERROR LOG: ${errMsg}</td></tr>`;
+        }
     }
 }
 
@@ -70,6 +87,8 @@ function renderProClubManager() {
     const btnPrev = document.getElementById('btnPrevPro');
     const btnNext = document.getElementById('btnNextPro');
 
+    if (!listContainer) return; // safety check
+
     // 1. Filter by Search Query
     filteredClubs = allClubs.filter(c => 
         c.club_name && c.club_name.toLowerCase().includes(searchQuery)
@@ -80,7 +99,7 @@ function renderProClubManager() {
     const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
     
     // Cegah page kelebihan
-    if(currentPage > totalPages) currentPage = totalPages;
+    if(currentPage > totalPages) currentPage = totalPages || 1;
 
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
@@ -98,14 +117,14 @@ function renderProClubManager() {
                 : `<span class="bg-slate-100 text-slate-500 border border-slate-200 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase w-max">REGULER</span>`;
             
             const actionBtn = isPro
-                ? `<button onclick="window.toggleProStatus('${c.id}', true)" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold rounded-xl transition-colors shadow-sm">Cabut PRO ❌</button>`
-                : `<button onclick="window.toggleProStatus('${c.id}', false)" class="px-4 py-2 bg-slate-900 hover:bg-yellow-500 hover:border-yellow-600 hover:shadow-[0_0_15px_rgba(234,179,8,0.4)] hover:text-white text-white border border-slate-800 text-xs font-bold rounded-xl transition-all shadow-md flex items-center gap-1.5 ml-auto">Jadikan PRO 👑</button>`;
+                ? `<button onclick="window.toggleProStatus('${c.id}', true)" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold rounded-xl transition-colors shadow-sm whitespace-nowrap">Cabut PRO ❌</button>`
+                : `<button onclick="window.toggleProStatus('${c.id}', false)" class="px-4 py-2 bg-slate-900 hover:bg-yellow-500 hover:border-yellow-600 hover:shadow-[0_0_15px_rgba(234,179,8,0.4)] hover:text-white text-white border border-slate-800 text-xs font-bold rounded-xl transition-all shadow-md flex items-center gap-1.5 ml-auto whitespace-nowrap">Jadikan PRO 👑</button>`;
 
             return `
             <tr class="hover:bg-blue-50/50 transition-colors group">
                 <td class="py-4 px-5 border-b border-slate-50">
                     <p class="font-extrabold text-slate-800 text-sm">${c.club_name}</p>
-                    <p class="text-[9px] text-slate-400 font-mono mt-0.5">ID: ${c.id.substring(0,8)}...</p>
+                    <p class="text-[9px] text-slate-400 font-mono mt-0.5">ID: ${c.id}</p>
                 </td>
                 <td class="py-4 px-5 border-b border-slate-50">${statusBadge}</td>
                 <td class="py-4 px-5 border-b border-slate-50 text-right">${actionBtn}</td>
@@ -115,12 +134,14 @@ function renderProClubManager() {
     }
 
     // 3. Update Pagination Info & Buttons
-    let startDisplay = totalItems === 0 ? 0 : startIndex + 1;
-    let endDisplay = Math.min(endIndex, totalItems);
-    infoContainer.innerText = `Menampilkan ${startDisplay}-${endDisplay} dari ${totalItems} Klub`;
+    if (infoContainer && btnPrev && btnNext) {
+        let startDisplay = totalItems === 0 ? 0 : startIndex + 1;
+        let endDisplay = Math.min(endIndex, totalItems);
+        infoContainer.innerText = `Menampilkan ${startDisplay}-${endDisplay} dari ${totalItems} Klub`;
 
-    btnPrev.disabled = currentPage === 1;
-    btnNext.disabled = currentPage === totalPages || totalItems === 0;
+        btnPrev.disabled = currentPage === 1;
+        btnNext.disabled = currentPage === totalPages || totalItems === 0;
+    }
 }
 
 // Fungsi tembak status PRO ke Supabase
@@ -168,6 +189,8 @@ function switchTab(tabName) {
     const tabLive = document.getElementById('tabLive');
     const tabAll = document.getElementById('tabAll');
 
+    if(!tabLive || !tabAll) return; // safety check
+
     const inactiveClass = "px-5 py-2.5 rounded-xl text-sm font-bold transition-all shrink-0 bg-slate-50 text-slate-600 hover:bg-slate-100 border border-transparent";
     tabLive.className = inactiveClass;
     tabAll.className = inactiveClass;
@@ -183,6 +206,8 @@ function switchTab(tabName) {
 
 function renderTestiTabContent() {
     const container = document.getElementById('testiListContainer');
+    if(!container) return; // safety check
+
     const flatList = getFlatTestimonials();
     let displayList = currentTab === 'live' ? flatList.filter(t => t.isPublished === true) : flatList;
 
