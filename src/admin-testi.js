@@ -1,54 +1,162 @@
 import { supabaseClient } from './supabase.js';
 
 let allClubs = [];
+
+// Variabel untuk Pagination PRO Club
+let currentPage = 1;
+const itemsPerPage = 10;
+let searchQuery = '';
+let filteredClubs = [];
+
+// Variabel untuk Testimoni
 let currentTab = 'live'; 
 
 document.addEventListener('DOMContentLoaded', async () => {
-    await loadClubs();
+    await loadClubsData();
 
-    document.getElementById('selectClub').addEventListener('change', () => {
-        switchTab('club');
+    // Event Listeners PRO Club
+    document.getElementById('searchClubPro').addEventListener('input', (e) => {
+        searchQuery = e.target.value.toLowerCase();
+        currentPage = 1; // Reset ke halaman 1 tiap kali nyari
+        renderProClubManager();
     });
 
-    document.getElementById('btnSaveTesti').addEventListener('click', saveTestimony);
+    document.getElementById('btnPrevPro').addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            renderProClubManager();
+        }
+    });
 
+    document.getElementById('btnNextPro').addEventListener('click', () => {
+        const totalPages = Math.ceil(filteredClubs.length / itemsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderProClubManager();
+        }
+    });
+
+    // Event Listeners Testimoni
     document.getElementById('tabLive').addEventListener('click', () => switchTab('live'));
     document.getElementById('tabAll').addEventListener('click', () => switchTab('all'));
-    document.getElementById('tabClub').addEventListener('click', () => switchTab('club'));
 });
 
-// Fungsi narik semua klub dari DB
-async function loadClubs() {
-    const selectClub = document.getElementById('selectClub');
+// Tarik data klub sekalian bawa status "is_pro"
+async function loadClubsData() {
     try {
-        const { data, error } = await supabaseClient.from('clubs').select('id, club_name, testimony');
+        const { data, error } = await supabaseClient
+            .from('clubs')
+            .select('id, club_name, is_pro, testimony')
+            .order('club_name', { ascending: true }); // Urut abjad
+            
         if (error) throw error;
         
-        allClubs = data;
-        selectClub.innerHTML = '<option value="">-- Pilih Klub --</option>';
-        data.forEach(c => {
-            selectClub.innerHTML += `<option value="${c.id}">${c.club_name}</option>`;
-        });
-
-        renderTabContent();
+        allClubs = data || [];
+        renderProClubManager(); // Render tabel PRO
+        renderTestiTabContent(); // Render tabel Testi Lama
+        
     } catch (err) {
-        selectClub.innerHTML = '<option value="">Gagal memuat data klub</option>';
+        console.error("Gagal memuat data:", err);
+        document.getElementById('proClubList').innerHTML = `<tr><td colspan="3" class="text-center py-8 text-sm text-red-500 font-bold">Gagal memuat database klub! Pastikan kolom 'is_pro' sudah ditambahkan di SQL.</td></tr>`;
+    }
+}
+
+// ==========================================
+// LOGIKA 1: MANAJEMEN PRO CLUB (GANTENG)
+// ==========================================
+function renderProClubManager() {
+    const listContainer = document.getElementById('proClubList');
+    const infoContainer = document.getElementById('proPaginationInfo');
+    const btnPrev = document.getElementById('btnPrevPro');
+    const btnNext = document.getElementById('btnNextPro');
+
+    // 1. Filter by Search Query
+    filteredClubs = allClubs.filter(c => 
+        c.club_name && c.club_name.toLowerCase().includes(searchQuery)
+    );
+
+    // Hitung Pagination
+    const totalItems = filteredClubs.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+    
+    // Cegah page kelebihan
+    if(currentPage > totalPages) currentPage = totalPages;
+
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const clubsToShow = filteredClubs.slice(startIndex, endIndex);
+
+    // 2. Render HTML Tabel
+    if (clubsToShow.length === 0) {
+        listContainer.innerHTML = `<tr><td colspan="3" class="text-center py-10 text-sm text-slate-400 font-bold italic">Tidak ada klub yang cocok dengan pencarian.</td></tr>`;
+    } else {
+        listContainer.innerHTML = clubsToShow.map(c => {
+            // Tampilan Status & Tombol
+            const isPro = c.is_pro === true;
+            const statusBadge = isPro 
+                ? `<span class="bg-yellow-100 text-yellow-700 border border-yellow-200 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase flex items-center gap-1.5 w-max shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></span>PRO TIER</span>`
+                : `<span class="bg-slate-100 text-slate-500 border border-slate-200 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase w-max">REGULER</span>`;
+            
+            const actionBtn = isPro
+                ? `<button onclick="window.toggleProStatus('${c.id}', true)" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold rounded-xl transition-colors shadow-sm">Cabut PRO ❌</button>`
+                : `<button onclick="window.toggleProStatus('${c.id}', false)" class="px-4 py-2 bg-slate-900 hover:bg-yellow-500 hover:border-yellow-600 hover:shadow-[0_0_15px_rgba(234,179,8,0.4)] hover:text-white text-white border border-slate-800 text-xs font-bold rounded-xl transition-all shadow-md flex items-center gap-1.5 ml-auto">Jadikan PRO 👑</button>`;
+
+            return `
+            <tr class="hover:bg-blue-50/50 transition-colors group">
+                <td class="py-4 px-5 border-b border-slate-50">
+                    <p class="font-extrabold text-slate-800 text-sm">${c.club_name}</p>
+                    <p class="text-[9px] text-slate-400 font-mono mt-0.5">ID: ${c.id.substring(0,8)}...</p>
+                </td>
+                <td class="py-4 px-5 border-b border-slate-50">${statusBadge}</td>
+                <td class="py-4 px-5 border-b border-slate-50 text-right">${actionBtn}</td>
+            </tr>
+            `;
+        }).join('');
+    }
+
+    // 3. Update Pagination Info & Buttons
+    let startDisplay = totalItems === 0 ? 0 : startIndex + 1;
+    let endDisplay = Math.min(endIndex, totalItems);
+    infoContainer.innerText = `Menampilkan ${startDisplay}-${endDisplay} dari ${totalItems} Klub`;
+
+    btnPrev.disabled = currentPage === 1;
+    btnNext.disabled = currentPage === totalPages || totalItems === 0;
+}
+
+// Fungsi tembak status PRO ke Supabase
+window.toggleProStatus = async function(clubId, currentStatus) {
+    const newStatus = !currentStatus; // Kalo true jadi false, kalo false jadi true
+    try {
+        const { error } = await supabaseClient
+            .from('clubs')
+            .update({ is_pro: newStatus })
+            .eq('id', clubId);
+
+        if (error) throw error;
+
+        // Update state lokal biar nggak usah fetch ulang
+        const cIndex = allClubs.findIndex(c => String(c.id) === String(clubId));
+        if(cIndex > -1) {
+            allClubs[cIndex].is_pro = newStatus;
+        }
+        
+        renderProClubManager(); // Rerender tabel otomatis
+    } catch (err) {
+        alert("Gagal merubah status PRO: Cek koneksi / database.");
         console.error(err);
     }
 }
 
-// Flatten array JSONB dari semua klub
+
+// ==========================================
+// LOGIKA 2: DASHBOARD TESTIMONI LAMA
+// ==========================================
 function getFlatTestimonials() {
     let flatList = [];
     allClubs.forEach(c => {
         if (c.testimony && Array.isArray(c.testimony)) {
             c.testimony.forEach((t, idx) => {
-                flatList.push({
-                    clubId: c.id,
-                    clubName: c.club_name,
-                    originalIndex: idx,
-                    ...t
-                });
+                flatList.push({ clubId: c.id, clubName: c.club_name, originalIndex: idx, ...t });
             });
         }
     });
@@ -59,45 +167,24 @@ function switchTab(tabName) {
     currentTab = tabName;
     const tabLive = document.getElementById('tabLive');
     const tabAll = document.getElementById('tabAll');
-    const tabClub = document.getElementById('tabClub');
 
     const inactiveClass = "px-5 py-2.5 rounded-xl text-sm font-bold transition-all shrink-0 bg-slate-50 text-slate-600 hover:bg-slate-100 border border-transparent";
     tabLive.className = inactiveClass;
     tabAll.className = inactiveClass;
-    tabClub.className = inactiveClass;
 
     if (tabName === 'live') {
         tabLive.className = "px-5 py-2.5 rounded-xl text-sm font-bold transition-all shrink-0 bg-green-100 text-green-700 border border-green-200 shadow-sm";
     } else if (tabName === 'all') {
         tabAll.className = "px-5 py-2.5 rounded-xl text-sm font-bold transition-all shrink-0 bg-blue-100 text-blue-700 border border-blue-200 shadow-sm";
-    } else if (tabName === 'club') {
-        tabClub.className = "px-5 py-2.5 rounded-xl text-sm font-bold transition-all shrink-0 bg-purple-100 text-purple-700 border border-purple-200 shadow-sm";
     }
 
-    renderTabContent();
+    renderTestiTabContent();
 }
 
-function renderTabContent() {
+function renderTestiTabContent() {
     const container = document.getElementById('testiListContainer');
     const flatList = getFlatTestimonials();
-    let displayList = [];
-
-    if (currentTab === 'live') {
-        displayList = flatList.filter(t => t.isPublished === true);
-    } else if (currentTab === 'all') {
-        displayList = flatList; 
-    } else if (currentTab === 'club') {
-        const selectedClubId = document.getElementById('selectClub').value;
-        if (!selectedClubId) {
-            container.innerHTML = `
-                <div class="flex flex-col items-center justify-center py-10 bg-slate-50 border border-dashed border-slate-300 rounded-2xl">
-                    <span class="text-4xl mb-3">👆</span>
-                    <p class="text-sm text-slate-500 font-bold">Pilih Klub di form atas terlebih dahulu.</p>
-                </div>`;
-            return;
-        }
-        displayList = flatList.filter(t => String(t.clubId) === String(selectedClubId));
-    }
+    let displayList = currentTab === 'live' ? flatList.filter(t => t.isPublished === true) : flatList;
 
     if (displayList.length === 0) {
         container.innerHTML = `
@@ -134,98 +221,31 @@ function renderTabContent() {
     `).join('');
 }
 
-// Fungsi Simpan (Suntik) Testi ke Klub
-async function saveTestimony() {
-    const clubId = document.getElementById('selectClub').value;
-    const text = document.getElementById('inputTesti').value.trim();
-    const name = document.getElementById('inputName').value.trim();
-    const role = document.getElementById('inputRole').value.trim();
-    const statusMsg = document.getElementById('statusMsg');
-    const btn = document.getElementById('btnSaveTesti');
-
-    if (!clubId || !text || !name || !role) {
-        statusMsg.innerText = "Semua form wajib diisi ya Bos!";
-        statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block mt-2";
-        return;
-    }
-
-    const flatList = getFlatTestimonials();
-    const isDuplicate = flatList.some(t => t.text.toLowerCase() === text.toLowerCase());
-    
-    if (isDuplicate) {
-        statusMsg.innerText = "Ditolak: Teks testimoni ini udah pernah lu simpan di bank!";
-        statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block mt-2";
-        return;
-    }
-
-    btn.innerText = "Menyimpan ke Bank...";
-    btn.disabled = true;
-
-    const cIndex = allClubs.findIndex(c => String(c.id) === String(clubId));
-    let currentTestimonies = allClubs[cIndex].testimony || [];
-
-    const newTesti = { text, name, role, timestamp: new Date().toISOString(), isPublished: false };
-    const updatedTestimonies = [...currentTestimonies, newTesti];
-
-    try {
-        const { error } = await supabaseClient
-            .from('clubs')
-            .update({ testimony: updatedTestimonies })
-            .eq('id', clubId);
-
-        if (error) throw error;
-
-        allClubs[cIndex].testimony = updatedTestimonies;
-
-        statusMsg.innerHTML = "✅ <strong>Berhasil masuk Bank!</strong><br><span class='font-normal text-xs'>Klik tab 'Sesuai Dropdown Klub' lalu pilih 'Tayangkan' untuk upload.</span>";
-        statusMsg.className = "text-sm text-center rounded-lg p-3 bg-green-100 text-green-700 block mt-3";
-        
-        document.getElementById('inputTesti').value = '';
-        document.getElementById('inputName').value = '';
-        document.getElementById('inputRole').value = '';
-        
-        switchTab('club');
-
-    } catch (err) {
-        statusMsg.innerText = "Gagal: " + err.message;
-        statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block mt-3";
-    } finally {
-        btn.innerHTML = "Simpan ke Bank Testi 💾";
-        btn.disabled = false;
-        setTimeout(() => statusMsg.classList.add('hidden'), 5000);
-    }
-}
-
-// Global action: Tayangkan / Tarik Turun
 window.togglePublish = async function(clubId, originalIndex) {
     const cIndex = allClubs.findIndex(c => String(c.id) === String(clubId));
     let currentTestimonies = allClubs[cIndex].testimony;
-
     currentTestimonies[originalIndex].isPublished = !currentTestimonies[originalIndex].isPublished;
 
     try {
         await supabaseClient.from('clubs').update({ testimony: currentTestimonies }).eq('id', clubId);
         allClubs[cIndex].testimony = currentTestimonies;
-        renderTabContent(); 
+        renderTestiTabContent(); 
     } catch (err) {
         alert("Gagal memproses tayangan! Cek koneksi Anda.");
         currentTestimonies[originalIndex].isPublished = !currentTestimonies[originalIndex].isPublished;
     }
 }
 
-// Global action: Hapus Data Permanen
 window.deleteTesti = async function(clubId, originalIndex) {
     if(!confirm("Hapus permanen testimoni ini dari database?")) return;
-    
     const cIndex = allClubs.findIndex(c => String(c.id) === String(clubId));
     let currentTestimonies = allClubs[cIndex].testimony;
-
     currentTestimonies.splice(originalIndex, 1);
 
     try {
         await supabaseClient.from('clubs').update({ testimony: currentTestimonies }).eq('id', clubId);
         allClubs[cIndex].testimony = currentTestimonies;
-        renderTabContent(); 
+        renderTestiTabContent(); 
     } catch (err) {
         alert("Gagal menghapus data!");
     }
