@@ -12,8 +12,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ==========================================
     // 🛡️ 2. TRUE SERVER-SIDE AUTH VERIFICATION
     // ==========================================
-    // Menggunakan getUser() akan memaksa request ke server Supabase untuk 
-    // memvalidasi Token JWT, BUKAN ngecek local storage yang bisa di-hack.
     const { data: { user }, error } = await supabaseClient.auth.getUser();
 
     if (error || !user) {
@@ -35,6 +33,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Jika lolos validasi server, baru load data
     loadAdminData();
+
+    // ==========================================
+    // 🔍 3. EVENT LISTENER SEARCH CLUB MANAGER
+    // ==========================================
+    const searchClubInput = document.getElementById('searchClub');
+    if (searchClubInput) {
+        searchClubInput.addEventListener('input', (e) => {
+            const keyword = e.target.value.toLowerCase();
+            if (!window.allClubsAdmin) return;
+            
+            // Filter berdasarkan nama klub, coach, kota, atau provinsi
+            const filtered = window.allClubsAdmin.filter(c => 
+                (c.club_name && c.club_name.toLowerCase().includes(keyword)) ||
+                (c.coach_name && c.coach_name.toLowerCase().includes(keyword)) ||
+                (c.kota_asal && c.kota_asal.toLowerCase().includes(keyword)) ||
+                (c.provinsi && c.provinsi.toLowerCase().includes(keyword))
+            );
+            renderClubs(filtered);
+        });
+    }
 });
 
 // Fungsi untuk animasi nendang user asing
@@ -79,13 +97,17 @@ async function loadAdminData() {
         if (errEdits) throw errEdits;
         renderEditQueues(edits);
 
-        // --- C. TARIK DATA FULL CLUB MANAGER ---
+        // --- C. TARIK DATA FULL CLUB MANAGER DENGAN COUNT ATLET ---
+        // Narik relasi athletes(id) agar tau seberapa banyak anak buah si klub
         const { data: clubs, error: errC } = await supabaseClient
             .from('clubs')
-            .select('*')
+            .select('*, athletes(id)') 
             .order('id', { ascending: false });
         if (errC) throw errC;
-        renderClubs(clubs);
+        
+        // Simpan ke variabel global untuk fitur Search
+        window.allClubsAdmin = clubs || [];
+        renderClubs(window.allClubsAdmin);
 
     } catch (error) {
         console.error("Gagal memuat admin:", error);
@@ -169,32 +191,57 @@ function renderEditQueues(edits) {
     tbody.innerHTML = html;
 }
 
-// Render Clubs
-function renderClubs(clubs) {
+// Render Clubs (Dengan Limit 10 & Search)
+function renderClubs(clubsArray) {
     const tbody = document.getElementById('clubTableBody');
-    if (!clubs || clubs.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500">Belum ada klub.</td></tr>`;
+    const infoCount = document.getElementById('clubCountInfo');
+    
+    if (!clubsArray || clubsArray.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500 font-bold">Tidak ada klub ditemukan.</td></tr>`;
+        if (infoCount) infoCount.innerText = "Menampilkan 0 klub.";
         return;
     }
+
+    // Batasi render maksimal 10 data aja
+    const displayClubs = clubsArray.slice(0, 10);
+    
     let html = '';
-    clubs.forEach((c, index) => {
-        const location = c.provinsi ? `${c.kota_asal || ''}, ${c.provinsi}` : (c.kota_asal || 'Belum diatur');
+    displayClubs.forEach((c, index) => {
+        // Susun Asal Kota/Provinsi
+        const location = c.kota_asal ? `${c.kota_asal}, ${c.provinsi || ''}` : (c.provinsi || 'Belum diatur');
+        
+        // Hitung Jumlah Atlet
+        const athleteCount = c.athletes ? c.athletes.length : 0;
+        
+        // Tentukan Badge Akun PRO atau BASIC
+        const isPro = c.is_pro === true || String(c.is_pro) === 'true';
+        const badgeAkun = isPro 
+            ? `<span class="px-2 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/50 rounded text-[10px] font-black tracking-widest uppercase">PRO</span>` 
+            : `<span class="px-2 py-1 bg-slate-700/50 text-slate-400 border border-slate-600 rounded text-[10px] font-bold tracking-widest uppercase">BASIC</span>`;
+
         html += `
-            <tr class="hover:bg-slate-800 transition-colors">
+            <tr class="hover:bg-slate-700/50 transition-colors">
                 <td class="p-4 text-center text-slate-500 font-bold">${index + 1}</td>
                 <td class="p-4">
                     <p class="font-extrabold text-white">${c.club_name}</p>
                     <p class="text-[10px] text-slate-400 uppercase tracking-widest mt-0.5">${c.short_name || 'NO-TAG'}</p>
                 </td>
+                <td class="p-4 text-center font-mono font-bold text-emerald-400">${athleteCount} Atlet</td>
+                <td class="p-4 text-slate-400 text-xs">${location}</td>
                 <td class="p-4 text-slate-300 font-bold flex items-center gap-2">
                     <span class="text-lg">👤</span> ${c.coach_name || 'Belum diisi'}
                 </td>
-                <td class="p-4 text-slate-400 text-xs">${location}</td>
-                <td class="p-4 text-center"><span class="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs font-bold font-mono">TBD</span></td>
+                <td class="p-4 text-center">${badgeAkun}</td>
             </tr>
         `;
     });
+    
     tbody.innerHTML = html;
+    
+    // Update teks info limit
+    if (infoCount) {
+        infoCount.innerText = `Menampilkan ${displayClubs.length} dari total ${clubsArray.length} klub.`;
+    }
 }
 
 // Fungsi ACC Awal
