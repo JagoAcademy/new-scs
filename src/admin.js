@@ -1,5 +1,10 @@
 import { supabaseClient } from './supabase.js';
 
+// Variabel Global untuk Pagination
+let currentClubPage = 1;
+const clubsPerPage = 10;
+let filteredClubsAdmin = [];
+
 document.addEventListener('DOMContentLoaded', async () => {
     // ==========================================
     // 🪤 1. THE AZTEC SECRET (JEBAKAN BATMAN)
@@ -32,7 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadAdminData();
 
     // ==========================================
-    // 🔍 3. EVENT LISTENER SEARCH CLUB MANAGER
+    // 🔍 3. EVENT LISTENER SEARCH & PAGINATION
     // ==========================================
     const searchClubInput = document.getElementById('searchClub');
     if (searchClubInput) {
@@ -40,13 +45,39 @@ document.addEventListener('DOMContentLoaded', async () => {
             const keyword = e.target.value.toLowerCase();
             if (!window.allClubsAdmin) return;
             
-            const filtered = window.allClubsAdmin.filter(c => 
+            filteredClubsAdmin = window.allClubsAdmin.filter(c => 
                 (c.club_name && c.club_name.toLowerCase().includes(keyword)) ||
                 (c.coach_name && c.coach_name.toLowerCase().includes(keyword)) ||
                 (c.kota_asal && c.kota_asal.toLowerCase().includes(keyword)) ||
                 (c.provinsi && c.provinsi.toLowerCase().includes(keyword))
             );
-            renderClubs(filtered);
+            
+            // Reset ke halaman 1 setiap kali mencari
+            currentClubPage = 1;
+            renderClubs(filteredClubsAdmin);
+        });
+    }
+
+    // Event Listener Tombol Prev & Next
+    const btnPrev = document.getElementById('btnPrevClub');
+    const btnNext = document.getElementById('btnNextClub');
+    
+    if (btnPrev) {
+        btnPrev.addEventListener('click', () => {
+            if (currentClubPage > 1) {
+                currentClubPage--;
+                renderClubs(filteredClubsAdmin);
+            }
+        });
+    }
+    
+    if (btnNext) {
+        btnNext.addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredClubsAdmin.length / clubsPerPage);
+            if (currentClubPage < totalPages) {
+                currentClubPage++;
+                renderClubs(filteredClubsAdmin);
+            }
         });
     }
 });
@@ -92,33 +123,32 @@ async function loadAdminData() {
         renderEditQueues(edits);
 
         // --- C. TARIK DATA FULL CLUB MANAGER (Pisah Query Anti-Gagal) ---
-        // 1. Tarik Klub
+        // Urutkan berdasarkan ID menurun agar pendaftar terbaru ada di atas
         const { data: clubs, error: errC } = await supabaseClient
             .from('clubs')
             .select('*') 
             .order('id', { ascending: false });
         if (errC) throw errC;
 
-        // 2. Tarik ID Atlet untuk dihitung
         const { data: athletesData } = await supabaseClient
             .from('athletes')
             .select('id, club_id');
         
-        // 3. Gabungkan data
         const clubsWithCount = clubs.map(club => {
             const totalAtlet = athletesData ? athletesData.filter(a => String(a.club_id) === String(club.id)).length : 0;
             return { ...club, athlete_count: totalAtlet };
         });
 
         window.allClubsAdmin = clubsWithCount || [];
-        renderClubs(window.allClubsAdmin);
+        filteredClubsAdmin = [...window.allClubsAdmin];
+        currentClubPage = 1;
+        renderClubs(filteredClubsAdmin);
 
     } catch (error) {
         console.error("Gagal memuat admin:", error);
     }
 }
 
-// Render Antrian Awal
 function renderQueues(queues) {
     const tbody = document.getElementById('queueTableBody');
     document.getElementById('badgeQueue').innerText = `${queues ? queues.length : 0} Pending`;
@@ -153,7 +183,6 @@ function renderQueues(queues) {
     tbody.innerHTML = html;
 }
 
-// Render Edit Requests
 function renderEditQueues(edits) {
     const tbody = document.getElementById('editQueueTableBody');
     document.getElementById('badgeEditQueue').innerText = `${edits ? edits.length : 0} Pending`;
@@ -195,21 +224,33 @@ function renderEditQueues(edits) {
     tbody.innerHTML = html;
 }
 
-// Render Clubs
 function renderClubs(clubsArray) {
     const tbody = document.getElementById('clubTableBody');
     const infoCount = document.getElementById('clubCountInfo');
+    const btnPrev = document.getElementById('btnPrevClub');
+    const btnNext = document.getElementById('btnNextClub');
+    const pageInfo = document.getElementById('pageInfoClub');
     
     if (!clubsArray || clubsArray.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500 font-bold">Tidak ada klub ditemukan.</td></tr>`;
         if (infoCount) infoCount.innerText = "Menampilkan 0 klub.";
+        if (btnPrev) btnPrev.disabled = true;
+        if (btnNext) btnNext.disabled = true;
+        if (pageInfo) pageInfo.innerText = "Page 1 of 1";
         return;
     }
 
-    const displayClubs = clubsArray.slice(0, 10);
+    const totalPages = Math.ceil(clubsArray.length / clubsPerPage);
+    if (currentClubPage > totalPages) currentClubPage = totalPages;
+    if (currentClubPage < 1) currentClubPage = 1;
+
+    const startIndex = (currentClubPage - 1) * clubsPerPage;
+    const endIndex = startIndex + clubsPerPage;
+    const displayClubs = clubsArray.slice(startIndex, endIndex);
     
     let html = '';
     displayClubs.forEach((c, index) => {
+        const actualIndex = startIndex + index + 1; // Menjaga nomor urut tetap jalan di page selanjutnya
         const location = c.kota_asal ? `${c.kota_asal}, ${c.provinsi || ''}` : (c.provinsi || 'Belum diatur');
         const athleteCount = c.athlete_count || 0; 
         
@@ -220,7 +261,7 @@ function renderClubs(clubsArray) {
 
         html += `
             <tr class="hover:bg-slate-700/50 transition-colors">
-                <td class="p-4 text-center text-slate-500 font-bold">${index + 1}</td>
+                <td class="p-4 text-center text-slate-500 font-bold">${actualIndex}</td>
                 <td class="p-4">
                     <p class="font-extrabold text-white">${c.club_name}</p>
                     <p class="text-[10px] text-slate-400 uppercase tracking-widest mt-0.5">${c.short_name || 'NO-TAG'}</p>
@@ -238,8 +279,13 @@ function renderClubs(clubsArray) {
     tbody.innerHTML = html;
     
     if (infoCount) {
-        infoCount.innerText = `Menampilkan ${displayClubs.length} dari total ${clubsArray.length} klub.`;
+        const endDisplay = Math.min(endIndex, clubsArray.length);
+        infoCount.innerText = `Menampilkan ${startIndex + 1}-${endDisplay} dari total ${clubsArray.length} klub.`;
     }
+    
+    if (pageInfo) pageInfo.innerText = `Page ${currentClubPage} of ${totalPages}`;
+    if (btnPrev) btnPrev.disabled = currentClubPage === 1;
+    if (btnNext) btnNext.disabled = currentClubPage === totalPages;
 }
 
 window.approveAthlete = async (f1_id) => {
