@@ -60,14 +60,15 @@
 <body class="bg-gray-50 text-gray-800 font-sans antialiased relative">
     
     <!-- CONTAINER NAVBAR AUTH BUTTONS -->
-    <div class="fixed top-3 right-14 md:top-4 md:right-6 z-[100] flex items-center gap-2">
-        <button id="floatingLogoutBtn" class="hidden bg-white text-red-500 font-extrabold px-3 py-1.5 md:px-4 md:py-1.5 text-xs md:text-sm rounded-full shadow-sm hover:bg-red-50 transition-all border border-red-100 items-center gap-1.5">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-            <span class="hidden md:inline">Keluar</span>
+    <div class="fixed top-3 right-12 md:top-4 md:right-6 z-[100] flex items-center gap-1.5 md:gap-2">
+        <!-- LOGOUT DI BIKIN BULAT KECIL DI MOBILE BIAR GAK NABRAK LOGO -->
+        <button id="floatingLogoutBtn" class="hidden bg-white text-red-500 font-extrabold w-8 h-8 md:w-auto md:px-4 md:py-1.5 text-xs md:text-sm rounded-full shadow-sm hover:bg-red-50 transition-all border border-red-100 items-center justify-center">
+            <svg class="w-4 h-4 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            <span class="hidden md:inline md:ml-1.5">Keluar</span>
         </button>
-        <a href="/auth.html" id="floatingAuthBtn" class="bg-scsBlue text-white font-extrabold px-5 py-1.5 text-xs md:text-sm rounded-full shadow-md hover:bg-blue-900 transition-all border border-blue-900 flex items-center gap-1.5">
-            <span id="floatingAuthText">Daftar / Login</span>
-            <svg id="authIcon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        <a href="/auth.html" id="floatingAuthBtn" class="bg-scsBlue text-white font-extrabold px-3.5 py-1.5 md:px-5 md:py-1.5 text-[11px] md:text-sm rounded-full shadow-md hover:bg-blue-900 transition-all border border-blue-900 flex items-center gap-1 md:gap-1.5">
+            <span id="floatingAuthText" class="whitespace-nowrap">Daftar / Login</span>
+            <svg id="authIcon" class="w-3.5 h-3.5 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
         </a>
     </div>
     
@@ -79,9 +80,9 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
             <div class="flex justify-between items-center h-full">
                 <div class="flex-shrink-0 flex items-center h-full py-1">
-                    <a href="/" class="flex items-center gap-3 md:gap-4 shrink-0">
+                    <a href="/" class="flex items-center gap-2 md:gap-4 shrink-0">
                         <img class="h-5 md:h-6 w-auto object-contain hover:scale-105 transition-transform duration-200 shrink-0" src="/images/logo.png" alt="SCS Logo">
-                        <div class="h-5 md:h-6 w-px bg-slate-300"></div>
+                        <div class="h-4 md:h-6 w-px bg-slate-300"></div>
                         <img class="h-5 md:h-6 w-auto object-contain hover:scale-105 transition-transform duration-200 shrink-0" src="/images/f1logo.png" alt="F1 Logo">
                     </a>
                 </div>
@@ -151,15 +152,14 @@
         </div>
     </div>
 
-    <!-- AREA BAWAH INI 1000% SAMA PERSIS DENGAN KODE SEBELUMNYA -->
     <section class="relative w-full h-[calc(100vh-3.5rem)] md:h-screen pt-14 md:pt-16 flex max-md:block overflow-hidden">
         
-        <div class="w-full md:w-1/2 h-full absolute md:relative inset-0 md:inset-auto bg-white z-20 flex flex-col max-md:justify-start max-md:items-start md:justify-center md:items-start p-8 md:p-16 lg:px-20 max-md:pt-[14vh] max-md:pl-6 max-md:pr-0 max-md:[clip-path:polygon(0_0,100%_0,0_100%)] md:border-r border-gray-200 transition-all duration-700 ease-in-out hover:md:w-[60%] group">
+        <div class="w-full md:w-1/2 h-full absolute md:relative inset-0 md:inset-auto bg-white z-20 flex flex-col max-md:justify-start max-md:items-start md:justify-center md:items-start p-8 md:p-16 lg:px-20 max-md:pt-[12vh] max-md:pl-6 max-md:pr-0 max-md:[clip-path:polygon(0_0,100%_0,0_100%)] md:border-r border-gray-200 transition-all duration-700 ease-in-out hover:md:w-[60%] group">
             <div class="absolute inset-0 z-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
             
             <div class="relative z-10 text-left flex flex-col items-start w-full max-md:max-w-full md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
                 
-                <div class="w-full max-md:mt-10">
+                <div class="w-full max-md:mt-6">
                     <div class="flex items-center gap-3 mb-1 md:mb-2">
                         <h1 class="text-5xl md:text-6xl lg:text-7xl max-md:text-[45px] font-black text-blue-950 tracking-tight drop-shadow-sm leading-none">SCS</h1>
                     </div>
@@ -186,7 +186,8 @@
                     </div>
                 </div>
 
-                <div class="flex flex-col items-center w-[240px] mt-6 md:mt-8 relative z-20">
+                <!-- TOMBOL BIRU DENGAN SUNTIKAN KHUSUS BIAR GESER KIRI & ATAS SESUAI PANAH -->
+                <div class="flex flex-col items-center w-[240px] mt-4 md:mt-8 relative z-20 max-md:-translate-x-5 max-md:-translate-y-3">
                     <a href="/auth.html" class="bg-blue-900 text-white rounded-full font-black text-[13px] md:text-sm hover:bg-blue-800 transition hover:-translate-y-1 w-full h-[50px] flex items-center justify-center gap-2 neon-glow-blue shadow-xl">
                         Login Club / EO <span>&raquo;</span>
                     </a>
@@ -492,8 +493,8 @@
 
                 if (session && floatBtn) {
                     floatBtn.href = '/dashboard.html';
-                    floatBtn.className = "bg-emerald-600 text-white font-extrabold px-5 py-1.5 text-xs md:text-sm rounded-full shadow-md hover:bg-emerald-700 transition-all border border-emerald-700 flex items-center gap-1.5";
-                    floatText.innerHTML = 'Ke Dashboard &rarr;';
+                    floatBtn.className = "bg-emerald-600 text-white font-extrabold px-3.5 py-1.5 md:px-5 md:py-1.5 text-[11px] md:text-sm rounded-full shadow-md hover:bg-emerald-700 transition-all border border-emerald-700 flex items-center gap-1.5";
+                    floatText.innerHTML = '<span class="md:hidden">Dashboard</span><span class="hidden md:inline">Ke Dashboard</span> &rarr;';
                     if(document.getElementById('authIcon')) document.getElementById('authIcon').style.display = 'none';
                     if(floatingLogoutBtn) {
                         floatingLogoutBtn.classList.remove('hidden');
