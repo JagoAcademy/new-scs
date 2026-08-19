@@ -96,9 +96,6 @@ async function loadEventDashboard() {
             window.location.href = `/book/event-result.html?id=${currentEventId}`;
         };
 
-        // ==========================================
-        // 🟢 SUNTIKAN BARU: LOGIKA EXPORT TO EXCEL (SUPER FIXED)
-        // ==========================================
         const btnExcel = document.getElementById('btnMenuCetakExcel');
         if(btnExcel) {
             btnExcel.onclick = async () => {
@@ -106,7 +103,6 @@ async function loadEventDashboard() {
                 btnExcel.innerHTML = '<div class="text-emerald-700 font-bold text-sm py-2 text-center w-full">Mengekspor Data... ⏳</div>';
                 
                 try {
-                    // Tarik data langsung HANYA dari tabel event_registrations (karena datanya udah komplit di situ)
                     const { data: regData, error: regError } = await supabaseClient
                         .from('event_registrations')
                         .select('*')
@@ -120,13 +116,9 @@ async function loadEventDashboard() {
                         return;
                     }
 
-                    // Mapping Data mentah ke format Tabel Excel
                     const excelData = regData.map((row, index) => {
-                        
-                        // Ekstrak array JSONB nomor lomba jadi teks pakai koma
                         let daftarLomba = "Tidak ada lomba";
                         if (row.nomor_lomba && Array.isArray(row.nomor_lomba)) {
-                            // Cek apakah bentuknya object {gaya: '...', waktu: '...'} atau cuma string biasa
                             if(typeof row.nomor_lomba[0] === 'object' && row.nomor_lomba[0] !== null) {
                                 daftarLomba = row.nomor_lomba.map(n => n.gaya).join(', ');
                             } else {
@@ -134,7 +126,6 @@ async function loadEventDashboard() {
                             }
                         }
 
-                        // Trik "Not Registered" ala SCS
                         let statusF1 = row.f1_id ? row.f1_id : 'Non-F1 (Guest)';
 
                         return {
@@ -151,7 +142,6 @@ async function loadEventDashboard() {
                         };
                     });
 
-                    // Konversi ke Excel file menggunakan library XLSX
                     const ws = XLSX.utils.json_to_sheet(excelData);
                     const wb = XLSX.utils.book_new();
                     XLSX.utils.book_append_sheet(wb, ws, "Data_Pendaftar");
@@ -166,13 +156,12 @@ async function loadEventDashboard() {
             };
         }
 
-
-
         updateConfigBadges();
         
         await loadEventStats();
         
-        // Panggil sistem baru: Load Panitia Collab
+        // --- COLAB FUNCTIONS SUNTIKAN BARU ---
+        await loadClubsForCollab();
         await loadCollaborators();
 
     } catch (err) {
@@ -201,7 +190,6 @@ async function loadEventStats() {
             document.getElementById('statKategori').innerText = uniqueEvents.size;
         }
     } catch (error) {
-        // Error diam-diam untuk UX mulus
     }
 }
 
@@ -211,7 +199,6 @@ function updateConfigBadges() {
     if (eventConfigData.entry_limit) { setCompleteBadge('badgeEntry'); completedCount++; }
     if (eventConfigData.tiket_harga) { setCompleteBadge('badgeTiket'); completedCount++; }
     
-    // 🟡 SUNTIKAN BARU: Sponsor dihapus dari hitungan config karena jadi fitur PRO murni
     const percent = (completedCount / 3) * 100;
     document.getElementById('statSetup').innerText = `${percent.toFixed(0)}% Selesai`;
     document.getElementById('barSetup').style.width = `${percent}%`;
@@ -225,18 +212,14 @@ function setCompleteBadge(elementId) {
     }
 }
 
-// 🟡 SUNTIKAN BARU: Penyesuaian Trigger Modal Config
-// Modal Standar
 document.getElementById('btnConfigLanding').onclick = () => { document.getElementById('valLandingText').value = eventConfigData.landing_text || ""; document.getElementById('modalLanding').classList.remove('hidden'); };
 document.getElementById('btnConfigEntry').onclick = () => { document.getElementById('valEntryLimit').value = eventConfigData.entry_limit || ""; document.getElementById('modalEntry').classList.remove('hidden'); };
 document.getElementById('btnConfigTiket').onclick = () => { document.getElementById('valTiketHarga').value = eventConfigData.tiket_harga || ""; document.getElementById('valTiketWA').value = eventConfigData.tiket_wa || ""; document.getElementById('modalTiket').classList.remove('hidden'); };
 
-// Modal PRO
 const btnFina = document.getElementById('btnFinaGenerator');
 if(btnFina) btnFina.onclick = () => { document.getElementById('modalFina').classList.remove('hidden'); };
 const btnSponsorPro = document.getElementById('btnConfigSponsor');
 if(btnSponsorPro) btnSponsorPro.onclick = () => { document.getElementById('modalSponsor').classList.remove('hidden'); };
-
 
 document.querySelectorAll('.btn-close-modal').forEach(btn => btn.onclick = (e) => e.target.closest('.fixed').classList.add('hidden'));
 
@@ -270,6 +253,32 @@ document.getElementById('btnSaveTiket').onclick = () => saveConfigToJSONB('tiket
 // ==========================================
 // FITUR TIM PANITIA (COLLAB)
 // ==========================================
+
+// 1. Fungsi Narik Daftar Klub untuk Dropdown
+async function loadClubsForCollab() {
+    const selectClub = document.getElementById('selectCollabClub');
+    if (!selectClub) return;
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('clubs')
+            .select('id, club_name, owner_id')
+            .not('owner_id', 'is', null)
+            .order('club_name', { ascending: true });
+
+        if (error) throw error;
+
+        let options = '<option value="">-- Pilih Klub untuk Diundang --</option>';
+        data.forEach(c => {
+            options += `<option value="${c.owner_id}">${c.club_name}</option>`;
+        });
+        selectClub.innerHTML = options;
+    } catch (err) {
+        selectClub.innerHTML = '<option value="">Gagal memuat klub</option>';
+    }
+}
+
+// 2. Fungsi Load Kolaborator yang udah nempel di event
 async function loadCollaborators() {
     const container = document.getElementById('collabListContainer');
     if (!container) return;
@@ -294,7 +303,6 @@ async function loadCollaborators() {
 
         let html = '';
         for (const collab of data) {
-            // Coba ambil nama klubnya dari tabel clubs
             const { data: clubData } = await supabaseClient
                 .from('clubs')
                 .select('club_name')
@@ -327,35 +335,27 @@ async function loadCollaborators() {
     }
 }
 
-// Tombol Undang Panitia
+// 3. Tombol Undang Panitia (Insert Data Baru)
 const btnInvite = document.getElementById('btnInviteCollab');
 if (btnInvite) {
     btnInvite.addEventListener('click', async () => {
-        const email = document.getElementById('inputCollabEmail').value.trim();
+        // Ambil User_ID langsung dari value Dropdown Club
+        const targetUserId = document.getElementById('selectCollabClub').value;
         const role = document.getElementById('inputCollabRole').value;
         const statusMsg = document.getElementById('collabStatusMsg');
 
-        if (!email) {
-            statusMsg.innerText = "Masukkan alamat email teman lu Bos!";
+        if (!targetUserId) {
+            statusMsg.innerText = "Pilih klub yang mau diundang dulu Bos!";
             statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block mb-4";
             statusMsg.classList.remove('hidden');
             return;
         }
 
-        btnInvite.innerText = "Mencari Akun...";
+        btnInvite.innerText = "Mengeksekusi...";
         btnInvite.disabled = true;
 
         try {
-            // 1. Panggil fungsi RPC rahasia untuk cari User_ID dari Email
-            const { data: targetUserId, error: rpcError } = await supabaseClient.rpc('get_user_id_by_email', { user_email: email });
-            
-            if (rpcError) throw rpcError;
-            
-            if (!targetUserId) {
-                throw new Error("Gagal! Email ini belum terdaftar di sistem SCS.");
-            }
-
-            // 2. Suntik ke tabel event_collaborators
+            // Suntik ke tabel event_collaborators
             const { error: insertError } = await supabaseClient
                 .from('event_collaborators')
                 .insert([{
@@ -365,16 +365,18 @@ if (btnInvite) {
                 }]);
 
             if (insertError) {
-                if (insertError.code === '23505') throw new Error("Orang ini udah jadi panitia di event ini!");
+                if (insertError.code === '23505') throw new Error("Klub ini udah jadi panitia di event ini!");
                 throw insertError;
             }
 
-            statusMsg.innerHTML = "✅ <strong>Mantap!</strong> Teman lu resmi dapet akses ke Command Center ini.";
+            statusMsg.innerHTML = "✅ <strong>Mantap!</strong> Klub tersebut resmi dapet akses ke Command Center ini.";
             statusMsg.className = "text-sm text-center rounded-lg p-3 bg-green-100 text-green-700 block mb-4";
             statusMsg.classList.remove('hidden');
             
-            document.getElementById('inputCollabEmail').value = '';
+            // Reset Dropdown
+            document.getElementById('selectCollabClub').value = '';
             
+            // Refresh Daftar Collab
             loadCollaborators();
 
         } catch (err) {
@@ -389,15 +391,15 @@ if (btnInvite) {
     });
 }
 
-// Fungsi Hapus Global
+// 4. Fungsi Cabut Akses (Delete Data)
 window.removeCollab = async function(collabId) {
-    if(!confirm("Yakin mau cabut akses orang ini? Mereka nggak akan bisa buka Command Center ini lagi dari akun mereka.")) return;
+    if(!confirm("Yakin mau cabut akses klub ini? Mereka nggak akan bisa buka Command Center ini lagi dari akun mereka.")) return;
     try {
         const { error } = await supabaseClient.from('event_collaborators').delete().eq('id', collabId);
         if (error) throw error;
         loadCollaborators();
     } catch (err) {
-        alert("Gagal menghapus: " + err.message);
+        alert("Gagal mencabut akses: " + err.message);
     }
 }
 

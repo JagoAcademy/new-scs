@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Command Center Event | SCS</title>
     <link rel="stylesheet" href="/src/style.css">
-    <!-- Library Excel untuk Fitur Export To Excel (Garis Hijau) -->
+    <!-- Library Excel untuk Fitur Export To Excel -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         svg { max-width: 100%; height: auto; display: block; }
@@ -224,7 +224,7 @@
             </div>
         </div>
 
-        <!-- 5. SECTION BARU: TIM PANITIA (COLLAB) YANG TADI ILANG -->
+        <!-- 5. SECTION BARU: TIM PANITIA (COLLAB) -->
         <div class="mb-10">
             <div class="flex items-center gap-3 mb-5 mt-10">
                 <div class="p-1.5 bg-purple-100 rounded-md text-purple-600 shrink-0">👥</div>
@@ -233,12 +233,14 @@
             </div>
 
             <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-5 md:p-8">
-                <p class="text-sm text-slate-500 mb-6 font-medium">Undang akun SCS klub atau EO lain (via Email) untuk mengelola event ini bersama. Mereka akan mendapat akses ke Command Center ini dari Dashboard mereka.</p>
+                <p class="text-sm text-slate-500 mb-6 font-medium">Undang klub atau EO lain untuk mengelola event ini bersama. Mereka akan mendapat akses ke Command Center ini langsung dari Dashboard mereka.</p>
                 
-                <!-- Form Invite -->
+                <!-- Form Invite dengan DROPDOWN CLUB -->
                 <div class="flex flex-col md:flex-row gap-3 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                    <div class="flex-1">
-                        <input type="email" id="inputCollabEmail" class="w-full px-4 py-3.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-purple-500 outline-none text-sm font-bold text-slate-700" placeholder="Masukkan Email Akun SCS Teman...">
+                    <div class="flex-1 w-full md:w-1/2">
+                        <select id="selectCollabClub" class="w-full px-4 py-3.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-purple-500 outline-none text-sm bg-white font-bold text-slate-700">
+                            <option value="">Memuat daftar klub...</option>
+                        </select>
                     </div>
                     <div class="w-full md:w-1/3">
                         <select id="inputCollabRole" class="w-full px-4 py-3.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-purple-500 outline-none text-sm bg-white font-bold text-slate-700">
@@ -311,7 +313,7 @@
             <p class="text-sm text-slate-600 mb-6 leading-relaxed">Kalkulasi dan konversi catatan waktu perenang menjadi <strong>Poin FINA resmi</strong> secara otomatis. Fitur eksklusif untuk event standar Nasional / PRO.</p>
             <div class="flex gap-3 mt-5">
                 <button class="btn-close-modal flex-1 bg-slate-100 text-slate-600 py-3.5 rounded-xl font-bold hover:bg-slate-200 transition">Tutup</button>
-                <a href="https://wa.me/" target="_blank" class="flex-1 bg-amber-500 text-white py-3.5 rounded-xl font-bold shadow-md hover:bg-amber-600 transition flex justify-center items-center gap-2">Upgrade PRO 🚀</a>
+                <a href="https://wa.me/6289691219977" target="_blank" class="flex-1 bg-amber-500 text-white py-3.5 rounded-xl font-bold shadow-md hover:bg-amber-600 transition flex justify-center items-center gap-2">Upgrade PRO 🚀</a>
             </div>
         </div>
     </div>
@@ -324,7 +326,7 @@
             <p class="text-sm text-slate-600 mb-6 leading-relaxed">Fokus urus jalannya lomba, urusan cari sponsor dan dana biar <strong>Tim SCS yang kerjakan</strong> untuk Anda. Layanan ini eksklusif untuk pengguna PRO.</p>
             <div class="flex gap-3 mt-5">
                 <button class="btn-close-modal flex-1 bg-slate-100 text-slate-600 py-3.5 rounded-xl font-bold hover:bg-slate-200 transition">Tutup</button>
-                <a href="https://wa.me/" target="_blank" class="flex-1 bg-amber-500 text-white py-3.5 rounded-xl font-bold shadow-md hover:bg-amber-600 transition flex justify-center items-center gap-2">Hubungi SCS 🚀</a>
+                <a href="https://wa.me/6289691219977" target="_blank" class="flex-1 bg-amber-500 text-white py-3.5 rounded-xl font-bold shadow-md hover:bg-amber-600 transition flex justify-center items-center gap-2">Hubungi SCS 🚀</a>
             </div>
         </div>
     </div>
