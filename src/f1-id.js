@@ -94,16 +94,16 @@ function renderProfile(atlet) {
 
     if (atlet.is_verified) {
         if(iconSpan) iconSpan.outerHTML = `<span class="bg-gradient-to-r from-amber-300 to-yellow-500 text-yellow-900 text-[11px] font-black px-1.5 py-0.5 rounded shadow-sm">ID</span>`;
-        f1IdContainer.className = "inline-flex items-center gap-2 bg-amber-900/20 border border-amber-400/50 px-3 py-1.5 rounded-lg backdrop-blur-sm mb-4 cursor-pointer hover:bg-amber-900/40 transition-colors shadow-[0_0_10px_rgba(251,191,36,0.1)]";
-        f1IdEl.className = "font-mono text-lg font-black text-amber-400 tracking-wider";
+        f1IdContainer.className = "inline-flex items-center gap-1.5 md:gap-2 bg-amber-900/20 border border-amber-400/50 px-2 py-1 md:px-3 md:py-1.5 rounded-lg backdrop-blur-sm mb-3 md:mb-4 cursor-pointer hover:bg-amber-900/40 transition-colors shadow-[0_0_10px_rgba(251,191,36,0.1)]";
+        f1IdEl.className = "font-mono text-sm md:text-lg font-black text-amber-400 tracking-wider";
     } else {
         if(iconSpan) iconSpan.outerHTML = `<span class="bg-blue-500 text-white text-[11px] font-black px-1.5 py-0.5 rounded shadow-sm">ID</span>`;
-        f1IdContainer.className = "inline-flex items-center gap-2 bg-blue-900/30 border border-blue-400/30 px-3 py-1.5 rounded-lg backdrop-blur-sm mb-4 cursor-pointer hover:bg-blue-900/50 transition-colors";
-        f1IdEl.className = "font-mono text-lg font-black text-blue-200 tracking-wider";
+        f1IdContainer.className = "inline-flex items-center gap-1.5 md:gap-2 bg-blue-900/30 border border-blue-400/30 px-2 py-1 md:px-3 md:py-1.5 rounded-lg backdrop-blur-sm mb-3 md:mb-4 cursor-pointer hover:bg-blue-900/50 transition-colors";
+        f1IdEl.className = "font-mono text-sm md:text-lg font-black text-blue-200 tracking-wider";
     }
 
     // ===============================================
-    // JURUS PRIVASI FOTO + LOGIC BAPAKNYA BISA LIHAT
+    // JURUS PRIVASI FOTO (MENYESUAIKAN SIZE MOBILE)
     // ===============================================
     const fotoEl = document.getElementById('atletFoto');
     let useDefaultLogo = false;
@@ -122,12 +122,12 @@ function renderProfile(atlet) {
 
     if (useDefaultLogo) {
         fotoEl.src = '/images/f1logo.png';
-        // Biar logo F1 tampil cantik di dalam kotak, kasih background putih, padding, dan object-contain
-        fotoEl.className = "w-32 h-32 md:w-36 md:h-36 rounded-2xl object-contain p-4 border-4 border-white/10 shadow-xl bg-white";
+        // Kasih background putih, padding, object-contain biar logo F1 rapi di tengah box
+        fotoEl.className = "w-24 h-24 md:w-36 md:h-36 rounded-2xl object-contain p-3 md:p-4 border-2 md:border-4 border-white/10 shadow-xl bg-white";
     } else {
         fotoEl.src = atlet.foto_url;
-        // Kalau nampilin foto asli atlet, tampilkan full cover (biasa)
-        fotoEl.className = "w-32 h-32 md:w-36 md:h-36 rounded-2xl object-cover border-4 border-white/10 shadow-xl bg-slate-800";
+        // Cover foto atlet biasa
+        fotoEl.className = "w-24 h-24 md:w-36 md:h-36 rounded-2xl object-cover border-2 md:border-4 border-white/10 shadow-xl bg-slate-800";
     }
     // ===============================================
 
@@ -142,25 +142,25 @@ function renderProfile(atlet) {
     const genderIconEl = document.getElementById('atletGenderIcon');
     if (atlet.gender === 'Putra') {
         genderIconEl.innerHTML = '👦';
-        genderIconEl.className = 'absolute -bottom-3 -right-3 w-10 h-10 bg-sky-400 rounded-full border-4 border-slate-900 flex items-center justify-center shadow-lg text-lg';
+        genderIconEl.className = 'absolute -bottom-2 -right-2 md:-bottom-3 md:-right-3 w-8 h-8 md:w-10 md:h-10 bg-sky-400 rounded-full border-[3px] md:border-4 border-slate-900 flex items-center justify-center shadow-lg text-sm md:text-lg';
     } else {
         genderIconEl.innerHTML = '👧';
-        genderIconEl.className = 'absolute -bottom-3 -right-3 w-10 h-10 bg-pink-400 rounded-full border-4 border-slate-900 flex items-center justify-center shadow-lg text-lg';
+        genderIconEl.className = 'absolute -bottom-2 -right-2 md:-bottom-3 md:-right-3 w-8 h-8 md:w-10 md:h-10 bg-pink-400 rounded-full border-[3px] md:border-4 border-slate-900 flex items-center justify-center shadow-lg text-sm md:text-lg';
     }
 
     const badgeEl = document.getElementById('badgeVerifikasi');
     if (atlet.is_verified) {
         badgeEl.innerHTML = `
-            <div class="flex items-center gap-1.5 bg-gradient-to-r from-amber-200 to-yellow-400 px-3 py-1 rounded-full shadow-[0_0_15px_rgba(251,191,36,0.3)] border border-amber-300 mt-1 md:mt-0">
-                <span class="text-sm">👑</span>
-                <span class="text-[10px] font-black text-amber-900 uppercase tracking-widest">Verified</span>
+            <div class="flex items-center gap-1 bg-gradient-to-r from-amber-200 to-yellow-400 px-2 py-0.5 md:px-3 md:py-1 rounded-full shadow-[0_0_15px_rgba(251,191,36,0.3)] border border-amber-300">
+                <span class="text-xs md:text-sm">👑</span>
+                <span class="text-[8px] md:text-[10px] font-black text-amber-900 uppercase tracking-widest">Verified</span>
             </div>
         `;
     } else {
         badgeEl.innerHTML = `
-            <div class="flex items-center gap-1.5 bg-blue-900/40 px-3 py-1 rounded-full border border-blue-400/30 backdrop-blur-md mt-1 md:mt-0">
-                <span class="text-sm">⏳</span>
-                <span class="text-[10px] font-bold text-blue-100 uppercase tracking-widest">Pending</span>
+            <div class="flex items-center gap-1 bg-blue-900/40 px-2 py-0.5 md:px-3 md:py-1 rounded-full border border-blue-400/30 backdrop-blur-md">
+                <span class="text-xs md:text-sm">⏳</span>
+                <span class="text-[8px] md:text-[10px] font-bold text-blue-100 uppercase tracking-widest">Pending</span>
             </div>
         `;
     }
@@ -200,16 +200,16 @@ async function fetchMedals() {
             if (medali.peringkat === 2) { icon = '🥈'; warna = 'text-slate-500 bg-slate-50 border-slate-200'; }
 
             html += `
-                <div class="p-5 flex items-center gap-4 hover:bg-slate-50 transition-colors">
-                    <div class="w-12 h-12 flex items-center justify-center text-3xl shrink-0 rounded-full border ${warna} shadow-sm">
+                <div class="p-4 md:p-5 flex items-center gap-4 hover:bg-slate-50 transition-colors">
+                    <div class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-2xl md:text-3xl shrink-0 rounded-full border ${warna} shadow-sm">
                         ${icon}
                     </div>
-                    <div class="flex-1">
-                        <h4 class="font-black text-slate-800 text-sm uppercase">${medali.nomor_lomba}</h4>
-                        <p class="text-xs text-slate-500 font-bold mb-1">🏆 ${medali.events?.event_name || 'Kejuaraan SCS'}</p>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-black text-slate-800 text-xs md:text-sm uppercase truncate">${medali.nomor_lomba}</h4>
+                        <p class="text-[10px] md:text-xs text-slate-500 font-bold mb-1 truncate">🏆 ${medali.events?.event_name || 'Kejuaraan SCS'}</p>
                         <div class="flex items-center gap-2">
-                            <span class="text-[10px] bg-sky-100 text-sky-800 px-2 py-0.5 rounded font-black tracking-wider">⏱️ ${medali.catatan_waktu}</span>
-                            <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-bold">${medali.kelompok_umur}</span>
+                            <span class="text-[9px] md:text-[10px] bg-sky-100 text-sky-800 px-2 py-0.5 rounded font-black tracking-wider shrink-0">⏱️ ${medali.catatan_waktu}</span>
+                            <span class="text-[9px] md:text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-bold shrink-0">${medali.kelompok_umur}</span>
                         </div>
                     </div>
                 </div>
@@ -261,13 +261,13 @@ async function fetchBestTimes() {
         let html = '';
         bestTimesMap.forEach((best, nomor_lomba) => {
             html += `
-                <div class="p-5 flex items-center justify-between hover:bg-slate-50 transition-colors group">
-                    <div>
-                        <h4 class="font-black text-slate-800 text-sm uppercase">${nomor_lomba}</h4>
-                        <p class="text-[10px] text-slate-500 font-bold mt-1">Dicetak pada: <span class="text-slate-700">${best.events?.event_name || 'Event SCS'}</span></p>
+                <div class="p-4 md:p-5 flex items-center justify-between hover:bg-slate-50 transition-colors group gap-2">
+                    <div class="min-w-0 flex-1">
+                        <h4 class="font-black text-slate-800 text-xs md:text-sm uppercase truncate">${nomor_lomba}</h4>
+                        <p class="text-[9px] md:text-[10px] text-slate-500 font-bold mt-1 truncate">Di: <span class="text-slate-700">${best.events?.event_name || 'Event SCS'}</span></p>
                     </div>
                     <div class="text-right shrink-0">
-                        <span class="block text-lg font-black text-blue-600 font-mono tracking-wider drop-shadow-sm group-hover:scale-105 transition-transform origin-right">
+                        <span class="block text-base md:text-lg font-black text-blue-600 font-mono tracking-wider drop-shadow-sm group-hover:scale-105 transition-transform origin-right">
                             ${best.waktu_string}
                         </span>
                     </div>
