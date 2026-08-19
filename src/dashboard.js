@@ -279,40 +279,95 @@ async function fetchDashboardData() {
         if (mobileLogoEl) mobileLogoEl.src = finalLogo;
         if (editLogoPreview) editLogoPreview.src = finalLogo;
 
-        const { data: eventsData, error: eventsErr } = await supabaseClient
+        // ==============================================================
+        // 🔮 JURUS BADASS: GABUNGAN EVENT SENDIRI + EVENT COLLAB (UNGU NEON)
+        // ==============================================================
+        
+        // 1. Tarik Event Milik Sendiri (Owner)
+        const { data: myEvents, error: eventsErr } = await supabaseClient
             .from('events')
             .select('*')
             .eq('club_id', currentClubId);
+            
+        // 2. Tarik Event Titipan (Collab) berdasarkan user_id yang sedang login
+        const { data: collabData, error: collabErr } = await supabaseClient
+            .from('event_collaborators')
+            .select('role, events(*)')
+            .eq('user_id', userId);
+
+        let allEventsToDisplay = [];
+
+        // Gabungkan Event Owner
+        if (myEvents) {
+            myEvents.forEach(ev => {
+                allEventsToDisplay.push({ ...ev, isCollab: false });
+            });
+        }
+
+        // Gabungkan Event Collab
+        if (collabData) {
+            collabData.forEach(c => {
+                if (c.events) {
+                    allEventsToDisplay.push({ ...c.events, isCollab: true, collabRole: c.role });
+                }
+            });
+        }
         
+        // Update Counter
         const totalEventEl = document.getElementById('valEventAktif');
-        if (totalEventEl) totalEventEl.innerText = eventsData ? eventsData.length : 0;
+        if (totalEventEl) totalEventEl.innerText = allEventsToDisplay.length;
 
         const eventContainer = document.getElementById('eventListContainer');
         if (eventContainer) {
             let evHTML = '';
             
-            if (eventsData && eventsData.length > 0) {
-                eventsData.forEach(ev => {
-                    evHTML += `
-                        <div class="border border-emerald-100 bg-white p-4 rounded-2xl shadow-sm hover:shadow-md hover:border-emerald-300 transition-all group flex flex-col justify-between">
-                            <div>
-                                <h3 class="font-extrabold text-emerald-900 text-lg group-hover:text-emerald-700 transition">${ev.event_name}</h3>
-                                <p class="text-xs text-gray-500 mt-1 font-mono">🔗 ${ev.subdomain}.f1swimming.com</p>
-                                <p class="text-xs text-gray-500 mt-1">📅 ${ev.event_date} s/d ${ev.end_date}</p>
+            if (allEventsToDisplay.length > 0) {
+                // Urutkan biar event terbaru ada di atas
+                allEventsToDisplay.sort((a, b) => b.id - a.id);
+
+                allEventsToDisplay.forEach(ev => {
+                    if (ev.isCollab) {
+                        // KARTU UNGU NEON LUCUK (UNTUK EVENT COLLAB)
+                        evHTML += `
+                            <div class="border border-purple-300 bg-white p-4 rounded-2xl shadow-[0_0_15px_rgba(168,85,247,0.2)] hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:border-purple-400 transition-all group flex flex-col justify-between relative overflow-hidden">
+                                <div class="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-[9px] font-black px-2 py-1 rounded-bl-lg tracking-widest uppercase z-10 shadow-sm">
+                                    Collab: ${ev.collabRole}
+                                </div>
+                                <div class="relative z-20">
+                                    <h3 class="font-extrabold text-purple-900 text-lg group-hover:text-purple-700 transition pr-16">${ev.event_name}</h3>
+                                    <p class="text-xs text-gray-500 mt-1 font-mono">🔗 ${ev.subdomain}.f1swimming.com</p>
+                                    <p class="text-xs text-gray-500 mt-1">📅 ${ev.event_date} s/d ${ev.end_date}</p>
+                                </div>
+                                <a href="/event-dashboard.html?id=${ev.id}" class="relative z-20 mt-4 bg-purple-50 text-purple-700 border border-purple-100 text-center text-xs font-bold py-2 rounded-lg hover:bg-purple-600 hover:text-white transition shadow-sm">Masuk Panel Panitia &raquo;</a>
                             </div>
-                            <a href="/event-dashboard.html?id=${ev.id}" class="mt-4 bg-emerald-50 text-emerald-700 text-center text-xs font-bold py-2 rounded-lg hover:bg-emerald-600 hover:text-white transition">Masuk Panel Panitia &raquo;</a>
-                        </div>
-                    `;
+                        `;
+                    } else {
+                        // KARTU EMERALD (UNTUK EVENT MILIK SENDIRI)
+                        evHTML += `
+                            <div class="border border-emerald-100 bg-white p-4 rounded-2xl shadow-sm hover:shadow-md hover:border-emerald-300 transition-all group flex flex-col justify-between relative overflow-hidden">
+                                <div class="absolute top-0 right-0 bg-emerald-100 text-emerald-700 border-l border-b border-emerald-200 text-[9px] font-black px-2 py-1 rounded-bl-lg tracking-widest uppercase z-10">
+                                    Owner
+                                </div>
+                                <div class="relative z-20">
+                                    <h3 class="font-extrabold text-emerald-900 text-lg group-hover:text-emerald-700 transition pr-12">${ev.event_name}</h3>
+                                    <p class="text-xs text-gray-500 mt-1 font-mono">🔗 ${ev.subdomain}.f1swimming.com</p>
+                                    <p class="text-xs text-gray-500 mt-1">📅 ${ev.event_date} s/d ${ev.end_date}</p>
+                                </div>
+                                <a href="/event-dashboard.html?id=${ev.id}" class="relative z-20 mt-4 bg-emerald-50 text-emerald-700 text-center text-xs font-bold py-2 rounded-lg hover:bg-emerald-600 hover:text-white transition">Masuk Panel Panitia &raquo;</a>
+                            </div>
+                        `;
+                    }
                 });
             } else {
-                evHTML += `<p class="text-sm text-gray-500 italic">Belum ada event lomba yang dibuat.</p>`;
+                evHTML += `<p class="text-sm text-gray-500 italic w-full col-span-2 text-center py-4">Belum ada event lomba yang dibuat atau dikolaborasikan.</p>`;
             }
 
+            // KARTU PINTU MENUJU EVENT PUBLIC
             evHTML += `
-                <div class="border-2 border-dashed border-blue-200 bg-blue-50/50 p-4 rounded-2xl hover:border-blue-400 transition-all group flex flex-col justify-center items-center text-center">
+                <div class="border-2 border-dashed border-blue-200 bg-blue-50/50 p-4 rounded-2xl hover:border-blue-400 transition-all group flex flex-col justify-center items-center text-center ${allEventsToDisplay.length % 2 !== 0 ? 'col-span-1 md:col-span-2' : ''}">
                     <span class="text-3xl mb-2 group-hover:scale-110 transition-transform">🌍</span>
                     <h3 class="font-bold text-blue-900 text-base">Jelajahi Kalender Event</h3>
-                    <p class="text-xs text-gray-600 mt-1 mb-4">Cari kejuaraan renang terdekat di Provinsi / Kota Anda atau pantau event lainnya.</p>
+                    <p class="text-xs text-gray-600 mt-1 mb-4 max-w-sm">Cari kejuaraan renang terdekat di Provinsi / Kota Anda atau pantau event lainnya.</p>
                     <a href="/event.html" class="bg-blue-600 text-white text-xs font-bold py-2 px-6 rounded-full shadow-md hover:bg-blue-700 transition">Buka Kalender Lomba &raquo;</a>
                 </div>
             `;
