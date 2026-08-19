@@ -32,9 +32,9 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         @keyframes neon-blue {
-            0% { box-shadow: 0 0 5px rgba(37, 99, 235, 0.4), 0 0 10px rgba(37, 99, 235, 0.2); }
-            50% { box-shadow: 0 0 15px rgba(37, 99, 235, 0.8), 0 0 35px rgba(37, 99, 235, 0.6); }
-            100% { box-shadow: 0 0 5px rgba(37, 99, 235, 0.4), 0 0 10px rgba(37, 99, 235, 0.2); }
+            0% { box-shadow: 0 0 5px rgba(30, 58, 138, 0.4), 0 0 10px rgba(30, 58, 138, 0.2); }
+            50% { box-shadow: 0 0 15px rgba(30, 58, 138, 0.8), 0 0 35px rgba(30, 58, 138, 0.6); }
+            100% { box-shadow: 0 0 5px rgba(30, 58, 138, 0.4), 0 0 10px rgba(30, 58, 138, 0.2); }
         }
         @keyframes neon-red {
             0% { box-shadow: 0 0 5px rgba(220, 38, 38, 0.4), 0 0 10px rgba(220, 38, 38, 0.2); }
@@ -142,11 +142,13 @@
 
     <section class="relative w-full h-[calc(100vh-3.5rem)] md:h-screen pt-14 md:pt-16 flex max-md:block overflow-hidden">
         
+        <!-- PADDING TOP DIPERBESAR (pt-[12vh]) AGAR TEKS TURUN DARI NAVBAR -->
         <div class="w-full md:w-1/2 h-full absolute md:relative inset-0 md:inset-auto bg-white z-20 flex flex-col max-md:justify-start max-md:items-start md:justify-center md:items-start p-8 md:p-16 lg:px-20 max-md:pt-[12vh] max-md:pl-4 md:max-md:pl-6 max-md:pr-0 max-md:[clip-path:polygon(0_0,100%_0,0_100%)] md:border-r border-gray-200 transition-all duration-700 ease-in-out hover:md:w-[60%] group">
             <div class="absolute inset-0 z-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
             
             <div class="relative z-10 text-left flex flex-col items-start w-full max-md:max-w-full md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
                 
+                <!-- BADGE DIHAPUS DI MOBILE (hidden md:inline-block) UNTUK MEMBERI RUANG -->
                 <span class="hidden md:inline-block bg-slate-100 border border-slate-200 text-slate-700 px-5 py-1.5 rounded-full text-xs font-black tracking-wide shadow-sm mb-6">
                     🇮🇩 Dibangun untuk kompetisi renang Indonesia
                 </span>
@@ -176,9 +178,9 @@
                     </div>
                 </div>
                 
-                <!-- TOMBOL DIGESER KE KANAN AGAR SIMETRIS (translate-x-6) -->
-                <div class="flex flex-col items-center w-[240px] mt-2 md:mt-4 max-md:translate-x-6 relative z-20">
-                    <a href="/auth.html" class="bg-blue-600 text-white rounded-full font-black text-[13px] md:text-sm hover:bg-blue-500 transition hover:-translate-y-1 w-full h-[50px] flex items-center justify-center gap-2 neon-glow-blue shadow-xl">
+                <!-- TOMBOL BERADA DI POSISI NATURAL -->
+                <div class="flex flex-col items-center w-[240px] mt-2 md:mt-4 max-md:-translate-x-4 relative z-20">
+                    <a href="/auth.html" class="bg-blue-900 text-white rounded-full font-black text-[13px] md:text-sm hover:bg-blue-800 transition hover:-translate-y-1 w-full h-[50px] flex items-center justify-center gap-2 neon-glow-blue shadow-xl">
                         Login Club / EO <span>&raquo;</span>
                     </a>
                     <p class="text-[8px] md:text-[9px] font-bold text-slate-400 mt-2 tracking-widest uppercase text-center w-full">Systeming by : <span class="text-blue-900 font-black text-[9px] md:text-[10px]">SCS</span></p>
