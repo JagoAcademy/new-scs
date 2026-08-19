@@ -73,26 +73,41 @@ function renderProfile(atlet) {
     document.getElementById('atletName').innerText = atlet.full_name;
     document.getElementById('atletKlub').innerText = atlet.clubs?.club_name || 'Independen / Sekolah';
 
-    // --- LOGIKA WARNA KOTAK F1 ID (EMAS vs BIRU) ---
     const f1IdEl = document.getElementById('atletF1Id');
     f1IdEl.innerText = atlet.f1_id;
     const f1IdContainer = f1IdEl.parentElement;
     const iconSpan = f1IdEl.previousElementSibling;
 
     if (atlet.is_verified) {
-        // VERIFIED: Desain Emas Elegan
         if(iconSpan) iconSpan.outerHTML = `<span class="bg-gradient-to-r from-amber-300 to-yellow-500 text-yellow-900 text-[11px] font-black px-1.5 py-0.5 rounded shadow-sm">ID</span>`;
         f1IdContainer.className = "inline-flex items-center gap-2 bg-amber-900/20 border border-amber-400/50 px-3 py-1.5 rounded-lg backdrop-blur-sm mb-4 cursor-pointer hover:bg-amber-900/40 transition-colors shadow-[0_0_10px_rgba(251,191,36,0.1)]";
         f1IdEl.className = "font-mono text-lg font-black text-amber-400 tracking-wider";
     } else {
-        // PENDING: Desain Biru Netral
         if(iconSpan) iconSpan.outerHTML = `<span class="bg-blue-500 text-white text-[11px] font-black px-1.5 py-0.5 rounded shadow-sm">ID</span>`;
         f1IdContainer.className = "inline-flex items-center gap-2 bg-blue-900/30 border border-blue-400/30 px-3 py-1.5 rounded-lg backdrop-blur-sm mb-4 cursor-pointer hover:bg-blue-900/50 transition-colors";
         f1IdEl.className = "font-mono text-lg font-black text-blue-200 tracking-wider";
     }
 
-    const avatarUrl = atlet.foto_url ? atlet.foto_url : `https://ui-avatars.com/api/?name=${encodeURIComponent(atlet.full_name)}&background=f8fafc&color=1e293b&size=256&bold=true`;
-    document.getElementById('atletFoto').src = avatarUrl;
+    // ===============================================
+    // JURUS PRIVASI FOTO: Kunci Gembok Diaktifkan!
+    // ===============================================
+    let avatarUrl = '/images/f1logo.png'; // Default jika Null atau diprivasi
+    
+    // Hanya tampilkan foto asli jika ada fotonya DAN privasi tidak dicentang
+    if (atlet.foto_url && !atlet.hide_foto) {
+        avatarUrl = atlet.foto_url;
+    }
+    
+    const fotoEl = document.getElementById('atletFoto');
+    fotoEl.src = avatarUrl;
+    
+    // Mencegah logo F1 gepeng/melar jika digunakan sebagai default
+    if (atlet.hide_foto || !atlet.foto_url) {
+        fotoEl.classList.add('object-contain', 'p-2', 'bg-white');
+    } else {
+        fotoEl.classList.remove('object-contain', 'p-2', 'bg-white');
+    }
+    // ===============================================
 
     if (atlet.dob) {
         const dob = new Date(atlet.dob);
@@ -129,13 +144,9 @@ function renderProfile(atlet) {
     }
 }
 
-// =====================================
-// FITUR PENCAPAIAN (MEDALI DARI LEADERBOARD)
-// =====================================
 async function fetchMedals() {
     const listEl = document.getElementById('medaliList');
     try {
-        // FIX: Karena tabel event_leaderboard ga punya kolom f1_id, kita murni cari berdasarkan NAMA PESERTA aja
         const { data, error } = await supabaseClient
             .from('event_leaderboard')
             .select(`
@@ -190,9 +201,6 @@ async function fetchMedals() {
     }
 }
 
-// =====================================
-// FITUR BEST TIME (DARI RACE RESULTS)
-// =====================================
 async function fetchBestTimes() {
     const listEl = document.getElementById('bestTimeList');
     try {

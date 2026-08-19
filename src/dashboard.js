@@ -279,17 +279,11 @@ async function fetchDashboardData() {
         if (mobileLogoEl) mobileLogoEl.src = finalLogo;
         if (editLogoPreview) editLogoPreview.src = finalLogo;
 
-        // ==============================================================
-        // 🔮 JURUS BADASS: GABUNGAN EVENT SENDIRI + EVENT COLLAB (UNGU NEON)
-        // ==============================================================
-        
-        // 1. Tarik Event Milik Sendiri (Owner)
         const { data: myEvents, error: eventsErr } = await supabaseClient
             .from('events')
             .select('*')
             .eq('club_id', currentClubId);
             
-        // 2. Tarik Event Titipan (Collab) berdasarkan user_id yang sedang login
         const { data: collabData, error: collabErr } = await supabaseClient
             .from('event_collaborators')
             .select('role, events(*)')
@@ -297,14 +291,12 @@ async function fetchDashboardData() {
 
         let allEventsToDisplay = [];
 
-        // Gabungkan Event Owner
         if (myEvents) {
             myEvents.forEach(ev => {
                 allEventsToDisplay.push({ ...ev, isCollab: false });
             });
         }
 
-        // Gabungkan Event Collab
         if (collabData) {
             collabData.forEach(c => {
                 if (c.events) {
@@ -313,7 +305,6 @@ async function fetchDashboardData() {
             });
         }
         
-        // Update Counter
         const totalEventEl = document.getElementById('valEventAktif');
         if (totalEventEl) totalEventEl.innerText = allEventsToDisplay.length;
 
@@ -322,12 +313,10 @@ async function fetchDashboardData() {
             let evHTML = '';
             
             if (allEventsToDisplay.length > 0) {
-                // Urutkan biar event terbaru ada di atas
                 allEventsToDisplay.sort((a, b) => b.id - a.id);
 
                 allEventsToDisplay.forEach(ev => {
                     if (ev.isCollab) {
-                        // KARTU UNGU NEON LUCUK (UNTUK EVENT COLLAB)
                         evHTML += `
                             <div class="border border-purple-300 bg-white p-4 rounded-2xl shadow-[0_0_15px_rgba(168,85,247,0.2)] hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:border-purple-400 transition-all group flex flex-col justify-between relative overflow-hidden">
                                 <div class="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-[9px] font-black px-2 py-1 rounded-bl-lg tracking-widest uppercase z-10 shadow-sm">
@@ -342,7 +331,6 @@ async function fetchDashboardData() {
                             </div>
                         `;
                     } else {
-                        // KARTU EMERALD (UNTUK EVENT MILIK SENDIRI)
                         evHTML += `
                             <div class="border border-emerald-100 bg-white p-4 rounded-2xl shadow-sm hover:shadow-md hover:border-emerald-300 transition-all group flex flex-col justify-between relative overflow-hidden">
                                 <div class="absolute top-0 right-0 bg-emerald-100 text-emerald-700 border-l border-b border-emerald-200 text-[9px] font-black px-2 py-1 rounded-bl-lg tracking-widest uppercase z-10">
@@ -362,7 +350,6 @@ async function fetchDashboardData() {
                 evHTML += `<p class="text-sm text-gray-500 italic w-full col-span-2 text-center py-4">Belum ada event lomba yang dibuat atau dikolaborasikan.</p>`;
             }
 
-            // KARTU PINTU MENUJU EVENT PUBLIC
             evHTML += `
                 <div class="border-2 border-dashed border-blue-200 bg-blue-50/50 p-4 rounded-2xl hover:border-blue-400 transition-all group flex flex-col justify-center items-center text-center ${allEventsToDisplay.length % 2 !== 0 ? 'col-span-1 md:col-span-2' : ''}">
                     <span class="text-3xl mb-2 group-hover:scale-110 transition-transform">🌍</span>
@@ -389,7 +376,6 @@ async function fetchDashboardData() {
         const pendingEl = document.getElementById('valF1Pending');
         if (pendingEl) pendingEl.innerText = pendingCount;
 
-        // --- HITUNG POIN KLUB OTOMATIS ---
         const totalAtlet = athletesData.length;
         const verifiedAtlet = athletesData.filter(a => a.is_verified).length;
         const totalPoin = (totalAtlet * 5) + (verifiedAtlet * 5);
@@ -434,7 +420,10 @@ function renderAthleteTable() {
     athletesToShow.forEach((atlet, idx) => {
         const actualIndex = startIndex + idx + 1; 
         const genderIcon = atlet.gender === 'Putra' ? '👦 Putra' : '👧 Putri';
-        const avatarUrl = atlet.foto_url ? atlet.foto_url : `https://ui-avatars.com/api/?name=${encodeURIComponent(atlet.full_name)}&background=f3f4f6&color=374151`;
+        
+        // Cek privasi foto di tabel (walaupun admin tetap bisa lihat fotonya)
+        let avatarUrl = atlet.foto_url ? atlet.foto_url : `https://ui-avatars.com/api/?name=${encodeURIComponent(atlet.full_name)}&background=f3f4f6&color=374151`;
+        if(atlet.hide_foto && !atlet.foto_url) avatarUrl = '/images/f1logo.png';
         
         const isEmas = atlet.is_verified;
         
@@ -459,8 +448,9 @@ function renderAthleteTable() {
                 <td class="p-4 text-center font-bold text-gray-400">${actualIndex}</td>
                 <td class="p-4">
                     <div class="flex items-center gap-3">
-                        <a href="/f1-id.html?id=${atlet.f1_id}" title="Lihat Profil" class="shrink-0">
-                            <img src="${avatarUrl}" class="w-10 h-10 rounded-lg object-cover border border-gray-200 shadow-sm hover:scale-105 transition-transform">
+                        <a href="/f1-id.html?id=${atlet.f1_id}" title="Lihat Profil" class="shrink-0 relative">
+                            <img src="${avatarUrl}" class="w-10 h-10 rounded-lg object-cover border border-gray-200 shadow-sm hover:scale-105 transition-transform ${atlet.hide_foto ? 'opacity-80' : ''}">
+                            ${atlet.hide_foto ? '<span class="absolute -top-1 -right-1 text-[10px]">🔒</span>' : ''}
                         </a>
                         <div>
                             <a href="/f1-id.html?id=${atlet.f1_id}" class="font-extrabold text-gray-800 hover:text-blue-600 transition-colors" title="Lihat Profil">
@@ -523,6 +513,9 @@ window.openEditVerify = function(f1_id) {
     document.getElementById('evDOB').value = atlet.dob;
     document.getElementById('evGender').value = atlet.gender;
     
+    // Set status checkbox privasi (default false jika null)
+    document.getElementById('evHideFoto').checked = atlet.hide_foto || false;
+    
     document.getElementById('evFoto').value = '';
     document.getElementById('evAkta').value = '';
     
@@ -548,6 +541,7 @@ if(btnSaveEditVerify) {
         
         const fotoFile = document.getElementById('evFoto').files[0];
         const aktaFile = document.getElementById('evAkta').files[0];
+        const isHideFoto = document.getElementById('evHideFoto').checked; // Ambil nilai privasi
         
         const statusMsg = document.getElementById('evStatusMsg');
         const atlet = allAthletes.find(a => a.f1_id === f1Id);
@@ -570,13 +564,16 @@ if(btnSaveEditVerify) {
         btnSaveEditVerify.disabled = true;
         btnSaveEditVerify.classList.add('opacity-70');
         
-        statusMsg.innerText = "Mohon tunggu, sedang mengirim berkas ke server pusat...";
+        statusMsg.innerText = "Mohon tunggu, sedang mengirim ke server pusat...";
         statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-blue-50 text-blue-600 block mt-2";
 
         try {
             const timeStamp = Date.now();
             let finalFotoUrl = atlet.foto_url;
             let finalAktaUrl = atlet.akta_url;
+            
+            // Flag untuk ngecek apakah ada file baru yang diupload (buat ngereset verifikasi)
+            let isUploadBaru = false;
 
             if (fotoFile) {
                 const fotoExt = fotoFile.name.split('.').pop();
@@ -585,6 +582,7 @@ if(btnSaveEditVerify) {
                 if (fotoError) throw fotoError;
                 const { data: fotoUrlData } = supabaseClient.storage.from('berkas-atlet').getPublicUrl(fotoPath);
                 finalFotoUrl = fotoUrlData.publicUrl;
+                isUploadBaru = true;
             }
 
             if (aktaFile) {
@@ -594,9 +592,23 @@ if(btnSaveEditVerify) {
                 if (aktaError) throw aktaError;
                 const { data: aktaUrlData } = supabaseClient.storage.from('berkas-atlet').getPublicUrl(aktaPath);
                 finalAktaUrl = aktaUrlData.publicUrl;
+                isUploadBaru = true;
+            }
+
+            // Siapkan payload data yang pasti diupdate (foto, akta, privasi)
+            let updatePayload = {
+                foto_url: finalFotoUrl,
+                akta_url: finalAktaUrl,
+                hide_foto: isHideFoto
+            };
+            
+            // Reset status verifikasi HANYA JIKA ada upload file baru
+            if (isUploadBaru) {
+                updatePayload.is_verified = false;
             }
 
             if (dataBerubah) {
+                // 1. Simpan usulan perubahan nama/dob/gender ke Maker-Checker
                 const { error: editErr } = await supabaseClient
                     .from('f1_edit_requests')
                     .insert({
@@ -610,28 +622,32 @@ if(btnSaveEditVerify) {
                     });
 
                 if (editErr) throw editErr;
+                
+                // 2. Tetap update foto & privasinya secara instan di tabel asli
+                await supabaseClient.from('athletes').update(updatePayload).eq('f1_id', f1Id);
 
-                statusMsg.innerHTML = "✅ <strong>Usulan Edit Terkirim!</strong><br><span class='text-xs font-normal'>Menunggu persetujuan Admin Pusat. Data di layar belum berubah hingga di-ACC.</span>";
+                statusMsg.innerHTML = "✅ <strong>Usulan Edit Terkirim!</strong><br><span class='text-xs font-normal'>Status Privasi dan File Foto berhasil disimpan, tapi Nama/DOB menunggu persetujuan Admin Pusat.</span>";
                 statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-amber-100 text-amber-700 block mt-2";
             } else {
+                // Update langsung ke tabel atlet (karena cuma update file atau ubah toggle privasi)
                 const { error: updateError } = await supabaseClient
                     .from('athletes')
-                    .update({ 
-                        foto_url: finalFotoUrl,
-                        akta_url: finalAktaUrl,
-                        is_verified: false 
-                    })
+                    .update(updatePayload)
                     .eq('f1_id', f1Id);
 
                 if (updateError) throw updateError;
 
-                statusMsg.innerHTML = "✅ <strong>Berkas berhasil dikirim!</strong><br><span class='text-xs font-normal'>Menunggu verifikasi awal Admin Pusat untuk mengaktifkan F1 ID.</span>";
+                if (isUploadBaru) {
+                    statusMsg.innerHTML = "✅ <strong>Berkas berhasil dikirim!</strong><br><span class='text-xs font-normal'>Menunggu verifikasi awal Admin Pusat untuk mengaktifkan F1 ID.</span>";
+                } else {
+                    statusMsg.innerHTML = "✅ <strong>Pengaturan Privasi & Data berhasil disimpan!</strong>";
+                }
                 statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-green-100 text-green-700 block mt-2";
             }
 
             setTimeout(() => {
                 closeModalEditVerifyBtn.click();
-                btnSaveEditVerify.innerText = "Kirim Pengajuan ke Admin";
+                btnSaveEditVerify.innerText = "Simpan & Kirim Pengajuan";
                 btnSaveEditVerify.disabled = false;
                 btnSaveEditVerify.classList.remove('opacity-70');
                 
@@ -643,7 +659,7 @@ if(btnSaveEditVerify) {
             console.error(err);
             statusMsg.innerText = "Gagal memproses: " + err.message;
             statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block mt-2";
-            btnSaveEditVerify.innerText = "Kirim Pengajuan ke Admin";
+            btnSaveEditVerify.innerText = "Simpan & Kirim Pengajuan";
             btnSaveEditVerify.disabled = false;
             btnSaveEditVerify.classList.remove('opacity-70');
         }
