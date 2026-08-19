@@ -122,22 +122,26 @@ async function loadAdminData() {
         if (errEdits) throw errEdits;
         renderEditQueues(edits);
 
-        // --- C. TARIK DATA FULL CLUB MANAGER (Pisah Query Anti-Gagal) ---
-        // Urutkan berdasarkan ID menurun agar pendaftar terbaru ada di atas
+        // --- C. TARIK DATA FULL CLUB MANAGER (Adaptasi dari dashboard.js) ---
         const { data: clubs, error: errC } = await supabaseClient
             .from('clubs')
             .select('*') 
             .order('id', { ascending: false });
         if (errC) throw errC;
 
-        const { data: athletesData } = await supabaseClient
-            .from('athletes')
-            .select('id, club_id');
-        
-        const clubsWithCount = clubs.map(club => {
-            const totalAtlet = athletesData ? athletesData.filter(a => String(a.club_id) === String(club.id)).length : 0;
-            return { ...club, athlete_count: totalAtlet };
-        });
+        // Hitung atlet masing-masing klub langsung ke tabel athletes per club_id
+        // Menggunakan method { count: 'exact', head: true } agar super cepat tanpa download isi tabel
+        const clubsWithCount = await Promise.all(clubs.map(async (club) => {
+            const { count, error: countErr } = await supabaseClient
+                .from('athletes')
+                .select('*', { count: 'exact', head: true })
+                .eq('club_id', club.id);
+            
+            return { 
+                ...club, 
+                athlete_count: countErr ? 0 : (count || 0) 
+            };
+        }));
 
         window.allClubsAdmin = clubsWithCount || [];
         filteredClubsAdmin = [...window.allClubsAdmin];
@@ -149,6 +153,7 @@ async function loadAdminData() {
     }
 }
 
+// Render Antrian Awal
 function renderQueues(queues) {
     const tbody = document.getElementById('queueTableBody');
     document.getElementById('badgeQueue').innerText = `${queues ? queues.length : 0} Pending`;
@@ -183,6 +188,7 @@ function renderQueues(queues) {
     tbody.innerHTML = html;
 }
 
+// Render Edit Requests
 function renderEditQueues(edits) {
     const tbody = document.getElementById('editQueueTableBody');
     document.getElementById('badgeEditQueue').innerText = `${edits ? edits.length : 0} Pending`;
