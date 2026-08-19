@@ -59,7 +59,6 @@
         <!-- PROFILE CARD (DIGITAL ID) -->
         <div id="profileData" class="hidden space-y-6">
         
-            
             <!-- SPONSOR UTAMA (NESTLE PRESENTED BY) -->
             <div class="flex justify-center -mb-2 relative z-20">
                 <div class="bg-white px-5 py-2 rounded-t-2xl shadow-md border-t border-x border-slate-200 flex items-center gap-3 sponsor-glow">
@@ -77,14 +76,14 @@
                 <div class="p-4 md:p-6 flex justify-between items-start relative z-10 border-b border-white/10">
                     <div>
                         <img src="/images/f1logo.png" class="h-4 md:h-6 opacity-80 filter brightness-0 invert mb-1">
-                        <p class="text-[7px] md:text-[9px] text-blue-200 tracking-widest font-bold uppercase mt-0.5">Official Athlete Identity</p>
+                        <p class="hidden md:block text-[9px] text-blue-200 tracking-widest font-bold uppercase mt-0.5">Official Athlete Identity</p>
                     </div>
                     <div id="badgeVerifikasi">
                         <!-- Disuntik JS -->
                     </div>
                 </div>
 
-                <!-- Card Body (FORCED FLEX-ROW BIAR SEJAJAR KAYAK KTP) -->
+                <!-- Card Body -->
                 <div class="p-4 md:p-6 relative z-10 flex flex-row items-center gap-4 md:gap-6">
                     <div class="shrink-0 relative">
                         <img id="atletFoto" src="" class="w-24 h-24 md:w-36 md:h-36 rounded-2xl object-cover border-2 md:border-4 border-white/10 shadow-xl bg-slate-800">
@@ -93,7 +92,6 @@
                     </div>
                     
                     <div class="text-left flex-1 min-w-0">
-                        <!-- min-w-0 mencegah flexbox melar jika teks kepanjangan -->
                         <h1 id="atletName" class="text-xl md:text-3xl font-black text-white tracking-tight leading-none mb-1.5 md:mb-2 truncate drop-shadow-md">Memuat...</h1>
                         
                         <div class="inline-flex items-center gap-1.5 md:gap-2 bg-white/10 border border-white/20 px-2 py-1 md:px-3 md:py-1.5 rounded-lg backdrop-blur-sm mb-3 md:mb-4 cursor-pointer hover:bg-white/20 transition-colors" onclick="navigator.clipboard.writeText(document.getElementById('atletF1Id').innerText); alert('F1 ID berhasil disalin!')">
@@ -121,12 +119,12 @@
                 <button id="tabBestTime" class="flex-1 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl font-bold text-sm transition-colors">⏱️ Best Time</button>
             </div>
 
-            <!-- TAB CONTENT: PENCAPAIAN (MEDALI) & KIT-KAT -->
+            <!-- TAB CONTENT: PENCAPAIAN (MEDALI) & MILO -->
             <div id="contentPencapaian" class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                <!-- KIT-KAT SPONSOR HEADER -->
-                <div class="bg-red-600 px-5 py-3 flex justify-between items-center border-b-4 border-red-800">
-                    <p class="text-white text-xs font-bold italic tracking-wide">Break Your Limit!</p>
-                    <img src="/images/kit-kat.png" alt="Kit-Kat" class="h-6 object-contain" onerror="this.outerHTML='<span class=\'font-black text-white text-xl tracking-tighter italic drop-shadow-md\'>KitKat</span>'">
+                <!-- MILO SPONSOR HEADER -->
+                <div class="bg-[#4CAF50] px-5 py-3 flex justify-between items-center border-b-4 border-green-800">
+                    <p class="text-white text-xs font-bold italic tracking-wide">Your Everyday Boost!</p>
+                    <img src="/images/milo.png" alt="Milo" class="h-6 object-contain" onerror="this.outerHTML='<span class=\'font-black text-white text-xl tracking-tighter italic drop-shadow-md\'>MILO</span>'">
                 </div>
                 
                 <div class="flex items-center justify-between p-5 md:p-6 border-b border-slate-100">
@@ -141,12 +139,12 @@
                 </div>
             </div>
 
-            <!-- TAB CONTENT: BEST TIME & MILO -->
+            <!-- TAB CONTENT: BEST TIME & KIT-KAT -->
             <div id="contentBestTime" class="hidden bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                <!-- MILO SPONSOR HEADER -->
-                <div class="bg-[#4CAF50] px-5 py-3 flex justify-between items-center border-b-4 border-green-800">
-                    <p class="text-white text-xs font-bold italic tracking-wide">Your Everyday Boost!</p>
-                    <img src="/images/milo.png" alt="Milo" class="h-6 object-contain" onerror="this.outerHTML='<span class=\'font-black text-white text-xl tracking-tighter italic drop-shadow-md\'>MILO</span>'">
+                <!-- KIT-KAT SPONSOR HEADER -->
+                <div class="bg-red-600 px-5 py-3 flex justify-between items-center border-b-4 border-red-800">
+                    <p class="text-white text-xs font-bold italic tracking-wide">Break Your Limit!</p>
+                    <img src="/images/kit-kat.png" alt="Kit-Kat" class="h-6 object-contain" onerror="this.outerHTML='<span class=\'font-black text-white text-xl tracking-tighter italic drop-shadow-md\'>KitKat</span>'">
                 </div>
 
                 <div class="flex items-center justify-between p-5 md:p-6 border-b border-slate-100 bg-blue-50/50">
