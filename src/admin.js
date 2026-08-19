@@ -19,19 +19,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // Pengecekan otoritas berdasarkan respon murni dari server backend
     if (user.email !== 'radityaraja@gmail.com') {
         tendangUserAsing(user.email);
         return;
     }
 
-    // Logout Action
     document.getElementById('btnAdminLogout').addEventListener('click', async () => {
         await supabaseClient.auth.signOut();
         window.location.replace('/auth.html');
     });
 
-    // Jika lolos validasi server, baru load data
     loadAdminData();
 
     // ==========================================
@@ -43,7 +40,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const keyword = e.target.value.toLowerCase();
             if (!window.allClubsAdmin) return;
             
-            // Filter berdasarkan nama klub, coach, kota, atau provinsi
             const filtered = window.allClubsAdmin.filter(c => 
                 (c.club_name && c.club_name.toLowerCase().includes(keyword)) ||
                 (c.coach_name && c.coach_name.toLowerCase().includes(keyword)) ||
@@ -55,7 +51,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// Fungsi untuk animasi nendang user asing
 function tendangUserAsing(email) {
     document.body.innerHTML = `
         <div style="height:100vh;width:100vw;display:flex;flex-direction:column;align-items:center;justify-content:center;background-color:#0f172a;color:#f87171;font-family:sans-serif;text-align:center;position:fixed;top:0;left:0;z-index:999999;">
@@ -66,7 +61,6 @@ function tendangUserAsing(email) {
     setTimeout(() => window.location.replace('/dashboard.html'), 3000);
 }
 
-// Fungsi untuk jebakan batman
 function tendangUser() {
     document.body.innerHTML = `
         <div style="height:100vh;width:100vw;display:flex;flex-direction:column;align-items:center;justify-content:center;background-color:#0f172a;color:#f87171;font-family:sans-serif;text-align:center;position:fixed;top:0;left:0;z-index:999999;">
@@ -88,7 +82,7 @@ async function loadAdminData() {
         if (errQ) throw errQ;
         renderQueues(queues);
 
-        // --- B. TARIK DATA EDIT REQUESTS (MAKER-CHECKER) ---
+        // --- B. TARIK DATA EDIT REQUESTS ---
         const { data: edits, error: errEdits } = await supabaseClient
             .from('f1_edit_requests')
             .select('*, athletes (full_name, dob, gender, clubs(club_name))')
@@ -97,16 +91,26 @@ async function loadAdminData() {
         if (errEdits) throw errEdits;
         renderEditQueues(edits);
 
-        // --- C. TARIK DATA FULL CLUB MANAGER DENGAN COUNT ATLET ---
-        // Narik relasi athletes(id) agar tau seberapa banyak anak buah si klub
+        // --- C. TARIK DATA FULL CLUB MANAGER (Pisah Query Anti-Gagal) ---
+        // 1. Tarik Klub
         const { data: clubs, error: errC } = await supabaseClient
             .from('clubs')
-            .select('*, athletes(id)') 
+            .select('*') 
             .order('id', { ascending: false });
         if (errC) throw errC;
+
+        // 2. Tarik ID Atlet untuk dihitung
+        const { data: athletesData } = await supabaseClient
+            .from('athletes')
+            .select('id, club_id');
         
-        // Simpan ke variabel global untuk fitur Search
-        window.allClubsAdmin = clubs || [];
+        // 3. Gabungkan data
+        const clubsWithCount = clubs.map(club => {
+            const totalAtlet = athletesData ? athletesData.filter(a => String(a.club_id) === String(club.id)).length : 0;
+            return { ...club, athlete_count: totalAtlet };
+        });
+
+        window.allClubsAdmin = clubsWithCount || [];
         renderClubs(window.allClubsAdmin);
 
     } catch (error) {
@@ -149,7 +153,7 @@ function renderQueues(queues) {
     tbody.innerHTML = html;
 }
 
-// Render Edit Requests (Before vs After)
+// Render Edit Requests
 function renderEditQueues(edits) {
     const tbody = document.getElementById('editQueueTableBody');
     document.getElementById('badgeEditQueue').innerText = `${edits ? edits.length : 0} Pending`;
@@ -161,7 +165,7 @@ function renderEditQueues(edits) {
 
     let html = '';
     edits.forEach(e => {
-        const oldData = e.athletes;
+        const oldData = e.athletes || {}; 
         const clubName = oldData?.clubs?.club_name || 'Tanpa Klub';
         
         html += `
@@ -171,8 +175,8 @@ function renderEditQueues(edits) {
                     <p class="text-[10px] text-slate-500 mt-1">${clubName}</p>
                 </td>
                 <td class="p-4 bg-red-950/20 border-r border-slate-700">
-                    <p class="text-sm font-bold text-slate-300 line-through">${oldData.full_name}</p>
-                    <p class="text-xs text-slate-500 mt-0.5">${oldData.gender} • ${oldData.dob}</p>
+                    <p class="text-sm font-bold text-slate-300 line-through">${oldData.full_name || 'N/A'}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">${oldData.gender || 'N/A'} • ${oldData.dob || 'N/A'}</p>
                 </td>
                 <td class="p-4 bg-emerald-950/20">
                     <p class="text-sm font-extrabold text-emerald-400">${e.new_name}</p>
@@ -191,7 +195,7 @@ function renderEditQueues(edits) {
     tbody.innerHTML = html;
 }
 
-// Render Clubs (Dengan Limit 10 & Search)
+// Render Clubs
 function renderClubs(clubsArray) {
     const tbody = document.getElementById('clubTableBody');
     const infoCount = document.getElementById('clubCountInfo');
@@ -202,18 +206,13 @@ function renderClubs(clubsArray) {
         return;
     }
 
-    // Batasi render maksimal 10 data aja
     const displayClubs = clubsArray.slice(0, 10);
     
     let html = '';
     displayClubs.forEach((c, index) => {
-        // Susun Asal Kota/Provinsi
         const location = c.kota_asal ? `${c.kota_asal}, ${c.provinsi || ''}` : (c.provinsi || 'Belum diatur');
+        const athleteCount = c.athlete_count || 0; 
         
-        // Hitung Jumlah Atlet
-        const athleteCount = c.athletes ? c.athletes.length : 0;
-        
-        // Tentukan Badge Akun PRO atau BASIC
         const isPro = c.is_pro === true || String(c.is_pro) === 'true';
         const badgeAkun = isPro 
             ? `<span class="px-2 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/50 rounded text-[10px] font-black tracking-widest uppercase">PRO</span>` 
@@ -238,13 +237,11 @@ function renderClubs(clubsArray) {
     
     tbody.innerHTML = html;
     
-    // Update teks info limit
     if (infoCount) {
         infoCount.innerText = `Menampilkan ${displayClubs.length} dari total ${clubsArray.length} klub.`;
     }
 }
 
-// Fungsi ACC Awal
 window.approveAthlete = async (f1_id) => {
     if (!confirm(`Yakin ingin ACC aktivasi F1 ID: ${f1_id}?`)) return;
     try {
@@ -257,14 +254,10 @@ window.approveAthlete = async (f1_id) => {
     }
 }
 
-// =========================================================
-// Fungsi ACC Usulan Edit (Auto-Fix F1 ID & Suntik Crown 👑)
-// =========================================================
 window.approveEdit = async (id, f1_id, new_name, new_dob, new_gender, new_foto_url, new_akta_url) => {
     if (!confirm(`Yakin ACC revisi untuk ${f1_id}? Sistem akan DITIMPA & F1 ID akan di-update otomatis!`)) return;
 
     try {
-        // 1. ALGORITMA BEDAH F1 ID (AUTO-FIX TAHUN)
         let updated_f1_id = f1_id; 
         const newYearStr = new_dob.split('-')[0];
         
@@ -274,10 +267,8 @@ window.approveEdit = async (id, f1_id, new_name, new_dob, new_gender, new_foto_u
             updated_f1_id = `F1-${newYearCode}${uniqueSuffix}`;
         }
 
-        // 2. SUNTIK EMAS CROWN 👑
         const namaSultan = `${new_name} 👑`;
 
-        // 3. SHOOT TO DATABASE (GOD MODE)
         const { error: errUpdate } = await supabaseClient
             .from('athletes')
             .update({
@@ -293,7 +284,6 @@ window.approveEdit = async (id, f1_id, new_name, new_dob, new_gender, new_foto_u
 
         if (errUpdate) throw errUpdate;
 
-        // 4. Ganti Status Queue Jadi APPROVED
         const { error: errQueue } = await supabaseClient
             .from('f1_edit_requests')
             .update({ status: 'APPROVED' })
@@ -309,7 +299,6 @@ window.approveEdit = async (id, f1_id, new_name, new_dob, new_gender, new_foto_u
     }
 }
 
-// Fungsi Tolak Usulan Edit
 window.rejectEdit = async (id) => {
     if (!confirm(`Tolak pengajuan perubahan data ini?`)) return;
     try {
