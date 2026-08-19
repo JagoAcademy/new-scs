@@ -34,7 +34,7 @@
         <a href="/" class="hover:scale-105 transition-transform duration-200">
             <img src="/images/f1logo.png" alt="SCS Logo" class="h-8 md:h-10">
         </a>
-        <a href="/auth.html" class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full border border-blue-100 hover:bg-blue-100 transition-colors">
+        <a href="/auth.html" class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full border border-blue-100 hover:bg-blue-100 transition-colors" id="navAuthBtn">
             Login SCS
         </a>
     </nav>
@@ -74,10 +74,11 @@
                 <div class="absolute bottom-0 left-0 w-64 h-64 bg-amber-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 translate-y-1/2 -translate-x-1/4"></div>
                 
                 <!-- Card Header -->
-                <div class="p-6 flex justify-between items-start relative z-10 border-b border-white/10">
+                <div class="p-5 md:p-6 flex justify-between items-start relative z-10 border-b border-white/10">
                     <div>
-                        <img src="/images/f1logo.png" class="h-6 opacity-80 filter brightness-0 invert mb-1">
-                        <p class="text-[9px] text-blue-200 tracking-widest font-bold uppercase mt-1">Official Athlete Identity</p>
+                        <img src="/images/f1logo.png" class="h-5 md:h-6 opacity-80 filter brightness-0 invert md:mb-1">
+                        <!-- Teks disembunyikan di layar HP biar gak nabrak -->
+                        <p class="hidden md:block text-[9px] text-blue-200 tracking-widest font-bold uppercase mt-1">Official Athlete Identity</p>
                     </div>
                     <div id="badgeVerifikasi">
                         <!-- Disuntik JS -->
@@ -87,6 +88,7 @@
                 <!-- Card Body -->
                 <div class="p-6 relative z-10 flex flex-col md:flex-row items-center md:items-start gap-6">
                     <div class="shrink-0 relative">
+                        <!-- Foto Atlet (Sudah di-setup di JS biar kalau pakai F1 Logo tampilnya cantik) -->
                         <img id="atletFoto" src="" class="w-32 h-32 md:w-36 md:h-36 rounded-2xl object-cover border-4 border-white/10 shadow-xl bg-slate-800">
                         <div class="absolute -bottom-3 -right-3 w-10 h-10 bg-amber-400 rounded-full border-4 border-slate-900 flex items-center justify-center shadow-lg" id="atletGenderIcon">
                         </div>

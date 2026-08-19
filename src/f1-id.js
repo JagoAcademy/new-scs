@@ -2,8 +2,21 @@ import { supabaseClient } from './supabase.js';
 
 let targetF1Id = null;
 let currentAthleteName = "";
+let currentUserId = null; // Menyimpan ID user yang login
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Cek User Login (Bapaknya atau Orang Luar)
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) {
+        currentUserId = session.user.id;
+        const navBtn = document.getElementById('navAuthBtn');
+        if (navBtn) {
+            navBtn.innerText = "Dashboard";
+            navBtn.href = "/dashboard.html";
+            navBtn.className = "text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200 hover:bg-emerald-100 transition-colors";
+        }
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     let f1IdParams = urlParams.get('id');
 
@@ -26,7 +39,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             .select(`
                 *,
                 clubs (
-                    club_name
+                    club_name,
+                    owner_id
                 )
             `)
             .eq('f1_id', f1IdParams)
@@ -89,23 +103,31 @@ function renderProfile(atlet) {
     }
 
     // ===============================================
-    // JURUS PRIVASI FOTO: Kunci Gembok Diaktifkan!
+    // JURUS PRIVASI FOTO + LOGIC BAPAKNYA BISA LIHAT
     // ===============================================
-    let avatarUrl = '/images/f1logo.png'; // Default jika Null atau diprivasi
-    
-    // Hanya tampilkan foto asli jika ada fotonya DAN privasi tidak dicentang
-    if (atlet.foto_url && !atlet.hide_foto) {
-        avatarUrl = atlet.foto_url;
-    }
-    
     const fotoEl = document.getElementById('atletFoto');
-    fotoEl.src = avatarUrl;
-    
-    // Mencegah logo F1 gepeng/melar jika digunakan sebagai default
-    if (atlet.hide_foto || !atlet.foto_url) {
-        fotoEl.classList.add('object-contain', 'p-2', 'bg-white');
+    let useDefaultLogo = false;
+
+    // Cek apakah bapaknya (pemilik klub) yang lagi buka
+    const isOwner = atlet.clubs && (atlet.clubs.owner_id === currentUserId);
+
+    // KONDISI 1: Kalau nggak ada foto sama sekali
+    if (!atlet.foto_url) {
+        useDefaultLogo = true;
+    } 
+    // KONDISI 2: Kalau ada foto TAPI privasi nyala DAN yang buka BUKAN bapaknya
+    else if (atlet.hide_foto && !isOwner) {
+        useDefaultLogo = true;
+    }
+
+    if (useDefaultLogo) {
+        fotoEl.src = '/images/f1logo.png';
+        // Biar logo F1 tampil cantik di dalam kotak, kasih background putih, padding, dan object-contain
+        fotoEl.className = "w-32 h-32 md:w-36 md:h-36 rounded-2xl object-contain p-4 border-4 border-white/10 shadow-xl bg-white";
     } else {
-        fotoEl.classList.remove('object-contain', 'p-2', 'bg-white');
+        fotoEl.src = atlet.foto_url;
+        // Kalau nampilin foto asli atlet, tampilkan full cover (biasa)
+        fotoEl.className = "w-32 h-32 md:w-36 md:h-36 rounded-2xl object-cover border-4 border-white/10 shadow-xl bg-slate-800";
     }
     // ===============================================
 
@@ -129,14 +151,14 @@ function renderProfile(atlet) {
     const badgeEl = document.getElementById('badgeVerifikasi');
     if (atlet.is_verified) {
         badgeEl.innerHTML = `
-            <div class="flex items-center gap-1.5 bg-gradient-to-r from-amber-200 to-yellow-400 px-3 py-1 rounded-full shadow-[0_0_15px_rgba(251,191,36,0.3)] border border-amber-300">
+            <div class="flex items-center gap-1.5 bg-gradient-to-r from-amber-200 to-yellow-400 px-3 py-1 rounded-full shadow-[0_0_15px_rgba(251,191,36,0.3)] border border-amber-300 mt-1 md:mt-0">
                 <span class="text-sm">👑</span>
                 <span class="text-[10px] font-black text-amber-900 uppercase tracking-widest">Verified</span>
             </div>
         `;
     } else {
         badgeEl.innerHTML = `
-            <div class="flex items-center gap-1.5 bg-blue-900/40 px-3 py-1 rounded-full border border-blue-400/30 backdrop-blur-md">
+            <div class="flex items-center gap-1.5 bg-blue-900/40 px-3 py-1 rounded-full border border-blue-400/30 backdrop-blur-md mt-1 md:mt-0">
                 <span class="text-sm">⏳</span>
                 <span class="text-[10px] font-bold text-blue-100 uppercase tracking-widest">Pending</span>
             </div>
