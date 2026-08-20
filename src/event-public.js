@@ -305,7 +305,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.getElementById('dropdownAtlet').addEventListener('change', (e) => {
-        // [BUG FIX]: Hapus semua centangan nomor lomba saat dropdown diganti!
         document.querySelectorAll('input[name="nomor_lomba"]:checked').forEach(cb => cb.checked = false);
 
         const opt = e.target.options[e.target.selectedIndex];
@@ -349,8 +348,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         let nomor_wa_pic = null; 
         let requiresAktaUpload = false;
 
-        // Validasi Turnstile Dihapus Sesuai Permintaan
-
         if (isKlubLoggedIn) {
             if(dropdownAtlet.value === "") return alert("Pilih peserta terlebih dahulu!");
             
@@ -389,15 +386,52 @@ document.addEventListener('DOMContentLoaded', async () => {
             return alert("Anda wajib mengunggah foto Akta Kelahiran!");
         }
 
-        const config = currentEvent.config || {};
-        let totalBiaya = selectedNomor.length >= Number(config.min_diskon || 999) 
-            ? selectedNomor.length * Number(config.biaya_diskon || 0) 
-            : selectedNomor.length * Number(config.biaya_normal || 0);
-
-        btn.innerHTML = "Menambahkan... ⏳"; 
+        btn.innerHTML = "Mengecek Data... ⏳"; 
         btn.disabled = true;
 
         try {
+            // ==========================================
+            // LOGIKA CEK NOMOR GANDA (BENTROK)
+            // ==========================================
+            let checkQuery = supabaseClient
+                .from('event_registrations')
+                .select('nomor_lomba')
+                .eq('event_id', currentEvent.id);
+
+            if (isKlubLoggedIn && f1_id) {
+                checkQuery = checkQuery.eq('f1_id', f1_id);
+            } else {
+                checkQuery = checkQuery.eq('nama_peserta', nama_peserta).eq('tanggal_lahir', tanggal_lahir);
+            }
+
+            const { data: existingRegs, error: errCheck } = await checkQuery;
+            if (errCheck) throw errCheck;
+
+            let nomorSudahAda = [];
+            if (existingRegs && existingRegs.length > 0) {
+                existingRegs.forEach(reg => {
+                    if (Array.isArray(reg.nomor_lomba)) {
+                        nomorSudahAda.push(...reg.nomor_lomba);
+                    }
+                });
+            }
+
+            let nomorBentrok = selectedNomor.filter(n => nomorSudahAda.includes(n));
+
+            if (nomorBentrok.length > 0) {
+                btn.innerHTML = "Daftar, Bayar di Antrian";
+                btn.disabled = false;
+                return alert(`❌ GAGAL! Atlet ini sudah pernah didaftarkan di nomor:\n\n${nomorBentrok.join(', ')}\n\nSilakan hilangkan centang pada nomor tersebut jika ingin menambah nomor gaya baru.`);
+            }
+            // ==========================================
+
+            const config = currentEvent.config || {};
+            let totalBiaya = selectedNomor.length >= Number(config.min_diskon || 999) 
+                ? selectedNomor.length * Number(config.biaya_diskon || 0) 
+                : selectedNomor.length * Number(config.biaya_normal || 0);
+
+            btn.innerHTML = "Menambahkan... ⏳"; 
+
             let finalAktaUrl = null;
             
             if (requiresAktaUpload && fileAkta) {
@@ -433,8 +467,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }]).select();
 
             if (insertError) throw insertError;
-
-            // Reset Turnstile Dihapus Sesuai Permintaan
 
             if (!isKlubLoggedIn && insertedData && insertedData.length > 0) {
                 let guestIds = JSON.parse(localStorage.getItem(`scs_guest_${currentEvent.id}`) || '[]');
@@ -478,7 +510,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('areaAkta').classList.remove('hidden'); 
         }
         
-        // [BUG FIX] Pastikan semua centangan bersih saat form di-reset
         document.querySelectorAll('input[name="nomor_lomba"]:checked').forEach(cb => cb.checked = false);
     }
 
@@ -488,8 +519,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function loadTagihan() {
         if (!currentEvent) return;
 
-        // BUKA KUNCI MEMORI: Hapus filter 'Belum Bayar' supaya semua riwayat muncul, 
-        // lalu urutkan dari yang paling baru didaftarkan.
         let query = supabaseClient
             .from('event_registrations')
             .select('*')
@@ -529,7 +558,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         area.classList.remove('hidden');
 
-        // Opsional: Ubah judul text HTML dari JS agar sesuai konteks
         document.querySelector('#areaPembayaran h2').innerHTML = '💳 Keranjang & Riwayat Pendaftaran';
         const pDesc = document.querySelector('#areaPembayaran p');
         if(pDesc) pDesc.innerText = 'Centang peserta yang ingin dibayar. Daftar di bawah ini juga mencakup riwayat atlet yang sudah didaftarkan sebelumnya.';
@@ -541,7 +569,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             let arrayNomor = item.nomor_lomba || [];
             let listNomor = arrayNomor.join(', ');
 
-            // LOGIKA MEMORI STATUS
             const isBelumBayar = item.status_pembayaran === 'Belum Bayar';
             const isLunas = item.status_pembayaran === 'Lunas';
             const isMenunggu = item.status_pembayaran === 'Menunggu Konfirmasi';
@@ -551,7 +578,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             let aksiHtml = '';
 
             if (isBelumBayar) {
-                // Bisa dicentang & dihapus
                 checkboxHtml = `<input type="checkbox" value="${item.id}" class="chk-tagihan w-4 h-4 rounded text-blue-600 cursor-pointer">`;
                 aksiHtml = `
                     <button data-id="${item.id}" class="btn-hapus-tagihan text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded text-[10px] font-bold transition flex items-center gap-1">
@@ -559,11 +585,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         Hapus
                     </button>`;
             } else if (isLunas) {
-                // Tanda centang hijau paten (Gak bisa dibayar lagi)
                 checkboxHtml = `<div class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-[10px]">✓</div>`;
                 statusBadge = `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[9px] font-extrabold ml-2 uppercase tracking-wider">LUNAS</span>`;
             } else if (isMenunggu) {
-                // Tanda jam pasir (Gak bisa dibayar lagi)
                 checkboxHtml = `<div class="w-5 h-5 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-[10px]">⏳</div>`;
                 statusBadge = `<span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-[9px] font-extrabold ml-2 uppercase tracking-wider">PROSES</span>`;
             }
@@ -590,7 +614,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             tbody.appendChild(tr);
         });
 
-        // Event listener saat checkbox satuan ditekan
         document.querySelectorAll('.chk-tagihan').forEach(chk => {
             chk.addEventListener('change', (e) => {
                 if(e.target.checked) selectedTagihanIds.add(e.target.value);
@@ -599,13 +622,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        // Event listener Checkbox All
         const btnCheckAll = document.getElementById('checkAllTagihan');
         if(btnCheckAll) {
             btnCheckAll.checked = false;
             btnCheckAll.addEventListener('change', (e) => {
                 const isChecked = e.target.checked;
-                // Hanya centang yang punya class chk-tagihan (yg belum bayar)
                 document.querySelectorAll('.chk-tagihan').forEach(chk => {
                     chk.checked = isChecked;
                     if(isChecked) selectedTagihanIds.add(chk.value);
@@ -615,7 +636,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        // Event Listener untuk Tombol Hapus Tagihan
         document.querySelectorAll('.btn-hapus-tagihan').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const id = e.currentTarget.getAttribute('data-id');
@@ -661,7 +681,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const btnKonfirmasi = document.getElementById('btnKonfirmasiBayar');
         btnKonfirmasi.disabled = selectedTagihanIds.size === 0;
 
-        // LOGIKA BIAYA RP 0 (GRATIS)
         const inputBuktiContainer = document.getElementById('inputBuktiTransfer').parentElement;
         if (total === 0 && selectedTagihanIds.size > 0) {
             btnKonfirmasi.innerText = "Konfirmasi Pendaftaran (Gratis)";
