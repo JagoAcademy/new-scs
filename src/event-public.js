@@ -488,11 +488,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function loadTagihan() {
         if (!currentEvent) return;
 
+        // BUKA KUNCI MEMORI: Hapus filter 'Belum Bayar' supaya semua riwayat muncul, 
+        // lalu urutkan dari yang paling baru didaftarkan.
         let query = supabaseClient
             .from('event_registrations')
             .select('*')
             .eq('event_id', currentEvent.id)
-            .eq('status_pembayaran', 'Belum Bayar');
+            .order('created_at', { ascending: false }); 
         
         if (isKlubLoggedIn) {
             const namaKlub = loggedInClubData.club_name || loggedInClubData.nama_klub;
@@ -527,20 +529,51 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         area.classList.remove('hidden');
 
+        // Opsional: Ubah judul text HTML dari JS agar sesuai konteks
+        document.querySelector('#areaPembayaran h2').innerHTML = '💳 Keranjang & Riwayat Pendaftaran';
+        const pDesc = document.querySelector('#areaPembayaran p');
+        if(pDesc) pDesc.innerText = 'Centang peserta yang ingin dibayar. Daftar di bawah ini juga mencakup riwayat atlet yang sudah didaftarkan sebelumnya.';
+
         dataTagihan.forEach(item => {
             const tr = document.createElement('tr');
             tr.className = "border-b border-slate-100 hover:bg-slate-50 transition-colors";
             
-            // [BUG FIX] Mengubah tampilan agar menampilkan detail Gaya Renang, bukan cuma angka
             let arrayNomor = item.nomor_lomba || [];
             let listNomor = arrayNomor.join(', ');
 
+            // LOGIKA MEMORI STATUS
+            const isBelumBayar = item.status_pembayaran === 'Belum Bayar';
+            const isLunas = item.status_pembayaran === 'Lunas';
+            const isMenunggu = item.status_pembayaran === 'Menunggu Konfirmasi';
+
+            let checkboxHtml = '';
+            let statusBadge = '';
+            let aksiHtml = '';
+
+            if (isBelumBayar) {
+                // Bisa dicentang & dihapus
+                checkboxHtml = `<input type="checkbox" value="${item.id}" class="chk-tagihan w-4 h-4 rounded text-blue-600 cursor-pointer">`;
+                aksiHtml = `
+                    <button data-id="${item.id}" class="btn-hapus-tagihan text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded text-[10px] font-bold transition flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        Hapus
+                    </button>`;
+            } else if (isLunas) {
+                // Tanda centang hijau paten (Gak bisa dibayar lagi)
+                checkboxHtml = `<div class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-[10px]">✓</div>`;
+                statusBadge = `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[9px] font-extrabold ml-2 uppercase tracking-wider">LUNAS</span>`;
+            } else if (isMenunggu) {
+                // Tanda jam pasir (Gak bisa dibayar lagi)
+                checkboxHtml = `<div class="w-5 h-5 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-[10px]">⏳</div>`;
+                statusBadge = `<span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-[9px] font-extrabold ml-2 uppercase tracking-wider">PROSES</span>`;
+            }
+
             tr.innerHTML = `
-                <td class="p-3 text-center align-top pt-4">
-                    <input type="checkbox" value="${item.id}" class="chk-tagihan w-4 h-4 rounded text-blue-600 cursor-pointer">
+                <td class="p-3 text-center align-top pt-4 flex justify-center mt-1">
+                    ${checkboxHtml}
                 </td>
                 <td class="p-3 align-top pt-4">
-                    <p class="font-bold text-slate-700 text-xs">${item.nama_peserta}</p>
+                    <p class="font-bold text-slate-700 text-xs flex items-center">${item.nama_peserta} ${statusBadge}</p>
                     <p class="text-[10px] text-slate-400 mt-0.5">${item.klub_asal}</p>
                 </td>
                 <td class="p-3 align-top pt-4 max-w-[150px]">
@@ -550,10 +583,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td class="p-3 text-right font-bold text-slate-700 text-xs align-top pt-4">
                     Rp ${Number(item.total_biaya).toLocaleString('id-ID')}
                     <div class="mt-2 flex justify-end">
-                        <button data-id="${item.id}" class="btn-hapus-tagihan text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded text-[10px] font-bold transition flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            Hapus
-                        </button>
+                        ${aksiHtml}
                     </div>
                 </td>
             `;
@@ -570,18 +600,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         // Event listener Checkbox All
-        document.getElementById('checkAllTagihan').checked = false;
-        document.getElementById('checkAllTagihan').addEventListener('change', (e) => {
-            const isChecked = e.target.checked;
-            document.querySelectorAll('.chk-tagihan').forEach(chk => {
-                chk.checked = isChecked;
-                if(isChecked) selectedTagihanIds.add(chk.value);
-                else selectedTagihanIds.delete(chk.value);
+        const btnCheckAll = document.getElementById('checkAllTagihan');
+        if(btnCheckAll) {
+            btnCheckAll.checked = false;
+            btnCheckAll.addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                // Hanya centang yang punya class chk-tagihan (yg belum bayar)
+                document.querySelectorAll('.chk-tagihan').forEach(chk => {
+                    chk.checked = isChecked;
+                    if(isChecked) selectedTagihanIds.add(chk.value);
+                    else selectedTagihanIds.delete(chk.value);
+                });
+                kalkulasiTotalBayar();
             });
-            kalkulasiTotalBayar();
-        });
+        }
 
-        // [BUG FIX] Event Listener untuk Tombol Hapus Tagihan
+        // Event Listener untuk Tombol Hapus Tagihan
         document.querySelectorAll('.btn-hapus-tagihan').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const id = e.currentTarget.getAttribute('data-id');
@@ -595,7 +629,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const { error } = await supabaseClient.from('event_registrations').delete().eq('id', id);
                     if (error) throw error;
                     
-                    // Bersihkan dari LocalStorage jika yang daftar adalah akun Guest
                     if (!isKlubLoggedIn) {
                         let guestIds = JSON.parse(localStorage.getItem(`scs_guest_${currentEvent.id}`) || '[]');
                         guestIds = guestIds.filter(gId => gId !== id);
@@ -604,7 +637,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     loadTagihan(); 
                     
-                    // Update counter statistik Live di atas layar
                     const { count } = await supabaseClient.from('event_registrations').select('*', { count: 'exact', head: true }).eq('event_id', currentEvent.id);
                     document.getElementById('statPesertaPublik').innerText = `${count || 0} Terdaftar`;
 
