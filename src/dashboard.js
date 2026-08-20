@@ -208,10 +208,13 @@ async function fetchDashboardData() {
             btnSaveOnboard.onclick = async () => {
                 const cName = document.getElementById('onboardClubName').value.trim();
                 const cCoach = document.getElementById('onboardCoachName').value.trim();
+                const cWa = document.getElementById('onboardContactWa').value.trim();
+                const cProv = document.getElementById('onboardProvinsi').value;
+                const cKota = document.getElementById('onboardKota').value;
                 const onboardMsg = document.getElementById('onboardMsg');
 
-                if (!cName || !cCoach) {
-                    onboardMsg.innerText = "Nama Klub dan Nama Pelatih wajib diisi!";
+                if (!cName || !cCoach || !cWa || !cProv || !cKota) {
+                    onboardMsg.innerText = "Semua kolom wajib diisi!";
                     onboardMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block";
                     return;
                 }
@@ -225,6 +228,9 @@ async function fetchDashboardData() {
                         .insert([{
                             club_name: cName,
                             coach_name: cCoach,
+                            contact_wa: cWa,
+                            provinsi: cProv,
+                            kota_asal: cKota,
                             owner_id: userId,
                             admin_email: userEmail
                         }]);
@@ -680,6 +686,8 @@ const elProvinsi = document.getElementById('editProvinsi');
 const elKota = document.getElementById('editKota');
 const eventProvinsi = document.getElementById('inputEventProvinsi');
 const eventKota = document.getElementById('inputEventKota');
+const onboardProvinsi = document.getElementById('onboardProvinsi'); 
+const onboardKota = document.getElementById('onboardKota'); 
 
 async function loadProvinsi() {
     try {
@@ -689,15 +697,18 @@ async function loadProvinsi() {
         const defaultOption = '<option value="">-- Pilih Provinsi --</option>';
         if (elProvinsi) elProvinsi.innerHTML = defaultOption;
         if (eventProvinsi) eventProvinsi.innerHTML = defaultOption;
+        if (onboardProvinsi) onboardProvinsi.innerHTML = defaultOption; 
 
         provinces.forEach(prov => {
             const opt = `<option value="${prov.name}" data-id="${prov.id}">${prov.name}</option>`;
             if (elProvinsi) elProvinsi.innerHTML += opt;
             if (eventProvinsi) eventProvinsi.innerHTML += opt;
+            if (onboardProvinsi) onboardProvinsi.innerHTML += opt; 
         });
     } catch (error) {
         if (elProvinsi) elProvinsi.innerHTML = '<option value="">Gagal memuat API</option>';
         if (eventProvinsi) eventProvinsi.innerHTML = '<option value="">Gagal memuat API</option>';
+        if (onboardProvinsi) onboardProvinsi.innerHTML = '<option value="">Gagal memuat API</option>'; 
     }
 }
 loadProvinsi(); 
@@ -711,6 +722,12 @@ if (elProvinsi) {
 if (eventProvinsi) {
     eventProvinsi.addEventListener('change', async function() {
         handleProvinsiChange(this, eventKota);
+    });
+}
+
+if (onboardProvinsi) {
+    onboardProvinsi.addEventListener('change', async function() {
+        handleProvinsiChange(this, onboardKota);
     });
 }
 
