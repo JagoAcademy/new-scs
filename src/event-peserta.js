@@ -117,8 +117,19 @@ function renderTable() {
         else if(item.status_pembayaran === 'Menunggu Konfirmasi') statusBadge = `<span class="bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">Menunggu Konfirmasi</span>`;
         else statusBadge = `<span class="bg-slate-100 text-slate-500 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">Keranjang</span>`;
 
-        const aktaBtn = item.akta_url ? `<button onclick="window.viewImage('${item.akta_url}', 'Akta: ${item.nama_peserta}')" class="text-blue-500 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded text-xs font-bold transition-colors shadow-sm">📄 Akta</button>` : `<span class="text-slate-300 text-xs">-</span>`;
-        const strukBtn = item.bukti_transfer_url ? `<button onclick="window.viewImage('${item.bukti_transfer_url}', 'Struk: ${item.nama_peserta}')" class="text-emerald-500 hover:text-emerald-700 bg-emerald-50 px-2 py-1 rounded text-xs font-bold transition-colors shadow-sm mt-1">💳 Struk</button>` : `<span class="text-slate-300 text-xs">-</span>`;
+        // ========================================================
+        // LOGIKA PRIVASI AKTA (VVIP F1 ID VS TAMU)
+        // ========================================================
+        let aktaBtn = '';
+        if (item.f1_id) {
+            // VVIP: Sembunyikan tombol lihat Akta, ganti dengan badge Terverifikasi
+            aktaBtn = `<span class="text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-1.5 rounded text-[9px] font-extrabold uppercase tracking-wider shadow-sm flex items-center gap-1 justify-center" title="Data privasi aman di sistem pusat SCS">✅ Terverifikasi</span>`;
+        } else {
+            // TAMU MANUAl: Tetap tampilkan tombol Akta jika ada filenya
+            aktaBtn = item.akta_url ? `<button onclick="window.viewImage('${item.akta_url}', 'Akta: ${item.nama_peserta}')" class="text-blue-500 hover:text-blue-700 bg-blue-50 px-2 py-1.5 rounded text-xs font-bold transition-colors shadow-sm flex items-center gap-1 justify-center w-full">📄 Akta</button>` : `<span class="text-slate-300 text-xs">-</span>`;
+        }
+
+        const strukBtn = item.bukti_transfer_url ? `<button onclick="window.viewImage('${item.bukti_transfer_url}', 'Struk: ${item.nama_peserta}')" class="text-emerald-500 hover:text-emerald-700 bg-emerald-50 px-2 py-1.5 rounded text-xs font-bold transition-colors shadow-sm mt-1 flex items-center gap-1 justify-center w-full">💳 Struk</button>` : `<span class="text-slate-300 text-xs">-</span>`;
 
         let waLink = "#";
         let waButtonClass = "opacity-50 cursor-not-allowed grayscale";
@@ -130,14 +141,10 @@ function renderTable() {
             waButtonClass = "hover:scale-105 hover:shadow-md";
         }
 
-        // ========================================================
-        // UX BARU: RENDER NOMOR LOMBA + SEED TIME DI DALAM CHIPS
-        // ========================================================
         let nomorLombaHtml = '';
         if (Array.isArray(item.nomor_lomba)) {
             item.nomor_lomba.forEach(nomor => {
-                // Misal format data nomor lomba json = {kategori: "KU 1", gaya: "Gaya Bebas 50m", seed_time: "00:35.12"}
-                let namaGaya = nomor.gaya || nomor; // Jaga-jaga kalau data lama cuma string biasa
+                let namaGaya = nomor.gaya || nomor; 
                 let waktuSeed = nomor.seed_time ? nomor.seed_time : 'NT';
                 let warnaTeks = nomor.seed_time ? 'text-indigo-600 font-black' : 'text-slate-400 font-bold';
                 
