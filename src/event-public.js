@@ -25,27 +25,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (error || !eventData) throw new Error("Event tidak ditemukan.");
         currentEvent = eventData;
 
-        // =========================================================
-        // LOGIKA FOMO "BEDA REGION" 
-        // =========================================================
-        if (currentEvent.provinsi && !currentEvent.provinsi.toUpperCase().includes('JAWA TIMUR')) {
-            const modalWarn = document.getElementById('modalRegionWarning');
-            if (modalWarn) {
-                document.getElementById('warnEventName').innerText = currentEvent.event_name;
-                document.getElementById('warnEventLocation').innerText = `${currentEvent.kota || ''}, ${currentEvent.provinsi}`;
-                
-                setTimeout(() => {
-                    modalWarn.classList.remove('hidden');
-                    setTimeout(() => modalWarn.firstElementChild.classList.remove('scale-95'), 50);
-                }, 1000); 
-
-                document.getElementById('btnTutupWarningRegion').addEventListener('click', () => {
-                    modalWarn.firstElementChild.classList.add('scale-95');
-                    setTimeout(() => modalWarn.classList.add('hidden'), 300);
-                });
-            }
-        }
-
         const config = eventData.config || {};
         document.getElementById('pageTitle').innerText = `${eventData.event_name} | Pendaftaran Resmi`;
         document.getElementById('publicEventName').innerText = eventData.event_name;
@@ -591,46 +570,81 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
         document.getElementById('teksTotalTagihan').innerText = `Rp ${total.toLocaleString('id-ID')}`;
-        document.getElementById('btnKonfirmasiBayar').disabled = selectedTagihanIds.size === 0;
+        
+        const btnKonfirmasi = document.getElementById('btnKonfirmasiBayar');
+        btnKonfirmasi.disabled = selectedTagihanIds.size === 0;
+
+        // LOGIKA BIAYA RP 0 (GRATIS)
+        const inputBuktiContainer = document.getElementById('inputBuktiTransfer').parentElement;
+        if (total === 0 && selectedTagihanIds.size > 0) {
+            btnKonfirmasi.innerText = "Konfirmasi Pendaftaran (Gratis)";
+            inputBuktiContainer.classList.add('hidden'); // Sembunyikan tombol upload struk
+        } else {
+            btnKonfirmasi.innerText = "Konfirmasi Pembayaran";
+            inputBuktiContainer.classList.remove('hidden'); // Munculkan tombol upload struk
+        }
     }
 
     document.getElementById('btnKonfirmasiBayar').addEventListener('click', async () => {
+        // Hitung ulang total untuk memastikan
+        let total = 0;
+        dataTagihan.forEach(item => {
+            if (selectedTagihanIds.has(item.id)) {
+                total += Number(item.total_biaya);
+            }
+        });
+
         const fileStruk = document.getElementById('inputBuktiTransfer').files[0];
-        if (!fileStruk) return alert("Wajib mengunggah foto Bukti Transfer!");
+        
+        // Tolak jika berbayar tapi tidak upload struk
+        if (total > 0 && !fileStruk) return alert("Wajib mengunggah foto Bukti Transfer!");
 
         const btn = document.getElementById('btnKonfirmasiBayar');
-        btn.innerText = "Mengunggah Struk... ⏳"; 
+        btn.innerText = total === 0 ? "Memproses Pendaftaran... ⏳" : "Mengunggah Struk... ⏳"; 
         btn.disabled = true;
 
         try {
-            const fileExt = fileStruk.name.split('.').pop();
-            const fileName = `struk_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-            
-            const { error: uploadError } = await supabaseClient.storage.from('bukti-transfer').upload(fileName, fileStruk);
-            if (uploadError) throw uploadError;
-            
-            const { data: urlData } = supabaseClient.storage.from('bukti-transfer').getPublicUrl(fileName);
-            const strukUrl = urlData.publicUrl;
+            let strukUrl = null;
+            let statusBayar = 'Lunas'; // Default otomatis Lunas untuk yang Gratis (Rp 0)
+
+            // Jika berbayar, proses upload struk
+            if (total > 0) {
+                statusBayar = 'Menunggu Konfirmasi';
+                const fileExt = fileStruk.name.split('.').pop();
+                const fileName = `struk_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+                
+                const { error: uploadError } = await supabaseClient.storage.from('bukti-transfer').upload(fileName, fileStruk);
+                if (uploadError) throw uploadError;
+                
+                const { data: urlData } = supabaseClient.storage.from('bukti-transfer').getPublicUrl(fileName);
+                strukUrl = urlData.publicUrl;
+            }
 
             const listIds = Array.from(selectedTagihanIds);
             const { error: updateError } = await supabaseClient
                 .from('event_registrations')
                 .update({ 
-                    status_pembayaran: 'Menunggu Konfirmasi', 
+                    status_pembayaran: statusBayar, 
                     bukti_transfer_url: strukUrl 
                 })
                 .in('id', listIds);
 
             if (updateError) throw updateError;
 
-            alert("✅ Pembayaran berhasil dikirim! Silakan tunggu konfirmasi panitia.");
+            // Alert disesuaikan dengan jenis transaksi
+            if (total === 0) {
+                alert("✅ Pendaftaran berhasil! Status peserta langsung Lunas (Gratis).");
+            } else {
+                alert("✅ Pembayaran berhasil dikirim! Silakan tunggu konfirmasi panitia.");
+            }
+            
             document.getElementById('inputBuktiTransfer').value = "";
             loadTagihan(); 
 
         } catch (err) {
-            alert("Gagal mengirim pembayaran: " + err.message);
+            alert("Gagal memproses: " + err.message);
         } finally {
-            btn.innerText = "Konfirmasi Pembayaran"; 
+            btn.innerText = total === 0 ? "Konfirmasi Pendaftaran (Gratis)" : "Konfirmasi Pembayaran"; 
             btn.disabled = false;
         }
     });
