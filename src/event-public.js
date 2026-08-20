@@ -305,6 +305,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.getElementById('dropdownAtlet').addEventListener('change', (e) => {
+        // [BUG FIX]: Hapus semua centangan nomor lomba saat dropdown diganti!
+        document.querySelectorAll('input[name="nomor_lomba"]:checked').forEach(cb => cb.checked = false);
+
         const opt = e.target.options[e.target.selectedIndex];
         const inputTgl = document.getElementById('inputTglLahir');
         const inputGender = document.getElementById('inputGender');
@@ -474,6 +477,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('inputGender').classList.remove('bg-slate-200', 'pointer-events-none');
             document.getElementById('areaAkta').classList.remove('hidden'); 
         }
+        
+        // [BUG FIX] Pastikan semua centangan bersih saat form di-reset
+        document.querySelectorAll('input[name="nomor_lomba"]:checked').forEach(cb => cb.checked = false);
     }
 
     // ==========================================
@@ -524,24 +530,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         dataTagihan.forEach(item => {
             const tr = document.createElement('tr');
             tr.className = "border-b border-slate-100 hover:bg-slate-50 transition-colors";
+            
+            // [BUG FIX] Mengubah tampilan agar menampilkan detail Gaya Renang, bukan cuma angka
+            let arrayNomor = item.nomor_lomba || [];
+            let listNomor = arrayNomor.join(', ');
+
             tr.innerHTML = `
-                <td class="p-3 text-center">
+                <td class="p-3 text-center align-top pt-4">
                     <input type="checkbox" value="${item.id}" class="chk-tagihan w-4 h-4 rounded text-blue-600 cursor-pointer">
                 </td>
-                <td class="p-3">
+                <td class="p-3 align-top pt-4">
                     <p class="font-bold text-slate-700 text-xs">${item.nama_peserta}</p>
                     <p class="text-[10px] text-slate-400 mt-0.5">${item.klub_asal}</p>
                 </td>
-                <td class="p-3 text-center">
-                    <span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-1 rounded">${item.nomor_lomba.length} Nomor</span>
+                <td class="p-3 align-top pt-4 max-w-[150px]">
+                    <span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-1 rounded inline-block mb-1.5">${arrayNomor.length} Nomor</span>
+                    <p class="text-[9px] text-slate-500 leading-relaxed font-medium break-words">${listNomor}</p>
                 </td>
-                <td class="p-3 text-right font-bold text-slate-700 text-xs">
+                <td class="p-3 text-right font-bold text-slate-700 text-xs align-top pt-4">
                     Rp ${Number(item.total_biaya).toLocaleString('id-ID')}
+                    <div class="mt-2 flex justify-end">
+                        <button data-id="${item.id}" class="btn-hapus-tagihan text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded text-[10px] font-bold transition flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            Hapus
+                        </button>
+                    </div>
                 </td>
             `;
             tbody.appendChild(tr);
         });
 
+        // Event listener saat checkbox satuan ditekan
         document.querySelectorAll('.chk-tagihan').forEach(chk => {
             chk.addEventListener('change', (e) => {
                 if(e.target.checked) selectedTagihanIds.add(e.target.value);
@@ -550,6 +569,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
+        // Event listener Checkbox All
         document.getElementById('checkAllTagihan').checked = false;
         document.getElementById('checkAllTagihan').addEventListener('change', (e) => {
             const isChecked = e.target.checked;
@@ -559,6 +579,41 @@ document.addEventListener('DOMContentLoaded', async () => {
                 else selectedTagihanIds.delete(chk.value);
             });
             kalkulasiTotalBayar();
+        });
+
+        // [BUG FIX] Event Listener untuk Tombol Hapus Tagihan
+        document.querySelectorAll('.btn-hapus-tagihan').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = e.currentTarget.getAttribute('data-id');
+                if(!confirm("Yakin ingin menghapus peserta ini dari antrian keranjang?")) return;
+                
+                const tr = e.currentTarget.closest('tr');
+                tr.style.opacity = '0.4';
+                tr.style.pointerEvents = 'none';
+
+                try {
+                    const { error } = await supabaseClient.from('event_registrations').delete().eq('id', id);
+                    if (error) throw error;
+                    
+                    // Bersihkan dari LocalStorage jika yang daftar adalah akun Guest
+                    if (!isKlubLoggedIn) {
+                        let guestIds = JSON.parse(localStorage.getItem(`scs_guest_${currentEvent.id}`) || '[]');
+                        guestIds = guestIds.filter(gId => gId !== id);
+                        localStorage.setItem(`scs_guest_${currentEvent.id}`, JSON.stringify(guestIds));
+                    }
+
+                    loadTagihan(); 
+                    
+                    // Update counter statistik Live di atas layar
+                    const { count } = await supabaseClient.from('event_registrations').select('*', { count: 'exact', head: true }).eq('event_id', currentEvent.id);
+                    document.getElementById('statPesertaPublik').innerText = `${count || 0} Terdaftar`;
+
+                } catch (err) {
+                    alert("Gagal menghapus data: " + err.message);
+                    tr.style.opacity = '1';
+                    tr.style.pointerEvents = 'auto';
+                }
+            });
         });
     }
 
@@ -578,15 +633,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const inputBuktiContainer = document.getElementById('inputBuktiTransfer').parentElement;
         if (total === 0 && selectedTagihanIds.size > 0) {
             btnKonfirmasi.innerText = "Konfirmasi Pendaftaran (Gratis)";
-            inputBuktiContainer.classList.add('hidden'); // Sembunyikan tombol upload struk
+            inputBuktiContainer.classList.add('hidden'); 
         } else {
             btnKonfirmasi.innerText = "Konfirmasi Pembayaran";
-            inputBuktiContainer.classList.remove('hidden'); // Munculkan tombol upload struk
+            inputBuktiContainer.classList.remove('hidden'); 
         }
     }
 
     document.getElementById('btnKonfirmasiBayar').addEventListener('click', async () => {
-        // Hitung ulang total untuk memastikan
         let total = 0;
         dataTagihan.forEach(item => {
             if (selectedTagihanIds.has(item.id)) {
@@ -596,7 +650,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const fileStruk = document.getElementById('inputBuktiTransfer').files[0];
         
-        // Tolak jika berbayar tapi tidak upload struk
         if (total > 0 && !fileStruk) return alert("Wajib mengunggah foto Bukti Transfer!");
 
         const btn = document.getElementById('btnKonfirmasiBayar');
@@ -605,9 +658,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             let strukUrl = null;
-            let statusBayar = 'Lunas'; // Default otomatis Lunas untuk yang Gratis (Rp 0)
+            let statusBayar = 'Lunas'; 
 
-            // Jika berbayar, proses upload struk
             if (total > 0) {
                 statusBayar = 'Menunggu Konfirmasi';
                 const fileExt = fileStruk.name.split('.').pop();
@@ -631,7 +683,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (updateError) throw updateError;
 
-            // Alert disesuaikan dengan jenis transaksi
             if (total === 0) {
                 alert("✅ Pendaftaran berhasil! Status peserta langsung Lunas (Gratis).");
             } else {
