@@ -10,7 +10,7 @@ let configForm = {
     header_url: '',
     bg_url: '',
     biaya_normal: '',
-    biaya_estafet: '', // <-- DATA BIAYA ESTAFET BARU
+    biaya_estafet: '', 
     min_diskon: '',
     biaya_diskon: '',
     admin_wa_1: '', 
@@ -50,10 +50,13 @@ async function loadDataLomba() {
         const eventConfig = data?.config || {};
         configForm.header_url = eventConfig.header_url || '';
         configForm.bg_url = eventConfig.bg_url || '';
-        configForm.biaya_normal = eventConfig.biaya_normal || '';
-        configForm.biaya_estafet = eventConfig.biaya_estafet || ''; // <-- LOAD ESTAFET
-        configForm.min_diskon = eventConfig.min_diskon || '';
-        configForm.biaya_diskon = eventConfig.biaya_diskon || '';
+        
+        // [BUG FIX] Pakai ?? agar angka 0 tetap dihitung sebagai 0, bukan dianggap kosong
+        configForm.biaya_normal = eventConfig.biaya_normal ?? '';
+        configForm.biaya_estafet = eventConfig.biaya_estafet ?? ''; 
+        configForm.min_diskon = eventConfig.min_diskon ?? '';
+        configForm.biaya_diskon = eventConfig.biaya_diskon ?? '';
+        
         configForm.admin_wa_1 = eventConfig.admin_wa_1 || ''; 
         configForm.admin_wa_2 = eventConfig.admin_wa_2 || ''; 
         configForm.info_pembayaran = eventConfig.info_pembayaran || ''; 
