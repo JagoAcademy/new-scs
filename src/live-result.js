@@ -112,11 +112,12 @@ function renderAllHeats(eventNumber) {
             </div>`;
         });
 
+        // DI SINI PENAMBAHAN KETERANGAN KU-NYA BRAY
         container.innerHTML += `
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
             <div class="flex justify-between items-end mb-4 border-b border-slate-200 pb-4">
                 <div>
-                    <h2 class="text-lg font-black text-slate-900 uppercase">Event #${heat.event_number}: ${heat.nomor_lomba} - ${heat.gender}</h2>
+                    <h2 class="text-lg font-black text-slate-900 uppercase">Event #${heat.event_number}: ${heat.nomor_lomba} - ${heat.kelompok_umur} - ${heat.gender}</h2>
                     <p class="text-sm font-bold text-red-600 mt-1">HEAT ${heat.heat_number} (Dari ${heat.total_heats})</p>
                 </div>
             </div>
@@ -186,7 +187,6 @@ window.submitHeatData = async function(heatIndex, heatDatabaseId) {
     });
 
     try {
-        // Simpan Waktu ke event_heats JSONB
         const { data, error } = await supabaseClient
             .from('event_heats')
             .update({ lanes_data: updatedLanes })
@@ -198,7 +198,6 @@ window.submitHeatData = async function(heatIndex, heatDatabaseId) {
 
         targetHeat.lanes_data = updatedLanes;
         
-        // --- MULAI LOGIKA TEMBAK KE RACE_RESULTS ---
         let dataKeRaceResults = [];
 
         updatedLanes.forEach(atlet => {
@@ -233,7 +232,6 @@ window.submitHeatData = async function(heatIndex, heatDatabaseId) {
             }
         });
 
-        // Eksekusi Insert ke race_results
         if (dataKeRaceResults.length > 0) {
             await supabaseClient.from('race_results')
                 .delete()
@@ -246,7 +244,6 @@ window.submitHeatData = async function(heatIndex, heatDatabaseId) {
             const { error: errorInsert } = await supabaseClient.from('race_results').insert(dataKeRaceResults);
             if (errorInsert) throw errorInsert;
         }
-        // --- SELESAI LOGIKA TEMBAK KE RACE_RESULTS ---
 
         btn.classList.replace('bg-slate-800', 'bg-green-600');
         btn.innerText = "✅ Tersimpan!";
