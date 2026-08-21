@@ -43,12 +43,13 @@
             <div class="absolute -right-4 -top-4 text-6xl opacity-10">💸</div>
             <h3 class="font-bold text-amber-400 mb-1 relative z-10">Informasi Biaya Pendaftaran</h3>
             <p id="infoBiayaNormal" class="text-blue-100 relative z-10">Biaya per nomor: Memuat...</p>
+            <p id="infoBiayaEstafet" class="text-purple-300 font-bold relative z-10 hidden mt-1">Biaya Estafet: Memuat...</p>
             <p id="infoDiskon" class="text-blue-200 text-xs mt-1 font-bold relative z-10"></p>
         </div>
 
-        <!-- FORM PENDAFTARAN PESERTA -->
+        <!-- FORM PENDAFTARAN INDIVIDU -->
         <div class="bg-white/95 backdrop-blur-md text-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl border border-slate-200 space-y-5">
-            <h2 class="text-xl font-extrabold text-blue-900 border-b border-slate-100 pb-3">Formulir Pendaftaran Peserta</h2>
+            <h2 class="text-xl font-extrabold text-blue-900 border-b border-slate-100 pb-3">Formulir Pendaftaran Peserta (Individu)</h2>
             
             <div id="loginBar" class="flex flex-col sm:flex-row justify-between sm:items-center bg-indigo-50 text-indigo-900 p-3.5 rounded-xl border border-indigo-100 gap-3 transition-all">
                 <div class="flex items-center gap-2">
@@ -68,7 +69,7 @@
                 </button>
             </div>
 
-            <!-- AREA GUEST ONLY (Klub Manual & WA) -->
+            <!-- AREA GUEST ONLY -->
             <div id="areaGuestOnly" class="space-y-4">
                 <div>
                     <div class="flex justify-between items-center mb-1">
@@ -135,9 +136,48 @@
 
             <!-- TOMBOL UTAMA -->
             <button id="btnKirimPendaftaran" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl shadow-lg transition-all mt-4 flex items-center justify-center gap-2 text-lg">
-                Daftar, Bayar di Antrian
+                Daftar Individu, Masuk Antrian
             </button>
         </div>
+
+        <!-- ======================================================= -->
+        <!-- FORM KHUSUS ESTAFET (CUMA MUNCUL KALAU VVIP LOGIN) -->
+        <!-- ======================================================= -->
+        <div id="areaEstafetVVIP" class="hidden bg-white/95 backdrop-blur-md text-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl border-t-8 border-purple-600 space-y-5">
+            <div class="border-b border-purple-100 pb-3">
+                <h2 class="text-xl font-extrabold text-purple-900 flex items-center gap-2">
+                    ⚡ Pendaftaran Regu Estafet
+                </h2>
+                <p class="text-xs text-purple-600 mt-1 font-bold">Eksklusif Klub VVIP</p>
+            </div>
+            
+            <div class="bg-purple-50 p-4 rounded-xl border border-purple-100 shadow-inner">
+                <p class="text-[11px] text-purple-800 leading-relaxed font-medium">
+                    <strong>Penting:</strong> Daftar slot tim estafet Anda di bawah ini. Untuk nama-nama perenang (4 orang) per regu, silakan susun dan serahkan langsung ke Panitia saat sesi <strong>Technical Meeting</strong> (H-1 Lomba) untuk diverifikasi sesuai kelompok umur.
+                </p>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Pilih Nomor Estafet</label>
+                <!-- Opsi dropdown ini akan disuntik dari event-public.js berdasarkan setingan panitia -->
+                <select id="inputNomorEstafet" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-purple-900 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-sm">
+                    <option value="">-- Pilih Kategori & Jarak Estafet --</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Pilih Kelompok Umur (KU) Tim</label>
+                <!-- Mengambil data KU yang aktif -->
+                <select id="inputKUEstafet" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-sm">
+                    <option value="">-- Tentukan KU Regu --</option>
+                </select>
+            </div>
+
+            <button id="btnKirimEstafet" class="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white font-extrabold rounded-xl shadow-[0_4px_14px_0_rgba(147,51,234,0.39)] transition-all mt-4 flex items-center justify-center gap-2 text-lg border border-purple-500">
+                Pesan Slot Estafet
+            </button>
+        </div>
+        <!-- ======================================================= -->
 
         <!-- SECTION PEMBAYARAN KOLEKTIF -->
         <div id="areaPembayaran" class="bg-white/95 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-2xl border border-slate-200 hidden mb-10">
@@ -151,8 +191,8 @@
                     <thead>
                         <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-wider border-b border-slate-200">
                             <th class="p-3 w-10 text-center"><input type="checkbox" id="checkAllTagihan" class="w-4 h-4 rounded text-blue-600 cursor-pointer"></th>
-                            <th class="p-3">Nama Peserta</th>
-                            <th class="p-3 text-center">Nomor</th>
+                            <th class="p-3">Nama Peserta / Tim</th>
+                            <th class="p-3 text-center">Nomor / Tipe</th>
                             <th class="p-3 text-right">Biaya</th>
                         </tr>
                     </thead>

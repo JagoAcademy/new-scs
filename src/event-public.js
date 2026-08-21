@@ -28,18 +28,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         const config = eventData.config || {};
         document.getElementById('pageTitle').innerText = `${eventData.event_name} | Pendaftaran Resmi`;
         document.getElementById('publicEventName').innerText = eventData.event_name;
+        
         // =========================================================
         // CEK STATUS PENDAFTARAN (IS_CLOSED)
         // =========================================================
         if (eventData.is_closed) {
-            // Sembunyikan form dan kotak info biaya
             const formPeserta = document.querySelector('.bg-white\\/95.backdrop-blur-md');
             const boxBiaya = document.querySelector('.bg-blue-900.border.border-blue-800');
             
             if (formPeserta) formPeserta.classList.add('hidden');
             if (boxBiaya) boxBiaya.classList.add('hidden');
 
-            // Format WA Admin dari Config
             let waLink = "#";
             if (config.admin_wa_1 || config.admin_wa_2) {
                 let nomorTarget = config.admin_wa_1 || config.admin_wa_2;
@@ -48,12 +47,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 waLink = `https://wa.me/${cleanNum}?text=Halo%20Admin%20${encodeURIComponent(eventData.event_name)},%20apakah%20pendaftaran%20masih%20bisa%20dibuka%20untuk%20susulan?`;
             }
 
-            // Buat Alert Box Tutup
             const alertHtml = `
                 <div class="bg-red-50 border-2 border-red-200 rounded-3xl p-8 text-center shadow-lg mt-10">
-                    <div class="w-20 h-20 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 border-4 border-white shadow-sm">
-                        ⛔
-                    </div>
+                    <div class="w-20 h-20 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 border-4 border-white shadow-sm">⛔</div>
                     <h2 class="text-2xl font-black text-red-700 mb-2 tracking-tight">Pendaftaran Telah Ditutup</h2>
                     <p class="text-slate-600 font-medium mb-6 leading-relaxed max-w-md mx-auto">
                         Mohon maaf, pendaftaran untuk event <strong>${eventData.event_name}</strong> sudah ditutup oleh panitia. Silakan hubungi admin jika ada keperluan mendesak.
@@ -65,48 +61,32 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
             `;
             
-            // Suntik ke dalam HTML
             const mainContainer = document.querySelector('.max-w-2xl.mx-auto.px-4.mt-6');
-            if(mainContainer) {
-                mainContainer.insertAdjacentHTML('afterbegin', alertHtml);
-            }
+            if(mainContainer) mainContainer.insertAdjacentHTML('afterbegin', alertHtml);
         }
 
         // =========================================================
-        // 📅 INJEK TANGGAL LOMBA
+        // 📅 RENDER TANGGAL & LOKASI LOMBA
         // =========================================================
         let formattedDate = 'Tanggal belum ditentukan';
         const rawDate = eventData.start_date || eventData.event_date || eventData.tanggal;
         if (rawDate) {
             try {
                 const dateObj = new Date(rawDate);
-                if (!isNaN(dateObj.getTime())) {
-                    formattedDate = dateObj.toLocaleDateString('id-ID', {
-                        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-                    });
-                }
+                if (!isNaN(dateObj.getTime())) formattedDate = dateObj.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
             } catch (e) { console.error("Gagal memformat tanggal:", e); }
         }
-        
         const elTextTanggal = document.getElementById('textTanggal');
         if (elTextTanggal) elTextTanggal.innerText = formattedDate;
 
-        // =========================================================
-        // 📍 INJEK LOKASI LOMBA
-        // =========================================================
         const namaKota = eventData.kota || '';
         const namaProvinsi = eventData.provinsi || '';
         const namaKolam = config.nama_kolam || '';
-        
         let teksLokasiLengkap = '';
         if (namaKolam) teksLokasiLengkap += `${namaKolam} - `;
-        if (namaKota && namaProvinsi) {
-            teksLokasiLengkap += `${namaKota}, ${namaProvinsi}`;
-        } else if (namaKota || namaProvinsi) {
-            teksLokasiLengkap += `${namaKota}${namaProvinsi}`;
-        } else {
-            teksLokasiLengkap = 'Lokasi belum ditentukan';
-        }
+        if (namaKota && namaProvinsi) teksLokasiLengkap += `${namaKota}, ${namaProvinsi}`;
+        else if (namaKota || namaProvinsi) teksLokasiLengkap += `${namaKota}${namaProvinsi}`;
+        else teksLokasiLengkap = 'Lokasi belum ditentukan';
         
         const elTextLokasi = document.getElementById('textLokasi');
         if (elTextLokasi) elTextLokasi.innerText = teksLokasiLengkap;
@@ -114,10 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // =========================================================
         // RENDER BACKGROUND & BIAYA
         // =========================================================
-        if (config.header_url) {
-            document.getElementById('headerBannerContainer').style.backgroundImage = `url('${config.header_url}')`;
-        }
-        
+        if (config.header_url) document.getElementById('headerBannerContainer').style.backgroundImage = `url('${config.header_url}')`;
         if (config.bg_url) {
             const bgOverlay = document.getElementById('bgOverlay');
             bgOverlay.style.backgroundImage = `url('${config.bg_url}')`;
@@ -127,19 +104,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         const normalPrice = Number(config.biaya_normal || 0).toLocaleString('id-ID');
         document.getElementById('infoBiayaNormal').innerText = `Biaya per nomor: Rp ${normalPrice}`;
         
+        // MUNCULIN BIAYA ESTAFET DI KOTAK INFO ATAS
+        if (config.biaya_estafet !== undefined && config.biaya_estafet !== '') {
+            const estafetPrice = Number(config.biaya_estafet).toLocaleString('id-ID');
+            const infoEstafet = document.getElementById('infoBiayaEstafet');
+            if(infoEstafet) {
+                infoEstafet.innerText = `Biaya Estafet (Per Regu): Rp ${estafetPrice}`;
+                infoEstafet.classList.remove('hidden');
+            }
+        }
+
         if (config.min_diskon && config.biaya_diskon) {
             const diskonPrice = Number(config.biaya_diskon).toLocaleString('id-ID');
             document.getElementById('infoDiskon').innerText = `🔥 Diskon spesial: Ambil minimal ${config.min_diskon} nomor, harga per nomor jadi Rp ${diskonPrice}!`;
         }
 
         // =========================================================
-        // 1. FLOATING WHATSAPP BUTTON (DARI BRANKAS CONFIG)
+        // 1. FLOATING WHATSAPP BUTTON
         // =========================================================
         const btnToggleMenu = document.getElementById('btnToggleWAMenu');
         const waMenuOptions = document.getElementById('waMenuOptions');
         const btnWA1 = document.getElementById('btnWA_Admin1');
         const btnWA2 = document.getElementById('btnWA_Admin2');
-
         let hasWA = false;
 
         function formatWANumber(num) {
@@ -172,18 +158,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // =========================================================
-        // MANGGIL INFO PEMBAYARAN & QRIS KE KERANJANG BAWAH
+        // MANGGIL INFO PEMBAYARAN & QRIS 
         // =========================================================
         if (config.info_pembayaran || config.qris_url) {
             document.getElementById('boxInfoPembayaran').classList.remove('hidden');
-            
             if (config.info_pembayaran) {
                 document.getElementById('teksInfoPembayaran').innerText = config.info_pembayaran;
                 document.getElementById('teksInfoPembayaran').classList.remove('hidden');
             } else {
                 document.getElementById('teksInfoPembayaran').classList.add('hidden');
             }
-
             if (config.qris_url) {
                 document.getElementById('boxQris').classList.remove('hidden');
                 document.getElementById('boxQris').classList.add('flex'); 
@@ -195,40 +179,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 2. STATISTIK REAL DARI DATABASE
         // =========================================================
         try {
-            const { count: countPeserta, error: errPeserta } = await supabaseClient
-                .from('event_registrations')
-                .select('*', { count: 'exact', head: true })
-                .eq('event_id', currentEvent.id);
-                
-            if (!errPeserta) {
-                document.getElementById('statPesertaPublik').innerText = `${countPeserta || 0} Terdaftar`;
-            }
+            const { count: countPeserta } = await supabaseClient.from('event_registrations').select('*', { count: 'exact', head: true }).eq('event_id', currentEvent.id);
+            document.getElementById('statPesertaPublik').innerText = `${countPeserta || 0} Terdaftar`;
 
-            const { data: heatsData, error: errHeats } = await supabaseClient
-                .from('event_heats')
-                .select('event_number')
-                .eq('event_id', currentEvent.id);
-
-            let heatCount = (heatsData && !errHeats) ? heatsData.length : 0;
-            
+            const { data: heatsData } = await supabaseClient.from('event_heats').select('event_number').eq('event_id', currentEvent.id);
+            let heatCount = heatsData ? heatsData.length : 0;
             if (heatCount === 0 && countPeserta > 0) {
                 heatCount = Math.ceil((countPeserta * 2) / 8); 
                 document.getElementById('statHeatPublik').innerText = `${heatCount} Heat Est.`;
             } else {
                 document.getElementById('statHeatPublik').innerText = `${heatCount} Heat`;
             }
-        } catch (statsError) {
-            console.error("Gagal menarik data statistik:", statsError);
-        }
+        } catch (err) { console.error("Stats Error"); }
 
         // =========================================================
-        // RENDER KELOMPOK UMUR & GAYA
+        // RENDER KELOMPOK UMUR & GAYA INDIVIDU
         // =========================================================
         const kuList = eventData.config_ku || [];
         document.getElementById('inputTglLahir').addEventListener('change', (e) => {
             const tahunLahir = new Date(e.target.value).getFullYear();
             if (isNaN(tahunLahir)) return;
-            
             const matchedKU = kuList.find(ku => tahunLahir >= Number(ku.tahunMulai) && tahunLahir <= Number(ku.tahunAkhir));
             document.getElementById('inputAutoKU').value = matchedKU ? matchedKU.nama : "Di Luar Rentang KU";
         });
@@ -259,6 +229,32 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
+        // =========================================================
+        // RENDER DROPDOWN ESTAFET (KOSONGAN TIKET)
+        // =========================================================
+        const estafetList = eventData.config_estafet || [];
+        const selectEstafet = document.getElementById('inputNomorEstafet');
+        if (selectEstafet) {
+            selectEstafet.innerHTML = '<option value="">-- Pilih Kategori & Jarak Estafet --</option>';
+            estafetList.forEach(estafet => {
+                (estafet.list || []).forEach(item => {
+                    if(item.aktif) {
+                        selectEstafet.innerHTML += `<option value="${estafet.nama} ${item.jarak} (${item.jenis})">${estafet.nama} - ${item.jarak} ${item.jenis}</option>`;
+                    }
+                });
+            });
+        }
+
+        const selectKUEstafet = document.getElementById('inputKUEstafet');
+        if (selectKUEstafet) {
+            selectKUEstafet.innerHTML = '<option value="">-- Tentukan KU Regu --</option>';
+            kuList.forEach(ku => {
+                if(ku.aktif) {
+                    selectKUEstafet.innerHTML += `<option value="${ku.nama}">${ku.nama} (${ku.tahunMulai}-${ku.tahunAkhir})</option>`;
+                }
+            });
+        }
+
         loadTagihan();
 
     } catch (err) {
@@ -287,28 +283,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (authError) throw authError;
 
             const userId = authData.user.id;
-            const { data: clubData, error: clubErr } = await supabaseClient
-                .from('clubs')
-                .select('*')
-                .eq('owner_id', userId)
-                .single();
-                
+            const { data: clubData, error: clubErr } = await supabaseClient.from('clubs').select('*').eq('owner_id', userId).single();
             if (clubErr) throw new Error("Data profil klub tidak ditemukan untuk akun ini.");
             
             isKlubLoggedIn = true;
             loggedInClubData = clubData;
 
-            const { data: athletes, error: athErr } = await supabaseClient
-                .from('athletes')
-                .select('*')
-                .eq('club_id', clubData.id)
-                .order('full_name', { ascending: true });
-                
+            const { data: athletes, error: athErr } = await supabaseClient.from('athletes').select('*').eq('club_id', clubData.id).order('full_name', { ascending: true });
             if (athErr) throw athErr;
 
             document.getElementById('areaLogin').classList.add('hidden'); 
             document.getElementById('areaGuestOnly').classList.add('hidden'); 
             document.getElementById('areaAkta').classList.add('hidden');
+            
+            // MUNCULIN FORM ESTAFET KARENA SUDAH LOGIN VVIP
+            const areaEstafet = document.getElementById('areaEstafetVVIP');
+            if(areaEstafet) areaEstafet.classList.remove('hidden');
             
             const namaKlub = clubData.club_name || clubData.nama_klub || "Klub Terdaftar SCS";
             const avatarUrl = clubData.logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(namaKlub)}&background=1e3a8a&color=fff`;
@@ -349,7 +339,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('dropdownAtlet').addEventListener('change', (e) => {
         document.querySelectorAll('input[name="nomor_lomba"]:checked').forEach(cb => cb.checked = false);
-
         const opt = e.target.options[e.target.selectedIndex];
         const inputTgl = document.getElementById('inputTglLahir');
         const inputGender = document.getElementById('inputGender');
@@ -363,11 +352,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             inputGender.classList.add('bg-slate-200', 'pointer-events-none');
 
             const aktaUrl = opt.getAttribute('data-akta');
-            if (!aktaUrl || aktaUrl === 'null' || aktaUrl.trim() === '') { 
-                areaAkta.classList.remove('hidden'); 
-            } else { 
-                areaAkta.classList.add('hidden'); 
-            }
+            if (!aktaUrl || aktaUrl === 'null' || aktaUrl.trim() === '') areaAkta.classList.remove('hidden'); 
+            else areaAkta.classList.add('hidden'); 
             
             inputTgl.dispatchEvent(new Event('change'));
         } else {
@@ -376,7 +362,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // ==========================================
-    // LOGIKA PENDAFTARAN & KERANJANG LOKAL
+    // LOGIKA PENDAFTARAN INDIVIDU
     // ==========================================
     document.getElementById('btnKirimPendaftaran').addEventListener('click', async () => {
         const btn = document.getElementById('btnKirimPendaftaran');
@@ -393,20 +379,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (isKlubLoggedIn) {
             if(dropdownAtlet.value === "") return alert("Pilih peserta terlebih dahulu!");
-            
             f1_id = dropdownAtlet.value;
             nama_peserta = dropdownAtlet.options[dropdownAtlet.selectedIndex].getAttribute('data-name');
             klub_asal = loggedInClubData.club_name || loggedInClubData.nama_klub;
             nomor_wa_pic = loggedInClubData.contact_wa || "Belum Diatur di Profil Klub";
-            
-            if (!document.getElementById('areaAkta').classList.contains('hidden')) {
-                requiresAktaUpload = true;
-            }
+            if (!document.getElementById('areaAkta').classList.contains('hidden')) requiresAktaUpload = true;
         } else {
             if(!inputKlubManual) return alert("Nama Klub/Sekolah wajib diisi!");
             if(!inputWhatsapp) return alert("Nomor WhatsApp wajib diisi agar panitia bisa menghubungi Anda!");
             if(!inputManualName) return alert("Nama Peserta wajib diisi!");
-            
             klub_asal = inputKlubManual; 
             nomor_wa_pic = inputWhatsapp; 
             nama_peserta = inputManualName; 
@@ -425,27 +406,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         if(selectedNomor.length === 0) return alert("Pilih minimal 1 nomor lomba!");
 
         const fileAkta = document.getElementById('inputAkta').files[0];
-        if (requiresAktaUpload && !fileAkta) {
-            return alert("Anda wajib mengunggah foto Akta Kelahiran!");
-        }
+        if (requiresAktaUpload && !fileAkta) return alert("Anda wajib mengunggah foto Akta Kelahiran!");
 
         btn.innerHTML = "Mengecek Data... ⏳"; 
         btn.disabled = true;
 
         try {
-            // ==========================================
-            // LOGIKA CEK NOMOR GANDA (BENTROK)
-            // ==========================================
-            let checkQuery = supabaseClient
-                .from('event_registrations')
-                .select('nomor_lomba')
-                .eq('event_id', currentEvent.id);
-
-            if (isKlubLoggedIn && f1_id) {
-                checkQuery = checkQuery.eq('f1_id', f1_id);
-            } else {
-                checkQuery = checkQuery.eq('nama_peserta', nama_peserta).eq('tanggal_lahir', tanggal_lahir);
-            }
+            let checkQuery = supabaseClient.from('event_registrations').select('nomor_lomba').eq('event_id', currentEvent.id);
+            if (isKlubLoggedIn && f1_id) checkQuery = checkQuery.eq('f1_id', f1_id);
+            else checkQuery = checkQuery.eq('nama_peserta', nama_peserta).eq('tanggal_lahir', tanggal_lahir);
 
             const { data: existingRegs, error: errCheck } = await checkQuery;
             if (errCheck) throw errCheck;
@@ -453,20 +422,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             let nomorSudahAda = [];
             if (existingRegs && existingRegs.length > 0) {
                 existingRegs.forEach(reg => {
-                    if (Array.isArray(reg.nomor_lomba)) {
-                        nomorSudahAda.push(...reg.nomor_lomba);
-                    }
+                    if (Array.isArray(reg.nomor_lomba)) nomorSudahAda.push(...reg.nomor_lomba);
                 });
             }
 
             let nomorBentrok = selectedNomor.filter(n => nomorSudahAda.includes(n));
-
             if (nomorBentrok.length > 0) {
-                btn.innerHTML = "Daftar, Bayar di Antrian";
+                btn.innerHTML = "Daftar Individu, Masuk Antrian";
                 btn.disabled = false;
                 return alert(`❌ GAGAL! Atlet ini sudah pernah didaftarkan di nomor:\n\n${nomorBentrok.join(', ')}\n\nSilakan hilangkan centang pada nomor tersebut jika ingin menambah nomor gaya baru.`);
             }
-            // ==========================================
 
             const config = currentEvent.config || {};
             let totalBiaya = selectedNomor.length >= Number(config.min_diskon || 999) 
@@ -476,20 +441,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.innerHTML = "Menambahkan... ⏳"; 
 
             let finalAktaUrl = null;
-            
             if (requiresAktaUpload && fileAkta) {
                 const fileExt = fileAkta.name.split('.').pop();
                 const fileName = `akta_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-                
                 const { error: uploadError } = await supabaseClient.storage.from('verifikasi-akta').upload(fileName, fileAkta);
                 if (uploadError) throw uploadError;
-                
                 const { data: urlData } = supabaseClient.storage.from('verifikasi-akta').getPublicUrl(fileName);
                 finalAktaUrl = urlData.publicUrl;
-                
-                if (isKlubLoggedIn && f1_id) {
-                    await supabaseClient.from('athletes').update({ akta_url: finalAktaUrl }).eq('f1_id', f1_id);
-                }
+                if (isKlubLoggedIn && f1_id) await supabaseClient.from('athletes').update({ akta_url: finalAktaUrl }).eq('f1_id', f1_id);
             } else if (isKlubLoggedIn) {
                 finalAktaUrl = dropdownAtlet.options[dropdownAtlet.selectedIndex].getAttribute('data-akta');
             }
@@ -519,7 +478,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             resetFormAtlet();
             checkboxesNomor.forEach(cb => cb.checked = false);
-            alert("✅ Berhasil dimasukkan ke Daftar Tagihan di bawah!");
+            alert("✅ Individu berhasil dimasukkan ke Daftar Tagihan!");
             
             const { count } = await supabaseClient.from('event_registrations').select('*', { count: 'exact', head: true }).eq('event_id', currentEvent.id);
             document.getElementById('statPesertaPublik').innerText = `${count || 0} Terdaftar`;
@@ -529,10 +488,66 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (err) {
             alert("Terjadi kesalahan sistem: " + err.message);
         } finally {
-            btn.innerHTML = "Daftar, Bayar di Antrian"; 
+            btn.innerHTML = "Daftar Individu, Masuk Antrian"; 
             btn.disabled = false;
         }
     });
+
+    // ==========================================
+    // LOGIKA PENDAFTARAN ESTAFET (TIKET SLOT)
+    // ==========================================
+    const btnEstafet = document.getElementById('btnKirimEstafet');
+    if(btnEstafet) {
+        btnEstafet.addEventListener('click', async () => {
+            const valNomor = document.getElementById('inputNomorEstafet').value;
+            const valKU = document.getElementById('inputKUEstafet').value;
+            
+            if(!valNomor || !valKU) return alert("Pilih Kategori Estafet dan Kelompok Umur Tim terlebih dahulu!");
+            
+            btnEstafet.innerHTML = "Memesan Slot... ⏳";
+            btnEstafet.disabled = true;
+            
+            try {
+                const klubName = loggedInClubData.club_name || loggedInClubData.nama_klub;
+                const nomorWaPic = loggedInClubData.contact_wa || "Belum Diatur";
+                const config = currentEvent.config || {};
+                const biayaEstafet = Number(config.biaya_estafet || 0);
+                
+                // Namain pesertanya jadi "TIM ESTAFET NAMA KLUB"
+                const namaTim = `TIM ESTAFET ${klubName.toUpperCase()}`;
+                
+                const { error: insertError } = await supabaseClient.from('event_registrations').insert([{
+                    event_id: currentEvent.id, 
+                    f1_id: 'ESTAFET-VVIP', // Sengaja dikasih tag ini biar di admin dapet centang ijo verifikasi
+                    klub_asal: klubName, 
+                    nama_peserta: namaTim,
+                    tanggal_lahir: new Date().toISOString().split('T')[0], // Syarat database tgl lahir diisi
+                    gender: 'Regu/Tim', 
+                    kelompok_umur: valKU,
+                    nomor_lomba: [valNomor], 
+                    akta_url: null, 
+                    total_biaya: biayaEstafet, 
+                    status_pembayaran: 'Belum Bayar', 
+                    whatsapp_tamu: nomorWaPic
+                }]);
+
+                if (insertError) throw insertError;
+                
+                alert("✅ Tiket Slot Estafet berhasil dimasukkan ke Daftar Tagihan di bawah!");
+                
+                document.getElementById('inputNomorEstafet').value = "";
+                document.getElementById('inputKUEstafet').value = "";
+                
+                loadTagihan();
+
+            } catch (err) {
+                alert("Gagal memesan estafet: " + err.message);
+            } finally {
+                btnEstafet.innerHTML = "Pesan Slot Estafet";
+                btnEstafet.disabled = false;
+            }
+        });
+    }
 
     function resetFormAtlet() {
         document.getElementById('inputCariAtlet').value = "";
@@ -541,10 +556,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('inputGender').value = "";
         document.getElementById('inputAkta').value = "";
         document.getElementById('areaAkta').classList.add('hidden'); 
-        
-        if(isKlubLoggedIn) {
-            document.getElementById('dropdownAtlet').value = "";
-        }
+        if(isKlubLoggedIn) document.getElementById('dropdownAtlet').value = "";
         
         if(!isKlubLoggedIn) {
             document.getElementById('inputTglLahir').readOnly = false;
@@ -552,7 +564,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('inputGender').classList.remove('bg-slate-200', 'pointer-events-none');
             document.getElementById('areaAkta').classList.remove('hidden'); 
         }
-        
         document.querySelectorAll('input[name="nomor_lomba"]:checked').forEach(cb => cb.checked = false);
     }
 
@@ -562,11 +573,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function loadTagihan() {
         if (!currentEvent) return;
 
-        let query = supabaseClient
-            .from('event_registrations')
-            .select('*')
-            .eq('event_id', currentEvent.id)
-            .order('created_at', { ascending: false }); 
+        let query = supabaseClient.from('event_registrations').select('*').eq('event_id', currentEvent.id).order('created_at', { ascending: false }); 
         
         if (isKlubLoggedIn) {
             const namaKlub = loggedInClubData.club_name || loggedInClubData.nama_klub;
@@ -622,11 +629,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (isBelumBayar) {
                 checkboxHtml = `<input type="checkbox" value="${item.id}" class="chk-tagihan w-4 h-4 rounded text-blue-600 cursor-pointer">`;
-                aksiHtml = `
-                    <button data-id="${item.id}" class="btn-hapus-tagihan text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded text-[10px] font-bold transition flex items-center gap-1">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        Hapus
-                    </button>`;
+                aksiHtml = `<button data-id="${item.id}" class="btn-hapus-tagihan text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded text-[10px] font-bold transition flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>Hapus</button>`;
             } else if (isLunas) {
                 checkboxHtml = `<div class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-[10px]">✓</div>`;
                 statusBadge = `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[9px] font-extrabold ml-2 uppercase tracking-wider">LUNAS</span>`;
@@ -635,23 +638,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                 statusBadge = `<span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-[9px] font-extrabold ml-2 uppercase tracking-wider">PROSES</span>`;
             }
 
+            // Tanda visual kalau ini tiket Estafet
+            let badgeTipe = item.gender === 'Regu/Tim' ? `<span class="bg-purple-100 text-purple-800 text-[9px] font-bold px-1.5 py-0.5 rounded mr-1">REGU</span>` : '';
+
             tr.innerHTML = `
-                <td class="p-3 text-center align-top pt-4 flex justify-center mt-1">
-                    ${checkboxHtml}
-                </td>
+                <td class="p-3 text-center align-top pt-4 flex justify-center mt-1">${checkboxHtml}</td>
                 <td class="p-3 align-top pt-4">
                     <p class="font-bold text-slate-700 text-xs flex items-center">${item.nama_peserta} ${statusBadge}</p>
-                    <p class="text-[10px] text-slate-400 mt-0.5">${item.klub_asal}</p>
+                    <p class="text-[10px] text-slate-400 mt-0.5">${item.klub_asal} • ${item.kelompok_umur}</p>
                 </td>
                 <td class="p-3 align-top pt-4 max-w-[150px]">
-                    <span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-1 rounded inline-block mb-1.5">${arrayNomor.length} Nomor</span>
+                    <div class="mb-1.5">${badgeTipe}<span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-1 rounded inline-block">${arrayNomor.length} Nomor</span></div>
                     <p class="text-[9px] text-slate-500 leading-relaxed font-medium break-words">${listNomor}</p>
                 </td>
                 <td class="p-3 text-right font-bold text-slate-700 text-xs align-top pt-4">
                     Rp ${Number(item.total_biaya).toLocaleString('id-ID')}
-                    <div class="mt-2 flex justify-end">
-                        ${aksiHtml}
-                    </div>
+                    <div class="mt-2 flex justify-end">${aksiHtml}</div>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -682,7 +684,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.querySelectorAll('.btn-hapus-tagihan').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const id = e.currentTarget.getAttribute('data-id');
-                if(!confirm("Yakin ingin menghapus peserta ini dari antrian keranjang?")) return;
+                if(!confirm("Yakin ingin menghapus antrian ini dari keranjang?")) return;
                 
                 const tr = e.currentTarget.closest('tr');
                 tr.style.opacity = '0.4';
@@ -697,7 +699,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         guestIds = guestIds.filter(gId => gId !== id);
                         localStorage.setItem(`scs_guest_${currentEvent.id}`, JSON.stringify(guestIds));
                     }
-
                     loadTagihan(); 
                     
                     const { count } = await supabaseClient.from('event_registrations').select('*', { count: 'exact', head: true }).eq('event_id', currentEvent.id);
@@ -715,9 +716,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function kalkulasiTotalBayar() {
         let total = 0;
         dataTagihan.forEach(item => {
-            if (selectedTagihanIds.has(item.id)) {
-                total += Number(item.total_biaya);
-            }
+            if (selectedTagihanIds.has(item.id)) total += Number(item.total_biaya);
         });
         document.getElementById('teksTotalTagihan').innerText = `Rp ${total.toLocaleString('id-ID')}`;
         
@@ -737,13 +736,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btnKonfirmasiBayar').addEventListener('click', async () => {
         let total = 0;
         dataTagihan.forEach(item => {
-            if (selectedTagihanIds.has(item.id)) {
-                total += Number(item.total_biaya);
-            }
+            if (selectedTagihanIds.has(item.id)) total += Number(item.total_biaya);
         });
 
         const fileStruk = document.getElementById('inputBuktiTransfer').files[0];
-        
         if (total > 0 && !fileStruk) return alert("Wajib mengunggah foto Bukti Transfer!");
 
         const btn = document.getElementById('btnKonfirmasiBayar');
@@ -758,30 +754,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 statusBayar = 'Menunggu Konfirmasi';
                 const fileExt = fileStruk.name.split('.').pop();
                 const fileName = `struk_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-                
                 const { error: uploadError } = await supabaseClient.storage.from('bukti-transfer').upload(fileName, fileStruk);
                 if (uploadError) throw uploadError;
-                
                 const { data: urlData } = supabaseClient.storage.from('bukti-transfer').getPublicUrl(fileName);
                 strukUrl = urlData.publicUrl;
             }
 
             const listIds = Array.from(selectedTagihanIds);
-            const { error: updateError } = await supabaseClient
-                .from('event_registrations')
-                .update({ 
-                    status_pembayaran: statusBayar, 
-                    bukti_transfer_url: strukUrl 
-                })
-                .in('id', listIds);
-
+            const { error: updateError } = await supabaseClient.from('event_registrations').update({ status_pembayaran: statusBayar, bukti_transfer_url: strukUrl }).in('id', listIds);
             if (updateError) throw updateError;
 
-            if (total === 0) {
-                alert("✅ Pendaftaran berhasil! Status peserta langsung Lunas (Gratis).");
-            } else {
-                alert("✅ Pembayaran berhasil dikirim! Silakan tunggu konfirmasi panitia.");
-            }
+            if (total === 0) alert("✅ Pendaftaran berhasil! Status langsung Lunas (Gratis).");
+            else alert("✅ Pembayaran berhasil dikirim! Silakan tunggu konfirmasi panitia.");
             
             document.getElementById('inputBuktiTransfer').value = "";
             loadTagihan(); 
