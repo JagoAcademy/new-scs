@@ -28,6 +28,49 @@ document.addEventListener('DOMContentLoaded', async () => {
         const config = eventData.config || {};
         document.getElementById('pageTitle').innerText = `${eventData.event_name} | Pendaftaran Resmi`;
         document.getElementById('publicEventName').innerText = eventData.event_name;
+        // =========================================================
+        // CEK STATUS PENDAFTARAN (IS_CLOSED)
+        // =========================================================
+        if (eventData.is_closed) {
+            // Sembunyikan form dan kotak info biaya
+            const formPeserta = document.querySelector('.bg-white\\/95.backdrop-blur-md');
+            const boxBiaya = document.querySelector('.bg-blue-900.border.border-blue-800');
+            
+            if (formPeserta) formPeserta.classList.add('hidden');
+            if (boxBiaya) boxBiaya.classList.add('hidden');
+
+            // Format WA Admin dari Config
+            let waLink = "#";
+            if (config.admin_wa_1 || config.admin_wa_2) {
+                let nomorTarget = config.admin_wa_1 || config.admin_wa_2;
+                let cleanNum = nomorTarget.replace(/\D/g, '');
+                if (cleanNum.startsWith('0')) cleanNum = '62' + cleanNum.substring(1);
+                waLink = `https://wa.me/${cleanNum}?text=Halo%20Admin%20${encodeURIComponent(eventData.event_name)},%20apakah%20pendaftaran%20masih%20bisa%20dibuka%20untuk%20susulan?`;
+            }
+
+            // Buat Alert Box Tutup
+            const alertHtml = `
+                <div class="bg-red-50 border-2 border-red-200 rounded-3xl p-8 text-center shadow-lg mt-10">
+                    <div class="w-20 h-20 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 border-4 border-white shadow-sm">
+                        ⛔
+                    </div>
+                    <h2 class="text-2xl font-black text-red-700 mb-2 tracking-tight">Pendaftaran Telah Ditutup</h2>
+                    <p class="text-slate-600 font-medium mb-6 leading-relaxed max-w-md mx-auto">
+                        Mohon maaf, pendaftaran untuk event <strong>${eventData.event_name}</strong> sudah ditutup oleh panitia. Silakan hubungi admin jika ada keperluan mendesak.
+                    </p>
+                    <a href="${waLink}" target="_blank" class="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-xl transition-all hover:scale-105 shadow-md">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                        Hubungi Panitia (WA)
+                    </a>
+                </div>
+            `;
+            
+            // Suntik ke dalam HTML
+            const mainContainer = document.querySelector('.max-w-2xl.mx-auto.px-4.mt-6');
+            if(mainContainer) {
+                mainContainer.insertAdjacentHTML('afterbegin', alertHtml);
+            }
+        }
 
         // =========================================================
         // 📅 INJEK TANGGAL LOMBA

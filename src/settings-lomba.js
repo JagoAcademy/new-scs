@@ -16,8 +16,11 @@ let configForm = {
     admin_wa_2: '', 
     info_pembayaran: '',
     qris_url: '',
-    nama_kolam: '' // <-- INIT NAMA KOLAM BARU
+    nama_kolam: '' 
 };
+
+// State Status Event
+let isEventClosed = false;
 
 async function loadDataLomba() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -32,7 +35,7 @@ async function loadDataLomba() {
     try {
         const { data, error } = await supabaseClient
             .from('events')
-            .select('config_ku, config_gaya, config_estafet, config')
+            .select('config_ku, config_gaya, config_estafet, config, is_closed')
             .eq('id', currentEventId)
             .single();
 
@@ -53,7 +56,10 @@ async function loadDataLomba() {
         configForm.admin_wa_2 = eventConfig.admin_wa_2 || ''; 
         configForm.info_pembayaran = eventConfig.info_pembayaran || ''; 
         configForm.qris_url = eventConfig.qris_url || ''; 
-        configForm.nama_kolam = eventConfig.nama_kolam || ''; // <-- LOAD NAMA KOLAM BARU
+        configForm.nama_kolam = eventConfig.nama_kolam || ''; 
+
+        // Set status event
+        isEventClosed = data?.is_closed || false;
 
         // Default Data jika kosong
         if (dataKU.length === 0) dataKU = [{ id: 1, nama: 'KU A', tahunMulai: 2011, tahunAkhir: 2012, aktif: true }];
@@ -81,7 +87,6 @@ function renderFormConfig() {
     if (document.getElementById('inputAdminWA2')) document.getElementById('inputAdminWA2').value = configForm.admin_wa_2;
     if (document.getElementById('inputInfoPembayaran')) document.getElementById('inputInfoPembayaran').value = configForm.info_pembayaran; 
     
-    // RENDER NAMA KOLAM BARU
     if (document.getElementById('inputNamaKolam')) document.getElementById('inputNamaKolam').value = configForm.nama_kolam;
 
     if (configForm.header_url) {
@@ -95,6 +100,66 @@ function renderFormConfig() {
     if (configForm.qris_url) {
         const imgQ = document.getElementById('previewQris');
         if (imgQ) { imgQ.src = configForm.qris_url; imgQ.classList.remove('hidden'); }
+    }
+
+    // ==========================================
+    // RENDER STATUS TOGGLE PENDAFTARAN
+    // ==========================================
+    const toggleInput = document.getElementById('toggleStatusEvent');
+    const labelStatus = document.getElementById('labelStatusEvent');
+    
+    if (toggleInput && labelStatus) {
+        toggleInput.checked = !isEventClosed; // Kalau false (buka), brarti checked
+        
+        if (isEventClosed) {
+            labelStatus.innerText = "PENDAFTARAN DITUTUP";
+            labelStatus.className = "text-xs font-black text-red-600 bg-red-100 px-2.5 py-1 rounded-md uppercase tracking-widest";
+        } else {
+            labelStatus.innerText = "PENDAFTARAN DIBUKA";
+            labelStatus.className = "text-xs font-black text-emerald-600 bg-emerald-100 px-2.5 py-1 rounded-md uppercase tracking-widest";
+        }
+        
+        toggleInput.addEventListener('change', async (e) => {
+            const willBeClosed = !e.target.checked;
+            
+            if (willBeClosed) {
+                if(!confirm("Yakin ingin MENUTUP pendaftaran lomba ini? Halaman publik tidak akan bisa menerima peserta baru.")) {
+                    e.target.checked = true; // Batal, balikin toggle
+                    return;
+                }
+            } else {
+                if(!confirm("Yakin ingin MEMBUKA kembali pendaftaran lomba ini?")) {
+                    e.target.checked = false; // Batal, balikin toggle
+                    return;
+                }
+            }
+            
+            toggleInput.disabled = true;
+            try {
+                const { error } = await supabaseClient
+                    .from('events')
+                    .update({ is_closed: willBeClosed })
+                    .eq('id', currentEventId);
+                    
+                if (error) throw error;
+                
+                isEventClosed = willBeClosed;
+                if (isEventClosed) {
+                    labelStatus.innerText = "PENDAFTARAN DITUTUP";
+                    labelStatus.className = "text-xs font-black text-red-600 bg-red-100 px-2.5 py-1 rounded-md uppercase tracking-widest";
+                    alert("Pendaftaran resmi DITUTUP.");
+                } else {
+                    labelStatus.innerText = "PENDAFTARAN DIBUKA";
+                    labelStatus.className = "text-xs font-black text-emerald-600 bg-emerald-100 px-2.5 py-1 rounded-md uppercase tracking-widest";
+                    alert("Pendaftaran resmi DIBUKA.");
+                }
+            } catch(err) {
+                alert("Gagal mengubah status: " + err.message);
+                e.target.checked = !willBeClosed; // Balikin toggle kalau error
+            } finally {
+                toggleInput.disabled = false;
+            }
+        });
     }
 }
 
