@@ -75,19 +75,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (today > endDate) {
                 // Selesai
                 badgeHTML = `<div class="absolute top-4 left-4 bg-gray-600 text-white text-[10px] font-extrabold px-3 py-1.5 rounded-lg shadow-sm">SELESAI</div>`;
-                btnHTML = `<a href="https://${ev.subdomain}.funswimming.my.id/result?id=${ev.id}" class="block text-center w-full border-2 border-slate-200 text-slate-600 font-bold py-2.5 rounded-xl hover:bg-slate-50 transition">Lihat Hasil Akhir</a>`;
+                btnHTML = `<a href="https://${ev.subdomain}.f1swimming.com/result?id=${ev.id}" class="block text-center w-full border-2 border-slate-200 text-slate-600 font-bold py-2.5 rounded-xl hover:bg-slate-50 transition">Lihat Hasil Akhir</a>`;
                 filterClass = 'selesai';
             } else if (today >= startDate && today <= endDate) {
                 // Sedang Berjalan (LIVE)
                 badgeHTML = `<div class="absolute top-4 left-4 bg-red-500 text-white text-[10px] font-extrabold px-3 py-1.5 rounded-lg shadow-sm flex items-center gap-1.5">
                         <span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span> LIVE RESULT
                     </div>`;
-                btnHTML = `<a href="https://${ev.subdomain}.funswimming.my.id/result?id=${ev.id}" class="block text-center w-full bg-red-50 text-red-700 font-bold py-2.5 rounded-xl hover:bg-red-100 transition">Pantau Hasil Pertandingan</a>`;
+                btnHTML = `<a href="https://${ev.subdomain}.f1swimming.com/result?id=${ev.id}" class="block text-center w-full bg-red-50 text-red-700 font-bold py-2.5 rounded-xl hover:bg-red-100 transition">Pantau Hasil Pertandingan</a>`;
                 filterClass = 'live';
             } else {
                 // Masih Buka (Pendaftaran)
                 badgeHTML = `<div class="absolute top-4 left-4 bg-green-500 text-white text-[10px] font-extrabold px-3 py-1.5 rounded-lg shadow-sm">PENDAFTARAN DIBUKA</div>`;
-                btnHTML = `<a href="https://${ev.subdomain}.funswimming.my.id?id=${ev.id}" class="block text-center w-full bg-blue-50 text-blue-700 font-bold py-2.5 rounded-xl hover:bg-blue-100 transition">Lihat Detail & Daftar</a>`;
+                btnHTML = `<a href="https://${ev.subdomain}.f1swimming.com?id=${ev.id}" class="block text-center w-full bg-blue-50 text-blue-700 font-bold py-2.5 rounded-xl hover:bg-blue-100 transition">Lihat Detail & Daftar</a>`;
                 filterClass = 'buka'; // Supaya tetap masuk di logic awal
             }
 
