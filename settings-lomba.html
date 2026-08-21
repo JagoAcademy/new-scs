@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#1e3a8a">
-    <link rel="apple-touch-icon" href="/images/logo.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings Lomba | SCS</title>
+    <title>Settings Lomba | SCS Command Center</title>
     <link rel="stylesheet" href="/src/style.css">
     <style>
         svg { max-width: 100%; height: auto; display: block; }
@@ -17,9 +14,9 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen font-sans text-slate-800 pb-24">
+<body class="bg-slate-50 min-h-screen font-sans text-slate-800 pb-28">
 
-    <!-- Top Navigation -->
+    <!-- TOP NAVIGATION -->
     <nav class="bg-slate-900 text-white shadow-md px-4 md:px-6 py-3 flex justify-between items-center sticky top-0 z-50">
         <a href="/event-dashboard.html" class="flex items-center gap-2 text-slate-300 hover:text-white transition text-sm font-medium">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
@@ -28,7 +25,7 @@
         <div class="text-[10px] md:text-xs font-bold tracking-widest text-slate-400 uppercase">Settings Lomba</div>
     </nav>
 
-    <!-- Main Content Container -->
+    <!-- MAIN CONTAINER -->
     <div class="max-w-4xl mx-auto px-4 sm:px-6 pt-6">
         
         <div class="mb-6">
@@ -36,16 +33,16 @@
             <p class="text-slate-500 text-sm mt-1">Atur Kelompok Umur (KU), Nomor Lomba, Estafet, dan Desain Form Publik.</p>
         </div>
 
-              <!-- SECTION 0: MASTER SWITCH PENDAFTARAN -->
+        <!-- SECTION 0: SAKLAR STATUS PENDAFTARAN -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 md:p-7 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-l-4 border-l-blue-500">
             <div>
                 <h2 class="font-bold text-slate-800 text-lg">Status Pendaftaran Event</h2>
-                <p class="text-xs text-slate-500 mt-1">Gunakan saklar ini untuk membuka atau menutup halaman form publik.</p>
+                <p class="text-xs text-slate-500 mt-1">Gunakan saklar ini untuk membuka atau menutup halaman form pendaftaran publik.</p>
             </div>
             <div class="flex items-center gap-3 bg-slate-50 p-2 md:p-3 rounded-xl border border-slate-100">
                 <span id="labelStatusEvent" class="text-xs font-black text-slate-400 bg-slate-200 px-2.5 py-1 rounded-md uppercase tracking-widest">MEMUAT...</span>
                 <label class="relative inline-flex items-center cursor-pointer shrink-0">
-                    <input type="checkbox" id="toggleStatusEvent" class="sr-only peer" disabled>
+                    <input type="checkbox" id="toggleStatusEvent" class="sr-only peer">
                     <div class="w-11 h-6 bg-red-500 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                 </label>
             </div>
@@ -97,7 +94,7 @@
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 md:p-7 mb-6">
             <div class="mb-5 border-b border-slate-100 pb-4">
                 <h2 class="font-bold text-slate-800 text-lg">Desain Form & Informasi Pendaftaran</h2>
-                <p class="text-xs text-slate-500">Atur tampilan halaman, harga diskon, dan info rekening tujuan.</p>
+                <p class="text-xs text-slate-500">Atur tampilan halaman, harga normal, harga estafet, diskon, dan rekening.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -123,7 +120,7 @@
                         <div class="flex justify-between items-end mb-1">
                             <label class="block text-sm font-bold text-slate-700">Background Pattern</label>
                         </div>
-                        <p class="text-[10px] text-slate-500 mb-2">Opsional. Gunakan gambar *seamless* transparan.</p>
+                        <p class="text-[10px] text-slate-500 mb-2">Opsional. Gunakan gambar pola transparan.</p>
                         
                         <input type="file" id="inputBg" accept="image/*" class="w-full text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 mb-3 cursor-pointer transition-colors">
                         
@@ -137,20 +134,33 @@
                 <!-- Kolom Pricing & Info Pembayaran -->
                 <div class="space-y-5">
                     
-                    <div class="bg-blue-50/50 p-3 rounded-xl border border-blue-100">
-                        <label class="block text-sm font-bold text-blue-900 mb-1">Biaya Per Nomor (Normal)</label>
-                        <p class="text-[10px] text-blue-700 mb-3 leading-relaxed">
-                            💡 <strong>TIPS:</strong> Jika diisi <strong class="text-red-600 bg-red-100 px-1 rounded">0</strong>, pendaftaran digratiskan dan daftar peserta dapat diisi manual oleh panitia.
-                        </p>
-                        <div class="flex items-center border border-slate-300 rounded-xl overflow-hidden focus-within:ring-2 ring-blue-500 bg-white">
-                            <span class="px-4 py-2.5 bg-slate-100 text-slate-500 font-bold border-r border-slate-300">Rp</span>
-                            <input type="number" id="inputBiayaNormal" class="w-full p-2.5 outline-none text-sm text-slate-700 font-bold" placeholder="Contoh: 40000 atau 0">
+                    <!-- KOTAK HARGA NORMAL & ESTAFET -->
+                    <div class="space-y-3">
+                        <div class="bg-blue-50/50 p-3 rounded-xl border border-blue-100">
+                            <label class="block text-sm font-bold text-blue-900 mb-1">Biaya Per Nomor Individu (Normal)</label>
+                            <p class="text-[10px] text-blue-700 mb-3 leading-relaxed">
+                                💡 <strong>TIPS:</strong> Jika diisi <strong class="text-red-600 bg-red-100 px-1 rounded">0</strong>, pendaftaran digratiskan.
+                            </p>
+                            <div class="flex items-center border border-slate-300 rounded-xl overflow-hidden focus-within:ring-2 ring-blue-500 bg-white">
+                                <span class="px-4 py-2.5 bg-slate-100 text-slate-500 font-bold border-r border-slate-300">Rp</span>
+                                <input type="number" id="inputBiayaNormal" class="w-full p-2.5 outline-none text-sm text-slate-700 font-bold" placeholder="Contoh: 40000 atau 0">
+                            </div>
+                        </div>
+
+                        <div class="bg-purple-50/50 p-3 rounded-xl border border-purple-100">
+                            <label class="block text-sm font-bold text-purple-900 mb-1">Biaya Estafet (Per Regu / Tim)</label>
+                            <p class="text-[10px] text-purple-700 mb-2 leading-relaxed">Biaya pendaftaran untuk 1 tim regu estafet (4 atlet).</p>
+                            <div class="flex items-center border border-slate-300 rounded-xl overflow-hidden focus-within:ring-2 ring-purple-500 bg-white">
+                                <span class="px-4 py-2.5 bg-slate-100 text-slate-500 font-bold border-r border-slate-300">Rp</span>
+                                <input type="number" id="inputBiayaEstafet" class="w-full p-2.5 outline-none text-sm text-slate-700 font-bold" placeholder="Contoh: 150000">
+                            </div>
                         </div>
                     </div>
 
+                    <!-- DISKON -->
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-700 mb-1">Syarat Diskon (Berapa Nomor)</label>
+                            <label class="block text-[11px] font-bold text-slate-700 mb-1">Syarat Diskon (Minimal Nomor)</label>
                             <input type="number" id="inputMinDiskon" class="w-full p-2.5 border border-slate-300 rounded-xl outline-none focus:ring-2 ring-blue-500 text-sm font-bold" placeholder="Contoh: 3">
                         </div>
                         <div>
@@ -174,19 +184,19 @@
                     <hr class="border-slate-100 mt-2 mb-2">
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1 flex items-center gap-2">
-                            <span>📞 Kontak Panitia (Floating WA)</span>
+                            <span>💬 Kontak Panitia (Floating WA)</span>
                             <span class="text-[9px] bg-green-100 text-green-600 px-1.5 py-0.5 rounded font-bold uppercase">Wajib</span>
                         </label>
-                        <p class="text-[10px] text-slate-500 mb-2">Akan muncul sebagai tombol melayang di halaman pendaftaran.</p>
+                        <p class="text-[10px] text-slate-500 mb-2">Akan muncul sebagai tombol bantuan di form pendaftaran.</p>
                         
                         <div class="space-y-3">
                             <div class="flex items-center gap-2">
                                 <span class="bg-slate-100 text-slate-500 font-bold px-3 py-2 rounded-lg text-xs">Admin 1</span>
-                                <input type="text" id="inputAdminWA1" class="w-full p-2 border border-slate-300 rounded-lg outline-none focus:ring-2 ring-green-500 text-sm" placeholder="Contoh: 08123456789">
+                                <input type="text" id="inputAdminWA1" class="w-full p-2 border border-slate-300 rounded-lg outline-none focus:ring-2 ring-green-500 text-sm font-mono" placeholder="Contoh: 08123456789">
                             </div>
                             <div class="flex items-center gap-2">
                                 <span class="bg-slate-100 text-slate-500 font-bold px-3 py-2 rounded-lg text-xs">Admin 2</span>
-                                <input type="text" id="inputAdminWA2" class="w-full p-2 border border-slate-300 rounded-lg outline-none focus:ring-2 ring-green-500 text-sm" placeholder="Contoh: 08987654321 (Opsional)">
+                                <input type="text" id="inputAdminWA2" class="w-full p-2 border border-slate-300 rounded-lg outline-none focus:ring-2 ring-green-500 text-sm font-mono" placeholder="Contoh: 08987654321 (Opsional)">
                             </div>
                         </div>
                     </div>
@@ -195,20 +205,20 @@
                     <hr class="border-slate-100 mt-2 mb-2">
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1 flex items-center gap-2">
-                            <span>💳 Info Pembayaran / Rekening</span>
+                            <span>💳 Info Rekening & Pembayaran</span>
                             <span class="text-[9px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold uppercase">Wajib</span>
                         </label>
-                        <p class="text-[10px] text-slate-500 mb-2">Info ini akan muncul di form publik saat tamu ingin transfer.</p>
-                        <textarea id="inputInfoPembayaran" rows="3" class="w-full p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 ring-blue-500 text-sm text-slate-700 placeholder-slate-400" placeholder="Contoh:&#10;BCA 1234567890 a.n Jago Renang"></textarea>
+                        <p class="text-[10px] text-slate-500 mb-2">Instruksi transfer yang muncul di keranjang peserta.</p>
+                        <textarea id="inputInfoPembayaran" rows="3" class="w-full p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 ring-blue-500 text-sm text-slate-700 placeholder-slate-400 leading-relaxed" placeholder="Contoh:&#10;BCA 1234567890 a.n Panitia Renang"></textarea>
                     </div>
 
                     <!-- UPLOAD QRIS -->
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-1 flex items-center gap-2">
-                            <span>📱 Upload Barcode QRIS</span>
+                            <span>📲 Upload Barcode QRIS</span>
                             <span class="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold uppercase">Opsional</span>
                         </label>
-                        <p class="text-[10px] text-slate-500 mb-2">Jika ada, mempermudah tamu membayar via e-wallet.</p>
+                        <p class="text-[10px] text-slate-500 mb-2">Scan instan untuk pembayaran e-wallet.</p>
                         
                         <input type="file" id="inputQris" accept="image/*" class="w-full text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 mb-3 cursor-pointer transition-colors">
                         
@@ -219,9 +229,12 @@
                     </div>
                 </div>
 
+            </div>
+        </div>
+
     </div>
 
-    <!-- Floating Save Button -->
+    <!-- FLOATING ACTION BUTTON -->
     <div class="fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-40">
         <div class="max-w-4xl mx-auto flex justify-end gap-3">
             <button onclick="window.history.back()" class="px-5 py-2.5 text-slate-600 font-bold text-sm rounded-xl hover:bg-slate-100 transition-colors">Batal</button>
@@ -231,7 +244,7 @@
         </div>
     </div>
 
-    <!-- SEMUA MODALS DI SINI -->
+    <!-- MODAL POPUPS -->
 
     <!-- Modal KU -->
     <div id="modalKU" class="fixed inset-0 bg-slate-900/40 z-[100] hidden items-center justify-center px-4 backdrop-blur-sm">
@@ -342,7 +355,7 @@
         </div>
     </div>
 
-    <!-- Panggil Logika JS -->
-    <script type="module" src="/src/settings-lomba.js?v=janda_pirang_124"></script>
+    <!-- MODULE ENTRYPOINT -->
+    <script type="module" src="/src/settings-lomba.js"></script>
 </body>
 </html>

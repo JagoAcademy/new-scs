@@ -5,11 +5,12 @@ let dataGaya = [];
 let dataEstafet = []; 
 let currentEventId = null;
 
-// State JSONB Config (Termasuk WA Admin & Nama Kolam)
+// State JSONB Config (Termasuk WA Admin, Nama Kolam, & Biaya Estafet)
 let configForm = {
     header_url: '',
     bg_url: '',
     biaya_normal: '',
+    biaya_estafet: '', // <-- DATA BIAYA ESTAFET BARU
     min_diskon: '',
     biaya_diskon: '',
     admin_wa_1: '', 
@@ -50,6 +51,7 @@ async function loadDataLomba() {
         configForm.header_url = eventConfig.header_url || '';
         configForm.bg_url = eventConfig.bg_url || '';
         configForm.biaya_normal = eventConfig.biaya_normal || '';
+        configForm.biaya_estafet = eventConfig.biaya_estafet || ''; // <-- LOAD ESTAFET
         configForm.min_diskon = eventConfig.min_diskon || '';
         configForm.biaya_diskon = eventConfig.biaya_diskon || '';
         configForm.admin_wa_1 = eventConfig.admin_wa_1 || ''; 
@@ -82,6 +84,9 @@ function renderFormConfig() {
     document.getElementById('inputMinDiskon').value = configForm.min_diskon;
     document.getElementById('inputBiayaDiskon').value = configForm.biaya_diskon;
     
+    // Tulis nilai estafet ke input HTML
+    if (document.getElementById('inputBiayaEstafet')) document.getElementById('inputBiayaEstafet').value = configForm.biaya_estafet;
+    
     // Tulis WA ke Input Box
     if (document.getElementById('inputAdminWA1')) document.getElementById('inputAdminWA1').value = configForm.admin_wa_1;
     if (document.getElementById('inputAdminWA2')) document.getElementById('inputAdminWA2').value = configForm.admin_wa_2;
@@ -110,6 +115,7 @@ function renderFormConfig() {
     
     if (toggleInput && labelStatus) {
         toggleInput.checked = !isEventClosed; // Kalau false (buka), brarti checked
+        toggleInput.disabled = false; // Buka gembok HTML setelah loading beres!
         
         if (isEventClosed) {
             labelStatus.innerText = "PENDAFTARAN DITUTUP";
@@ -413,6 +419,10 @@ window.simpanKeDatabase = async function() {
     btnSave.disabled = true;
 
     configForm.biaya_normal = document.getElementById('inputBiayaNormal').value;
+    
+    // AMBIL BIAYA ESTAFET SAAT DISIMPAN
+    if(document.getElementById('inputBiayaEstafet')) configForm.biaya_estafet = document.getElementById('inputBiayaEstafet').value;
+    
     configForm.min_diskon = document.getElementById('inputMinDiskon').value;
     configForm.biaya_diskon = document.getElementById('inputBiayaDiskon').value;
     
@@ -420,7 +430,7 @@ window.simpanKeDatabase = async function() {
     if (document.getElementById('inputAdminWA1')) configForm.admin_wa_1 = document.getElementById('inputAdminWA1').value;
     if (document.getElementById('inputAdminWA2')) configForm.admin_wa_2 = document.getElementById('inputAdminWA2').value;
     if (document.getElementById('inputInfoPembayaran')) configForm.info_pembayaran = document.getElementById('inputInfoPembayaran').value;
-    if (document.getElementById('inputNamaKolam')) configForm.nama_kolam = document.getElementById('inputNamaKolam').value; // <-- SAVE NAMA KOLAM BARU
+    if (document.getElementById('inputNamaKolam')) configForm.nama_kolam = document.getElementById('inputNamaKolam').value; 
 
     try {
         const { data: oldData } = await supabaseClient.from('events').select('config').eq('id', currentEventId).single();
