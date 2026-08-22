@@ -2,6 +2,7 @@ import { supabaseClient } from './supabase.js';
 
 let currentEventId = null;
 let masterSponsors = [];
+let eventSponsorsDeal = []; 
 let sponsorSubmissions = []; 
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -26,6 +27,10 @@ async function fetchSponsorData() {
         const { data: subs } = await supabaseClient.from('sponsor_submissions').select('*').eq('event_id', currentEventId);
         sponsorSubmissions = subs || [];
 
+        // Tarik data sponsor yang udah nempel (Disuntik Admin atau udah Deal)
+        const { data: deals } = await supabaseClient.from('event_sponsors').select('sponsor_ids').eq('event_id', currentEventId).single();
+        eventSponsorsDeal = deals ? (deals.sponsor_ids || []) : [];
+
         renderTable();
     } catch(err) {
         document.getElementById('sponsorTableBody').innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500 font-bold">Gagal memuat: ${err.message}</td></tr>`;
@@ -36,35 +41,60 @@ function renderTable() {
     const tbody = document.getElementById('sponsorTableBody');
     tbody.innerHTML = '';
 
-    if(masterSponsors.length === 0) return tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8">Kosong.</td></tr>';
+    if(masterSponsors.length === 0) return tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8">Bank Sponsor sedang kosong.</td></tr>';
 
     masterSponsors.forEach((sp, idx) => {
+        const isDeal = eventSponsorsDeal.includes(sp.id);
         const subData = sponsorSubmissions.find(s => s.sponsor_id === sp.id);
 
         let actionHtml = '';
-        if (!subData) {
-            actionHtml = `<button onclick="ajukanSponsor(${sp.id})" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-[11px] font-bold shadow-md">Ajukan Proposal</button>`;
+        
+        if (isDeal && !subData) {
+            // 1. ADMIN MAKSA SUNTIK LEWAT BELAKANG (Contoh: SCS & F1 ID)
+            actionHtml = `<span class="bg-blue-100 text-blue-700 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase shadow-sm border border-blue-200 flex items-center justify-center gap-1.5 w-full md:w-max"><span>🤝</span> OFFICIAL PARTNER</span>`;
+        
+        } else if (!subData) {
+            // 2. BELUM DIAJUKAN SAMA SEKALI
+            actionHtml = `<button onclick="ajukanSponsor(${sp.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-[11px] font-bold shadow-md w-full md:w-auto transition transform hover:-translate-y-0.5">Ajukan Proposal</button>`;
+        
         } else if (subData.status === 'Menunggu Review') {
-            actionHtml = `<span class="bg-slate-100 text-slate-500 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase shadow-sm">⏳ Sedang Direview Pusat</span>`;
+            // 3. LAGI ANTRI REVIEW ADMIN
+            actionHtml = `<span class="bg-slate-100 text-slate-500 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase shadow-sm border border-slate-200 flex items-center justify-center gap-1.5 w-full md:w-max"><span>⏳</span> Direview Pusat</span>`;
+        
         } else if (subData.status === 'Disetujui') {
-            // INI DIA E=mc2 NYA BRAY!
-            actionHtml = `<button onclick="bukaTindakanLanjutan('${subData.id}', '${subData.jenis_bantuan_deal}', '${sp.sponsor_name}')" class="bg-amber-400 text-amber-900 px-5 py-2.5 rounded-xl text-[11px] font-black shadow-md border border-amber-500 animate-pulse">🔔 TINDAKAN DIPERLUKAN</button>`;
+            // 4. E=mc2 ACTION TRIGGER (Tindakan Lanjutan Produk/Uang)
+            const safeName = encodeURIComponent(sp.sponsor_name);
+            actionHtml = `<button onclick="bukaTindakanLanjutan('${subData.id}', '${subData.jenis_bantuan_deal}', '${safeName}')" class="bg-amber-400 hover:bg-amber-500 text-amber-900 px-5 py-2.5 rounded-xl text-[11px] font-black shadow-md border border-amber-500 animate-pulse transition w-full md:w-auto">🔔 TINDAKAN DIPERLUKAN</button>`;
+        
         } else {
-            actionHtml = `<span class="bg-emerald-100 text-emerald-700 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase shadow-sm border border-emerald-200">🤝 DEAL SELESAI / DIPROSES</span>`;
+            // 5. STATUS KELAR (Barang Diproses / Menunggu Pencairan)
+            actionHtml = `<span class="bg-emerald-100 text-emerald-700 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase shadow-sm border border-emerald-200 flex items-center justify-center gap-1.5 w-full md:w-max"><span>✅</span> ${subData.status}</span>`;
         }
 
         const safeSyarat = encodeURIComponent(sp.syarat || 'Tidak ada syarat khusus.');
         const safeName = encodeURIComponent(sp.sponsor_name);
 
         tbody.innerHTML += `
-            <tr class="hover:bg-slate-50 border-b border-slate-100">
+            <tr class="hover:bg-slate-50 border-b border-slate-100 transition-colors">
                 <td class="p-4 text-center font-black text-slate-300 text-sm">${idx + 1}</td>
                 <td class="p-4 flex items-center gap-4">
                     <img src="${sp.logo_url}" class="w-10 h-10 object-contain">
-                    <h4 class="font-black text-slate-800 text-sm">${sp.sponsor_name}</h4>
+                    <div>
+                        <h4 class="font-black text-slate-800 text-sm">${sp.sponsor_name}</h4>
+                        <a href="${sp.link_url || '#'}" target="_blank" class="text-[10px] text-blue-500 hover:text-blue-700 font-mono font-bold uppercase mt-0.5 block">🔗 Kunjungi Web</a>
+                    </div>
                 </td>
-                <td class="p-4 text-center"><span class="bg-emerald-50 text-emerald-700 px-3 py-1 rounded text-[10px] font-bold border border-emerald-200">🎁 ${sp.jenis_bantuan || 'Support'}</span></td>
-                <td class="p-4 text-center"><button onclick="lihatSyarat('${safeName}', '${safeSyarat}')" class="text-blue-600 hover:underline text-[11px] font-bold">Baca</button></td>
+                <td class="p-4 text-center">
+                    <span class="inline-block bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg text-[10px] font-bold border border-emerald-200 whitespace-normal text-left max-w-[200px]">
+                        🎁 ${sp.jenis_bantuan || 'Support'}
+                    </span>
+                </td>
+                <td class="p-4 text-center">
+                    <button onclick="lihatSyarat('${safeName}', '${safeSyarat}')" class="text-blue-600 hover:text-blue-800 text-[11px] font-bold underline decoration-blue-300 underline-offset-4 flex items-center justify-center gap-1 mx-auto whitespace-nowrap">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Baca
+                    </button>
+                </td>
                 <td class="p-4 text-center align-middle">${actionHtml}</td>
             </tr>`;
     });
@@ -81,7 +111,7 @@ window.ajukanSponsor = async function(sponsorId) {
     try {
         const { error } = await supabaseClient.from('sponsor_submissions').insert([{ event_id: currentEventId, sponsor_id: sponsorId }]);
         if(error) throw error;
-        alert("✅ Proposal terkirim! Menunggu review.");
+        alert("✅ Proposal terkirim! Menunggu review SCS Pusat.");
         fetchSponsorData(); 
     } catch(err) { alert("Gagal: " + err.message); }
 }
@@ -95,7 +125,7 @@ window.bukaTindakanLanjutan = function(subId, jenisBantuan, sponsorName) {
         document.getElementById('modalProduct').classList.remove('hidden');
     } else {
         document.getElementById('cashSubId').value = subId;
-        document.getElementById('cashBrandName').value = sponsorName;
+        document.getElementById('cashBrandName').value = decodeURIComponent(sponsorName);
         document.getElementById('modalCash').classList.remove('hidden');
     }
 }
