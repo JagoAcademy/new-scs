@@ -29,6 +29,7 @@ async function loadAntrian() {
         submissions.forEach(sub => {
             const evName = sub.events ? sub.events.event_name : 'Event ID: ' + sub.event_id;
             const spName = sub.master_sponsors ? sub.master_sponsors.sponsor_name : 'Sponsor ID: ' + sub.sponsor_id;
+            const subDataEncoded = encodeURIComponent(JSON.stringify(sub));
             
             html += `
                 <tr class="hover:bg-slate-800/50 transition-colors">
@@ -36,7 +37,7 @@ async function loadAntrian() {
                     <td class="p-4 font-black text-amber-400">${spName}</td>
                     <td class="p-4 text-center"><span class="bg-amber-900/50 text-amber-500 px-3 py-1 rounded text-[10px] font-bold border border-amber-500/30">⏳ Menunggu</span></td>
                     <td class="p-4 text-center">
-                        <button onclick="openReview('${sub.id}', '${sub.event_id}', '${sub.sponsor_id}', '${evName}', '${spName}')" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-4 rounded-lg text-xs transition shadow">Review</button>
+                        <button onclick="openReview('${subDataEncoded}', '${evName}', '${spName}')" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-4 rounded-lg text-xs transition shadow">Review & Approve</button>
                     </td>
                 </tr>
             `;
@@ -47,14 +48,38 @@ async function loadAntrian() {
     }
 }
 
-window.openReview = function(id, evId, spId, evName, spName) {
-    document.getElementById('revSubId').value = id;
-    document.getElementById('revEventId').value = evId;
-    document.getElementById('revSponsorId').value = spId;
+window.openReview = function(encodedData, evName, spName) {
+    const sub = JSON.parse(decodeURIComponent(encodedData));
+    
+    document.getElementById('revSubId').value = sub.id;
+    document.getElementById('revEventId').value = sub.event_id;
+    document.getElementById('revSponsorId').value = sub.sponsor_id;
+    
     document.getElementById('revEventName').innerText = evName;
     document.getElementById('revBrandName').innerText = spName;
+
+    // Tampilkan Detail Form
+    document.getElementById('revSupportType').innerText = sub.support_type_req || '-';
+    document.getElementById('revBenefits').innerText = sub.benefits_offered || '-';
+    document.getElementById('revNotes').innerText = sub.proposal_note || '-';
+
     document.getElementById('modalReview').classList.remove('hidden');
 }
+
+// === TAMBAHKAN DIV DETAIL INI KE DALAM HTML ADMIN-APPROVAL MODAL ===
+// Tepat di bawah <p id="revBrandName">...</p>
+/*
+    <div class="mt-4 pt-4 border-t border-slate-700">
+        <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Dukungan yang Diminta</p>
+        <p id="revSupportType" class="text-xs text-white mb-3">...</p>
+        
+        <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Benefit Ditawarkan EO</p>
+        <p id="revBenefits" class="text-xs text-white mb-3">...</p>
+        
+        <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Catatan EO</p>
+        <p id="revNotes" class="text-xs text-slate-300 italic bg-slate-800 p-2 rounded">...</p>
+    </div>
+*/
 
 document.getElementById('btnApprove').addEventListener('click', async () => {
     const subId = document.getElementById('revSubId').value;
@@ -67,12 +92,8 @@ document.getElementById('btnApprove').addEventListener('click', async () => {
     btn.disabled = true;
 
     try {
-        // 1. Update status submission + set jenis deal
-        await supabaseClient.from('sponsor_submissions')
-            .update({ status: 'Disetujui', jenis_bantuan_deal: jenisDeal })
-            .eq('id', subId);
-
-        // 2. Suntik logo ke event_sponsors
+        await supabaseClient.from('sponsor_submissions').update({ status: 'Disetujui', jenis_bantuan_deal: jenisDeal }).eq('id', subId);
+        
         const { data: linkData } = await supabaseClient.from('event_sponsors').select('*').eq('event_id', evId).single();
         if (linkData) {
             let currentIds = linkData.sponsor_ids || [];
@@ -93,3 +114,13 @@ document.getElementById('btnApprove').addEventListener('click', async () => {
         btn.disabled = false;
     }
 });
+
+window.tolakProposal = async function() {
+    const subId = document.getElementById('revSubId').value;
+    if(!confirm("Yakin menolak proposal ini?")) return;
+    try {
+        await supabaseClient.from('sponsor_submissions').update({ status: 'Ditolak' }).eq('id', subId);
+        document.getElementById('modalReview').classList.add('hidden');
+        loadAntrian();
+    } catch(err) { alert(err.message); }
+}

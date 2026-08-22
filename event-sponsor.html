@@ -5,114 +5,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manajemen Sponsor | SCS</title>
     <link rel="stylesheet" href="/src/style.css">
-    <style>
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    </style>
+    <style>.hide-scrollbar::-webkit-scrollbar { display: none; } .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }</style>
 </head>
-<body class="bg-slate-50 min-h-screen font-sans text-slate-800">
+<body class="bg-slate-50 min-h-screen font-sans text-slate-800 pb-20">
 
     <nav class="bg-slate-900 text-white shadow-md px-4 md:px-6 py-3 flex justify-between items-center sticky top-0 z-50">
-        <a id="btnBackDashboard" href="#" class="flex items-center gap-2 text-slate-300 hover:text-white transition text-sm font-medium">
+        <a id="btnBackDashboard" href="#" class="flex items-center gap-2 text-slate-300 hover:text-white text-sm font-medium">
             <span class="hidden md:inline">Kembali ke Dashboard</span><span class="md:hidden">Kembali</span>
         </a>
-        <div class="text-[10px] md:text-xs font-bold tracking-widest text-slate-400 uppercase">Panel Sponsor</div>
+        <div class="text-xs font-bold tracking-widest text-slate-400 uppercase">Panel Sponsor</div>
     </nav>
 
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 pb-20 pt-6">
-        <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div>
-                <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                    <span class="text-red-600">🚀</span> Super PRO Approach Sponsor
-                </h1>
-                <p class="text-slate-500 text-sm mt-1">Katalog brand afiliasi resmi SCS. Ajukan kerja sama untuk event Anda.</p>
-            </div>
-            <span class="bg-scsGold text-blue-900 text-[10px] font-black px-3 py-1.5 rounded-lg tracking-widest border border-amber-300 w-max">PRO FEATURE</span>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-8">
+        <div class="mb-8">
+            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+                🚀 SUPER PRO Approach Sponsor
+            </h1>
+            <p class="text-slate-500 text-sm mt-2">Pilih brand yang ingin Anda ajukan untuk mendukung event Anda.</p>
         </div>
 
-        <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-10">
-            <div class="p-5 md:p-6 border-b border-slate-100 bg-slate-50/50">
-                <h3 class="font-black text-slate-800 text-lg flex items-center gap-2">🤝 Brand Afiliasi SCS</h3>
+        <!-- SECTION OFFICIAL PARTNERS -->
+        <div class="mb-10">
+            <h2 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">🤝 PARTNER SCS</h2>
+            <p class="text-xs text-slate-500 mb-4">Brand yang memiliki hubungan/kemitraan resmi dengan ekosistem SCS.</p>
+            <div id="gridOfficial" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Injeksi JS -->
             </div>
-            <div class="w-full overflow-x-auto hide-scrollbar">
-                <table class="w-full text-left border-collapse whitespace-nowrap min-w-[700px]">
-                    <thead>
-                        <tr class="bg-white border-b border-slate-100 text-slate-400 text-[10px] uppercase tracking-wider">
-                            <th class="p-4 font-bold w-12 text-center">No</th>
-                            <th class="p-4 font-bold">Brand Sponsor</th>
-                            <th class="p-4 font-bold text-center w-48">Benefit Bantuan</th>
-                            <th class="p-4 font-bold text-center w-40">Syarat</th>
-                            <th class="p-4 font-bold text-center w-48">Status / Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="sponsorTableBody" class="text-sm divide-y divide-slate-50">
-                        <tr><td colspan="5" class="p-8 text-center text-slate-500 animate-pulse">Memuat database...</td></tr>
-                    </tbody>
-                </table>
+        </div>
+
+        <!-- SECTION UNOFFICIAL / PROSPECTIVE -->
+        <div class="mb-10 border-t border-slate-200 pt-8">
+            <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl mb-6 shadow-sm">
+                <h4 class="text-amber-800 font-bold text-sm mb-1 flex items-center gap-2">⚠️ Prospective Sponsor</h4>
+                <p class="text-xs text-amber-700/80 leading-relaxed text-justify">
+                    Brand pada kategori ini belum menyatakan kerja sama dengan SCS. Pengajuan yang Anda buat hanya merupakan proposal pendekatan dan tidak menjamin persetujuan pihak sponsor.
+                </p>
+            </div>
+            
+            <h2 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">🌐 UNOFFICIAL / PROSPECTIVE</h2>
+            <p class="text-xs text-slate-500 mb-4">Brand yang tersedia sebagai target pendekatan sponsor.</p>
+            <div id="gridUnofficial" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Injeksi JS -->
             </div>
         </div>
     </div>
 
-    <!-- MODAL SYARAT -->
+    <!-- MODAL FORM PENGAJUAN (E=MC2) -->
+    <div id="modalPengajuan" class="fixed inset-0 bg-slate-900/80 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden my-auto max-h-[90vh] flex flex-col">
+            <div class="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">
+                <h3 class="font-black text-slate-800 text-base">📝 AJUKAN PENDEKATAN SPONSOR</h3>
+                <button class="btn-close-modal text-slate-400 hover:text-red-500 text-2xl font-bold">&times;</button>
+            </div>
+            <div class="p-6 overflow-y-auto hide-scrollbar flex-1 space-y-5">
+                <input type="hidden" id="propSponsorId">
+                <div class="flex items-center gap-4 bg-slate-100 p-4 rounded-xl">
+                    <img id="propLogo" src="" class="w-12 h-12 object-contain bg-white rounded-lg p-1 border border-slate-200">
+                    <div>
+                        <h4 id="propSponsorName" class="font-black text-slate-800 text-lg">Nama Sponsor</h4>
+                        <p id="propEventName" class="text-xs text-slate-500 font-bold mt-1">Event: Memuat...</p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-800 mb-2">Bentuk dukungan yang diajukan:</label>
+                    <div class="grid grid-cols-2 gap-2 text-sm text-slate-600">
+                        <label class="flex items-center gap-2"><input type="checkbox" name="supportType" value="Product Support" class="w-4 h-4 text-blue-600"> Product Support</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" name="supportType" value="Booth" class="w-4 h-4 text-blue-600"> Booth</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" name="supportType" value="Cash Sponsorship" class="w-4 h-4 text-blue-600"> Cash Sponsorship</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" name="supportType" value="Merchandise" class="w-4 h-4 text-blue-600"> Merchandise</label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-800 mb-2">Benefit untuk sponsor (Kewajiban Anda):</label>
+                    <div class="grid grid-cols-2 gap-2 text-sm text-slate-600">
+                        <label class="flex items-center gap-2"><input type="checkbox" name="benefitOffered" value="Logo Event Page" class="w-4 h-4 text-emerald-600"> Logo pada Event Page</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" name="benefitOffered" value="Logo Result Page" class="w-4 h-4 text-emerald-600"> Logo pada Result Page</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" name="benefitOffered" value="Social Media Exposure" class="w-4 h-4 text-emerald-600"> Social Media Exposure</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" name="benefitOffered" value="Mention MC" class="w-4 h-4 text-emerald-600"> Mention MC</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" name="benefitOffered" value="Booth Area" class="w-4 h-4 text-emerald-600"> Booth Area</label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-800 mb-1">Catatan Tambahan (Estimasi / Detail):</label>
+                    <textarea id="propNote" rows="3" class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Tuliskan estimasi kebutuhan spesifik (misal: 10 dus air mineral)"></textarea>
+                </div>
+            </div>
+            <div class="p-5 bg-slate-50 border-t shrink-0">
+                <button id="btnSubmitProposal" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-blue-700 transition">KIRIM PROPOSAL 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL BACA SYARAT -->
     <div id="modalSyarat" class="fixed inset-0 bg-slate-900/60 z-[90] hidden flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl flex flex-col max-h-[80vh]">
-            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-amber-50">
-                <h3 class="font-black text-amber-900 text-base">⚠️ <span id="modalSyaratTitle">Syarat</span></h3>
-                <button class="btn-close-modal text-amber-400 hover:text-red-500 text-2xl font-bold">&times;</button>
+            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
+                <h3 class="font-black text-slate-800 text-base flex items-center gap-2"><span>⚠️</span> Syarat Umum</h3>
+                <button class="btn-close-modal text-slate-400 hover:text-red-500 text-2xl font-bold">&times;</button>
             </div>
-            <div class="p-6 overflow-y-auto text-sm text-slate-600 leading-relaxed font-medium whitespace-pre-wrap" id="modalSyaratContent"></div>
-            <div class="p-4 bg-slate-50 border-t border-slate-100"><button class="btn-close-modal w-full bg-slate-200 font-bold py-3 rounded-xl">Tutup</button></div>
-        </div>
-    </div>
-
-    <!-- MODAL IN-KIND (PRODUCT) -->
-    <div id="modalProduct" class="fixed inset-0 bg-slate-900/80 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden">
-            <div class="p-5 border-b border-slate-100 bg-blue-50 flex justify-between items-center">
-                <h3 class="font-black text-blue-900 text-base">📦 Pengiriman Produk Sponsor</h3>
-                <button class="btn-close-modal text-blue-400 hover:text-red-500 text-2xl font-bold">&times;</button>
-            </div>
-            <div class="p-6 space-y-4">
-                <p class="text-xs text-slate-500">Proposal disetujui! Isi form ini agar tim Gudang dapat mengirimkan produk/banner ke lokasi Anda.</p>
-                <input type="hidden" id="prodSubId">
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">Nama Penerima (PIC)</label>
-                    <input type="text" id="prodPic" class="w-full border rounded-xl p-3 text-sm font-bold focus:ring-2 outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">No. HP / WA Aktif</label>
-                    <input type="text" id="prodHp" class="w-full border rounded-xl p-3 text-sm font-bold focus:ring-2 outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">Alamat Lengkap Pengiriman</label>
-                    <textarea id="prodAlamat" rows="3" class="w-full border rounded-xl p-3 text-sm font-bold focus:ring-2 outline-none"></textarea>
-                </div>
-            </div>
-            <div class="p-5 bg-slate-50 border-t"><button id="btnSubmitProduct" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-md">Kirim Data Pengiriman</button></div>
-        </div>
-    </div>
-
-    <!-- MODAL UANG TUNAI (CASH) -->
-    <div id="modalCash" class="fixed inset-0 bg-slate-900/80 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden">
-            <div class="p-5 border-b border-slate-100 bg-emerald-50 flex justify-between items-center">
-                <h3 class="font-black text-emerald-900 text-base">💰 Pencairan Dana Sponsor</h3>
-                <button class="btn-close-modal text-emerald-400 hover:text-red-500 text-2xl font-bold">&times;</button>
-            </div>
-            <div class="p-6 space-y-4">
-                <p class="text-xs text-slate-500">Proposal disetujui! Lengkapi rekening dan bukti laporan (LPJ) pelaksanaan (Foto Umbul-umbul/Backdrop).</p>
-                <input type="hidden" id="cashSubId">
-                <input type="hidden" id="cashBrandName">
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">Rekening Pencairan</label>
-                    <input type="text" id="cashRekening" class="w-full border rounded-xl p-3 text-sm font-bold focus:ring-2 outline-none" placeholder="BCA 123456 a.n Panitia">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">Upload Bukti LPJ (Foto Pelaksanaan)</label>
-                    <input type="file" id="cashLpj" accept="image/*" class="w-full text-xs file:bg-slate-100 file:rounded-lg file:border-0 file:px-3 file:py-1.5 file:font-bold">
-                </div>
-            </div>
-            <div class="p-5 bg-slate-50 border-t"><button id="btnSubmitCash" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-md">Ajukan Pencairan Dana</button></div>
+            <div class="p-6 overflow-y-auto text-sm text-slate-600 leading-relaxed whitespace-pre-wrap" id="modalSyaratContent"></div>
         </div>
     </div>
 
