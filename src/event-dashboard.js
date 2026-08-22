@@ -87,6 +87,73 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('headerEventName').innerText = eventData.event_name;
         document.getElementById('headerSubdomain').innerText = `${eventData.subdomain}.f1swimming.com`;
 
+        // ==========================================
+        // DYNAMIC LAYANAN (FREEMIUM VS PRO)
+        // ==========================================
+        const statLayananText = document.getElementById('statLayananText');
+        const btnUpgrade = document.getElementById('btnUpgradePro');
+
+        if (eventData.is_pro) {
+            statLayananText.innerText = "🌟 PRO / EMAS";
+            statLayananText.className = "text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600 uppercase";
+            if (btnUpgrade) btnUpgrade.classList.add('hidden');
+        } else {
+            statLayananText.innerText = "FREEMIUM";
+            statLayananText.className = "text-xl md:text-2xl font-black text-slate-400 uppercase";
+            if (btnUpgrade) {
+                btnUpgrade.classList.remove('hidden');
+                btnUpgrade.onclick = () => document.getElementById('modalUpgrade').classList.remove('hidden');
+            }
+        }
+
+        // ==========================================
+        // EVENT LISTENER BUKTI BAYAR (ANTI HACKER)
+        // ==========================================
+        const btnSubmitUpgrade = document.getElementById('btnSubmitUpgrade');
+        if (btnSubmitUpgrade) {
+            btnSubmitUpgrade.onclick = async () => {
+                const fileInput = document.getElementById('uploadBuktiBayar').files[0];
+                if (!fileInput) return alert("Pilih foto bukti transfer terlebih dahulu bos!");
+
+                btnSubmitUpgrade.innerText = "⏳ Memproses...";
+                btnSubmitUpgrade.disabled = true;
+
+                try {
+                    // 1. Upload Foto Bukti Bayar
+                    const fileExt = fileInput.name.split('.').pop();
+                    const fileName = `upgrade_${currentEventId}_${Date.now()}.${fileExt}`;
+                    const { error: upErr } = await supabaseClient.storage.from('berkas-atlet').upload(fileName, fileInput);
+                    if (upErr) throw upErr;
+
+                    const { data: urlData } = supabaseClient.storage.from('berkas-atlet').getPublicUrl(fileName);
+
+                    // 2. Insert ke Database (Nominal di-hardcode dari backend, ga bisa dicuri via DOM)
+                    const { error: insErr } = await supabaseClient.from('event_transactions').insert([{
+                        event_id: currentEventId,
+                        user_id: currentUserId,
+                        jenis_transaksi: 'UPGRADE_PRO',
+                        nominal: 150000, 
+                        bukti_url: urlData.publicUrl,
+                        status: 'PENDING'
+                    }]);
+
+                    if (insErr) throw insErr;
+
+                    alert("✅ Bukti transfer berhasil dikirim! Menunggu verifikasi Admin Pusat.");
+                    document.getElementById('modalUpgrade').classList.add('hidden');
+                    
+                } catch (err) {
+                    alert("Gagal mengirim bukti: " + err.message);
+                } finally {
+                    btnSubmitUpgrade.innerText = "Konfirmasi Pembayaran";
+                    btnSubmitUpgrade.disabled = false;
+                }
+            };
+        }
+
+        // ==========================================
+        // SISANYA FUNGSI BIASA
+        // ==========================================
         const publicLink = `https://${eventData.subdomain}.f1swimming.com?id=${currentEventId}`;
         const linkInput = document.getElementById('publicLinkInput');
         if (linkInput) linkInput.value = publicLink;
@@ -152,11 +219,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.href = `/book/event-result.html?id=${currentEventId}`;
         };
 
+        // KUNCI FITUR PRO JIKA MASIH FREEMIUM
         const btnMenuSertifikat = document.getElementById('btnMenuSertifikat');
-        if (btnMenuSertifikat) btnMenuSertifikat.onclick = () => window.location.href = `/book/event-sertifikat.html?id=${currentEventId}`;
+        if (btnMenuSertifikat) {
+            btnMenuSertifikat.onclick = () => {
+                if (!eventData.is_pro) return alert("Fitur Mesin Sertifikat khusus untuk Event PRO/EMAS. Silakan Upgrade terlebih dahulu!");
+                window.location.href = `/book/event-sertifikat.html?id=${currentEventId}`;
+            };
+        }
 
         const btnHeatBuilderPro = document.getElementById('btnHeatBuilderPro');
-        if (btnHeatBuilderPro) btnHeatBuilderPro.onclick = () => window.location.href = `/book/heat-builder.html?id=${currentEventId}`;
+        if (btnHeatBuilderPro) {
+            btnHeatBuilderPro.onclick = () => {
+                if (!eventData.is_pro) return alert("Fitur Heat Builder khusus untuk Event PRO/EMAS. Silakan Upgrade terlebih dahulu!");
+                window.location.href = `/book/heat-builder.html?id=${currentEventId}`;
+            };
+        }
 
         const btnSuperProSponsor = document.getElementById('btnSuperProSponsor');
         if (btnSuperProSponsor) {
@@ -227,7 +305,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         await loadEventStats();
         await loadClubsForCollab();
-        await loadCollaborators();
 
     } catch (err) {
         alert("Gagal memuat data event.");
@@ -278,122 +355,5 @@ async function loadClubsForCollab() {
         selectClub.innerHTML = options;
     } catch (err) {
         selectClub.innerHTML = '<option value="">Gagal memuat klub</option>';
-    }
-}
-
-async function loadCollaborators() {
-    const container = document.getElementById('collabListContainer');
-    if (!container) return;
-
-    try {
-        const { data, error } = await supabaseClient
-            .from('event_collaborators')
-            .select('id, role, user_id')
-            .eq('event_id', currentEventId);
-
-        if (error) throw error;
-
-        if (data.length === 0) {
-            container.innerHTML = `
-                <div class="bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-2xl p-8 text-center transition-colors">
-                    <span class="text-4xl block mb-3 opacity-40">📭</span>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 font-bold">Belum ada kolaborator tambahan. Anda mengurus event ini sendirian.</p>
-                </div>
-            `;
-            return;
-        }
-
-        let html = '';
-        for (const collab of data) {
-            const { data: clubData } = await supabaseClient
-                .from('clubs')
-                .select('club_name')
-                .eq('owner_id', collab.user_id)
-                .single();
-            
-            const displayName = clubData ? clubData.club_name : 'User Terdaftar SCS';
-
-            html += `
-                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 md:p-5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm hover:border-purple-300 dark:hover:border-purple-500/50 transition-colors group gap-4">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-400 rounded-full flex items-center justify-center font-black text-xl shadow-inner shrink-0">
-                            ${displayName.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                            <p class="font-extrabold text-slate-800 dark:text-slate-200 text-sm md:text-base">${displayName}</p>
-                            <span class="inline-block mt-1 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800 text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase tracking-wider">${collab.role}</span>
-                        </div>
-                    </div>
-                    <button onclick="window.removeCollab('${collab.id}')" class="w-full sm:w-auto text-xs font-bold text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 hover:text-red-700 px-5 py-2.5 rounded-xl transition md:opacity-0 group-hover:opacity-100 border border-transparent hover:border-red-200 dark:hover:border-red-800">
-                        Cabut Akses ❌
-                    </button>
-                </div>
-            `;
-        }
-        container.innerHTML = html;
-
-    } catch (err) {
-        container.innerHTML = `<p class="text-sm text-red-500 font-bold text-center py-4">Gagal memuat daftar panitia: ${err.message}</p>`;
-    }
-}
-
-const btnInvite = document.getElementById('btnInviteCollab');
-if (btnInvite) {
-    btnInvite.addEventListener('click', async () => {
-        const targetUserId = document.getElementById('selectCollabClub').value;
-        const role = document.getElementById('inputCollabRole').value;
-        const statusMsg = document.getElementById('collabStatusMsg');
-
-        if (!targetUserId) {
-            statusMsg.innerText = "Pilih klub yang mau diundang dulu Bos!";
-            statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 block mb-4";
-            statusMsg.classList.remove('hidden');
-            return;
-        }
-
-        btnInvite.innerText = "Mengeksekusi...";
-        btnInvite.disabled = true;
-
-        try {
-            const { error: insertError } = await supabaseClient
-                .from('event_collaborators')
-                .insert([{
-                    event_id: currentEventId,
-                    user_id: targetUserId,
-                    role: role
-                }]);
-
-            if (insertError) {
-                if (insertError.code === '23505') throw new Error("Klub ini udah jadi panitia di event ini!");
-                throw insertError;
-            }
-
-            statusMsg.innerHTML = "✅ <strong>Mantap!</strong> Klub tersebut resmi dapet akses ke Command Center ini.";
-            statusMsg.className = "text-sm text-center rounded-lg p-3 bg-green-100 dark:bg-emerald-900/40 text-green-700 dark:text-emerald-400 block mb-4";
-            statusMsg.classList.remove('hidden');
-            
-            document.getElementById('selectCollabClub').value = '';
-            loadCollaborators();
-
-        } catch (err) {
-            statusMsg.innerText = err.message;
-            statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 block mb-4";
-            statusMsg.classList.remove('hidden');
-        } finally {
-            btnInvite.innerText = "Undang Panitia 🚀";
-            btnInvite.disabled = false;
-            setTimeout(() => statusMsg.classList.add('hidden'), 4000);
-        }
-    });
-}
-
-window.removeCollab = async function(collabId) {
-    if(!confirm("Yakin mau cabut akses klub ini? Mereka nggak akan bisa buka Command Center ini lagi dari akun mereka.")) return;
-    try {
-        const { error } = await supabaseClient.from('event_collaborators').delete().eq('id', collabId);
-        if (error) throw error;
-        loadCollaborators();
-    } catch (err) {
-        alert("Gagal mencabut akses: " + err.message);
     }
 }
