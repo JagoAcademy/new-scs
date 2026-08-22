@@ -143,17 +143,6 @@
                 <div class="flex-1 h-px bg-slate-300"></div>
             </div>
 
-            <!-- Banner Keterangan Freemium -->
-            <div class="mb-5 bg-blue-50 border border-blue-200 p-4 md:p-5 rounded-2xl flex gap-3 md:gap-4 items-start shadow-sm">
-                <div class="text-blue-500 text-2xl shrink-0">💡</div>
-                <div>
-                    <h4 class="text-sm md:text-base font-extrabold text-blue-900 mb-1">Layanan Freemium SCS & F1 Swimming</h4>
-                    <p class="text-[11px] md:text-xs text-blue-800 leading-relaxed text-justify">
-                        Platform SCS ini <strong>100% GRATIS</strong> untuk Anda gunakan dari awal pendaftaran hingga mencetak hasil akhir lomba. Sebagai kompensasi (sponsorship internal), sistem kami akan secara otomatis menyisipkan promosi F1 ID dan SCS di halaman Live Result publik event Anda.
-                    </p>
-                </div>
-            </div>
-
             <!-- Grid 3 kolom untuk menu Pro -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 
@@ -232,6 +221,42 @@
                     <div class="animate-pulse flex gap-4 items-center bg-slate-50 p-4 rounded-xl">
                         <div class="w-10 h-10 bg-slate-200 rounded-full"></div>
                         <div class="w-1/2 h-4 bg-slate-200 rounded"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. SECTION BARU: SPONSOR DEAL (PRO) -->
+        <div class="mb-10">
+            <div class="flex items-center gap-3 mb-5 mt-10">
+                <div class="p-1.5 bg-purple-100 rounded-md text-purple-600 shrink-0">🤝</div>
+                <h2 class="text-xs md:text-sm font-bold text-slate-600 uppercase tracking-widest shrink-0">Sponsor Deal (PRO)</h2>
+                <!-- GARIS UNGU SESUAI PERMINTAAN -->
+                <div class="flex-1 h-0.5 bg-purple-500 rounded-full"></div> 
+            </div>
+
+            <!-- CONTAINER GELAP -->
+            <div class="bg-slate-900 rounded-3xl shadow-lg border border-slate-800 p-5 md:p-8 relative overflow-hidden">
+                <!-- Ornamen Background -->
+                <div class="absolute -top-4 -right-4 p-8 opacity-[0.03] pointer-events-none transform rotate-12">
+                    <span class="text-9xl text-white">💰</span>
+                </div>
+                
+                <div class="relative z-10">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 border-b border-slate-700 pb-4 gap-3">
+                        <div>
+                            <h3 class="text-xl font-black text-white">Official Sponsor Event</h3>
+                            <p class="text-xs text-slate-400 mt-1">Daftar brand yang telah setuju mendanai/mendukung event Anda.</p>
+                        </div>
+                        <span class="bg-scsGold text-blue-900 text-[10px] font-black px-3 py-1.5 rounded-lg tracking-widest shadow-sm self-start sm:self-auto border border-amber-300">PRO FEATURE</span>
+                    </div>
+
+                    <!-- Container Data (Diinjeksi JS) -->
+                    <div id="sponsorDealContainer" class="min-h-[120px] flex flex-col justify-center">
+                        <div class="animate-pulse flex gap-4 items-center bg-slate-800 p-4 rounded-xl">
+                            <div class="w-12 h-12 bg-slate-700 rounded-lg"></div>
+                            <div class="w-1/2 h-4 bg-slate-700 rounded"></div>
+                        </div>
                     </div>
                 </div>
             </div>

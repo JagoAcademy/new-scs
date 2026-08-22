@@ -135,7 +135,6 @@ async function loadEventDashboard() {
         const btnHeatBuilderPro = document.getElementById('btnHeatBuilderPro');
         if (btnHeatBuilderPro) btnHeatBuilderPro.onclick = () => window.location.href = `/book/heat-builder.html?id=${currentEventId}`;
         
-        // Heat builder dari Pusat Cetak juga dialihkan ke tempat yang sama
         const btnMenuHeatBuilder = document.getElementById('btnMenuHeatBuilder');
         if (btnMenuHeatBuilder) btnMenuHeatBuilder.onclick = () => window.location.href = `/book/heat-builder.html?id=${currentEventId}`;
 
@@ -259,9 +258,11 @@ async function loadEventDashboard() {
             };
         }
         
+        // Panggil fungsi-fungsi loader pendukung
         await loadEventStats();
         await loadClubsForCollab();
         await loadCollaborators();
+        await loadSponsorDeals(); // Panggil fungsi Sponsor Deal
 
     } catch (err) {
         alert("Gagal memuat data event.");
@@ -433,6 +434,77 @@ window.removeCollab = async function(collabId) {
         loadCollaborators();
     } catch (err) {
         alert("Gagal mencabut akses: " + err.message);
+    }
+}
+
+// ==========================================
+// FUNGSI LOAD SPONSOR DEAL (PRO FEATURE)
+// ==========================================
+async function loadSponsorDeals() {
+    const container = document.getElementById('sponsorDealContainer');
+    if (!container) return;
+
+    try {
+        // 1. Cek apakah ada deal di event_sponsors
+        const { data: linkData, error: linkErr } = await supabaseClient
+            .from('event_sponsors')
+            .select('sponsor_ids')
+            .eq('event_id', currentEventId)
+            .single();
+
+        if (linkErr || !linkData || !linkData.sponsor_ids || linkData.sponsor_ids.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-6">
+                    <span class="text-4xl block mb-3 opacity-30 grayscale">🏢</span>
+                    <p class="text-sm font-bold text-slate-400">Belum Ada Sponsor Deal</p>
+                    <p class="text-[11px] text-slate-500 mt-1 max-w-sm mx-auto leading-relaxed">Gunakan fitur Pitching Sponsor untuk meminta tim pusat SCS mencarikan sponsor untuk event Anda.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // 2. Tarik master datanya
+        const { data: sponsors, error: spErr } = await supabaseClient
+            .from('master_sponsors')
+            .select('*')
+            .in('id', linkData.sponsor_ids);
+
+        if (spErr || !sponsors || sponsors.length === 0) throw new Error("Data master sponsor tidak ditemukan.");
+
+        let html = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">`;
+        
+        sponsors.forEach(sp => {
+            html += `
+                <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex items-center gap-4 hover:border-amber-500 transition-colors group">
+                    <div class="w-16 h-16 bg-white rounded-lg p-2 flex items-center justify-center shrink-0 shadow-inner group-hover:scale-105 transition-transform">
+                        <img src="${sp.logo_url}" alt="${sp.sponsor_name}" class="w-full h-full object-contain" onerror="this.style.display='none'">
+                    </div>
+                    <div>
+                        <h4 class="font-black text-white text-sm md:text-base">${sp.sponsor_name}</h4>
+                        <a href="${sp.link_url || '#'}" target="_blank" class="text-[10px] text-blue-400 hover:text-blue-300 font-mono mt-1 block truncate max-w-[150px]">🔗 Cek Website</a>
+                    </div>
+                </div>
+            `;
+        });
+        html += `</div>`;
+
+        // 3. Tambahkan Keterangan Syarat & Ketentuan Deal
+        html += `
+            <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 md:p-5 mt-2 shadow-inner">
+                <h4 class="text-amber-400 font-black text-xs mb-3 flex items-center gap-2"><span>⚠️</span> SYARAT & KEWAJIBAN PANITIA (DEAL ACTIVE):</h4>
+                <ul class="list-disc list-inside text-[11px] text-slate-300 space-y-2 ml-1 leading-relaxed">
+                    <li>Logo sponsor otomatis tayang eksklusif di halaman <strong>Live Result</strong>, <strong>Leaderboard</strong>, dan Header Aplikasi publik.</li>
+                    <li>MC / Announcer wajib menyebutkan nama sponsor dan tagline minimal <strong>1x setiap pergantian kategori lomba</strong>.</li>
+                    <li>Panitia wajib menyediakan spot untuk pemasangan <strong>banner / umbul-umbul fisik</strong> di area strategis kolam renang sesuai proposal kesepakatan.</li>
+                    <li>Tim SCS berhak meninjau pelaksanaan kewajiban ini di lapangan secara berkala.</li>
+                </ul>
+            </div>
+        `;
+
+        container.innerHTML = html;
+
+    } catch (err) {
+        container.innerHTML = `<p class="text-xs text-red-400 font-bold text-center py-4 bg-red-900/20 rounded-xl border border-red-900/50">Gagal memuat sponsor: ${err.message}</p>`;
     }
 }
 
