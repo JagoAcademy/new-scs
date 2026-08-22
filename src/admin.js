@@ -206,7 +206,7 @@ async function loadUpgradeRequests() {
     }
 }
 
-// Logic Dewa Setuju Upgrade
+// Logic Dewa Setuju Upgrade (HANYA UPDATE event_tier)
 window.approveUpgrade = async (trans_id, event_id, event_name) => {
     if (!confirm(`Yakin ingin ACC pembayaran dan mengaktifkan kasta PRO/EMAS untuk event:\n\n👉 ${event_name}\n\nPastikan uang sudah masuk mutasi BCA!`)) return;
     
@@ -221,7 +221,7 @@ window.approveUpgrade = async (trans_id, event_id, event_name) => {
         // 2. Ganti status kasta Event di DB jadi PRO
         const { error: errEvent } = await supabaseClient
             .from('events')
-            .update({ is_pro: true, event_tier: 'PRO' })
+            .update({ event_tier: 'PRO' })
             .eq('id', event_id);
         if (errEvent) throw errEvent;
 
@@ -355,7 +355,7 @@ function renderClubs(clubsArray) {
         const location = c.kota_asal ? `${c.kota_asal}, ${c.provinsi || ''}` : (c.provinsi || 'Belum diatur');
         const athleteCount = c.athlete_count || 0; 
         
-        const isPro = c.is_pro === true || String(c.is_pro) === 'true';
+        const isPro = c.event_tier === 'PRO'; // <-- Ini kalau lu nampilin event. Di sini ini club manager.
         const badgeAkun = isPro 
             ? `<span class="px-2 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/50 rounded text-[10px] font-black tracking-widest uppercase">PRO</span>` 
             : `<span class="px-2 py-1 bg-slate-700/50 text-slate-400 border border-slate-600 rounded text-[10px] font-bold tracking-widest uppercase">BASIC</span>`;
