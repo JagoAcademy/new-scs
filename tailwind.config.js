@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class', /* 👈 TAMBAHAN WAJIB BIAR DARK MODE JALAN! */
   content: [
     "./*.html", /* 👈 Pakai bintang aja, biar SEMUA file HTML otomatis kebaca! */
     "./src/**/*.{js,ts,jsx,tsx}",

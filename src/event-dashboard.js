@@ -2,7 +2,35 @@ import { supabaseClient } from './supabase.js';
 
 let currentEventId = null;
 
-async function loadEventDashboard() {
+document.addEventListener('DOMContentLoaded', async () => {
+    // ==========================================
+    // LOGIKA DARK MODE TOGGLE
+    // ==========================================
+    const btnToggleDark = document.getElementById('btnToggleDark');
+    const iconMoon = document.getElementById('iconMoon');
+    const iconSun = document.getElementById('iconSun');
+
+    if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+        iconMoon.classList.add('hidden');
+        iconSun.classList.remove('hidden');
+    }
+
+    if (btnToggleDark) {
+        btnToggleDark.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            if (document.documentElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+                iconMoon.classList.add('hidden');
+                iconSun.classList.remove('hidden');
+            } else {
+                localStorage.setItem('theme', 'light');
+                iconMoon.classList.remove('hidden');
+                iconSun.classList.add('hidden');
+            }
+        });
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     currentEventId = urlParams.get('id');
 
@@ -13,9 +41,6 @@ async function loadEventDashboard() {
     }
 
     try {
-        // ==========================================
-        // SATPAM LAPISAN 1: CEK OTORISASI USER
-        // ==========================================
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) {
             alert("Akses ditolak! Silakan login terlebih dahulu.");
@@ -58,7 +83,6 @@ async function loadEventDashboard() {
             window.location.replace('/dashboard.html');
             return;
         }
-        // ==========================================
 
         document.getElementById('headerEventName').innerText = eventData.event_name;
         document.getElementById('headerSubdomain').innerText = `${eventData.subdomain}.f1swimming.com`;
@@ -133,13 +157,7 @@ async function loadEventDashboard() {
 
         const btnHeatBuilderPro = document.getElementById('btnHeatBuilderPro');
         if (btnHeatBuilderPro) btnHeatBuilderPro.onclick = () => window.location.href = `/book/heat-builder.html?id=${currentEventId}`;
-        
-        const btnMenuHeatBuilder = document.getElementById('btnMenuHeatBuilder');
-        if (btnMenuHeatBuilder) btnMenuHeatBuilder.onclick = () => window.location.href = `/book/heat-builder.html?id=${currentEventId}`;
 
-        // ====================================================
-        // TOMBOL PINDAH HALAMAN: SUPER PRO APPROACH SPONSOR
-        // ====================================================
         const btnSuperProSponsor = document.getElementById('btnSuperProSponsor');
         if (btnSuperProSponsor) {
             btnSuperProSponsor.onclick = () => window.location.href = `/event-sponsor.html?id=${currentEventId}`;
@@ -214,7 +232,7 @@ async function loadEventDashboard() {
     } catch (err) {
         alert("Gagal memuat data event.");
     }
-}
+});
 
 async function loadEventStats() {
     try {
@@ -277,9 +295,9 @@ async function loadCollaborators() {
 
         if (data.length === 0) {
             container.innerHTML = `
-                <div class="bg-slate-50 border border-slate-100 rounded-2xl p-8 text-center">
+                <div class="bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-2xl p-8 text-center transition-colors">
                     <span class="text-4xl block mb-3 opacity-40">📭</span>
-                    <p class="text-sm text-slate-500 font-bold">Belum ada kolaborator tambahan. Anda mengurus event ini sendirian.</p>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 font-bold">Belum ada kolaborator tambahan. Anda mengurus event ini sendirian.</p>
                 </div>
             `;
             return;
@@ -296,17 +314,17 @@ async function loadCollaborators() {
             const displayName = clubData ? clubData.club_name : 'User Terdaftar SCS';
 
             html += `
-                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 md:p-5 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-purple-300 transition group gap-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 md:p-5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm hover:border-purple-300 dark:hover:border-purple-500/50 transition-colors group gap-4">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center font-black text-xl shadow-inner shrink-0">
+                        <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-400 rounded-full flex items-center justify-center font-black text-xl shadow-inner shrink-0">
                             ${displayName.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                            <p class="font-extrabold text-slate-800 text-sm md:text-base">${displayName}</p>
-                            <span class="inline-block mt-1 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase tracking-wider">${collab.role}</span>
+                            <p class="font-extrabold text-slate-800 dark:text-slate-200 text-sm md:text-base">${displayName}</p>
+                            <span class="inline-block mt-1 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800 text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase tracking-wider">${collab.role}</span>
                         </div>
                     </div>
-                    <button onclick="window.removeCollab('${collab.id}')" class="w-full sm:w-auto text-xs font-bold text-red-500 bg-red-50 hover:bg-red-100 hover:text-red-700 px-5 py-2.5 rounded-xl transition md:opacity-0 group-hover:opacity-100 border border-transparent hover:border-red-200">
+                    <button onclick="window.removeCollab('${collab.id}')" class="w-full sm:w-auto text-xs font-bold text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 hover:text-red-700 px-5 py-2.5 rounded-xl transition md:opacity-0 group-hover:opacity-100 border border-transparent hover:border-red-200 dark:hover:border-red-800">
                         Cabut Akses ❌
                     </button>
                 </div>
@@ -328,7 +346,7 @@ if (btnInvite) {
 
         if (!targetUserId) {
             statusMsg.innerText = "Pilih klub yang mau diundang dulu Bos!";
-            statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block mb-4";
+            statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 block mb-4";
             statusMsg.classList.remove('hidden');
             return;
         }
@@ -351,7 +369,7 @@ if (btnInvite) {
             }
 
             statusMsg.innerHTML = "✅ <strong>Mantap!</strong> Klub tersebut resmi dapet akses ke Command Center ini.";
-            statusMsg.className = "text-sm text-center rounded-lg p-3 bg-green-100 text-green-700 block mb-4";
+            statusMsg.className = "text-sm text-center rounded-lg p-3 bg-green-100 dark:bg-emerald-900/40 text-green-700 dark:text-emerald-400 block mb-4";
             statusMsg.classList.remove('hidden');
             
             document.getElementById('selectCollabClub').value = '';
@@ -359,7 +377,7 @@ if (btnInvite) {
 
         } catch (err) {
             statusMsg.innerText = err.message;
-            statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block mb-4";
+            statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 block mb-4";
             statusMsg.classList.remove('hidden');
         } finally {
             btnInvite.innerText = "Undang Panitia 🚀";
@@ -379,5 +397,3 @@ window.removeCollab = async function(collabId) {
         alert("Gagal mencabut akses: " + err.message);
     }
 }
-
-loadEventDashboard();
