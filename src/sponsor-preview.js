@@ -8,15 +8,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
         if (sessionError || !session) return window.location.replace('/auth.html');
-if (sessionStorage.getItem('aztec_key') !== 'buka_sesame') {
-        document.body.innerHTML = `
-            <div style="height:100vh;width:100vw;display:flex;flex-direction:column;align-items:center;justify-content:center;background-color:#0f172a;color:#a78bfa;font-family:sans-serif;text-align:center;position:fixed;top:0;left:0;z-index:999999;">
-                <span style="font-size:6rem;margin-bottom:20px;">🫣</span>
-                <h1 style="font-size:3rem;font-weight:900;text-transform:uppercase;">Waduh... Maksa dong 🤣</h1>
-            </div>`;
-        setTimeout(() => window.location.replace('/dashboard.html'), 2500);
-        return;
-    }
+        if (sessionStorage.getItem('aztec_key') !== 'buka_sesame') {
+            document.body.innerHTML = `
+                <div style="height:100vh;width:100vw;display:flex;flex-direction:column;align-items:center;justify-content:center;background-color:#0f172a;color:#a78bfa;font-family:sans-serif;text-align:center;position:fixed;top:0;left:0;z-index:999999;">
+                    <span style="font-size:6rem;margin-bottom:20px;">🫣</span>
+                    <h1 style="font-size:3rem;font-weight:900;text-transform:uppercase;">Waduh... Maksa dong 🤣</h1>
+                </div>`;
+            setTimeout(() => window.location.replace('/dashboard.html'), 2500);
+            return;
+        }
     } catch (authErr) {
         return window.location.replace('/auth.html');
     }
@@ -53,6 +53,9 @@ async function loadGallery() {
                 ? `<span class="bg-emerald-900/50 text-emerald-400 text-[9px] px-2 py-0.5 rounded border border-emerald-500/30 uppercase font-black tracking-wider">A4 Ready</span>` 
                 : `<span class="bg-slate-800 text-slate-500 text-[9px] px-2 py-0.5 rounded border border-slate-700 uppercase font-black tracking-wider">No Cover</span>`;
             
+            // Format Benefit & Syarat buat tampilan singkat di card
+            const benefitSingkat = sponsor.jenis_bantuan ? `<p class="text-[10px] text-emerald-400 font-bold truncate mt-1">🎁 ${sponsor.jenis_bantuan}</p>` : '';
+
             const sponsorDataString = encodeURIComponent(JSON.stringify(sponsor));
 
             htmlContent += `
@@ -68,10 +71,11 @@ async function loadGallery() {
                     
                     <div class="flex-1">
                         <h3 class="font-black text-white text-sm truncate mb-1">${sponsor.sponsor_name}</h3>
-                        <p class="text-[10px] text-blue-400 font-mono truncate block mb-4">${link !== '#' ? link : 'Tidak ada URL'}</p>
+                        <p class="text-[10px] text-blue-400 font-mono truncate">${link !== '#' ? link : 'Tidak ada URL'}</p>
+                        ${benefitSingkat}
                     </div>
                     
-                    <div class="flex justify-between items-center border-t border-slate-700/50 pt-3 mt-auto">
+                    <div class="flex justify-between items-center border-t border-slate-700/50 pt-3 mt-4">
                         ${coverBadge}
                         <span class="text-[9px] text-slate-500 font-bold bg-slate-900 px-2 py-0.5 rounded border border-slate-700">ID: ${sponsor.id}</span>
                     </div>
@@ -96,6 +100,10 @@ window.openEditModal = function(encodedData) {
     document.getElementById('editSponsorId').value = sponsor.id;
     document.getElementById('editSponsorName').value = sponsor.sponsor_name || '';
     document.getElementById('editSponsorUrl').value = sponsor.link_url || '';
+    
+    // Inject Data Baru
+    document.getElementById('editSponsorBenefit').value = sponsor.jenis_bantuan || '';
+    document.getElementById('editSponsorSyarat').value = sponsor.syarat || '';
     
     reusedLogoUrl = sponsor.logo_url || null;
     reusedCoverUrl = sponsor.cover_url || null;
@@ -160,6 +168,9 @@ function setupModalListeners() {
         const id = document.getElementById('editSponsorId').value;
         const name = document.getElementById('editSponsorName').value.trim();
         const url = document.getElementById('editSponsorUrl').value.trim();
+        const benefit = document.getElementById('editSponsorBenefit').value.trim();
+        const syarat = document.getElementById('editSponsorSyarat').value.trim();
+        
         const fileLogo = document.getElementById('editUploadLogo').files[0];
         const fileCover = document.getElementById('editUploadCover').files[0];
 
@@ -181,7 +192,14 @@ function setupModalListeners() {
             if (fileLogo) finalLogoUrl = await uploadAdAsset(fileLogo, name, 'logo');
             if (fileCover) finalCoverUrl = await uploadAdAsset(fileCover, name, 'cover');
 
-            const updateData = { sponsor_name: name, link_url: url, logo_url: finalLogoUrl, cover_url: finalCoverUrl };
+            const updateData = { 
+                sponsor_name: name, 
+                link_url: url, 
+                logo_url: finalLogoUrl, 
+                cover_url: finalCoverUrl,
+                jenis_bantuan: benefit,
+                syarat: syarat
+            };
 
             const { error } = await supabaseClient.from('master_sponsors').update(updateData).eq('id', id);
             if (error) throw error;

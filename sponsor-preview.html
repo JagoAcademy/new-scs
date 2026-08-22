@@ -42,7 +42,7 @@
                 <button id="btnCloseModal" class="text-slate-400 hover:text-white transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
 
-            <div class="p-5 md:p-6 space-y-5">
+            <div class="p-5 md:p-6 space-y-5 max-h-[70vh] overflow-y-auto">
                 <input type="hidden" id="editSponsorId">
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -56,7 +56,19 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2 border-t border-slate-700">
+                <!-- SECTION BARU: BENEFIT & SYARAT -->
+                <div class="grid grid-cols-1 gap-5 pt-4 border-t border-slate-700">
+                    <div>
+                        <label class="block text-xs font-bold text-emerald-400 mb-1 flex items-center gap-1"><span>🎁</span> Benefit / Jenis Bantuan</label>
+                        <input type="text" id="editSponsorBenefit" class="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-sm text-white font-bold focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Contoh: Uang pembinaan untuk Atlit MVP total 100juta rupiah">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-red-400 mb-1 flex items-center gap-1"><span>⚠️</span> Syarat & Kewajiban Panitia</label>
+                        <textarea id="editSponsorSyarat" rows="3" class="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-sm text-white leading-relaxed focus:ring-2 focus:ring-red-500 outline-none" placeholder="Contoh: Peserta lebih dari 600 nama, event minimal 2 hari, 100++ heat/seri..."></textarea>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-4 border-t border-slate-700">
                     <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
                         <label class="block text-xs font-bold text-slate-300 mb-1 flex justify-between">
                             <span>Update Logo</span>
@@ -86,7 +98,7 @@
             </div>
 
             <div class="p-5 border-t border-slate-700 bg-slate-900/50 flex gap-3">
-                <button id="btnDeleteSponsor" class="bg-red-900/50 hover:bg-red-800 border border-red-500/50 text-red-200 font-bold py-3 px-4 rounded-xl transition-colors shadow-sm flex items-center gap-2 text-sm">
+                <button id="btnDeleteSponsor" class="bg-red-900/50 hover:bg-red-800 border border-red-500/50 text-red-200 font-bold py-3 px-4 rounded-xl transition-colors shadow-sm flex items-center gap-2 text-sm shrink-0">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     Hapus
                 </button>
