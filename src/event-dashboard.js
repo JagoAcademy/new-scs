@@ -1,7 +1,6 @@
 import { supabaseClient } from './supabase.js';
 
 let currentEventId = null;
-let eventConfigData = {}; 
 
 async function loadEventDashboard() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -14,6 +13,19 @@ async function loadEventDashboard() {
     }
 
     try {
+        // ==========================================
+        // SATPAM LAPISAN 1: CEK OTORISASI USER
+        // ==========================================
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) {
+            alert("Akses ditolak! Silakan login terlebih dahulu.");
+            window.location.replace('/auth.html');
+            return;
+        }
+        
+        const currentUserId = session.user.id;
+        const currentUserEmail = session.user.email;
+
         const { data: eventData, error } = await supabaseClient
             .from('events')
             .select('*')
@@ -22,7 +34,31 @@ async function loadEventDashboard() {
 
         if (error || !eventData) throw new Error("Gagal memuat dari database.");
 
-        eventConfigData = eventData.config || {};
+        let isAuthorized = false;
+        
+        if (eventData.owner_id === currentUserId) {
+            isAuthorized = true;
+        } else if (currentUserEmail === 'radityaraja@gmail.com') {
+            isAuthorized = true;
+        } else {
+            const { data: collabData } = await supabaseClient
+                .from('event_collaborators')
+                .select('id')
+                .eq('event_id', currentEventId)
+                .eq('user_id', currentUserId)
+                .single();
+                
+            if (collabData) {
+                isAuthorized = true;
+            }
+        }
+
+        if (!isAuthorized) {
+            alert("🛑 WOY! Kamu bukan Owner atau Panitia di event ini. Dilarang ngintip!");
+            window.location.replace('/dashboard.html');
+            return;
+        }
+        // ==========================================
 
         document.getElementById('headerEventName').innerText = eventData.event_name;
         document.getElementById('headerSubdomain').innerText = `${eventData.subdomain}.f1swimming.com`;
@@ -84,10 +120,6 @@ async function loadEventDashboard() {
             }
         };
 
-        document.getElementById('btnMenuHeatBuilder').onclick = () => {
-            window.location.href = `/book/heat-builder.html?id=${currentEventId}`;
-        };
-
         document.getElementById('btnMenuCetakPDF').onclick = () => {
             window.location.href = `/book/print-startlist.html?id=${currentEventId}`;
         };
@@ -95,6 +127,77 @@ async function loadEventDashboard() {
         document.getElementById('btnMenuHasilLomba').onclick = () => {
             window.location.href = `/book/event-result.html?id=${currentEventId}`;
         };
+
+        // EVENT LISTENER PRO BUTTONS
+        const btnMenuSertifikat = document.getElementById('btnMenuSertifikat');
+        if (btnMenuSertifikat) btnMenuSertifikat.onclick = () => window.location.href = `/book/event-sertifikat.html?id=${currentEventId}`;
+
+        const btnHeatBuilderPro = document.getElementById('btnHeatBuilderPro');
+        if (btnHeatBuilderPro) btnHeatBuilderPro.onclick = () => window.location.href = `/book/heat-builder.html?id=${currentEventId}`;
+        
+        // Heat builder dari Pusat Cetak juga dialihkan ke tempat yang sama
+        const btnMenuHeatBuilder = document.getElementById('btnMenuHeatBuilder');
+        if (btnMenuHeatBuilder) btnMenuHeatBuilder.onclick = () => window.location.href = `/book/heat-builder.html?id=${currentEventId}`;
+
+        const btnSponsorPro = document.getElementById('btnConfigSponsor');
+        if(btnSponsorPro) btnSponsorPro.onclick = () => { document.getElementById('modalPitching').classList.remove('hidden'); };
+
+        document.querySelectorAll('.btn-close-modal').forEach(btn => btn.onclick = (e) => e.target.closest('.fixed').classList.add('hidden'));
+
+        // LOGIKA SUBMIT PITCHING SPONSOR
+        const btnSubmitPitching = document.getElementById('btnSubmitPitching');
+        if(btnSubmitPitching) {
+            btnSubmitPitching.addEventListener('click', async () => {
+                const hari = document.getElementById('pitchHari').value;
+                const peserta = document.getElementById('pitchPeserta').value;
+                const t3x3 = document.getElementById('pitch3x3').value || 0;
+                const t5x5 = document.getElementById('pitch5x5').value || 0;
+                const tCustom = document.getElementById('pitchCustom').value || '';
+                const msg = document.getElementById('pitchMsg');
+
+                if(!hari || !peserta) {
+                    msg.innerHTML = "Jumlah Hari & Total Peserta wajib diisi!";
+                    msg.className = "text-[10px] font-bold text-center rounded-lg p-2 mt-2 bg-red-100 text-red-600 block";
+                    msg.classList.remove('hidden');
+                    return;
+                }
+
+                btnSubmitPitching.innerText = "Mengirim...";
+                btnSubmitPitching.disabled = true;
+
+                try {
+                    const { error } = await supabaseClient.from('sponsor_approach').insert([{
+                        event_id: currentEventId,
+                        jumlah_hari: parseInt(hari),
+                        total_peserta: parseInt(peserta),
+                        tenant_3x3: parseInt(t3x3),
+                        tenant_5x5: parseInt(t5x5),
+                        custom_tenant: tCustom
+                    }]);
+
+                    if(error) throw error;
+
+                    msg.innerHTML = "✅ Proposal berhasil diajukan! Masuk antrian approach SCS.";
+                    msg.className = "text-[10px] font-bold text-center rounded-lg p-2 mt-2 bg-green-100 text-green-700 block";
+                    msg.classList.remove('hidden');
+                    
+                    setTimeout(() => {
+                        document.getElementById('modalPitching').classList.add('hidden');
+                        msg.classList.add('hidden');
+                        document.getElementById('pitchHari').value = '';
+                        document.getElementById('pitchPeserta').value = '';
+                    }, 2500);
+
+                } catch (err) {
+                    msg.innerHTML = "Gagal: " + err.message;
+                    msg.className = "text-[10px] font-bold text-center rounded-lg p-2 mt-2 bg-red-100 text-red-600 block";
+                    msg.classList.remove('hidden');
+                } finally {
+                    btnSubmitPitching.innerText = "Ajukan Proposal 🚀";
+                    btnSubmitPitching.disabled = false;
+                }
+            });
+        }
 
         const btnExcel = document.getElementById('btnMenuCetakExcel');
         if(btnExcel) {
@@ -155,12 +258,8 @@ async function loadEventDashboard() {
                 }
             };
         }
-
-        updateConfigBadges();
         
         await loadEventStats();
-        
-        // --- COLAB FUNCTIONS SUNTIKAN BARU ---
         await loadClubsForCollab();
         await loadCollaborators();
 
@@ -192,67 +291,6 @@ async function loadEventStats() {
     } catch (error) {
     }
 }
-
-function updateConfigBadges() {
-    let completedCount = 0;
-    if (eventConfigData.landing_text) { setCompleteBadge('badgeLanding'); completedCount++; }
-    if (eventConfigData.entry_limit) { setCompleteBadge('badgeEntry'); completedCount++; }
-    if (eventConfigData.tiket_harga) { setCompleteBadge('badgeTiket'); completedCount++; }
-    
-    const percent = (completedCount / 3) * 100;
-    document.getElementById('statSetup').innerText = `${percent.toFixed(0)}% Selesai`;
-    document.getElementById('barSetup').style.width = `${percent}%`;
-}
-
-function setCompleteBadge(elementId) {
-    const el = document.getElementById(elementId);
-    if(el) {
-        el.className = "px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-bold rounded flex items-center gap-1 border border-emerald-200";
-        el.innerHTML = "Selesai";
-    }
-}
-
-document.getElementById('btnConfigLanding').onclick = () => { document.getElementById('valLandingText').value = eventConfigData.landing_text || ""; document.getElementById('modalLanding').classList.remove('hidden'); };
-document.getElementById('btnConfigEntry').onclick = () => { document.getElementById('valEntryLimit').value = eventConfigData.entry_limit || ""; document.getElementById('modalEntry').classList.remove('hidden'); };
-document.getElementById('btnConfigTiket').onclick = () => { document.getElementById('valTiketHarga').value = eventConfigData.tiket_harga || ""; document.getElementById('valTiketWA').value = eventConfigData.tiket_wa || ""; document.getElementById('modalTiket').classList.remove('hidden'); };
-
-const btnFina = document.getElementById('btnFinaGenerator');
-if(btnFina) btnFina.onclick = () => { document.getElementById('modalFina').classList.remove('hidden'); };
-const btnSponsorPro = document.getElementById('btnConfigSponsor');
-if(btnSponsorPro) btnSponsorPro.onclick = () => { document.getElementById('modalSponsor').classList.remove('hidden'); };
-
-document.querySelectorAll('.btn-close-modal').forEach(btn => btn.onclick = (e) => e.target.closest('.fixed').classList.add('hidden'));
-
-async function saveConfigToJSONB(key, valueObj, modalId, btnSaveId) {
-    const btn = document.getElementById(btnSaveId);
-    btn.innerText = "Menyimpan...";
-    btn.disabled = true;
-
-    const newConfigData = { ...eventConfigData, ...valueObj };
-
-    try {
-        const { error } = await supabaseClient.from('events').update({ config: newConfigData }).eq('id', currentEventId);
-        if (error) throw error;
-        
-        eventConfigData = newConfigData;
-        updateConfigBadges();
-        document.getElementById(modalId).classList.add('hidden');
-    } catch (error) {
-        alert("Gagal menyimpan: Cek koneksi Anda.");
-    } finally {
-        btn.innerText = "Simpan";
-        btn.disabled = false;
-    }
-}
-
-document.getElementById('btnSaveLanding').onclick = () => saveConfigToJSONB('landing', { landing_text: document.getElementById('valLandingText').value }, 'modalLanding', 'btnSaveLanding');
-document.getElementById('btnSaveEntry').onclick = () => saveConfigToJSONB('entry', { entry_limit: document.getElementById('valEntryLimit').value }, 'modalEntry', 'btnSaveEntry');
-document.getElementById('btnSaveTiket').onclick = () => saveConfigToJSONB('tiket', { tiket_harga: document.getElementById('valTiketHarga').value, tiket_wa: document.getElementById('valTiketWA').value }, 'modalTiket', 'btnSaveTiket');
-
-
-// ==========================================
-// FITUR TIM PANITIA (COLLAB)
-// ==========================================
 
 // 1. Fungsi Narik Daftar Klub untuk Dropdown
 async function loadClubsForCollab() {
@@ -339,7 +377,6 @@ async function loadCollaborators() {
 const btnInvite = document.getElementById('btnInviteCollab');
 if (btnInvite) {
     btnInvite.addEventListener('click', async () => {
-        // Ambil User_ID langsung dari value Dropdown Club
         const targetUserId = document.getElementById('selectCollabClub').value;
         const role = document.getElementById('inputCollabRole').value;
         const statusMsg = document.getElementById('collabStatusMsg');
@@ -355,7 +392,6 @@ if (btnInvite) {
         btnInvite.disabled = true;
 
         try {
-            // Suntik ke tabel event_collaborators
             const { error: insertError } = await supabaseClient
                 .from('event_collaborators')
                 .insert([{
@@ -373,10 +409,7 @@ if (btnInvite) {
             statusMsg.className = "text-sm text-center rounded-lg p-3 bg-green-100 text-green-700 block mb-4";
             statusMsg.classList.remove('hidden');
             
-            // Reset Dropdown
             document.getElementById('selectCollabClub').value = '';
-            
-            // Refresh Daftar Collab
             loadCollaborators();
 
         } catch (err) {
@@ -405,7 +438,3 @@ window.removeCollab = async function(collabId) {
 
 // INIT
 loadEventDashboard();
-const btnMenuSertifikat = document.getElementById('btnMenuSertifikat');
-if (btnMenuSertifikat) {
-    btnMenuSertifikat.onclick = () => window.location.href = `/book/event-sertifikat.html?id=${currentEventId}`;
-}

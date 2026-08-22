@@ -8,7 +8,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Command Center Event | SCS</title>
     <link rel="stylesheet" href="/src/style.css">
-    <!-- Library Excel untuk Fitur Export To Excel -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         svg { max-width: 100%; height: auto; display: block; }
@@ -78,17 +77,10 @@
             </div>
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-5 flex flex-col justify-center">
                 <div class="flex items-center gap-3 mb-3">
-                    <div class="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">⚙️</div>
-                    <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider">Setup</p>
+                    <div class="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">💎</div>
+                    <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider">Layanan</p>
                 </div>
-                <div class="w-full">
-                    <div class="flex justify-between items-center mb-1.5">
-                        <span id="statSetup" class="text-[10px] md:text-xs font-bold text-emerald-600">0% Selesai</span>
-                    </div>
-                    <div class="w-full bg-slate-100 rounded-full h-1.5">
-                        <div id="barSetup" class="bg-emerald-500 h-1.5 rounded-full" style="width: 0%"></div>
-                    </div>
-                </div>
+                <p class="text-xl md:text-2xl font-black text-amber-500 uppercase">FREEMIUM</p>
             </div>
         </div>
 
@@ -143,48 +135,27 @@
             </div>
         </div>
 
-        <!-- 4. SECTION: EVENT CONFIGURATION (MODALS) -->
+        <!-- 4. SECTION: EVENT CONFIGURATION (PRO) -->
         <div class="mb-10">
-            <div class="flex items-center gap-3 mb-5">
-                <div class="p-1.5 bg-orange-100 rounded-md text-orange-600 shrink-0">⚙️</div>
-                <h2 class="text-xs md:text-sm font-bold text-slate-600 uppercase tracking-widest shrink-0">Event Config (Pra-Lomba)</h2>
+            <div class="flex items-center gap-3 mb-4">
+                <div class="p-1.5 bg-amber-100 rounded-md text-amber-600 shrink-0">⭐</div>
+                <h2 class="text-xs md:text-sm font-bold text-slate-600 uppercase tracking-widest shrink-0">Layanan Ekstra & PRO</h2>
                 <div class="flex-1 h-px bg-slate-300"></div>
             </div>
 
-            <!-- Grid 3 kolom biar rapi menampung 6 menu -->
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <button id="btnConfigLanding" class="group bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200 hover:-translate-y-1 hover:border-blue-300 transition-all text-left flex flex-col justify-between h-full">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl bg-blue-50 flex items-center justify-center text-xl">💻</div>
-                        <span id="badgeLanding" class="px-2 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded">Belum</span>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-slate-800 text-sm">Landing Page</h3>
-                        <p class="text-[11px] text-slate-500">Teks sambutan promosi event.</p>
-                    </div>
-                </button>
+            <!-- Banner Keterangan Freemium -->
+            <div class="mb-5 bg-blue-50 border border-blue-200 p-4 md:p-5 rounded-2xl flex gap-3 md:gap-4 items-start shadow-sm">
+                <div class="text-blue-500 text-2xl shrink-0">💡</div>
+                <div>
+                    <h4 class="text-sm md:text-base font-extrabold text-blue-900 mb-1">Layanan Freemium SCS & F1 Swimming</h4>
+                    <p class="text-[11px] md:text-xs text-blue-800 leading-relaxed text-justify">
+                        Platform SCS ini <strong>100% GRATIS</strong> untuk Anda gunakan dari awal pendaftaran hingga mencetak hasil akhir lomba. Sebagai kompensasi (sponsorship internal), sistem kami akan secara otomatis menyisipkan promosi F1 ID dan SCS di halaman Live Result publik event Anda.
+                    </p>
+                </div>
+            </div>
 
-                <button id="btnConfigEntry" class="group bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200 hover:-translate-y-1 hover:border-indigo-300 transition-all text-left flex flex-col justify-between h-full">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl bg-indigo-50 flex items-center justify-center text-xl">⏱️</div>
-                        <span id="badgeEntry" class="px-2 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded">Belum</span>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-slate-800 text-sm">Entry Time</h3>
-                        <p class="text-[11px] text-slate-500">Batas waktu minimum pendaftaran.</p>
-                    </div>
-                </button>
-
-                <button id="btnConfigTiket" class="group bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200 hover:-translate-y-1 hover:border-emerald-300 transition-all text-left flex flex-col justify-between h-full">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl bg-emerald-50 flex items-center justify-center text-xl">🎫</div>
-                        <span id="badgeTiket" class="px-2 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded">Belum</span>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-slate-800 text-sm">Tiket & Info</h3>
-                        <p class="text-[11px] text-slate-500">Harga tiket dan kontak panitia.</p>
-                    </div>
-                </button>
+            <!-- Grid 3 kolom untuk menu Pro -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 
                 <!-- TOMBOL PRO 1: MESIN SERTIFIKAT -->
                 <button id="btnMenuSertifikat" class="group bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-scsGold hover:-translate-y-1 hover:shadow-md transition-all text-left flex flex-col justify-between h-full relative overflow-hidden">
@@ -198,27 +169,27 @@
                     </div>
                 </button>
 
-                <!-- TOMBOL PRO 2: FINA GENERATOR -->
-                <button id="btnFinaGenerator" class="group bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-scsGold hover:-translate-y-1 hover:shadow-md transition-all text-left flex flex-col justify-between h-full relative overflow-hidden">
+                <!-- TOMBOL PRO 2: HEAT BUILDER -->
+                <button id="btnHeatBuilderPro" class="group bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-scsGold hover:-translate-y-1 hover:shadow-md transition-all text-left flex flex-col justify-between h-full relative overflow-hidden">
                     <div class="absolute top-0 right-0 bg-scsGold text-blue-900 text-[9px] font-black px-2 py-1 rounded-bl-lg tracking-widest z-10">PRO</div>
                     <div class="flex justify-between items-start mb-4 relative z-20">
-                        <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">🧮</div>
+                        <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">🛠️</div>
                     </div>
                     <div class="relative z-20">
-                        <h3 class="font-bold text-slate-800 text-sm group-hover:text-amber-600 transition-colors">FINA Generator</h3>
-                        <p class="text-[11px] text-slate-500 mt-1">Kalkulasi poin FINA otomatis.</p>
+                        <h3 class="font-bold text-slate-800 text-sm group-hover:text-amber-600 transition-colors">Heat Builder</h3>
+                        <p class="text-[11px] text-slate-500 mt-1">Ganti dan modifikasi formasi lintasan secara manual.</p>
                     </div>
                 </button>
 
-                <!-- TOMBOL PRO 3: PITCHING SPONSOR -->
+                <!-- TOMBOL PRO 3: PITCHING SPONSOR (SPONSOR APPROACH) -->
                 <button id="btnConfigSponsor" class="group bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-scsGold hover:-translate-y-1 hover:shadow-md transition-all text-left flex flex-col justify-between h-full relative overflow-hidden">
                     <div class="absolute top-0 right-0 bg-scsGold text-blue-900 text-[9px] font-black px-2 py-1 rounded-bl-lg tracking-widest z-10">PRO</div>
                     <div class="flex justify-between items-start mb-4 relative z-20">
                         <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">🤝</div>
                     </div>
                     <div class="relative z-20">
-                        <h3 class="font-bold text-slate-800 text-sm group-hover:text-amber-600 transition-colors">Pitching Sponsor</h3>
-                        <p class="text-[11px] text-slate-500 mt-1">Layanan cari sponsor (kami yang kerjakan).</p>
+                        <h3 class="font-bold text-slate-800 text-sm group-hover:text-amber-600 transition-colors">Sponsor Approach</h3>
+                        <p class="text-[11px] text-slate-500 mt-1">Kami carikan brand untuk mensponsori perlombaan Anda.</p>
                     </div>
                 </button>
             </div>
@@ -258,7 +229,6 @@
 
                 <!-- Daftar Panitia Container -->
                 <div class="space-y-3" id="collabListContainer">
-                    <!-- Data disuntik oleh JS -->
                     <div class="animate-pulse flex gap-4 items-center bg-slate-50 p-4 rounded-xl">
                         <div class="w-10 h-10 bg-slate-200 rounded-full"></div>
                         <div class="w-1/2 h-4 bg-slate-200 rounded"></div>
@@ -271,67 +241,7 @@
 
     <!-- AREA MODAL -->
 
-    <div id="modalLanding" class="fixed inset-0 bg-black/60 z-[70] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
-            <h3 class="font-extrabold text-lg mb-4">Seting Landing Page</h3>
-            <textarea id="valLandingText" rows="4" class="w-full border rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Tulis ucapan selamat datang..."></textarea>
-            <div class="flex gap-2 mt-4">
-                <button class="btn-close-modal flex-1 bg-slate-200 py-3 rounded-xl font-bold">Batal</button>
-                <button id="btnSaveLanding" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold">Simpan</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modalEntry" class="fixed inset-0 bg-black/60 z-[70] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
-            <h3 class="font-extrabold text-lg mb-4">Seting Entry Time</h3>
-            <input type="text" id="valEntryLimit" class="w-full border rounded-xl p-3 outline-none focus:ring-2 focus:ring-indigo-500 text-sm mb-2" placeholder="Contoh: 00:45:00 (Maksimal waktu)">
-            <div class="flex gap-2 mt-4">
-                <button class="btn-close-modal flex-1 bg-slate-200 py-3 rounded-xl font-bold">Batal</button>
-                <button id="btnSaveEntry" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold">Simpan</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modalTiket" class="fixed inset-0 bg-black/60 z-[70] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
-            <h3 class="font-extrabold text-lg mb-4">Seting Tiket & Info</h3>
-            <input type="number" id="valTiketHarga" class="w-full border rounded-xl p-3 outline-none focus:ring-2 focus:ring-emerald-500 text-sm mb-3" placeholder="Harga Pendaftaran (Rp)">
-            <input type="text" id="valTiketWA" class="w-full border rounded-xl p-3 outline-none focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="No WhatsApp Panitia (628...)">
-            <div class="flex gap-2 mt-4">
-                <button class="btn-close-modal flex-1 bg-slate-200 py-3 rounded-xl font-bold">Batal</button>
-                <button id="btnSaveTiket" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold">Simpan</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL FINA GENERATOR (PRO) -->
-    <div id="modalFina" class="fixed inset-0 bg-black/60 z-[70] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-3xl w-full max-w-md p-6 md:p-8 shadow-2xl text-center">
-            <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 border-2 border-amber-200">🧮</div>
-            <h3 class="font-extrabold text-xl mb-2 text-amber-900">FINA Point Generator (PRO)</h3>
-            <p class="text-sm text-slate-600 mb-6 leading-relaxed">Kalkulasi dan konversi catatan waktu perenang menjadi <strong>Poin FINA resmi</strong> secara otomatis. Fitur eksklusif untuk event standar Nasional / PRO.</p>
-            <div class="flex gap-3 mt-5">
-                <button class="btn-close-modal flex-1 bg-slate-100 text-slate-600 py-3.5 rounded-xl font-bold hover:bg-slate-200 transition">Tutup</button>
-                <a href="https://wa.me/6289691219977" target="_blank" class="flex-1 bg-amber-500 text-white py-3.5 rounded-xl font-bold shadow-md hover:bg-amber-600 transition flex justify-center items-center gap-2">Upgrade PRO 🚀</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL PITCHING SPONSOR (PRO) -->
-    <div id="modalSponsor" class="fixed inset-0 bg-black/60 z-[70] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-3xl w-full max-w-md p-6 md:p-8 shadow-2xl text-center">
-            <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 border-2 border-amber-200">🤝</div>
-            <h3 class="font-extrabold text-xl mb-2 text-amber-900">Pitching Sponsor (PRO)</h3>
-            <p class="text-sm text-slate-600 mb-6 leading-relaxed">Fokus urus jalannya lomba, urusan cari sponsor dan dana biar <strong>Tim SCS yang kerjakan</strong> untuk Anda. Layanan ini eksklusif untuk pengguna PRO.</p>
-            <div class="flex gap-3 mt-5">
-                <button class="btn-close-modal flex-1 bg-slate-100 text-slate-600 py-3.5 rounded-xl font-bold hover:bg-slate-200 transition">Tutup</button>
-                <a href="https://wa.me/6289691219977" target="_blank" class="flex-1 bg-amber-500 text-white py-3.5 rounded-xl font-bold shadow-md hover:bg-amber-600 transition flex justify-center items-center gap-2">Hubungi SCS 🚀</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL PUSAT CETAK (DENGAN GARIS KUNING & HIJAU) -->
+    <!-- MODAL PUSAT CETAK -->
     <div id="modalPusatCetak" class="fixed inset-0 z-[80] bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white rounded-3xl w-full max-w-sm shadow-2xl p-6">
             <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
@@ -340,7 +250,6 @@
             </div>
             
             <div class="space-y-3">
-                <!-- Standar -->
                 <button id="btnMenuBukuAcara" class="w-full bg-slate-50 border border-slate-200 hover:bg-indigo-50 hover:border-indigo-300 rounded-xl p-4 text-left transition-colors flex items-center gap-4 group">
                     <div class="text-2xl group-hover:scale-110 transition-transform">📖</div>
                     <div>
@@ -357,24 +266,6 @@
                     </div>
                 </button>
 
-                <!-- GARIS KUNING (PRO FEATURE) -->
-                <div class="relative py-2 mt-2">
-                    <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-amber-200"></div></div>
-                    <div class="relative flex justify-center"><span class="bg-white px-3 text-[10px] font-black text-amber-500 uppercase tracking-widest">PRO FEATURE</span></div>
-                </div>
-
-                <button id="btnMenuHeatBuilder" class="w-full bg-amber-50 border border-amber-200 hover:bg-amber-100 hover:border-amber-300 rounded-xl p-4 text-left transition-colors flex items-center justify-between group">
-                    <div class="flex items-center gap-4">
-                        <div class="text-2xl group-hover:scale-110 transition-transform">🛠️</div>
-                        <div>
-                            <h4 class="font-bold text-amber-900 group-hover:text-amber-700 text-sm">Heat Builder</h4>
-                            <p class="text-[10px] text-amber-700/70 font-medium mt-0.5">Edit formasi lintasan manual.</p>
-                        </div>
-                    </div>
-                    <span class="bg-scsGold text-blue-900 text-[9px] font-black px-2 py-1 rounded tracking-widest shadow-sm border border-amber-300">PRO</span>
-                </button>
-
-                <!-- GARIS HIJAU (KHUSUS CETAK & EXPORT) -->
                 <div class="relative py-2 mt-2">
                     <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-emerald-200"></div></div>
                     <div class="relative flex justify-center"><span class="bg-white px-3 text-[10px] font-black text-emerald-500 uppercase tracking-widest">KHUSUS CETAK & EXPORT</span></div>
@@ -395,7 +286,57 @@
                         <p class="text-[10px] text-emerald-700/70 font-medium mt-0.5">Export data event_register format XLS.</p>
                     </div>
                 </button>
+            </div>
+        </div>
+    </div>
 
+    <!-- MODAL PITCHING SPONSOR (SPONSOR APPROACH) -->
+    <div id="modalPitching" class="fixed inset-0 bg-slate-900/60 z-[90] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                <h3 class="font-black text-slate-800 text-lg flex items-center gap-2">🤝 Pitching Sponsor</h3>
+                <button class="btn-close-modal text-slate-400 hover:text-red-500 font-bold text-2xl transition-colors">&times;</button>
+            </div>
+            <p class="text-xs text-slate-500 mb-4 leading-relaxed">Fokus jalankan event Anda, biar kami yang carikan brand sponsor untuk Anda! Isi potensi lomba di bawah ini:</p>
+            
+            <div class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-600 mb-1">Jumlah Hari</label>
+                        <input type="number" id="pitchHari" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-amber-500 text-sm font-bold text-slate-700" placeholder="Contoh: 2">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-600 mb-1">Total Peserta By Name</label>
+                        <input type="number" id="pitchPeserta" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-amber-500 text-sm font-bold text-slate-700" placeholder="Contoh: 800">
+                    </div>
+                </div>
+                
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <label class="block text-[10px] font-bold text-slate-800 mb-2">Potensi Lapak / Tenant Tersedia</label>
+                    <div class="grid grid-cols-2 gap-3 mb-2">
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-500 mb-1">Ukuran 3x3</label>
+                            <input type="number" id="pitch3x3" class="w-full border border-slate-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-amber-500 text-sm" placeholder="Jml Tenda">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-500 mb-1">Ukuran 5x5</label>
+                            <input type="number" id="pitch5x5" class="w-full border border-slate-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-amber-500 text-sm" placeholder="Jml Tenda">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[9px] font-bold text-slate-500 mb-1">Custom Lapak (Bila ada space khusus)</label>
+                        <input type="text" id="pitchCustom" class="w-full border border-slate-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-amber-500 text-sm" placeholder="Contoh: Space Parkir Mobil">
+                    </div>
+                </div>
+                
+                <div id="pitchMsg" class="hidden text-[10px] font-bold text-center rounded-lg p-2 mt-2"></div>
+            </div>
+
+            <div class="flex gap-2 mt-5">
+                <button class="btn-close-modal flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 transition text-sm">Batal</button>
+                <button id="btnSubmitPitching" class="flex-1 bg-amber-500 text-white py-3 rounded-xl font-bold shadow-md hover:bg-amber-600 transition text-sm flex items-center justify-center gap-1.5">
+                    Ajukan Proposal 🚀
+                </button>
             </div>
         </div>
     </div>
