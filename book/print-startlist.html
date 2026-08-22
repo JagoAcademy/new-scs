@@ -15,8 +15,7 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             flex-shrink: 0; 
             position: relative;
-            page-break-after: always;
-            break-after: page;
+            box-sizing: border-box;
         }
 
         /* KHUSUS HALAMAN COVER PDF (The Grand Entrance) */
@@ -73,21 +72,41 @@
             padding: 15mm;
         }
 
-        /* PRESISI MUTLAK SAAT PRINT */
+        /* PRESISI MUTLAK SAAT PRINT (Fix Halaman Blank) */
         @media print {
             @page { size: A4 portrait; margin: 0; }
-            body, html { height: auto !important; overflow: visible !important; background: white !important; margin: 0; padding: 0; }
+            body, html { height: auto !important; background: white !important; margin: 0 !important; padding: 0 !important; }
             .print-hidden { display: none !important; }
+            
+            /* Matikan flexbox di print wrapper biar gak melar */
+            #printWrapper { display: block !important; }
             
             .a4-page { 
                 box-shadow: none !important; 
                 margin: 0 !important; 
-                width: 210mm !important; 
-                min-width: 210mm !important;
-                min-height: 297mm !important;
+                width: 100% !important; 
+                min-width: 100% !important;
+            }
+
+            /* KUNCIAN FIX HALAMAN KOSONG */
+            .cover-page {
+                height: 296mm !important; /* Kurangi 1mm dari tinggi asli A4 biar gak numpang ke page 2 */
+                max-height: 296mm !important;
+                min-height: 296mm !important;
+                overflow: hidden !important; /* Babat elemen yang lubèr */
                 page-break-after: always !important;
                 break-after: page !important;
             }
+
+            /* Konten Tabel bebas panjangnya ke bawah */
+            .content-page {
+                min-height: auto !important;
+                height: auto !important;
+                page-break-after: auto !important;
+                break-after: auto !important;
+                padding: 10mm 15mm !important; /* Kasih jarak napas dari pinggir kertas */
+            }
+
             .avoid-break { page-break-inside: avoid !important; break-inside: avoid !important; margin-bottom: 8mm; }
             * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
 
@@ -116,7 +135,7 @@
     </div>
 
     <!-- MAIN WORKSPACE -->
-    <div id="printWrapper" class="w-full flex flex-col items-center">
+    <div id="printWrapper" class="w-full flex flex-col items-center print:block">
         
         <!-- HALAMAN 1: THE GRAND ENTRANCE (COVER) -->
         <div class="a4-page cover-page" id="coverPage">
@@ -197,7 +216,7 @@
                             </div>
 
                             <!-- CONTAINER HEAT SHEET -->
-                            <div id="heatContainer" class="space-y-10"> <!-- Spasi digedein (space-y-10) biar gak numpuk -->
+                            <div id="heatContainer" class="space-y-10">
                                 <div class="text-center p-10 text-slate-400 font-bold animate-pulse">Menarik Kasta Tertinggi dari Database... ⏳</div>
                             </div>
                         </td>
