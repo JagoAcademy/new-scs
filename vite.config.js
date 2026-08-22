@@ -45,6 +45,7 @@ export default defineConfig({
         admin: resolve(__dirname, 'admin.html'), // Panel Kontrol Super Admin SCS
         adminAds: resolve(__dirname, 'admin-ads.html'),
         sponsorPreview: resolve(__dirname, 'sponsor-preview.html'),
+        adminApproval: resolve(__dirname, 'admin-approval.html'), // <--- TAMBAHAN BARU: ACC Sponsor
       }
     }
   },
