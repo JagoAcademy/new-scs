@@ -128,7 +128,6 @@ async function loadEventDashboard() {
             window.location.href = `/book/event-result.html?id=${currentEventId}`;
         };
 
-        // EVENT LISTENER PRO BUTTONS
         const btnMenuSertifikat = document.getElementById('btnMenuSertifikat');
         if (btnMenuSertifikat) btnMenuSertifikat.onclick = () => window.location.href = `/book/event-sertifikat.html?id=${currentEventId}`;
 
@@ -138,65 +137,15 @@ async function loadEventDashboard() {
         const btnMenuHeatBuilder = document.getElementById('btnMenuHeatBuilder');
         if (btnMenuHeatBuilder) btnMenuHeatBuilder.onclick = () => window.location.href = `/book/heat-builder.html?id=${currentEventId}`;
 
-        const btnSponsorPro = document.getElementById('btnConfigSponsor');
-        if(btnSponsorPro) btnSponsorPro.onclick = () => { document.getElementById('modalPitching').classList.remove('hidden'); };
+        // ====================================================
+        // TOMBOL PINDAH HALAMAN: SUPER PRO APPROACH SPONSOR
+        // ====================================================
+        const btnSuperProSponsor = document.getElementById('btnSuperProSponsor');
+        if (btnSuperProSponsor) {
+            btnSuperProSponsor.onclick = () => window.location.href = `/event-sponsor.html?id=${currentEventId}`;
+        }
 
         document.querySelectorAll('.btn-close-modal').forEach(btn => btn.onclick = (e) => e.target.closest('.fixed').classList.add('hidden'));
-
-        // LOGIKA SUBMIT PITCHING SPONSOR
-        const btnSubmitPitching = document.getElementById('btnSubmitPitching');
-        if(btnSubmitPitching) {
-            btnSubmitPitching.addEventListener('click', async () => {
-                const hari = document.getElementById('pitchHari').value;
-                const peserta = document.getElementById('pitchPeserta').value;
-                const t3x3 = document.getElementById('pitch3x3').value || 0;
-                const t5x5 = document.getElementById('pitch5x5').value || 0;
-                const tCustom = document.getElementById('pitchCustom').value || '';
-                const msg = document.getElementById('pitchMsg');
-
-                if(!hari || !peserta) {
-                    msg.innerHTML = "Jumlah Hari & Total Peserta wajib diisi!";
-                    msg.className = "text-[10px] font-bold text-center rounded-lg p-2 mt-2 bg-red-100 text-red-600 block";
-                    msg.classList.remove('hidden');
-                    return;
-                }
-
-                btnSubmitPitching.innerText = "Mengirim...";
-                btnSubmitPitching.disabled = true;
-
-                try {
-                    const { error } = await supabaseClient.from('sponsor_approach').insert([{
-                        event_id: currentEventId,
-                        jumlah_hari: parseInt(hari),
-                        total_peserta: parseInt(peserta),
-                        tenant_3x3: parseInt(t3x3),
-                        tenant_5x5: parseInt(t5x5),
-                        custom_tenant: tCustom
-                    }]);
-
-                    if(error) throw error;
-
-                    msg.innerHTML = "✅ Proposal berhasil diajukan! Masuk antrian approach SCS.";
-                    msg.className = "text-[10px] font-bold text-center rounded-lg p-2 mt-2 bg-green-100 text-green-700 block";
-                    msg.classList.remove('hidden');
-                    
-                    setTimeout(() => {
-                        document.getElementById('modalPitching').classList.add('hidden');
-                        msg.classList.add('hidden');
-                        document.getElementById('pitchHari').value = '';
-                        document.getElementById('pitchPeserta').value = '';
-                    }, 2500);
-
-                } catch (err) {
-                    msg.innerHTML = "Gagal: " + err.message;
-                    msg.className = "text-[10px] font-bold text-center rounded-lg p-2 mt-2 bg-red-100 text-red-600 block";
-                    msg.classList.remove('hidden');
-                } finally {
-                    btnSubmitPitching.innerText = "Ajukan Proposal 🚀";
-                    btnSubmitPitching.disabled = false;
-                }
-            });
-        }
 
         const btnExcel = document.getElementById('btnMenuCetakExcel');
         if(btnExcel) {
@@ -258,11 +207,9 @@ async function loadEventDashboard() {
             };
         }
         
-        // Panggil fungsi-fungsi loader pendukung
         await loadEventStats();
         await loadClubsForCollab();
         await loadCollaborators();
-        await loadSponsorDeals(); // Panggil fungsi Sponsor Deal
 
     } catch (err) {
         alert("Gagal memuat data event.");
@@ -293,7 +240,6 @@ async function loadEventStats() {
     }
 }
 
-// 1. Fungsi Narik Daftar Klub untuk Dropdown
 async function loadClubsForCollab() {
     const selectClub = document.getElementById('selectCollabClub');
     if (!selectClub) return;
@@ -317,7 +263,6 @@ async function loadClubsForCollab() {
     }
 }
 
-// 2. Fungsi Load Kolaborator yang udah nempel di event
 async function loadCollaborators() {
     const container = document.getElementById('collabListContainer');
     if (!container) return;
@@ -374,7 +319,6 @@ async function loadCollaborators() {
     }
 }
 
-// 3. Tombol Undang Panitia (Insert Data Baru)
 const btnInvite = document.getElementById('btnInviteCollab');
 if (btnInvite) {
     btnInvite.addEventListener('click', async () => {
@@ -425,7 +369,6 @@ if (btnInvite) {
     });
 }
 
-// 4. Fungsi Cabut Akses (Delete Data)
 window.removeCollab = async function(collabId) {
     if(!confirm("Yakin mau cabut akses klub ini? Mereka nggak akan bisa buka Command Center ini lagi dari akun mereka.")) return;
     try {
@@ -437,76 +380,4 @@ window.removeCollab = async function(collabId) {
     }
 }
 
-// ==========================================
-// FUNGSI LOAD SPONSOR DEAL (PRO FEATURE)
-// ==========================================
-async function loadSponsorDeals() {
-    const container = document.getElementById('sponsorDealContainer');
-    if (!container) return;
-
-    try {
-        // 1. Cek apakah ada deal di event_sponsors
-        const { data: linkData, error: linkErr } = await supabaseClient
-            .from('event_sponsors')
-            .select('sponsor_ids')
-            .eq('event_id', currentEventId)
-            .single();
-
-        if (linkErr || !linkData || !linkData.sponsor_ids || linkData.sponsor_ids.length === 0) {
-            container.innerHTML = `
-                <div class="text-center py-6">
-                    <span class="text-4xl block mb-3 opacity-30 grayscale">🏢</span>
-                    <p class="text-sm font-bold text-slate-400">Belum Ada Sponsor Deal</p>
-                    <p class="text-[11px] text-slate-500 mt-1 max-w-sm mx-auto leading-relaxed">Gunakan fitur Pitching Sponsor untuk meminta tim pusat SCS mencarikan sponsor untuk event Anda.</p>
-                </div>
-            `;
-            return;
-        }
-
-        // 2. Tarik master datanya
-        const { data: sponsors, error: spErr } = await supabaseClient
-            .from('master_sponsors')
-            .select('*')
-            .in('id', linkData.sponsor_ids);
-
-        if (spErr || !sponsors || sponsors.length === 0) throw new Error("Data master sponsor tidak ditemukan.");
-
-        let html = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">`;
-        
-        sponsors.forEach(sp => {
-            html += `
-                <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex items-center gap-4 hover:border-amber-500 transition-colors group">
-                    <div class="w-16 h-16 bg-white rounded-lg p-2 flex items-center justify-center shrink-0 shadow-inner group-hover:scale-105 transition-transform">
-                        <img src="${sp.logo_url}" alt="${sp.sponsor_name}" class="w-full h-full object-contain" onerror="this.style.display='none'">
-                    </div>
-                    <div>
-                        <h4 class="font-black text-white text-sm md:text-base">${sp.sponsor_name}</h4>
-                        <a href="${sp.link_url || '#'}" target="_blank" class="text-[10px] text-blue-400 hover:text-blue-300 font-mono mt-1 block truncate max-w-[150px]">🔗 Cek Website</a>
-                    </div>
-                </div>
-            `;
-        });
-        html += `</div>`;
-
-        // 3. Tambahkan Keterangan Syarat & Ketentuan Deal
-        html += `
-            <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 md:p-5 mt-2 shadow-inner">
-                <h4 class="text-amber-400 font-black text-xs mb-3 flex items-center gap-2"><span>⚠️</span> SYARAT & KEWAJIBAN PANITIA (DEAL ACTIVE):</h4>
-                <ul class="list-disc list-inside text-[11px] text-slate-300 space-y-2 ml-1 leading-relaxed">
-                    <li>Logo sponsor otomatis tayang eksklusif di halaman <strong>Live Result</strong>, <strong>Leaderboard</strong>, dan Header Aplikasi publik.</li>
-                    <li>MC / Announcer wajib menyebutkan nama sponsor dan tagline minimal <strong>1x setiap pergantian kategori lomba</strong>.</li>
-                    <li>Panitia wajib menyediakan spot untuk pemasangan <strong>banner / umbul-umbul fisik</strong> di area strategis kolam renang sesuai proposal kesepakatan.</li>
-                    <li>Tim SCS berhak meninjau pelaksanaan kewajiban ini di lapangan secara berkala.</li>
-                </ul>
-            </div>
-        `;
-
-        container.innerHTML = html;
-
-    } catch (err) {
-        container.innerHTML = `<p class="text-xs text-red-400 font-bold text-center py-4 bg-red-900/20 rounded-xl border border-red-900/50">Gagal memuat sponsor: ${err.message}</p>`;
-    }
-}
-
-// INIT
 loadEventDashboard();

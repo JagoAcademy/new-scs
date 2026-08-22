@@ -29,6 +29,7 @@ export default defineConfig({
 
         // --- 3. DASHBOARD EO / PANITIA LOMBA ---
         eventDashboard: resolve(__dirname, 'event-dashboard.html'), // Panel Utama Command Center 1 Event
+        eventSponsor: resolve(__dirname, 'event-sponsor.html'), // <--- TAMBAHAN BARU: Manajemen Sponsor Deal & Pitching
         eventPeserta: resolve(__dirname, 'event-peserta.html'), // List & Verifikasi Peserta Lomba
         settingsLomba: resolve(__dirname, 'settings-lomba.html'), // Setup Nomor Lomba, Usia & Gaya
 
