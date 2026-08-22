@@ -608,3 +608,10 @@ window.simpanKeDatabase = async function() {
         btnSimpan.disabled = false;
     }
 }
+
+// === TAMBAHAN BARU BRAY: JALAN TOL KE HALAMAN CETAK ===
+window.bukaHalamanCetak = function() {
+    if(confirm("Pastikan Anda sudah mengklik '💾 Kunci Start List' agar data terbaru masuk ke database.\n\nLanjutkan ke halaman Cetak PDF?")) {
+        window.location.href = `/book/print-startlist.html?id=${currentEventId}`;
+    }
+}
