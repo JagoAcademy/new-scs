@@ -1,6 +1,8 @@
 import { supabaseClient } from './supabase.js';
 
 let currentEventId = null;
+let currentPayMethod = 'transfer';
+let qrisInterval = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     // ==========================================
@@ -88,7 +90,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('headerSubdomain').innerText = `${eventData.subdomain}.f1swimming.com`;
 
         // ==========================================
-        // DYNAMIC EVENT STATUS TIER (UX KELAS KAKAP)
+        // DYNAMIC EVENT STATUS TIER 
         // ==========================================
         const statLayananText = document.getElementById('statLayananText');
         const btnNavUpgrade = document.getElementById('btnNavUpgrade');
@@ -116,50 +118,160 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // ==========================================
-        // EVENT LISTENER BUKTI BAYAR 
+        // LOGIC MODAL CHECKOUT ENTERPRISE
         // ==========================================
+        const payTabs = document.querySelectorAll('.pay-tab');
+        const paySections = document.querySelectorAll('.pay-section');
         const btnSubmitUpgrade = document.getElementById('btnSubmitUpgrade');
+
+        function startQrisTimer() {
+            clearInterval(qrisInterval);
+            let time = 15 * 60; // 15 menit
+            const display = document.getElementById('qrisTimerDisplay');
+            qrisInterval = setInterval(() => {
+                let m = Math.floor(time / 60);
+                let s = time % 60;
+                display.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                if(time <= 0) {
+                    clearInterval(qrisInterval);
+                    display.innerText = "00:00 (EXPIRED)";
+                    btnSubmitUpgrade.innerText = "Generate Ulang QRIS";
+                }
+                time--;
+            }, 1000);
+        }
+
+        payTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Reset styling tab
+                payTabs.forEach(t => { 
+                    t.classList.remove('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-slate-800', 'dark:text-white'); 
+                    t.classList.add('text-slate-500', 'dark:text-slate-400'); 
+                });
+                
+                // Set tab aktif
+                tab.classList.add('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-slate-800', 'dark:text-white');
+                tab.classList.remove('text-slate-500', 'dark:text-slate-400');
+
+                // Sembunyikan semua section
+                paySections.forEach(s => s.classList.add('hidden'));
+                
+                // Tampilkan section yang dituju
+                const target = tab.getAttribute('data-target');
+                document.getElementById(`pay${target.charAt(0).toUpperCase() + target.slice(1)}`).classList.remove('hidden');
+
+                currentPayMethod = target;
+
+                // Dinamis ubah teks tombol
+                if(target === 'transfer') {
+                    btnSubmitUpgrade.innerText = 'Konfirmasi Pembayaran';
+                    clearInterval(qrisInterval);
+                }
+                if(target === 'qris') {
+                    btnSubmitUpgrade.innerText = 'Saya Sudah Bayar (Cek Otomatis)';
+                    startQrisTimer();
+                }
+                if(target === 'voucher') {
+                    btnSubmitUpgrade.innerText = 'Klaim & Aktifkan Pro';
+                    clearInterval(qrisInterval);
+                }
+            });
+        });
+
+        // HANDLE SUBMIT BUTTON MULTI-PURPOSE
         if (btnSubmitUpgrade) {
             btnSubmitUpgrade.onclick = async () => {
-                const fileInput = document.getElementById('uploadBuktiBayar').files[0];
-                if (!fileInput) return alert("Pilih foto bukti transfer terlebih dahulu bos!");
-
-                btnSubmitUpgrade.innerText = "⏳ Memproses...";
-                btnSubmitUpgrade.disabled = true;
-
-                try {
-                    const fileExt = fileInput.name.split('.').pop();
-                    const fileName = `upgrade_${currentEventId}_${Date.now()}.${fileExt}`;
-                    const { error: upErr } = await supabaseClient.storage.from('berkas-atlet').upload(fileName, fileInput);
-                    if (upErr) throw upErr;
-
-                    const { data: urlData } = supabaseClient.storage.from('berkas-atlet').getPublicUrl(fileName);
-
-                    const { error: insErr } = await supabaseClient.from('event_transactions').insert([{
-                        event_id: currentEventId,
-                        user_id: currentUserId,
-                        jenis_transaksi: 'UPGRADE_PRO',
-                        nominal: 500000, 
-                        bukti_url: urlData.publicUrl,
-                        status: 'PENDING'
-                    }]);
-
-                    if (insErr) throw insErr;
-
-                    alert("✅ Bukti transfer berhasil dikirim! Menunggu verifikasi Admin Pusat.");
-                    document.getElementById('modalUpgrade').classList.add('hidden');
+                
+                // KONDISI 1: TRANSFER BANK
+                if (currentPayMethod === 'transfer') {
+                    const fileInput = document.getElementById('uploadBuktiBayar').files[0];
+                    if (!fileInput) return alert("Pilih foto bukti transfer terlebih dahulu bos!");
                     
-                } catch (err) {
-                    alert("Gagal mengirim bukti: " + err.message);
-                } finally {
-                    btnSubmitUpgrade.innerText = "Konfirmasi Pembayaran";
-                    btnSubmitUpgrade.disabled = false;
+                    // Validasi Size Max 2MB
+                    if (fileInput.size > 2 * 1024 * 1024) return alert("Ups! Ukuran file maksimal 2MB ya.");
+
+                    btnSubmitUpgrade.innerText = "⏳ Mengirim Data...";
+                    btnSubmitUpgrade.disabled = true;
+
+                    try {
+                        const fileExt = fileInput.name.split('.').pop();
+                        const fileName = `upgrade_${currentEventId}_${Date.now()}.${fileExt}`;
+                        const { error: upErr } = await supabaseClient.storage.from('berkas-atlet').upload(fileName, fileInput);
+                        if (upErr) throw upErr;
+
+                        const { data: urlData } = supabaseClient.storage.from('berkas-atlet').getPublicUrl(fileName);
+
+                        const { error: insErr } = await supabaseClient.from('event_transactions').insert([{
+                            event_id: currentEventId,
+                            user_id: currentUserId,
+                            jenis_transaksi: 'UPGRADE_PRO',
+                            nominal: 500000, 
+                            bukti_url: urlData.publicUrl,
+                            status: 'PENDING'
+                        }]);
+
+                        if (insErr) throw insErr;
+
+                        alert("✅ Bukti transfer berhasil dikirim! Menunggu verifikasi Admin Pusat.");
+                        document.getElementById('modalUpgrade').classList.add('hidden');
+                        
+                    } catch (err) {
+                        alert("Gagal mengirim bukti: " + err.message);
+                    } finally {
+                        btnSubmitUpgrade.innerText = "Konfirmasi Pembayaran";
+                        btnSubmitUpgrade.disabled = false;
+                    }
+                }
+
+                // KONDISI 2: QRIS INSTANT (Dummy Response)
+                if (currentPayMethod === 'qris') {
+                    if(btnSubmitUpgrade.innerText === "Generate Ulang QRIS") {
+                        startQrisTimer();
+                        btnSubmitUpgrade.innerText = 'Saya Sudah Bayar (Cek Otomatis)';
+                        return;
+                    }
+                    
+                    btnSubmitUpgrade.innerText = "⏳ Mengecek ke server Xendit...";
+                    btnSubmitUpgrade.disabled = true;
+                    
+                    setTimeout(() => {
+                        alert("Belum ada pembayaran yang terdeteksi pada QRIS ini. Silakan scan dan bayar terlebih dahulu.");
+                        btnSubmitUpgrade.innerText = "Saya Sudah Bayar (Cek Otomatis)";
+                        btnSubmitUpgrade.disabled = false;
+                    }, 2000);
+                }
+
+                // KONDISI 3: VOUCHER
+                if (currentPayMethod === 'voucher') {
+                    const vCode = document.getElementById('inputVoucherCode').value.trim().toUpperCase();
+                    if (!vCode) return alert("Masukkan kode voucher terlebih dahulu!");
+
+                    btnSubmitUpgrade.innerText = "⏳ Memvalidasi Kode...";
+                    btnSubmitUpgrade.disabled = true;
+
+                    setTimeout(async () => {
+                        if(vCode === 'PROGRATIS') {
+                            try {
+                                await supabaseClient.from('events').update({event_tier: 'PRO', is_pro: true}).eq('id', currentEventId);
+                                alert("🎉 VOUCHER VALID! Event Anda berhasil di-upgrade ke PRO.");
+                                window.location.reload();
+                            } catch(e) {
+                                alert("Error update database: " + e.message);
+                                btnSubmitUpgrade.innerText = "Klaim & Aktifkan Pro";
+                                btnSubmitUpgrade.disabled = false;
+                            }
+                        } else {
+                            alert("Kode voucher tidak valid atau sudah expired!");
+                            btnSubmitUpgrade.innerText = "Klaim & Aktifkan Pro";
+                            btnSubmitUpgrade.disabled = false;
+                        }
+                    }, 1000);
                 }
             };
         }
 
         // ==========================================
-        // SISANYA FUNGSI BIASA
+        // SISANYA FUNGSI BIASA (COPAS, DLL)
         // ==========================================
         const publicLink = `https://${eventData.subdomain}.f1swimming.com?id=${currentEventId}`;
         const linkInput = document.getElementById('publicLinkInput');
@@ -255,7 +367,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        document.querySelectorAll('.btn-close-modal').forEach(btn => btn.onclick = (e) => e.target.closest('.fixed').classList.add('hidden'));
+        // Event listener close modal yang aman
+        document.querySelectorAll('.btn-close-modal').forEach(btn => {
+            btn.onclick = (e) => {
+                e.target.closest('.fixed').classList.add('hidden');
+                clearInterval(qrisInterval); // Matikan timer QRIS kalau ditutup
+            }
+        });
 
         const btnExcel = document.getElementById('btnMenuCetakExcel');
         if(btnExcel) {

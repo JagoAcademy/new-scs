@@ -11,10 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         svg { max-width: 100%; height: auto; display: block; }
-        /* Smooth transition untuk efek lampu mati/nyala */
-        .theme-transition, .theme-transition * {
-            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
-        }
+        .theme-transition, .theme-transition * { transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease; }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 min-h-screen font-sans text-slate-800 dark:text-slate-200 theme-transition pb-20 relative">
@@ -27,17 +24,13 @@
             <span class="md:hidden">Kembali</span>
         </a>
         <div class="flex items-center gap-3">
-            
-            <!-- TOMBOL DARK MODE -->
             <button id="btnToggleDark" class="text-slate-400 hover:text-amber-400 focus:outline-none transition-transform hover:scale-110">
                 <svg id="iconMoon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                 <svg id="iconSun" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
             </button>
             
-            <!-- UX OPSI C: TOP NAV UPGRADE (ELEGAN, MINIMALIS, BUKAN IKLAN PINJOL) -->
             <button id="btnNavUpgrade" class="hidden px-3 py-1 rounded border border-scsGold text-[10px] md:text-xs font-bold text-scsGold hover:bg-scsGold hover:text-blue-900 transition-colors uppercase tracking-widest cursor-pointer group relative">
                 Go Pro 👑
-                <!-- Tooltip Tipis -->
                 <span class="absolute top-10 right-0 w-32 bg-slate-800 text-white text-[9px] px-2 py-1 rounded hidden group-hover:block text-center shadow-lg border border-slate-700">Unlock Pro Features</span>
             </button>
 
@@ -51,7 +44,6 @@
         <!-- 1. HEADER CARD -->
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 md:p-7 mb-6">
             <div class="flex flex-col md:flex-row md:items-start justify-between gap-5">
-                <!-- Kiri: Info Event -->
                 <div>
                     <div class="flex flex-wrap items-center gap-2 md:gap-3 mb-2">
                         <h1 id="headerEventName" class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Memuat Event...</h1>
@@ -66,13 +58,11 @@
                     </p>
                 </div>
                 
-                <!-- Kanan: Tombol Settings Saja -->
                 <div class="flex flex-col md:items-end gap-3 w-full md:w-auto shrink-0">
                     <button id="btnSettingsLomba" class="w-full md:w-auto px-5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer">
                         <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                         Settings Lomba
                     </button>
-                    <!-- Upgrade tombol kuning di sini DIHAPUS, dipindah ke Top Nav -->
                 </div>
             </div>
         </div>
@@ -101,7 +91,6 @@
                 <p id="statKategori" class="text-2xl md:text-3xl font-black text-slate-800 dark:text-white">0</p>
             </div>
             
-            <!-- KARTU EVENT STATUS -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 md:p-5 flex flex-col justify-center relative overflow-hidden group">
                 <div class="flex items-center justify-between mb-2">
                     <div class="flex items-center gap-3">
@@ -311,47 +300,108 @@
         </div>
     </div>
 
-    <!-- MODAL UPGRADE PRO (TRANSAKSI) -->
+    <!-- MODAL UPGRADE PRO ENTERPRISE CHECKOUT EXPERIENCE -->
     <div id="modalUpgrade" class="fixed inset-0 bg-slate-900/80 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-amber-500/30">
-            <div class="p-5 border-b border-slate-100 dark:border-slate-700 bg-amber-50 dark:bg-amber-900/20 flex justify-between items-center">
-                <h3 class="font-black text-amber-900 dark:text-amber-400 text-lg">✨ Go Pro</h3>
-                <button class="btn-close-modal text-amber-500 hover:text-red-500 text-2xl font-bold">&times;</button>
+        <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
+            
+            <!-- Header Modal -->
+            <div class="bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-700 p-5">
+                <div class="flex justify-between items-center mb-1">
+                    <h3 class="font-black text-slate-900 dark:text-white text-lg md:text-xl">✨ Upgrade ke SCS Pro</h3>
+                    <button class="btn-close-modal text-slate-400 hover:text-red-500 text-2xl font-bold leading-none">&times;</button>
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Akses fitur sponsor eksklusif, prioritas support, dan layanan ekstra tanpa batas.</p>
             </div>
-            <div class="p-6 space-y-4">
+
+            <!-- Scrollable Content -->
+            <div class="p-5 md:p-6 overflow-y-auto max-h-[65vh]">
                 
-                <!-- CORET HARGA PROMO BAKAR DUIT -->
-                <div class="text-center mb-4">
-                    <p class="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">Biaya Investasi Event</p>
-                    <div class="flex justify-center items-end gap-3 mt-1">
+                <!-- Pricing Info -->
+                <div class="text-center mb-5">
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mb-1">Biaya Investasi Event</p>
+                    <div class="flex justify-center items-end gap-3">
                         <p class="text-lg font-bold text-slate-400 line-through decoration-red-500 decoration-2">Rp 1.000.000</p>
-                        <p class="text-3xl font-black text-slate-800 dark:text-white leading-none">Rp 500.000</p>
+                        <p class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white leading-none tracking-tight">Rp 500.000</p>
                     </div>
-                    <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold mt-2 bg-emerald-50 dark:bg-emerald-900/30 inline-block px-2.5 py-1 rounded-md border border-emerald-200 dark:border-emerald-800">Promo Launching s/d Jan 2027 🔥</p>
+                    <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold mt-2">Berlaku per event / Promo s/d Jan 2027</p>
                 </div>
 
-                <ul class="text-xs text-slate-600 dark:text-slate-300 space-y-2 mb-4 bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
-                    <li class="flex gap-2"><span>💎</span> Buka Kunci Super PRO Approach Sponsor</li>
-                    <li class="flex gap-2"><span>💎</span> Prioritas Bantuan & Eksekusi Deal Sponsor Pusat</li>
-                    <li class="flex gap-2"><span>💎</span> Bebas Akses Seluruh Layanan Ekstra (Sertifikat/Heat)</li>
-                </ul>
-                <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800/50 text-center">
-                    <p class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Transfer ke Rekening Resmi SCS:</p>
-                    <p class="text-lg font-black text-blue-700 dark:text-blue-400">BCA 123-456-7890</p>
-                    <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400">a.n. PT. Swimming Competition System</p>
+                <!-- Benefit List -->
+                <div class="bg-[#f8fafc] dark:bg-slate-800 p-4 rounded-xl mb-6 border border-slate-100 dark:border-slate-700">
+                    <ul class="text-xs text-slate-700 dark:text-slate-300 space-y-3 font-medium">
+                        <li class="flex items-start gap-2.5">
+                            <span class="text-emerald-500 mt-0.5 text-sm leading-none">✅</span> 
+                            <span><strong>Sponsor Mastery:</strong> Akses Super PRO Approach Sponsor & Prioritas Deal Pusat.</span>
+                        </li>
+                        <li class="flex items-start gap-2.5">
+                            <span class="text-emerald-500 mt-0.5 text-sm leading-none">✅</span> 
+                            <span><strong>Unlimited Extras:</strong> Bebas akses penuh ke Mesin Sertifikat & Heat Builder.</span>
+                        </li>
+                        <li class="flex items-start gap-2.5">
+                            <span class="text-emerald-500 mt-0.5 text-sm leading-none">✅</span> 
+                            <span><strong>Premium Support:</strong> Bantuan prioritas langsung dari tim teknis SCS.</span>
+                        </li>
+                    </ul>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Upload Bukti Transfer</label>
-                    <input type="file" id="uploadBuktiBayar" accept="image/*" class="w-full text-xs file:bg-slate-800 file:text-white file:rounded-lg file:border-0 file:px-4 file:py-2 file:font-bold file:mr-3 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 outline-none">
+
+                <!-- Segmented Control Metode Pembayaran -->
+                <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Pilih Metode Pembayaran</p>
+                <div class="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-lg mb-4">
+                    <button class="pay-tab flex-1 py-2 text-[10px] md:text-xs font-bold rounded-md bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white transition-all" data-target="transfer">🏦 Transfer Bank</button>
+                    <button class="pay-tab flex-1 py-2 text-[10px] md:text-xs font-bold rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all" data-target="qris">⚡ QRIS Instant</button>
+                    <button class="pay-tab flex-1 py-2 text-[10px] md:text-xs font-bold rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all" data-target="voucher">🎟️ Voucher</button>
                 </div>
+
+                <!-- Dynamic Sections -->
+                
+                <!-- Section: Transfer -->
+                <div id="payTransfer" class="pay-section block animate-fade-in">
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-center mb-3">
+                        <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Transfer ke Rekening Resmi SCS</p>
+                        <p class="text-xl md:text-2xl font-black text-blue-700 dark:text-blue-400 tracking-wider">BCA 123-456-7890</p>
+                        <p class="text-[10px] font-medium text-slate-500 mt-1">a.n. PT. Swimming Competition System</p>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Upload Bukti Transfer</label>
+                        <input type="file" id="uploadBuktiBayar" accept=".jpg,.jpeg,.png,.pdf" class="w-full text-xs file:bg-slate-800 file:text-white file:rounded-md file:border-0 file:px-3 file:py-1.5 file:font-bold file:mr-3 file:cursor-pointer text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 outline-none p-1 transition-all">
+                        <p class="text-[9px] text-slate-400 mt-1">Format: JPG, PNG, PDF. Maksimal 2MB.</p>
+                    </div>
+                </div>
+
+                <!-- Section: QRIS -->
+                <div id="payQris" class="pay-section hidden text-center animate-fade-in">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 inline-block mb-3 shadow-sm">
+                        <!-- Dummy QR Image (Diganti dari backend via Xendit nantinya) -->
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" alt="QRIS" class="w-32 h-32 md:w-40 md:h-40 opacity-40 mx-auto">
+                    </div>
+                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Scan QRIS menggunakan M-Banking / E-Wallet</p>
+                    <p class="text-[11px] font-mono text-slate-500 font-bold bg-slate-100 dark:bg-slate-900 inline-block px-3 py-1 rounded">Menunggu pembayaran... <span id="qrisTimerDisplay" class="text-red-500 ml-1">15:00</span></p>
+                </div>
+
+                <!-- Section: Voucher -->
+                <div id="payVoucher" class="pay-section hidden animate-fade-in">
+                    <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <label class="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Masukkan Kode Voucher Promo</label>
+                        <input type="text" id="inputVoucherCode" placeholder="Contoh: PROGRATIS" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-sm font-bold text-slate-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none uppercase placeholder:normal-case placeholder:font-normal transition-all">
+                    </div>
+                </div>
+
             </div>
-            <div class="p-5 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-700">
-                <button id="btnSubmitUpgrade" class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 font-bold py-3.5 rounded-xl shadow-lg transition-colors cursor-pointer text-sm">
+
+            <!-- Footer Action Button -->
+            <div class="p-5 bg-white dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700">
+                <button id="btnSubmitUpgrade" class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 font-bold py-3.5 rounded-xl shadow-md transition-colors cursor-pointer text-sm">
                     Konfirmasi Pembayaran
                 </button>
             </div>
         </div>
     </div>
+
+    <!-- Tambahan animasi Tailwind tipis -->
+    <style>
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 
     <script type="module" src="/src/event-dashboard.js"></script>
 </body>
