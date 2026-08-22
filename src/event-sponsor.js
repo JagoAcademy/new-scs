@@ -1,6 +1,9 @@
 import { supabaseClient } from './supabase.js';
 
 let currentEventId = null;
+let masterSponsors = [];
+let eventSponsorsDeal = []; 
+let sponsorSubmissions = []; 
 
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -12,11 +15,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // Set link kembali ke Dashboard
     const btnBack = document.getElementById('btnBackDashboard');
-    if (btnBack) {
-        btnBack.href = `/event-dashboard.html?id=${currentEventId}`;
-    }
+    if (btnBack) btnBack.href = `/event-dashboard.html?id=${currentEventId}`;
 
     try {
         // ==========================================
@@ -54,9 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .eq('user_id', currentUserId)
                 .single();
                 
-            if (collabData) {
-                isAuthorized = true;
-            }
+            if (collabData) isAuthorized = true;
         }
 
         if (!isAuthorized) {
@@ -66,141 +64,129 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         // ==========================================
 
-        // Inisialisasi Fungsi
-        setupPitchingForm();
-        await loadSponsorDeals();
+        document.querySelectorAll('.btn-close-modal').forEach(btn => btn.onclick = (e) => e.target.closest('.fixed').classList.add('hidden'));
+
+        await fetchSponsorData();
 
     } catch (err) {
         alert("Terjadi kesalahan: " + err.message);
     }
 });
 
-function setupPitchingForm() {
-    const btnSubmitPitching = document.getElementById('btnSubmitPitching');
-    if(!btnSubmitPitching) return;
+async function fetchSponsorData() {
+    try {
+        // 1. Tarik semua katalog sponsor
+        const { data: masters } = await supabaseClient.from('master_sponsors').select('*').order('id', {ascending: true});
+        masterSponsors = masters || [];
 
-    btnSubmitPitching.addEventListener('click', async () => {
-        const hari = document.getElementById('pitchHari').value;
-        const peserta = document.getElementById('pitchPeserta').value;
-        const t3x3 = document.getElementById('pitch3x3').value || 0;
-        const t5x5 = document.getElementById('pitch5x5').value || 0;
-        const tCustom = document.getElementById('pitchCustom').value || '';
-        const msg = document.getElementById('pitchMsg');
+        // 2. Tarik daftar pengajuan yang lagi nunggu review
+        const { data: subs } = await supabaseClient.from('sponsor_submissions').select('*').eq('event_id', currentEventId);
+        sponsorSubmissions = subs || [];
 
-        if(!hari || !peserta) {
-            msg.innerHTML = "Jumlah Hari & Total Peserta wajib diisi!";
-            msg.className = "text-sm font-bold text-center rounded-lg p-3 mt-2 bg-red-100 text-red-600 block";
-            msg.classList.remove('hidden');
-            return;
+        // 3. Tarik data yang udah DEAL (di-approve admin ke event_sponsors)
+        const { data: deals } = await supabaseClient.from('event_sponsors').select('sponsor_ids').eq('event_id', currentEventId).single();
+        eventSponsorsDeal = deals ? (deals.sponsor_ids || []) : [];
+
+        renderTable();
+    } catch(err) {
+        document.getElementById('sponsorTableBody').innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500 font-bold">Gagal memuat data sponsor: ${err.message}</td></tr>`;
+    }
+}
+
+function renderTable() {
+    const tbody = document.getElementById('sponsorTableBody');
+    tbody.innerHTML = '';
+
+    if(masterSponsors.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-500 font-medium">Bank Sponsor sedang kosong. Belum ada brand yang terafiliasi.</td></tr>';
+        return;
+    }
+
+    masterSponsors.forEach((sp, idx) => {
+        // Cek status deal / review
+        const isDeal = eventSponsorsDeal.includes(sp.id);
+        const isSubmitted = sponsorSubmissions.find(s => s.sponsor_id === sp.id);
+
+        let actionHtml = '';
+        if (isDeal) {
+            actionHtml = `
+                <div class="flex justify-center">
+                    <span class="bg-emerald-100 text-emerald-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-200 shadow-sm flex items-center gap-1.5 w-max">
+                        <span class="text-sm">🤝</span> DEAL AKTIF
+                    </span>
+                </div>`;
+        } else if (isSubmitted) {
+            actionHtml = `
+                <div class="flex justify-center">
+                    <span class="bg-amber-100 text-amber-700 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-amber-200 shadow-sm flex items-center gap-1.5 w-max opacity-80">
+                        <span class="animate-spin text-sm">⏳</span> MENUNGGU
+                    </span>
+                </div>`;
+        } else {
+            actionHtml = `
+                <button onclick="ajukanSponsor(${sp.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl text-xs font-bold transition shadow-md w-full md:w-auto transform hover:-translate-y-0.5">
+                    Ajukan Proposal
+                </button>`;
         }
 
-        btnSubmitPitching.innerText = "Mengirim...";
-        btnSubmitPitching.disabled = true;
+        const safeSyarat = encodeURIComponent(sp.syarat || 'Tidak ada syarat dan kewajiban khusus. Hubungi admin SCS.');
+        const safeName = encodeURIComponent(sp.sponsor_name);
 
-        try {
-            const { error } = await supabaseClient.from('sponsor_approach').insert([{
-                event_id: currentEventId,
-                jumlah_hari: parseInt(hari),
-                total_peserta: parseInt(peserta),
-                tenant_3x3: parseInt(t3x3),
-                tenant_5x5: parseInt(t5x5),
-                custom_tenant: tCustom
-            }]);
-
-            if(error) throw error;
-
-            msg.innerHTML = "✅ Proposal berhasil diajukan! Masuk antrian approach SCS Pusat.";
-            msg.className = "text-sm font-bold text-center rounded-lg p-3 mt-2 bg-green-100 text-green-700 block";
-            msg.classList.remove('hidden');
-            
-            setTimeout(() => {
-                msg.classList.add('hidden');
-                document.getElementById('pitchHari').value = '';
-                document.getElementById('pitchPeserta').value = '';
-                document.getElementById('pitch3x3').value = '';
-                document.getElementById('pitch5x5').value = '';
-                document.getElementById('pitchCustom').value = '';
-            }, 3000);
-
-        } catch (err) {
-            msg.innerHTML = "Gagal: " + err.message;
-            msg.className = "text-sm font-bold text-center rounded-lg p-3 mt-2 bg-red-100 text-red-600 block";
-            msg.classList.remove('hidden');
-        } finally {
-            btnSubmitPitching.innerText = "Ajukan Proposal ke SCS Pusat 🚀";
-            btnSubmitPitching.disabled = false;
-        }
+        const tr = `
+            <tr class="hover:bg-blue-50/30 transition-colors border-b border-slate-100 group">
+                <td class="p-4 text-center font-black text-slate-300 text-sm">${idx + 1}</td>
+                <td class="p-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 bg-white rounded-xl border border-slate-200 p-2 flex items-center justify-center shrink-0 shadow-sm group-hover:border-blue-300 transition-colors">
+                            <img src="${sp.logo_url || '/images/logo.png'}" class="max-w-full max-h-full object-contain">
+                        </div>
+                        <div>
+                            <h4 class="font-black text-slate-800 text-sm">${sp.sponsor_name}</h4>
+                            <a href="${sp.link_url || '#'}" target="_blank" class="text-[10px] text-blue-500 hover:text-blue-700 font-mono font-bold uppercase tracking-wider mt-0.5 block">🔗 Kunjungi Web</a>
+                        </div>
+                    </div>
+                </td>
+                <td class="p-4 text-center">
+                    <span class="inline-block bg-slate-100 text-slate-600 px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider border border-slate-200">
+                        ${sp.jenis_bantuan || 'Produk Support'}
+                    </span>
+                </td>
+                <td class="p-4 text-center">
+                    <button onclick="lihatSyarat('${safeName}', '${safeSyarat}')" class="text-blue-600 hover:text-blue-800 text-xs font-bold underline decoration-blue-300 underline-offset-4 flex items-center justify-center gap-1 mx-auto">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Baca Kewajiban
+                    </button>
+                </td>
+                <td class="p-4 text-center align-middle">
+                    ${actionHtml}
+                </td>
+            </tr>
+        `;
+        tbody.innerHTML += tr;
     });
 }
 
-// ==========================================
-// FUNGSI LOAD SPONSOR DEAL (PRO FEATURE)
-// ==========================================
-async function loadSponsorDeals() {
-    const container = document.getElementById('sponsorDealContainer');
-    if (!container) return;
+// Buka Modal Syarat
+window.lihatSyarat = function(name, syarat) {
+    document.getElementById('modalSyaratTitle').innerText = decodeURIComponent(name);
+    document.getElementById('modalSyaratContent').innerText = decodeURIComponent(syarat);
+    document.getElementById('modalSyarat').classList.remove('hidden');
+}
 
+// Eksekusi Tombol Ajukan Proposal
+window.ajukanSponsor = async function(sponsorId) {
+    if(!confirm("Yakin ingin mengajukan proposal kerja sama ke brand sponsor ini?")) return;
+    
     try {
-        // 1. Cek apakah ada deal di event_sponsors
-        const { data: linkData, error: linkErr } = await supabaseClient
-            .from('event_sponsors')
-            .select('sponsor_ids')
-            .eq('event_id', currentEventId)
-            .single();
-
-        if (linkErr || !linkData || !linkData.sponsor_ids || linkData.sponsor_ids.length === 0) {
-            container.innerHTML = `
-                <div class="text-center py-6">
-                    <span class="text-4xl block mb-3 opacity-30 grayscale">🏢</span>
-                    <p class="text-sm font-bold text-slate-400">Belum Ada Sponsor Deal</p>
-                    <p class="text-[11px] text-slate-500 mt-1 max-w-sm mx-auto leading-relaxed">Kirim form pengajuan di atas agar tim pusat SCS bisa mencarikan sponsor untuk event Anda.</p>
-                </div>
-            `;
-            return;
-        }
-
-        // 2. Tarik master datanya
-        const { data: sponsors, error: spErr } = await supabaseClient
-            .from('master_sponsors')
-            .select('*')
-            .in('id', linkData.sponsor_ids);
-
-        if (spErr || !sponsors || sponsors.length === 0) throw new Error("Data master sponsor tidak ditemukan.");
-
-        let html = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">`;
+        const { error } = await supabaseClient.from('sponsor_submissions').insert([{
+            event_id: currentEventId,
+            sponsor_id: sponsorId
+        }]);
+        if(error) throw error;
         
-        sponsors.forEach(sp => {
-            html += `
-                <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex items-center gap-4 hover:border-amber-500 transition-colors group">
-                    <div class="w-16 h-16 bg-white rounded-lg p-2 flex items-center justify-center shrink-0 shadow-inner group-hover:scale-105 transition-transform">
-                        <img src="${sp.logo_url}" alt="${sp.sponsor_name}" class="w-full h-full object-contain" onerror="this.style.display='none'">
-                    </div>
-                    <div>
-                        <h4 class="font-black text-white text-sm md:text-base">${sp.sponsor_name}</h4>
-                        <a href="${sp.link_url || '#'}" target="_blank" class="text-[10px] text-blue-400 hover:text-blue-300 font-mono mt-1 block truncate max-w-[150px]">🔗 Cek Website</a>
-                    </div>
-                </div>
-            `;
-        });
-        html += `</div>`;
-
-        // 3. Keterangan Syarat & Ketentuan Deal yang dipindah dari dashboard
-        html += `
-            <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 md:p-5 mt-2 shadow-inner">
-                <h4 class="text-amber-400 font-black text-xs mb-3 flex items-center gap-2"><span>⚠️</span> SYARAT & KEWAJIBAN PANITIA (DEAL ACTIVE):</h4>
-                <ul class="list-disc list-inside text-[11px] text-slate-300 space-y-2 ml-1 leading-relaxed">
-                    <li>Logo sponsor otomatis tayang eksklusif di halaman <strong>Live Result</strong>, <strong>Leaderboard</strong>, dan Header Aplikasi publik.</li>
-                    <li>Layanan Freemium SCS & F1 Swimming yang digunakan dari awal pendaftaran hingga mencetak hasil akhir lomba <strong>telah ditanggung oleh pihak sponsor</strong>.</li>
-                    <li>MC / Announcer wajib menyebutkan nama sponsor dan tagline minimal <strong>1x setiap pergantian kategori lomba</strong>.</li>
-                    <li>Panitia wajib menyediakan spot untuk pemasangan <strong>banner / umbul-umbul fisik</strong> di area strategis kolam renang sesuai proposal kesepakatan.</li>
-                    <li>Tim SCS berhak meninjau pelaksanaan kewajiban ini di lapangan secara berkala.</li>
-                </ul>
-            </div>
-        `;
-
-        container.innerHTML = html;
-
-    } catch (err) {
-        container.innerHTML = `<p class="text-xs text-red-400 font-bold text-center py-4 bg-red-900/20 rounded-xl border border-red-900/50">Gagal memuat sponsor: ${err.message}</p>`;
+        alert("✅ Pengajuan proposal berhasil dikirim! Tim pusat SCS akan menjembatani negosiasi Anda.");
+        fetchSponsorData(); // Refresh tabel
+    } catch(err) {
+        alert("Gagal mengajukan proposal: " + err.message);
     }
 }
