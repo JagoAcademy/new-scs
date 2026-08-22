@@ -91,28 +91,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         // DYNAMIC EVENT STATUS TIER (FREE / FREEMIUM / PRO)
         // ==========================================
         const statLayananText = document.getElementById('statLayananText');
-        const btnFloatingUpgrade = document.getElementById('btnFloatingUpgrade');
+        const btnHeaderUpgrade = document.getElementById('btnHeaderUpgrade');
         
+        // Default tier adalah FREEMIUM untuk menampung event-event promo
         const eventTier = eventData.event_tier || 'FREEMIUM';
 
         if (eventTier === 'PRO') {
             statLayananText.innerText = "🌟 PRO / EMAS";
             statLayananText.className = "text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600 uppercase mt-1";
-            if (btnFloatingUpgrade) btnFloatingUpgrade.classList.add('hidden');
+            if (btnHeaderUpgrade) btnHeaderUpgrade.classList.add('hidden');
         } else if (eventTier === 'FREEMIUM') {
             statLayananText.innerText = "FREEMIUM";
             statLayananText.className = "text-xl md:text-2xl font-black text-blue-500 uppercase mt-1";
-            if (btnFloatingUpgrade) {
-                btnFloatingUpgrade.classList.remove('hidden');
-                btnFloatingUpgrade.onclick = () => document.getElementById('modalUpgrade').classList.remove('hidden');
+            if (btnHeaderUpgrade) {
+                btnHeaderUpgrade.classList.remove('hidden');
+                btnHeaderUpgrade.onclick = () => document.getElementById('modalUpgrade').classList.remove('hidden');
             }
         } else {
             // Level FREE
             statLayananText.innerText = "FREE";
             statLayananText.className = "text-xl md:text-2xl font-black text-slate-400 uppercase mt-1";
-            if (btnFloatingUpgrade) {
-                btnFloatingUpgrade.classList.remove('hidden');
-                btnFloatingUpgrade.onclick = () => document.getElementById('modalUpgrade').classList.remove('hidden');
+            if (btnHeaderUpgrade) {
+                btnHeaderUpgrade.classList.remove('hidden');
+                btnHeaderUpgrade.onclick = () => document.getElementById('modalUpgrade').classList.remove('hidden');
             }
         }
 
@@ -136,6 +137,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     const { data: urlData } = supabaseClient.storage.from('berkas-atlet').getPublicUrl(fileName);
 
+                    // Nominal dikunci 500rb
                     const { error: insErr } = await supabaseClient.from('event_transactions').insert([{
                         event_id: currentEventId,
                         user_id: currentUserId,
@@ -252,7 +254,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
         }
 
-        // UX LEVEL DEWA: BIARKAN EO MASUK DAN LIHAT KATALOG SPONSOR!
+        // Pintu menuju ke Panel Sponsor DIBUKA BEBAS biar mereka bisa "ngiler"
         const btnSuperProSponsor = document.getElementById('btnSuperProSponsor');
         if (btnSuperProSponsor) {
             btnSuperProSponsor.onclick = () => {
