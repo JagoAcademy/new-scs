@@ -88,37 +88,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('headerSubdomain').innerText = `${eventData.subdomain}.f1swimming.com`;
 
         // ==========================================
-        // DYNAMIC EVENT STATUS TIER (FREE / FREEMIUM / PRO)
+        // DYNAMIC EVENT STATUS TIER (UX KELAS KAKAP)
         // ==========================================
         const statLayananText = document.getElementById('statLayananText');
-        const btnHeaderUpgrade = document.getElementById('btnHeaderUpgrade');
+        const btnNavUpgrade = document.getElementById('btnNavUpgrade');
         
-        // Default tier adalah FREEMIUM untuk menampung event-event promo
         const eventTier = eventData.event_tier || 'FREEMIUM';
 
         if (eventTier === 'PRO') {
             statLayananText.innerText = "🌟 PRO / EMAS";
             statLayananText.className = "text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600 uppercase mt-1";
-            if (btnHeaderUpgrade) btnHeaderUpgrade.classList.add('hidden');
+            if (btnNavUpgrade) btnNavUpgrade.classList.add('hidden');
         } else if (eventTier === 'FREEMIUM') {
             statLayananText.innerText = "FREEMIUM";
             statLayananText.className = "text-xl md:text-2xl font-black text-blue-500 uppercase mt-1";
-            if (btnHeaderUpgrade) {
-                btnHeaderUpgrade.classList.remove('hidden');
-                btnHeaderUpgrade.onclick = () => document.getElementById('modalUpgrade').classList.remove('hidden');
+            if (btnNavUpgrade) {
+                btnNavUpgrade.classList.remove('hidden');
+                btnNavUpgrade.onclick = () => document.getElementById('modalUpgrade').classList.remove('hidden');
             }
         } else {
-            // Level FREE
             statLayananText.innerText = "FREE";
             statLayananText.className = "text-xl md:text-2xl font-black text-slate-400 uppercase mt-1";
-            if (btnHeaderUpgrade) {
-                btnHeaderUpgrade.classList.remove('hidden');
-                btnHeaderUpgrade.onclick = () => document.getElementById('modalUpgrade').classList.remove('hidden');
+            if (btnNavUpgrade) {
+                btnNavUpgrade.classList.remove('hidden');
+                btnNavUpgrade.onclick = () => document.getElementById('modalUpgrade').classList.remove('hidden');
             }
         }
 
         // ==========================================
-        // EVENT LISTENER BUKTI BAYAR (ANTI HACKER)
+        // EVENT LISTENER BUKTI BAYAR 
         // ==========================================
         const btnSubmitUpgrade = document.getElementById('btnSubmitUpgrade');
         if (btnSubmitUpgrade) {
@@ -137,7 +135,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     const { data: urlData } = supabaseClient.storage.from('berkas-atlet').getPublicUrl(fileName);
 
-                    // Nominal dikunci 500rb
                     const { error: insErr } = await supabaseClient.from('event_transactions').insert([{
                         event_id: currentEventId,
                         user_id: currentUserId,
@@ -229,9 +226,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.href = `/book/event-result.html?id=${currentEventId}`;
         };
 
-        // ==========================================
-        // KUNCI FITUR BERDASARKAN TIER
-        // ==========================================
         const btnMenuSertifikat = document.getElementById('btnMenuSertifikat');
         if (btnMenuSertifikat) {
             btnMenuSertifikat.onclick = () => {
@@ -254,7 +248,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
         }
 
-        // Pintu menuju ke Panel Sponsor DIBUKA BEBAS biar mereka bisa "ngiler"
         const btnSuperProSponsor = document.getElementById('btnSuperProSponsor');
         if (btnSuperProSponsor) {
             btnSuperProSponsor.onclick = () => {
@@ -357,9 +350,6 @@ async function loadEventStats() {
     }
 }
 
-// ==========================================
-// FUNGSI TIM PANITIA (COLLABORATORS) DIKEMBALIKAN UTUH!
-// ==========================================
 async function loadClubsForCollab() {
     const selectClub = document.getElementById('selectCollabClub');
     if (!selectClub) return;
