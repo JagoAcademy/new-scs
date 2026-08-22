@@ -88,8 +88,13 @@
                 page-break-after: always !important;
                 break-after: page !important;
             }
-            .avoid-break { page-break-inside: avoid !important; break-inside: avoid !important; margin-bottom: 6mm; }
+            .avoid-break { page-break-inside: avoid !important; break-inside: avoid !important; margin-bottom: 8mm; }
             * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
+
+            /* TRIK REPEATING HEADER: Akan muncul otomatis di setiap halaman baru! */
+            thead.print-repeat-header {
+                display: table-header-group;
+            }
         }
     </style>
 </head>
@@ -107,6 +112,7 @@
         <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xl px-8 py-5 rounded-full font-black text-lg flex items-center gap-3 transition-transform transform hover:scale-105 border-4 border-white cursor-pointer ring-4 ring-indigo-200">
             🖨️ CETAK (PDF)
         </button>
+        <p class="text-xs text-center font-bold text-slate-500 mt-2">Centang "Headers and footers"<br>saat print untuk nomor halaman.</p>
     </div>
 
     <!-- MAIN WORKSPACE -->
@@ -158,22 +164,46 @@
 
         <!-- HALAMAN 2 DST: KONTEN TABEL (HEAT SHEET) -->
         <div class="a4-page content-page" id="contentPage">
-            <!-- Header Minimalis Tiap Halaman -->
-            <div class="flex justify-between items-center border-b-2 border-black pb-3 mb-6">
-                <div class="text-left flex-1">
-                    <h1 id="contentTitle" class="text-lg font-black uppercase text-black tracking-tight truncate max-w-sm">MEMUAT EVENT...</h1>
-                    <p class="text-[9px] font-bold text-slate-500 mt-0.5 uppercase">Buku Acara Resmi</p>
-                </div>
-                <div class="text-right">
-                    <img src="/images/logo.png" class="h-5 opacity-40 grayscale object-contain mb-1 ml-auto">
-                    <p class="text-[8px] font-mono text-slate-400">SCS System</p>
-                </div>
-            </div>
+            <!-- PENGGUNAAN TABLE UTAMA AGAR HEADER BISA MENGULANG DI TIAP HALAMAN -->
+            <table class="w-full">
+                <thead class="print-repeat-header hidden print:table-header-group">
+                    <tr>
+                        <td class="pb-4 pt-2">
+                            <!-- HEADER REPEATER (Hanya muncul saat nge-print) -->
+                            <div class="flex justify-between items-center border-b-[3px] border-slate-900 pb-2">
+                                <div class="text-left flex-1">
+                                    <h1 id="repeatTitle" class="text-sm font-black uppercase text-black tracking-tight truncate max-w-sm">MEMUAT EVENT...</h1>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Official Start List</p>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <!-- Header Layar (Hanya tampil di layar browser) -->
+                            <div class="flex justify-between items-center border-b-2 border-black pb-3 mb-8 print-hidden">
+                                <div class="text-left flex-1">
+                                    <h1 id="contentTitle" class="text-lg font-black uppercase text-black tracking-tight truncate max-w-sm">MEMUAT EVENT...</h1>
+                                    <p class="text-[9px] font-bold text-slate-500 mt-0.5 uppercase">Buku Acara Resmi</p>
+                                </div>
+                                <div class="text-right">
+                                    <img src="/images/logo.png" class="h-5 opacity-40 grayscale object-contain mb-1 ml-auto">
+                                    <p class="text-[8px] font-mono text-slate-400">SCS System</p>
+                                </div>
+                            </div>
 
-            <!-- CONTAINER HEAT SHEET -->
-            <div id="heatContainer" class="space-y-6">
-                <div class="text-center p-10 text-slate-400 font-bold animate-pulse">Menarik Kasta Tertinggi dari Database... ⏳</div>
-            </div>
+                            <!-- CONTAINER HEAT SHEET -->
+                            <div id="heatContainer" class="space-y-10"> <!-- Spasi digedein (space-y-10) biar gak numpuk -->
+                                <div class="text-center p-10 text-slate-400 font-bold animate-pulse">Menarik Kasta Tertinggi dari Database... ⏳</div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
     </div>
