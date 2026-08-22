@@ -103,6 +103,9 @@ function tendangUser() {
 
 async function loadAdminData() {
     try {
+        // --- 0. TARIK DATA TRANSAKSI UPGRADE PRO ---
+        await loadUpgradeRequests();
+
         // --- A. TARIK DATA ANTREAN VERIFIKASI AWAL ---
         const { data: queues, error: errQ } = await supabaseClient
             .from('athletes')
@@ -129,8 +132,6 @@ async function loadAdminData() {
             .order('id', { ascending: false });
         if (errC) throw errC;
 
-        // Hitung atlet masing-masing klub langsung ke tabel athletes per club_id
-        // Menggunakan method { count: 'exact', head: true } agar super cepat tanpa download isi tabel
         const clubsWithCount = await Promise.all(clubs.map(async (club) => {
             const { count, error: countErr } = await supabaseClient
                 .from('athletes')
@@ -152,6 +153,100 @@ async function loadAdminData() {
         console.error("Gagal memuat admin:", error);
     }
 }
+
+// Render Antrian Transaksi Upgrade PRO
+async function loadUpgradeRequests() {
+    const tbody = document.getElementById('upgradeQueueTableBody');
+    try {
+        const { data: upgrades, error } = await supabaseClient
+            .from('event_transactions')
+            .select('*, events(event_name)')
+            .eq('status', 'PENDING')
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+
+        document.getElementById('badgeUpgradeQueue').innerText = `${upgrades ? upgrades.length : 0} Pending`;
+
+        if (!upgrades || upgrades.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-500 font-bold">Tidak ada pengajuan bayar PRO baru. Server aman! ☕</td></tr>`;
+            return;
+        }
+
+        let html = '';
+        upgrades.forEach(u => {
+            const eventName = u.events?.event_name || 'Event ID: ' + u.event_id;
+            const formattedNominal = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(u.nominal);
+            
+            html += `
+                <tr class="hover:bg-slate-800 transition-colors">
+                    <td class="p-4">
+                        <p class="font-extrabold text-white text-base">${eventName}</p>
+                        <p class="text-[10px] text-slate-400 uppercase tracking-widest mt-1">Trans ID: #${u.id} • ${u.jenis_transaksi}</p>
+                    </td>
+                    <td class="p-4">
+                        <span class="text-sm font-black text-amber-400 bg-amber-900/30 px-3 py-1.5 rounded-lg border border-amber-700/50 shadow-inner">${formattedNominal}</span>
+                    </td>
+                    <td class="p-4">
+                        <a href="${u.bukti_url}" target="_blank" class="px-4 py-2 bg-blue-900/50 text-blue-400 rounded-lg text-xs font-bold hover:bg-blue-600 hover:text-white transition border border-blue-800 inline-flex items-center gap-2">
+                            <span>📄</span> Cek Struk
+                        </a>
+                    </td>
+                    <td class="p-4 text-center space-x-2">
+                        <button onclick="rejectUpgrade(${u.id})" class="px-4 py-2 bg-slate-700 hover:bg-red-600 text-white font-bold rounded-lg text-xs shadow-lg transition">TOLAK</button>
+                        <button onclick="approveUpgrade(${u.id}, ${u.event_id}, '${eventName}')" class="px-5 py-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black rounded-lg text-xs shadow-[0_0_15px_rgba(16,185,129,0.3)] transition transform hover:scale-105">✅ AKTIFKAN PRO</button>
+                    </td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+    } catch (err) {
+        console.error("Gagal load upgrade requests:", err);
+        tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-red-500 font-bold">Error memuat transaksi: ${err.message}</td></tr>`;
+    }
+}
+
+// Logic Dewa Setuju Upgrade
+window.approveUpgrade = async (trans_id, event_id, event_name) => {
+    if (!confirm(`Yakin ingin ACC pembayaran dan mengaktifkan kasta PRO/EMAS untuk event:\n\n👉 ${event_name}\n\nPastikan uang sudah masuk mutasi BCA!`)) return;
+    
+    try {
+        // 1. Ganti status transaksi jadi APPROVED
+        const { error: errTrans } = await supabaseClient
+            .from('event_transactions')
+            .update({ status: 'APPROVED' })
+            .eq('id', trans_id);
+        if (errTrans) throw errTrans;
+
+        // 2. Ganti status kasta Event di DB jadi PRO
+        const { error: errEvent } = await supabaseClient
+            .from('events')
+            .update({ is_pro: true, event_tier: 'PRO' })
+            .eq('id', event_id);
+        if (errEvent) throw errEvent;
+
+        alert(`✅ BOOM! Transaksi sukses di-ACC.\nEvent "${event_name}" resmi menjadi PRO/EMAS!`);
+        loadAdminData();
+    } catch (err) {
+        alert("Gagal menyetujui: " + err.message);
+    }
+};
+
+// Logic Dewa Tolak Upgrade
+window.rejectUpgrade = async (trans_id) => {
+    if (!confirm(`Yakin ingin MENOLAK bukti bayar ini? Transaksi akan dibatalkan.`)) return;
+    try {
+        const { error } = await supabaseClient
+            .from('event_transactions')
+            .update({ status: 'REJECTED' })
+            .eq('id', trans_id);
+        if (error) throw error;
+        
+        loadAdminData();
+    } catch (err) {
+        alert("Gagal menolak transaksi: " + err.message);
+    }
+};
 
 // Render Antrian Awal
 function renderQueues(queues) {
@@ -256,7 +351,7 @@ function renderClubs(clubsArray) {
     
     let html = '';
     displayClubs.forEach((c, index) => {
-        const actualIndex = startIndex + index + 1; // Menjaga nomor urut tetap jalan di page selanjutnya
+        const actualIndex = startIndex + index + 1; 
         const location = c.kota_asal ? `${c.kota_asal}, ${c.provinsi || ''}` : (c.provinsi || 'Belum diatur');
         const athleteCount = c.athlete_count || 0; 
         

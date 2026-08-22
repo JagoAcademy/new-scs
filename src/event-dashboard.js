@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('headerSubdomain').innerText = `${eventData.subdomain}.f1swimming.com`;
 
         // ==========================================
-        // DYNAMIC EVENT STATUS TIER 
+        // DYNAMIC EVENT STATUS TIER (UX KELAS KAKAP)
         // ==========================================
         const statLayananText = document.getElementById('statLayananText');
         const btnNavUpgrade = document.getElementById('btnNavUpgrade');
@@ -143,26 +143,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         payTabs.forEach(tab => {
             tab.addEventListener('click', () => {
-                // Reset styling tab
                 payTabs.forEach(t => { 
                     t.classList.remove('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-slate-800', 'dark:text-white'); 
                     t.classList.add('text-slate-500', 'dark:text-slate-400'); 
                 });
                 
-                // Set tab aktif
                 tab.classList.add('bg-white', 'dark:bg-slate-700', 'shadow-sm', 'text-slate-800', 'dark:text-white');
                 tab.classList.remove('text-slate-500', 'dark:text-slate-400');
 
-                // Sembunyikan semua section
                 paySections.forEach(s => s.classList.add('hidden'));
                 
-                // Tampilkan section yang dituju
                 const target = tab.getAttribute('data-target');
                 document.getElementById(`pay${target.charAt(0).toUpperCase() + target.slice(1)}`).classList.remove('hidden');
 
                 currentPayMethod = target;
 
-                // Dinamis ubah teks tombol
                 if(target === 'transfer') {
                     btnSubmitUpgrade.innerText = 'Konfirmasi Pembayaran';
                     clearInterval(qrisInterval);
@@ -187,7 +182,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const fileInput = document.getElementById('uploadBuktiBayar').files[0];
                     if (!fileInput) return alert("Pilih foto bukti transfer terlebih dahulu bos!");
                     
-                    // Validasi Size Max 2MB
                     if (fileInput.size > 2 * 1024 * 1024) return alert("Ups! Ukuran file maksimal 2MB ya.");
 
                     btnSubmitUpgrade.innerText = "⏳ Mengirim Data...";
@@ -196,10 +190,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     try {
                         const fileExt = fileInput.name.split('.').pop();
                         const fileName = `upgrade_${currentEventId}_${Date.now()}.${fileExt}`;
-                        const { error: upErr } = await supabaseClient.storage.from('berkas-atlet').upload(fileName, fileInput);
+                        
+                        // UPLOAD KE BUCKET BARU: bukti-transaksi
+                        const { error: upErr } = await supabaseClient.storage.from('bukti-transaksi').upload(fileName, fileInput);
                         if (upErr) throw upErr;
 
-                        const { data: urlData } = supabaseClient.storage.from('berkas-atlet').getPublicUrl(fileName);
+                        // GET URL DARI BUCKET BARU
+                        const { data: urlData } = supabaseClient.storage.from('bukti-transaksi').getPublicUrl(fileName);
 
                         const { error: insErr } = await supabaseClient.from('event_transactions').insert([{
                             event_id: currentEventId,

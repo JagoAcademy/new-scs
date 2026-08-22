@@ -32,7 +32,7 @@
             <a href="/admin-testi.html" class="px-3 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/50 rounded-lg text-[10px] md:text-xs font-bold transition-colors flex items-center gap-2">
                 <span>💬</span> Manajemen Testi
             </a>
-            <!-- ACC SPONSOR (TAMBAHAN BARU) -->
+            <!-- ACC SPONSOR -->
             <a href="/admin-approval.html" class="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/50 rounded-lg text-[10px] md:text-xs font-bold transition-colors flex items-center gap-2 shadow-sm">
                 <span>⚖️</span> ACC Sponsor
             </a>
@@ -44,6 +44,34 @@
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
         
+        <!-- SECTION 0: EVENT UPGRADE REQUESTS (TRANSAKSI PRO) -->
+        <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden border-l-4 border-l-blue-500">
+            <div class="p-5 border-b border-slate-700 bg-slate-800/50 flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-extrabold text-white flex items-center gap-2">
+                        <span>🚀</span> Event Upgrade Requests
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">Validasi bukti transfer untuk aktivasi fitur PRO (SaaS Emas).</p>
+                </div>
+                <span id="badgeUpgradeQueue" class="bg-blue-600 text-white font-black px-3 py-1 rounded-full text-xs">0 Pending</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm whitespace-nowrap">
+                    <thead class="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider">
+                        <tr>
+                            <th class="p-4 font-bold">Event & Transaksi</th>
+                            <th class="p-4 font-bold text-amber-400">Nominal Bayar</th>
+                            <th class="p-4 font-bold">Bukti Transfer</th>
+                            <th class="p-4 font-bold text-center">Aksi Dewa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="upgradeQueueTableBody" class="divide-y divide-slate-700/50">
+                        <tr><td colspan="4" class="p-8 text-center text-slate-500">Mencari antrian pembayaran...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- SECTION 1: ANTRIAN VERIFIKASI AWAL F1 ID -->
         <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
             <div class="p-5 border-b border-slate-700 bg-slate-800/50 flex justify-between items-center">
