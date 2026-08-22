@@ -14,7 +14,7 @@
         .theme-transition, .theme-transition * { transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease; }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 min-h-screen font-sans text-slate-800 dark:text-slate-200 theme-transition pb-20">
+<body class="bg-slate-50 dark:bg-slate-900 min-h-screen font-sans text-slate-800 dark:text-slate-200 theme-transition pb-20 relative">
 
     <!-- Top Navigation -->
     <nav class="bg-slate-900 dark:bg-black text-white shadow-md px-4 md:px-6 py-3 flex justify-between items-center sticky top-0 z-50 border-b border-transparent dark:border-slate-800">
@@ -24,6 +24,7 @@
             <span class="md:hidden">Kembali</span>
         </a>
         <div class="flex items-center gap-4">
+            <!-- TOMBOL DARK MODE -->
             <button id="btnToggleDark" class="text-slate-400 hover:text-amber-400 focus:outline-none transition-transform hover:scale-110">
                 <svg id="iconMoon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                 <svg id="iconSun" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
@@ -83,14 +84,13 @@
                 <p id="statKategori" class="text-2xl md:text-3xl font-black text-slate-800 dark:text-white">0</p>
             </div>
             
-            <!-- KARTU EVENT STATUS -->
+            <!-- KARTU EVENT STATUS (TOMBOL KITA HAPUS DARI SINI) -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 md:p-5 flex flex-col justify-center relative overflow-hidden group">
                 <div class="flex items-center justify-between mb-2">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">💎</div>
                         <p class="text-[10px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Event Status</p>
                     </div>
-                    <button id="btnUpgradePro" class="hidden absolute top-4 right-4 bg-gradient-to-r from-amber-400 to-amber-600 text-slate-900 text-[9px] font-black px-3 py-1.5 rounded-lg shadow-sm hover:scale-105 transition-transform uppercase tracking-widest cursor-pointer">🚀 UPGRADE</button>
                 </div>
                 <div>
                     <p id="statLayananText" class="text-xl md:text-2xl font-black text-slate-400 uppercase mt-1">MEMUAT...</p>
@@ -244,6 +244,12 @@
     </div>
 
     <!-- AREA MODAL -->
+
+    <!-- FLOATING UPGRADE BUTTON -->
+    <button id="btnFloatingUpgrade" class="hidden fixed bottom-6 right-6 md:bottom-10 md:right-10 z-[70] bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-[0_10px_25px_rgba(245,158,11,0.5)] px-6 py-4 rounded-full font-black text-sm md:text-base flex items-center gap-3 transition-transform transform hover:scale-105 border-2 border-amber-300/50 cursor-pointer">
+        <span class="text-2xl animate-bounce">🚀</span>
+        <span class="uppercase tracking-widest drop-shadow-md">UPGRADE TO PRO</span>
+    </button>
 
     <!-- MODAL PUSAT CETAK -->
     <div id="modalPusatCetak" class="fixed inset-0 z-[80] bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 transition-opacity">
