@@ -53,9 +53,6 @@ async function loadGallery() {
                 ? `<span class="bg-emerald-900/50 text-emerald-400 text-[9px] px-2 py-0.5 rounded border border-emerald-500/30 uppercase font-black tracking-wider">A4 Ready</span>` 
                 : `<span class="bg-slate-800 text-slate-500 text-[9px] px-2 py-0.5 rounded border border-slate-700 uppercase font-black tracking-wider">No Cover</span>`;
             
-            // Format Benefit & Syarat buat tampilan singkat di card
-            const benefitSingkat = sponsor.jenis_bantuan ? `<p class="text-[10px] text-emerald-400 font-bold truncate mt-1">🎁 ${sponsor.jenis_bantuan}</p>` : '';
-
             const sponsorDataString = encodeURIComponent(JSON.stringify(sponsor));
 
             htmlContent += `
@@ -71,11 +68,10 @@ async function loadGallery() {
                     
                     <div class="flex-1">
                         <h3 class="font-black text-white text-sm truncate mb-1">${sponsor.sponsor_name}</h3>
-                        <p class="text-[10px] text-blue-400 font-mono truncate">${link !== '#' ? link : 'Tidak ada URL'}</p>
-                        ${benefitSingkat}
+                        <p class="text-[10px] text-blue-400 font-mono truncate block mb-4">${link !== '#' ? link : 'Tidak ada URL'}</p>
                     </div>
                     
-                    <div class="flex justify-between items-center border-t border-slate-700/50 pt-3 mt-4">
+                    <div class="flex justify-between items-center border-t border-slate-700/50 pt-3 mt-auto">
                         ${coverBadge}
                         <span class="text-[9px] text-slate-500 font-bold bg-slate-900 px-2 py-0.5 rounded border border-slate-700">ID: ${sponsor.id}</span>
                     </div>
@@ -127,6 +123,10 @@ window.openEditModal = function(encodedData) {
         previewCover.classList.add('hidden');
     }
 
+    // Set UI untuk Edit
+    document.getElementById('modalTitleText').innerHTML = '<span>✏️</span> Edit Master Sponsor';
+    document.getElementById('btnDeleteSponsor').classList.remove('hidden'); // Munculin tombol hapus
+
     document.getElementById('editStatusMsg').classList.add('hidden');
     document.getElementById('modalEditSponsor').classList.remove('hidden');
 }
@@ -141,6 +141,34 @@ async function uploadAdAsset(file, brandName, type) {
 }
 
 function setupModalListeners() {
+    
+    // 1. EVENT LISTENER UNTUK TOMBOL "SPONSOR BARU"
+    document.getElementById('btnAddNewSponsor').addEventListener('click', () => {
+        // Kosongkan semua field
+        document.getElementById('editSponsorId').value = '';
+        document.getElementById('editSponsorName').value = '';
+        document.getElementById('editSponsorUrl').value = '';
+        document.getElementById('editSponsorBenefit').value = '';
+        document.getElementById('editSponsorSyarat').value = '';
+        
+        document.getElementById('editUploadLogo').value = '';
+        document.getElementById('editUploadCover').value = '';
+        
+        reusedLogoUrl = null;
+        reusedCoverUrl = null;
+        
+        document.getElementById('editPreviewLogo').classList.add('hidden');
+        document.getElementById('editPreviewCover').classList.add('hidden');
+        
+        // Ubah UI untuk Tambah Baru
+        document.getElementById('modalTitleText').innerHTML = '<span>➕</span> Tambah Sponsor Baru';
+        document.getElementById('btnDeleteSponsor').classList.add('hidden'); // Sembunyikan tombol hapus
+        
+        document.getElementById('editStatusMsg').classList.add('hidden');
+        document.getElementById('modalEditSponsor').classList.remove('hidden');
+    });
+
+    // 2. EVENT LISTENER UNTUK TUTUP MODAL
     document.getElementById('btnCloseModal').addEventListener('click', () => {
         document.getElementById('modalEditSponsor').classList.add('hidden');
     });
@@ -164,8 +192,9 @@ function setupModalListeners() {
     setupPreview('editUploadLogo', 'editPreviewLogo', 'logo');
     setupPreview('editUploadCover', 'editPreviewCover', 'cover');
 
+    // 3. EVENT LISTENER UNTUK TOMBOL SIMPAN
     document.getElementById('btnSaveSponsor').addEventListener('click', async () => {
-        const id = document.getElementById('editSponsorId').value;
+        const id = document.getElementById('editSponsorId').value; // Kalau kosong berarti tambah baru
         const name = document.getElementById('editSponsorName').value.trim();
         const url = document.getElementById('editSponsorUrl').value.trim();
         const benefit = document.getElementById('editSponsorBenefit').value.trim();
@@ -192,7 +221,7 @@ function setupModalListeners() {
             if (fileLogo) finalLogoUrl = await uploadAdAsset(fileLogo, name, 'logo');
             if (fileCover) finalCoverUrl = await uploadAdAsset(fileCover, name, 'cover');
 
-            const updateData = { 
+            const payloadData = { 
                 sponsor_name: name, 
                 link_url: url, 
                 logo_url: finalLogoUrl, 
@@ -201,24 +230,32 @@ function setupModalListeners() {
                 syarat: syarat
             };
 
-            const { error } = await supabaseClient.from('master_sponsors').update(updateData).eq('id', id);
-            if (error) throw error;
+            // LOGIKA PEMISAH INSERT vs UPDATE
+            if (id) {
+                // Proses Update Data Lama
+                const { error } = await supabaseClient.from('master_sponsors').update(payloadData).eq('id', id);
+                if (error) throw error;
+            } else {
+                // Proses Insert Data Baru
+                const { error } = await supabaseClient.from('master_sponsors').insert([payloadData]);
+                if (error) throw error;
+            }
 
-            statusMsg.innerText = "✅ Perubahan berhasil disimpan!";
+            statusMsg.innerText = "✅ Data Sponsor berhasil disimpan!";
             statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-emerald-900/30 text-emerald-400 block mt-4 border border-emerald-500/30";
 
             loadGallery();
             
             setTimeout(() => {
                 document.getElementById('modalEditSponsor').classList.add('hidden');
-                btn.innerHTML = "💾 SIMPAN PERUBAHAN";
+                btn.innerHTML = "💾 SIMPAN SPONSOR";
                 btn.disabled = false;
             }, 1000);
 
         } catch (err) {
             statusMsg.innerText = "❌ Error: " + err.message;
             statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block mt-4 border border-red-500/30";
-            btn.innerHTML = "💾 SIMPAN PERUBAHAN";
+            btn.innerHTML = "💾 SIMPAN SPONSOR";
             btn.disabled = false;
         }
     });
