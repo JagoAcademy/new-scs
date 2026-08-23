@@ -42,9 +42,9 @@
         <div class="bg-blue-900 border border-blue-800 rounded-2xl p-5 shadow-lg text-sm relative overflow-hidden">
             <div class="absolute -right-4 -top-4 text-6xl opacity-10">💸</div>
             <h3 class="font-bold text-amber-400 mb-1 relative z-10">Informasi Biaya Pendaftaran</h3>
-            <p id="infoBiayaNormal" class="text-blue-100 relative z-10">Biaya per nomor: Memuat...</p>
-            <p id="infoBiayaEstafet" class="text-purple-300 font-bold relative z-10 hidden mt-1">Biaya Estafet: Memuat...</p>
-            <p id="infoDiskon" class="text-blue-200 text-xs mt-1 font-bold relative z-10"></p>
+            <p id="infoBiayaNormal" class="text-blue-100 relative z-10 leading-relaxed text-xs">Biaya per nomor: Memuat...</p>
+            <p id="infoBiayaEstafet" class="text-purple-300 font-bold relative z-10 hidden mt-3 border-t border-blue-800/50 pt-2">Biaya Estafet: Memuat...</p>
+            <p id="infoDiskon" class="text-blue-200 text-xs mt-2 font-bold relative z-10 hidden"></p>
         </div>
 
         <!-- FORM PENDAFTARAN INDIVIDU -->
@@ -179,33 +179,31 @@
         </div>
         <!-- ======================================================= -->
 
-        <!-- SECTION PEMBAYARAN KOLEKTIF -->
+        <!-- SECTION PEMBAYARAN KOLEKTIF (CARD LAYOUT - MOBILE FRIENDLY) -->
         <div id="areaPembayaran" class="bg-white/95 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-2xl border border-slate-200 hidden mb-10">
             <h2 class="text-xl font-extrabold text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
-                💳 Daftar Menunggu Pembayaran
+                💳 Keranjang & Riwayat Pendaftaran
             </h2>
-            <p class="text-xs text-slate-500 mb-5">Centang peserta yang ingin dibayar. Anda bisa membayar sekaligus (borongan) dengan 1 struk transfer.</p>
+            <p class="text-xs text-slate-500 mb-5 leading-relaxed">Centang peserta yang ingin dibayar. Anda bisa membayar sekaligus (kolektif) dengan 1 struk transfer. <strong class="text-red-500">Tombol hapus tersedia untuk membatalkan antrian.</strong></p>
             
-            <div class="overflow-x-auto mb-6">
-                <table class="w-full text-left border-collapse min-w-[400px]">
-                    <thead>
-                        <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-wider border-b border-slate-200">
-                            <th class="p-3 w-10 text-center"><input type="checkbox" id="checkAllTagihan" class="w-4 h-4 rounded text-blue-600 cursor-pointer"></th>
-                            <th class="p-3">Nama Peserta / Tim</th>
-                            <th class="p-3 text-center">Nomor / Tipe</th>
-                            <th class="p-3 text-right">Biaya</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableTagihanBody" class="text-sm">
-                    </tbody>
-                </table>
+            <!-- UX BARU: Select All Checkbox -->
+            <div class="mb-5 flex justify-between items-center bg-blue-50/50 p-3 rounded-xl border border-blue-100 shadow-sm">
+                <label class="flex items-center gap-2 text-sm font-black text-blue-900 cursor-pointer">
+                    <input type="checkbox" id="checkAllTagihan" class="w-5 h-5 rounded border-blue-300 text-blue-600 focus:ring-blue-500">
+                    Pilih Semua Peserta
+                </label>
+            </div>
+
+            <!-- UX BARU: CARD LIST TAGIHAN -->
+            <div id="listTagihanContainer" class="space-y-4 mb-8">
+                <!-- Diinjeksi via JS (Cards) -->
             </div>
 
             <!-- KOTAK TOTAL & INFO PEMBAYARAN -->
             <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col gap-4">
                 <div class="flex justify-between items-end border-b border-slate-200 pb-3">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Total Terpilih</p>
-                    <p id="teksTotalTagihan" class="text-2xl font-black text-blue-900">Rp 0</p>
+                    <p id="teksTotalTagihan" class="text-2xl md:text-3xl font-black text-blue-900 tracking-tight">Rp 0</p>
                 </div>
 
                 <div id="boxInfoPembayaran" class="hidden bg-white p-4 rounded-xl border border-blue-100 shadow-sm">
@@ -224,7 +222,7 @@
                     <label class="block text-xs font-bold text-slate-600 mb-2">Upload Bukti Transfer</label>
                     <input type="file" id="inputBuktiTransfer" accept="image/*" class="w-full text-sm file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 mb-3 cursor-pointer outline-none">
                 </div>
-                <button id="btnKonfirmasiBayar" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-md transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                <button id="btnKonfirmasiBayar" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-4 rounded-xl shadow-lg transition-all text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02]" disabled>
                     Konfirmasi Pembayaran
                 </button>
             </div>

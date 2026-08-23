@@ -104,18 +104,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const infoBiayaNormal = document.getElementById('infoBiayaNormal');
         const infoDiskon = document.getElementById('infoDiskon');
 
-        // BACA TARIF INDIVIDU DARI SETTINGS LOMBA YANG BARU
         if (config.tarif_individu && config.tarif_individu.length > 0) {
             let textTarif = "<span class='font-bold opacity-80'>Pendaftaran Individu:</span><br>";
-            
-            // Sortir berdasarkan kuantitas biar rapi
             let sortedTiers = [...config.tarif_individu].sort((a,b) => a.qty - b.qty);
             
             sortedTiers.forEach(t => {
                 textTarif += `• ${t.qty} Nomor = Rp ${Number(t.price).toLocaleString('id-ID')}<br>`;
             });
 
-            // Tampilkan info tambahan jika atlet daftar melebihi batas paket maksimum
             if (config.tarif_tambahan) {
                 let maxQty = sortedTiers[sortedTiers.length - 1].qty;
                 textTarif += `<span class="text-[10.5px] text-blue-200 mt-1 inline-block border-t border-blue-800/50 pt-1 w-full">💡 Lebih dari ${maxQty} nomor: +Rp ${Number(config.tarif_tambahan).toLocaleString('id-ID')} / nomor ekstra.</span>`;
@@ -124,7 +120,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             infoBiayaNormal.innerHTML = textTarif;
             if(infoDiskon) infoDiskon.classList.add('hidden'); 
         } else {
-            // FALLBACK JIKA MASIH PAKE SETTINGAN LAMA
             const normalPrice = Number(config.biaya_normal || 0).toLocaleString('id-ID');
             infoBiayaNormal.innerText = `Biaya per nomor: Rp ${normalPrice}`;
             
@@ -482,14 +477,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     let extraPrice = Number(config.tarif_tambahan || 0);
                     totalBiaya = basePrice + (extraQty * extraPrice);
                 } else {
-                    // Fallback kalau loncat-lompat isinya (misal ada 1 dan 3, tapi user pilih 2)
+                    // Fallback kalau loncat-lompat isinya
                     let lowerTier = sortedTiers.slice().reverse().find(t => t.qty < qty);
                     if(lowerTier) {
                         totalBiaya = Number(lowerTier.price) + ((qty - lowerTier.qty) * Number(config.tarif_tambahan || 0));
                     }
                 }
             } else {
-                // BACKWARD COMPATIBILITY: Pake sistem lama diskon
+                // BACKWARD COMPATIBILITY
                 totalBiaya = qty >= Number(config.min_diskon || 999) 
                     ? qty * Number(config.biaya_diskon || 0) 
                     : qty * Number(config.biaya_normal || 0);
@@ -570,7 +565,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const config = currentEvent.config || {};
                 const biayaEstafet = Number(config.biaya_estafet || 0);
                 
-                // Namain pesertanya jadi "TIM ESTAFET NAMA KLUB"
                 const namaTim = `TIM ESTAFET ${klubName.toUpperCase()}`;
                 
                 const { error: insertError } = await supabaseClient.from('event_registrations').insert([{
@@ -625,7 +619,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ==========================================
-    // SISTEM KERANJANG & PEMBAYARAN KOLEKTIF
+    // SISTEM KERANJANG & PEMBAYARAN KOLEKTIF (CARD LAYOUT DEWA)
     // ==========================================
     async function loadTagihan() {
         if (!currentEvent) return;
@@ -648,13 +642,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (error) return console.error(error);
 
         dataTagihan = data || [];
-        renderTabelTagihan();
+        renderDaftarTagihan(); // Fungsi ini di-update bray!
     }
 
-    function renderTabelTagihan() {
+    // NGE-RENDER LIST CART DALAM BENTUK KARTU (BUKAN TABEL)
+    function renderDaftarTagihan() {
         const area = document.getElementById('areaPembayaran');
-        const tbody = document.getElementById('tableTagihanBody');
-        tbody.innerHTML = '';
+        const container = document.getElementById('listTagihanContainer');
+        container.innerHTML = '';
         selectedTagihanIds.clear(); 
         kalkulasiTotalBayar();
 
@@ -665,13 +660,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         area.classList.remove('hidden');
 
-        document.querySelector('#areaPembayaran h2').innerHTML = '💳 Keranjang & Riwayat Pendaftaran';
-        const pDesc = document.querySelector('#areaPembayaran p');
-        if(pDesc) pDesc.innerText = 'Centang peserta yang ingin dibayar. Daftar di bawah ini juga mencakup riwayat atlet yang sudah didaftarkan sebelumnya.';
-
         dataTagihan.forEach(item => {
-            const tr = document.createElement('tr');
-            tr.className = "border-b border-slate-100 hover:bg-slate-50 transition-colors";
+            const card = document.createElement('div');
+            card.className = "card-tagihan bg-white border border-slate-200 rounded-2xl p-4 flex gap-3 items-start shadow-sm transition-all hover:border-blue-300";
             
             let arrayNomor = item.nomor_lomba || [];
             let listNomor = arrayNomor.join(', ');
@@ -685,35 +676,47 @@ document.addEventListener('DOMContentLoaded', async () => {
             let aksiHtml = '';
 
             if (isBelumBayar) {
-                checkboxHtml = `<input type="checkbox" value="${item.id}" class="chk-tagihan w-4 h-4 rounded text-blue-600 cursor-pointer">`;
-                aksiHtml = `<button data-id="${item.id}" class="btn-hapus-tagihan text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded text-[10px] font-bold transition flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>Hapus</button>`;
+                checkboxHtml = `<input type="checkbox" value="${item.id}" class="chk-tagihan w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer mt-0.5">`;
+                aksiHtml = `<button data-id="${item.id}" class="btn-hapus-tagihan text-red-500 hover:text-white hover:bg-red-500 bg-red-50 px-3 py-1.5 rounded-lg text-[10px] font-bold transition flex items-center gap-1 shadow-sm"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>Hapus</button>`;
             } else if (isLunas) {
-                checkboxHtml = `<div class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-[10px]">✓</div>`;
+                checkboxHtml = `<div class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-[10px] mt-0.5">✓</div>`;
                 statusBadge = `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[9px] font-extrabold ml-2 uppercase tracking-wider">LUNAS</span>`;
             } else if (isMenunggu) {
-                checkboxHtml = `<div class="w-5 h-5 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-[10px]">⏳</div>`;
+                checkboxHtml = `<div class="w-5 h-5 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-[10px] mt-0.5">⏳</div>`;
                 statusBadge = `<span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-[9px] font-extrabold ml-2 uppercase tracking-wider">PROSES</span>`;
             }
 
-            // Tanda visual kalau ini tiket Estafet
-            let badgeTipe = item.gender === 'Regu/Tim' ? `<span class="bg-purple-100 text-purple-800 text-[9px] font-bold px-1.5 py-0.5 rounded mr-1">REGU</span>` : '';
+            let badgeTipe = item.gender === 'Regu/Tim' ? `<span class="bg-purple-100 text-purple-800 text-[9px] font-bold px-2 py-0.5 rounded">REGU</span>` : '';
 
-            tr.innerHTML = `
-                <td class="p-3 text-center align-top pt-4 flex justify-center mt-1">${checkboxHtml}</td>
-                <td class="p-3 align-top pt-4">
-                    <p class="font-bold text-slate-700 text-xs flex items-center">${item.nama_peserta} ${statusBadge}</p>
-                    <p class="text-[10px] text-slate-400 mt-0.5">${item.klub_asal} • ${item.kelompok_umur}</p>
-                </td>
-                <td class="p-3 align-top pt-4 max-w-[150px]">
-                    <div class="mb-1.5">${badgeTipe}<span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-1 rounded inline-block">${arrayNomor.length} Nomor</span></div>
-                    <p class="text-[9px] text-slate-500 leading-relaxed font-medium break-words">${listNomor}</p>
-                </td>
-                <td class="p-3 text-right font-bold text-slate-700 text-xs align-top pt-4">
-                    Rp ${Number(item.total_biaya).toLocaleString('id-ID')}
-                    <div class="mt-2 flex justify-end">${aksiHtml}</div>
-                </td>
+            card.innerHTML = `
+                <div class="shrink-0 pt-0.5">
+                    ${checkboxHtml}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-start gap-3">
+                        <div>
+                            <h3 class="font-extrabold text-slate-800 text-sm leading-tight flex items-center flex-wrap gap-1">${item.nama_peserta} ${statusBadge}</h3>
+                            <p class="text-[10px] text-slate-500 font-medium mt-1 truncate">${item.klub_asal} • KU ${item.kelompok_umur}</p>
+                        </div>
+                        <div class="text-right shrink-0 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                            <p class="text-[9px] font-bold text-blue-500 uppercase tracking-widest mb-0.5">Biaya</p>
+                            <p class="font-black text-blue-800 text-sm leading-none">Rp ${Number(item.total_biaya).toLocaleString('id-ID')}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3 bg-slate-50/80 rounded-xl p-3 border border-slate-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-1.5">
+                                ${badgeTipe}
+                                <span class="bg-slate-200 text-slate-700 text-[9px] font-bold px-2 py-0.5 rounded">${arrayNomor.length} Nomor</span>
+                            </div>
+                            ${aksiHtml} <!-- TOMBOL HAPUS NONGOL JELAS DI SINI BOS! -->
+                        </div>
+                        <p class="text-[10px] text-slate-600 font-medium leading-relaxed">${listNomor}</p>
+                    </div>
+                </div>
             `;
-            tbody.appendChild(tr);
+            container.appendChild(card);
         });
 
         document.querySelectorAll('.chk-tagihan').forEach(chk => {
@@ -743,9 +746,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const id = e.currentTarget.getAttribute('data-id');
                 if(!confirm("Yakin ingin menghapus antrian ini dari keranjang?")) return;
                 
-                const tr = e.currentTarget.closest('tr');
-                tr.style.opacity = '0.4';
-                tr.style.pointerEvents = 'none';
+                const cardNode = e.currentTarget.closest('.card-tagihan');
+                cardNode.style.opacity = '0.4';
+                cardNode.style.pointerEvents = 'none';
 
                 try {
                     const { error } = await supabaseClient.from('event_registrations').delete().eq('id', id);
@@ -763,8 +766,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 } catch (err) {
                     alert("Gagal menghapus data: " + err.message);
-                    tr.style.opacity = '1';
-                    tr.style.pointerEvents = 'auto';
+                    cardNode.style.opacity = '1';
+                    cardNode.style.pointerEvents = 'auto';
                 }
             });
         });
