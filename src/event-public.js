@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (elTextLokasi) elTextLokasi.innerText = teksLokasiLengkap;
 
         // =========================================================
-        // RENDER BACKGROUND & BIAYA
+        // RENDER BACKGROUND & BIAYA (REVISI TARIF BERJENJANG)
         // =========================================================
         if (config.header_url) document.getElementById('headerBannerContainer').style.backgroundImage = `url('${config.header_url}')`;
         if (config.bg_url) {
@@ -101,10 +101,41 @@ document.addEventListener('DOMContentLoaded', async () => {
             bgOverlay.classList.remove('hidden');
         }
 
-        const normalPrice = Number(config.biaya_normal || 0).toLocaleString('id-ID');
-        document.getElementById('infoBiayaNormal').innerText = `Biaya per nomor: Rp ${normalPrice}`;
+        const infoBiayaNormal = document.getElementById('infoBiayaNormal');
+        const infoDiskon = document.getElementById('infoDiskon');
+
+        // BACA TARIF INDIVIDU DARI SETTINGS LOMBA YANG BARU
+        if (config.tarif_individu && config.tarif_individu.length > 0) {
+            let textTarif = "<span class='font-bold opacity-80'>Pendaftaran Individu:</span><br>";
+            
+            // Sortir berdasarkan kuantitas biar rapi
+            let sortedTiers = [...config.tarif_individu].sort((a,b) => a.qty - b.qty);
+            
+            sortedTiers.forEach(t => {
+                textTarif += `• ${t.qty} Nomor = Rp ${Number(t.price).toLocaleString('id-ID')}<br>`;
+            });
+
+            // Tampilkan info tambahan jika atlet daftar melebihi batas paket maksimum
+            if (config.tarif_tambahan) {
+                let maxQty = sortedTiers[sortedTiers.length - 1].qty;
+                textTarif += `<span class="text-[10.5px] text-blue-200 mt-1 inline-block border-t border-blue-800/50 pt-1 w-full">💡 Lebih dari ${maxQty} nomor: +Rp ${Number(config.tarif_tambahan).toLocaleString('id-ID')} / nomor ekstra.</span>`;
+            }
+
+            infoBiayaNormal.innerHTML = textTarif;
+            if(infoDiskon) infoDiskon.classList.add('hidden'); 
+        } else {
+            // FALLBACK JIKA MASIH PAKE SETTINGAN LAMA
+            const normalPrice = Number(config.biaya_normal || 0).toLocaleString('id-ID');
+            infoBiayaNormal.innerText = `Biaya per nomor: Rp ${normalPrice}`;
+            
+            if (config.min_diskon && config.biaya_diskon) {
+                const diskonPrice = Number(config.biaya_diskon).toLocaleString('id-ID');
+                infoDiskon.innerText = `🔥 Diskon spesial: Ambil minimal ${config.min_diskon} nomor, harga per nomor jadi Rp ${diskonPrice}!`;
+                infoDiskon.classList.remove('hidden');
+            }
+        }
         
-        // MUNCULIN BIAYA ESTAFET DI KOTAK INFO ATAS
+        // BIAYA ESTAFET
         if (config.biaya_estafet !== undefined && config.biaya_estafet !== '') {
             const estafetPrice = Number(config.biaya_estafet).toLocaleString('id-ID');
             const infoEstafet = document.getElementById('infoBiayaEstafet');
@@ -112,11 +143,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 infoEstafet.innerText = `Biaya Estafet (Per Regu): Rp ${estafetPrice}`;
                 infoEstafet.classList.remove('hidden');
             }
-        }
-
-        if (config.min_diskon && config.biaya_diskon) {
-            const diskonPrice = Number(config.biaya_diskon).toLocaleString('id-ID');
-            document.getElementById('infoDiskon').innerText = `🔥 Diskon spesial: Ambil minimal ${config.min_diskon} nomor, harga per nomor jadi Rp ${diskonPrice}!`;
         }
 
         // =========================================================
@@ -362,7 +388,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // ==========================================
-    // LOGIKA PENDAFTARAN INDIVIDU
+    // LOGIKA PENDAFTARAN INDIVIDU (UPDATE CALCULATOR TIERED PRICING)
     // ==========================================
     document.getElementById('btnKirimPendaftaran').addEventListener('click', async () => {
         const btn = document.getElementById('btnKirimPendaftaran');
@@ -433,10 +459,41 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return alert(`❌ GAGAL! Atlet ini sudah pernah didaftarkan di nomor:\n\n${nomorBentrok.join(', ')}\n\nSilakan hilangkan centang pada nomor tersebut jika ingin menambah nomor gaya baru.`);
             }
 
+            // ========================================================
+            // KALKULASI TAGIHAN (DYNAMIC TIERED PRICING)
+            // ========================================================
             const config = currentEvent.config || {};
-            let totalBiaya = selectedNomor.length >= Number(config.min_diskon || 999) 
-                ? selectedNomor.length * Number(config.biaya_diskon || 0) 
-                : selectedNomor.length * Number(config.biaya_normal || 0);
+            let qty = selectedNomor.length;
+            let totalBiaya = 0;
+
+            if (config.tarif_individu && config.tarif_individu.length > 0) {
+                // Pastikan urut dari qty paling kecil
+                let sortedTiers = [...config.tarif_individu].sort((a,b) => a.qty - b.qty);
+                let maxTier = sortedTiers[sortedTiers.length - 1];
+
+                let exactTier = sortedTiers.find(t => t.qty == qty);
+                
+                if (exactTier) {
+                    totalBiaya = Number(exactTier.price);
+                } else if (qty > maxTier.qty) {
+                    // Kalau daftarnya lebih dari paket maksimum, hitung tambahannya
+                    let basePrice = Number(maxTier.price);
+                    let extraQty = qty - maxTier.qty;
+                    let extraPrice = Number(config.tarif_tambahan || 0);
+                    totalBiaya = basePrice + (extraQty * extraPrice);
+                } else {
+                    // Fallback kalau loncat-lompat isinya (misal ada 1 dan 3, tapi user pilih 2)
+                    let lowerTier = sortedTiers.slice().reverse().find(t => t.qty < qty);
+                    if(lowerTier) {
+                        totalBiaya = Number(lowerTier.price) + ((qty - lowerTier.qty) * Number(config.tarif_tambahan || 0));
+                    }
+                }
+            } else {
+                // BACKWARD COMPATIBILITY: Pake sistem lama diskon
+                totalBiaya = qty >= Number(config.min_diskon || 999) 
+                    ? qty * Number(config.biaya_diskon || 0) 
+                    : qty * Number(config.biaya_normal || 0);
+            }
 
             btn.innerHTML = "Menambahkan... ⏳"; 
 
@@ -518,10 +575,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 const { error: insertError } = await supabaseClient.from('event_registrations').insert([{
                     event_id: currentEvent.id, 
-                    f1_id: 'ESTAFET-VVIP', // Sengaja dikasih tag ini biar di admin dapet centang ijo verifikasi
+                    f1_id: 'ESTAFET-VVIP', 
                     klub_asal: klubName, 
                     nama_peserta: namaTim,
-                    tanggal_lahir: new Date().toISOString().split('T')[0], // Syarat database tgl lahir diisi
+                    tanggal_lahir: new Date().toISOString().split('T')[0], 
                     gender: 'Regu/Tim', 
                     kelompok_umur: valKU,
                     nomor_lomba: [valNomor], 
