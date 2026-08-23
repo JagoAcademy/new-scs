@@ -24,7 +24,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    if (user.email !== 'radityaraja@gmail.com') {
+    // Daftar email dewa (Super Admin)
+    const allowedAdmins = ['radityaraja@gmail.com', 'fajar@f1swimming.com'];
+
+    // Kalau email user tidak ada di dalam daftar dewa, tendang!
+    if (!allowedAdmins.includes(user.email)) {
         tendangUserAsing(user.email);
         return;
     }
