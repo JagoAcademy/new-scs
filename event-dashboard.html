@@ -323,7 +323,7 @@
                         <p class="text-lg font-bold text-slate-400 line-through decoration-red-500 decoration-2">Rp 1.000.000</p>
                         <p class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white leading-none tracking-tight">Rp 500.000</p>
                     </div>
-                    <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold mt-2">Berlaku per event / Promo s/d Jan 2027</p>
+                    <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold mt-2 bg-emerald-50 dark:bg-emerald-900/30 inline-block px-2.5 py-1 rounded-md border border-emerald-200 dark:border-emerald-800">Promo Launching s/d Jan 2027 🔥</p>
                 </div>
 
                 <!-- Benefit List -->
@@ -348,7 +348,7 @@
                 <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Pilih Metode Pembayaran</p>
                 <div class="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-lg mb-4">
                     <button class="pay-tab flex-1 py-2 text-[10px] md:text-xs font-bold rounded-md bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white transition-all" data-target="transfer">🏦 Transfer Bank</button>
-                    <button class="pay-tab flex-1 py-2 text-[10px] md:text-xs font-bold rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all" data-target="qris">⚡ QRIS Instant</button>
+                    <button class="pay-tab flex-1 py-2 text-[10px] md:text-xs font-bold rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all" data-target="qris">⚡ Scan QRIS</button>
                     <button class="pay-tab flex-1 py-2 text-[10px] md:text-xs font-bold rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all" data-target="voucher">🎟️ Voucher</button>
                 </div>
 
@@ -358,24 +358,26 @@
                 <div id="payTransfer" class="pay-section block animate-fade-in">
                     <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-center mb-3">
                         <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Transfer ke Rekening Resmi SCS</p>
-                        <p class="text-xl md:text-2xl font-black text-blue-700 dark:text-blue-400 tracking-wider">BCA 123-456-7890</p>
-                        <p class="text-[10px] font-medium text-slate-500 mt-1">a.n. PT. Swimming Competition System</p>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Upload Bukti Transfer</label>
-                        <input type="file" id="uploadBuktiBayar" accept=".jpg,.jpeg,.png,.pdf" class="w-full text-xs file:bg-slate-800 file:text-white file:rounded-md file:border-0 file:px-3 file:py-1.5 file:font-bold file:mr-3 file:cursor-pointer text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 outline-none p-1 transition-all">
-                        <p class="text-[9px] text-slate-400 mt-1">Format: JPG, PNG, PDF. Maksimal 2MB.</p>
+                        <p class="text-xl md:text-2xl font-black text-blue-700 dark:text-blue-400 tracking-wider">BCA 1880601951</p>
+                        <p class="text-[10px] font-medium text-slate-500 mt-1">a.n. Nuzulul hidayah</p>
                     </div>
                 </div>
 
                 <!-- Section: QRIS -->
                 <div id="payQris" class="pay-section hidden text-center animate-fade-in">
                     <div class="bg-white p-4 rounded-xl border border-slate-200 inline-block mb-3 shadow-sm">
-                        <!-- Dummy QR Image (Diganti dari backend via Xendit nantinya) -->
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" alt="QRIS" class="w-32 h-32 md:w-40 md:h-40 opacity-40 mx-auto">
+                        <!-- QRIS STATIS DARI JR ACADEMY -->
+                        <img src="/images/qrisjr.jpg" alt="QRIS JR Academy" class="w-32 h-32 md:w-40 md:h-40 mx-auto object-contain">
                     </div>
-                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Scan QRIS menggunakan M-Banking / E-Wallet</p>
-                    <p class="text-[11px] font-mono text-slate-500 font-bold bg-slate-100 dark:bg-slate-900 inline-block px-3 py-1 rounded">Menunggu pembayaran... <span id="qrisTimerDisplay" class="text-red-500 ml-1">15:00</span></p>
+                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Scan QRIS by JR Academy</p>
+                    <p class="text-[10px] text-slate-500">Gunakan M-Banking atau E-Wallet untuk scan.</p>
+                </div>
+
+                <!-- UPLOAD BUKTI UNTUK TRANSFER & QRIS -->
+                <div id="uploadBuktiSection" class="block animate-fade-in mt-4">
+                    <label class="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Upload Bukti Pembayaran</label>
+                    <input type="file" id="uploadBuktiBayar" accept=".jpg,.jpeg,.png,.pdf" class="w-full text-xs file:bg-slate-800 file:text-white file:rounded-md file:border-0 file:px-3 file:py-1.5 file:font-bold file:mr-3 file:cursor-pointer text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 outline-none p-1 transition-all">
+                    <p class="text-[9px] text-slate-400 mt-1">Format: JPG, PNG, PDF. Maksimal 2MB.</p>
                 </div>
 
                 <!-- Section: Voucher -->
@@ -389,8 +391,8 @@
             </div>
 
             <!-- Footer Action Button -->
-            <div class="p-5 bg-white dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700">
-                <button id="btnSubmitUpgrade" class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 font-bold py-3.5 rounded-xl shadow-md transition-colors cursor-pointer text-sm">
+            <div class="p-5 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-700">
+                <button id="btnSubmitUpgrade" class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 font-bold py-3.5 rounded-xl shadow-lg transition-colors cursor-pointer text-sm">
                     Konfirmasi Pembayaran
                 </button>
             </div>

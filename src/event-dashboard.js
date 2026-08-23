@@ -2,7 +2,6 @@ import { supabaseClient } from './supabase.js';
 
 let currentEventId = null;
 let currentPayMethod = 'transfer';
-let qrisInterval = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     // ==========================================
@@ -123,23 +122,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const payTabs = document.querySelectorAll('.pay-tab');
         const paySections = document.querySelectorAll('.pay-section');
         const btnSubmitUpgrade = document.getElementById('btnSubmitUpgrade');
-
-        function startQrisTimer() {
-            clearInterval(qrisInterval);
-            let time = 15 * 60; // 15 menit
-            const display = document.getElementById('qrisTimerDisplay');
-            qrisInterval = setInterval(() => {
-                let m = Math.floor(time / 60);
-                let s = time % 60;
-                display.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-                if(time <= 0) {
-                    clearInterval(qrisInterval);
-                    display.innerText = "00:00 (EXPIRED)";
-                    btnSubmitUpgrade.innerText = "Generate Ulang QRIS";
-                }
-                time--;
-            }, 1000);
-        }
+        const uploadBuktiSection = document.getElementById('uploadBuktiSection');
 
         payTabs.forEach(tab => {
             tab.addEventListener('click', () => {
@@ -158,17 +141,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 currentPayMethod = target;
 
-                if(target === 'transfer') {
+                if(target === 'transfer' || target === 'qris') {
                     btnSubmitUpgrade.innerText = 'Konfirmasi Pembayaran';
-                    clearInterval(qrisInterval);
-                }
-                if(target === 'qris') {
-                    btnSubmitUpgrade.innerText = 'Saya Sudah Bayar (Cek Otomatis)';
-                    startQrisTimer();
+                    uploadBuktiSection.classList.remove('hidden');
+                    uploadBuktiSection.classList.add('block');
                 }
                 if(target === 'voucher') {
                     btnSubmitUpgrade.innerText = 'Klaim & Aktifkan Pro';
-                    clearInterval(qrisInterval);
+                    uploadBuktiSection.classList.remove('block');
+                    uploadBuktiSection.classList.add('hidden');
                 }
             });
         });
@@ -177,8 +158,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (btnSubmitUpgrade) {
             btnSubmitUpgrade.onclick = async () => {
                 
-                // KONDISI 1: TRANSFER BANK
-                if (currentPayMethod === 'transfer') {
+                // KONDISI 1 & 2: TRANSFER BANK & QRIS (BUTUH BUKTI BAYAR)
+                if (currentPayMethod === 'transfer' || currentPayMethod === 'qris') {
                     const fileInput = document.getElementById('uploadBuktiBayar').files[0];
                     if (!fileInput) return alert("Pilih foto bukti transfer terlebih dahulu bos!");
                     
@@ -191,11 +172,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const fileExt = fileInput.name.split('.').pop();
                         const fileName = `upgrade_${currentEventId}_${Date.now()}.${fileExt}`;
                         
-                        // UPLOAD KE BUCKET BARU: bukti-transaksi
                         const { error: upErr } = await supabaseClient.storage.from('bukti-transaksi').upload(fileName, fileInput);
                         if (upErr) throw upErr;
 
-                        // GET URL DARI BUCKET BARU
                         const { data: urlData } = supabaseClient.storage.from('bukti-transaksi').getPublicUrl(fileName);
 
                         const { error: insErr } = await supabaseClient.from('event_transactions').insert([{
@@ -218,24 +197,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         btnSubmitUpgrade.innerText = "Konfirmasi Pembayaran";
                         btnSubmitUpgrade.disabled = false;
                     }
-                }
-
-                // KONDISI 2: QRIS INSTANT (Dummy Response)
-                if (currentPayMethod === 'qris') {
-                    if(btnSubmitUpgrade.innerText === "Generate Ulang QRIS") {
-                        startQrisTimer();
-                        btnSubmitUpgrade.innerText = 'Saya Sudah Bayar (Cek Otomatis)';
-                        return;
-                    }
-                    
-                    btnSubmitUpgrade.innerText = "⏳ Mengecek ke server Xendit...";
-                    btnSubmitUpgrade.disabled = true;
-                    
-                    setTimeout(() => {
-                        alert("Belum ada pembayaran yang terdeteksi pada QRIS ini. Silakan scan dan bayar terlebih dahulu.");
-                        btnSubmitUpgrade.innerText = "Saya Sudah Bayar (Cek Otomatis)";
-                        btnSubmitUpgrade.disabled = false;
-                    }, 2000);
                 }
 
                 // KONDISI 3: VOUCHER
@@ -368,7 +329,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.querySelectorAll('.btn-close-modal').forEach(btn => {
             btn.onclick = (e) => {
                 e.target.closest('.fixed').classList.add('hidden');
-                clearInterval(qrisInterval); // Matikan timer QRIS kalau ditutup
             }
         });
 
