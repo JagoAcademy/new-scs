@@ -159,6 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // HANDLE SUBMIT BUTTON MULTI-PURPOSE
         if (btnSubmitUpgrade) {
             btnSubmitUpgrade.onclick = async () => {
+                
                 if (currentPayMethod === 'transfer' || currentPayMethod === 'qris') {
                     const fileInput = document.getElementById('uploadBuktiBayar').files[0];
                     if (!fileInput) return alert("Pilih foto bukti transfer terlebih dahulu bos!");
@@ -227,7 +228,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // ==========================================
-        // SISANYA FUNGSI BIASA (COPAS, DLL)
+        // SISANYA FUNGSI BIASA (LINK, COPY, DKK)
         // ==========================================
         const publicLink = `https://${eventData.subdomain}.f1swimming.com?id=${currentEventId}`;
         const linkInput = document.getElementById('publicLinkInput');
@@ -258,61 +259,97 @@ document.addEventListener('DOMContentLoaded', async () => {
             setTimeout(() => { btn.innerText = originalText; btn.classList.replace('bg-green-500', 'bg-red-600'); }, 2000);
         });
 
-        // FUNGSI SHARE NATIVE
-        async function shareLink(title, text, url) {
-            if (navigator.share) {
-                try {
-                    await navigator.share({ title, text, url });
-                } catch (err) { console.log("Share dibatalkan", err); }
-            } else {
-                // Fallback ke WhatsApp Web/App
-                window.open(`https://wa.me/?text=${encodeURIComponent(text + "\n" + url)}`, '_blank');
-            }
-        }
+        // FUNGSI SHARE NATIVE SOCIAL MEDIA
+        function shareWA(url, text) { window.open(`https://wa.me/?text=${encodeURIComponent(text + "\n\n" + url)}`, '_blank'); }
+        function shareFB(url) { window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank'); }
+        function shareX(url, text) { window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank'); }
 
-        document.getElementById('btnShareLink').addEventListener('click', () => {
-            shareLink(`Pendaftaran Lomba: ${eventTitle}`, `Yuk daftar lomba renang ${eventTitle} sekarang! Klik link berikut:`, publicLink);
-        });
+        const textReg = `Yuk daftar lomba renang ${eventTitle} sekarang! Klik link berikut:`;
+        document.getElementById('btnShareWA_Reg').onclick = () => shareWA(publicLink, textReg);
+        document.getElementById('btnShareFB_Reg').onclick = () => shareFB(publicLink);
+        document.getElementById('btnShareX_Reg').onclick = () => shareX(publicLink, textReg);
 
-        document.getElementById('btnShareResult').addEventListener('click', () => {
-            shareLink(`Live Result Lomba: ${eventTitle}`, `Pantau hasil pertandingan dan perolehan medali ${eventTitle} secara LIVE di sini:`, publicResultLink);
-        });
+        const textRes = `Pantau hasil pertandingan dan perolehan medali ${eventTitle} secara LIVE di sini:`;
+        document.getElementById('btnShareWA_Res').onclick = () => shareWA(publicResultLink, textRes);
+        document.getElementById('btnShareFB_Res').onclick = () => shareFB(publicResultLink);
+        document.getElementById('btnShareX_Res').onclick = () => shareX(publicResultLink, textRes);
 
-        // FUNGSI DOWNLOAD QR CODE
-        async function downloadQR(url, filename, buttonId) {
-            const btn = document.getElementById(buttonId);
-            const originalText = btn.innerHTML;
-            btn.innerHTML = `<span>⏳</span> Wait...`;
-            btn.disabled = true;
+        // FUNGSI DOWNLOAD QR CODE BER-BINGKAI (SULAP CANVAS!)
+        async function generateFramedQR(url, filename, titleText, topText) {
+            document.getElementById('modalPreviewQR').classList.remove('hidden');
+            document.getElementById('qrLoading').classList.remove('hidden');
+            document.getElementById('qrPreviewImage').classList.add('hidden');
+            document.getElementById('btnDownloadFinalQR').classList.add('hidden');
 
-            try {
-                const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(url)}`;
-                const response = await fetch(qrApi);
-                const blob = await response.blob();
-                const blobUrl = URL.createObjectURL(blob);
+            // Kita gambar pakai Canvas HTML5
+            const canvas = document.createElement('canvas');
+            canvas.width = 500;
+            canvas.height = 650;
+            const ctx = canvas.getContext('2d');
+
+            // Fill Background Putih
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, 500, 650);
+
+            // Border Luar (Navy)
+            ctx.strokeStyle = '#1e3a8a'; 
+            ctx.lineWidth = 12;
+            ctx.strokeRect(15, 15, 470, 620);
+            
+            // Border Dalam (Emas)
+            ctx.strokeStyle = '#f59e0b'; 
+            ctx.lineWidth = 3;
+            ctx.strokeRect(33, 33, 434, 584);
+
+            // Teks Atas (e.g. SCAN UNTUK MENDAFTAR)
+            ctx.fillStyle = '#1e3a8a';
+            ctx.font = '900 24px Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(topText.toUpperCase(), 250, 80);
+
+            // Teks Bawah (Nama Event)
+            ctx.fillStyle = '#334155';
+            ctx.font = 'bold 22px Arial, sans-serif';
+            ctx.fillText(titleText, 250, 560);
+
+            // Teks Watermark
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = 'bold 14px Arial, sans-serif';
+            ctx.fillText('Powered by f1swimming.com', 250, 590);
+
+            // Load QR Image
+            const img = new Image();
+            img.crossOrigin = 'Anonymous'; // Biar canvas bisa di-save ke PNG tanpa error CORS
+            img.onload = () => {
+                // Gambar QR Code di tengah canvas
+                ctx.drawImage(img, 50, 110, 400, 400); 
                 
-                const a = document.createElement('a');
-                a.href = blobUrl;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(blobUrl);
-            } catch (e) {
-                // Kalau kena blokir browser, buka di tab baru aja biar user save image as manual
-                window.open(`https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(url)}`, '_blank');
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
+                // Konversi Canvas ke Data URL (Gambar jadi)
+                const finalImageUrl = canvas.toDataURL('image/png');
+                
+                // Tampilkan di Modal
+                document.getElementById('qrLoading').classList.add('hidden');
+                document.getElementById('qrPreviewImage').src = finalImageUrl;
+                document.getElementById('qrPreviewImage').classList.remove('hidden');
+                
+                const btnDl = document.getElementById('btnDownloadFinalQR');
+                btnDl.href = finalImageUrl;
+                btnDl.download = filename;
+                btnDl.classList.remove('hidden');
+            };
+            img.onerror = () => {
+                alert("Gagal memuat QR Code. Pastikan koneksi internet stabil.");
+                document.getElementById('modalPreviewQR').classList.add('hidden');
+            };
+            img.src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(url)}&margin=0`;
         }
 
-        document.getElementById('btnDownloadQR').addEventListener('click', () => {
-            downloadQR(publicLink, `QR_Daftar_${eventTitle.replace(/\s+/g, '_')}.png`, 'btnDownloadQR');
+        document.getElementById('btnPreviewQR_Reg').addEventListener('click', () => {
+            generateFramedQR(publicLink, `QR_Daftar_${eventTitle.replace(/\s+/g, '_')}.png`, eventTitle, "Scan Untuk Mendaftar");
         });
 
-        document.getElementById('btnDownloadQRResult').addEventListener('click', () => {
-            downloadQR(publicResultLink, `QR_LiveResult_${eventTitle.replace(/\s+/g, '_')}.png`, 'btnDownloadQRResult');
+        document.getElementById('btnPreviewQR_Res').addEventListener('click', () => {
+            generateFramedQR(publicResultLink, `QR_LiveResult_${eventTitle.replace(/\s+/g, '_')}.png`, eventTitle, "Scan Untuk Live Result");
         });
 
         // TAUTAN HALAMAN
