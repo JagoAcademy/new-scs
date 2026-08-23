@@ -29,7 +29,8 @@ export default defineConfig({
 
         // --- 3. DASHBOARD EO / PANITIA LOMBA ---
         eventDashboard: resolve(__dirname, 'event-dashboard.html'), // Panel Utama Command Center 1 Event
-        eventSponsor: resolve(__dirname, 'event-sponsor.html'), // <--- TAMBAHAN BARU: Manajemen Sponsor Deal & Pitching
+        eventSponsor: resolve(__dirname, 'event-sponsor.html'), // Manajemen Sponsor Deal & Pitching
+        logoSponsor: resolve(__dirname, 'logosponsor.html'), // <--- JAHITAN BARU: Master Database Sponsor HTML 🎯
         eventPeserta: resolve(__dirname, 'event-peserta.html'), // List & Verifikasi Peserta Lomba
         settingsLomba: resolve(__dirname, 'settings-lomba.html'), // Setup Nomor Lomba, Usia & Gaya
 
@@ -45,7 +46,7 @@ export default defineConfig({
         admin: resolve(__dirname, 'admin.html'), // Panel Kontrol Super Admin SCS
         adminAds: resolve(__dirname, 'admin-ads.html'),
         sponsorPreview: resolve(__dirname, 'sponsor-preview.html'),
-        adminApproval: resolve(__dirname, 'admin-approval.html'), // <--- TAMBAHAN BARU: ACC Sponsor
+        adminApproval: resolve(__dirname, 'admin-approval.html'), // ACC Sponsor
       }
     }
   },
