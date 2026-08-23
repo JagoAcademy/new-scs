@@ -68,27 +68,31 @@ document.addEventListener('DOMContentLoaded', async () => {
             const endDate = new Date(ev.end_date);
             
             let badgeHTML = '';
-            let btnHTML = '';
+            let actionText = '';
             let filterClass = '';
+            let cardUrl = '';
 
-            // Tentukan Status Event
+            // Tentukan Status Event & URL Destinasi
             if (today > endDate) {
                 // Selesai
-                badgeHTML = `<div class="absolute top-4 left-4 bg-gray-600 text-white text-[10px] font-extrabold px-3 py-1.5 rounded-lg shadow-sm">SELESAI</div>`;
-                btnHTML = `<a href="https://${ev.subdomain}.f1swimming.com/result?id=${ev.id}" class="block text-center w-full border-2 border-slate-200 text-slate-600 font-bold py-2.5 rounded-xl hover:bg-slate-50 transition">Lihat Hasil Akhir</a>`;
+                badgeHTML = `<div class="absolute top-4 left-4 bg-slate-900/80 backdrop-blur-sm text-white text-[10px] font-extrabold px-3 py-1.5 rounded-full shadow-lg border border-slate-700 z-20">SELESAI</div>`;
+                cardUrl = `https://${ev.subdomain}.f1swimming.com/result?id=${ev.id}`;
+                actionText = "Lihat Hasil Akhir";
                 filterClass = 'selesai';
             } else if (today >= startDate && today <= endDate) {
                 // Sedang Berjalan (LIVE)
-                badgeHTML = `<div class="absolute top-4 left-4 bg-red-500 text-white text-[10px] font-extrabold px-3 py-1.5 rounded-lg shadow-sm flex items-center gap-1.5">
+                badgeHTML = `<div class="absolute top-4 left-4 bg-red-600/90 backdrop-blur-sm text-white text-[10px] font-extrabold px-3 py-1.5 rounded-full shadow-lg border border-red-500 flex items-center gap-1.5 z-20">
                         <span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span> LIVE RESULT
                     </div>`;
-                btnHTML = `<a href="https://${ev.subdomain}.f1swimming.com/result?id=${ev.id}" class="block text-center w-full bg-red-50 text-red-700 font-bold py-2.5 rounded-xl hover:bg-red-100 transition">Pantau Hasil Pertandingan</a>`;
+                cardUrl = `https://${ev.subdomain}.f1swimming.com/result?id=${ev.id}`;
+                actionText = "Pantau Pertandingan";
                 filterClass = 'live';
             } else {
                 // Masih Buka (Pendaftaran)
-                badgeHTML = `<div class="absolute top-4 left-4 bg-green-500 text-white text-[10px] font-extrabold px-3 py-1.5 rounded-lg shadow-sm">PENDAFTARAN DIBUKA</div>`;
-                btnHTML = `<a href="https://${ev.subdomain}.f1swimming.com?id=${ev.id}" class="block text-center w-full bg-blue-50 text-blue-700 font-bold py-2.5 rounded-xl hover:bg-blue-100 transition">Lihat Detail & Daftar</a>`;
-                filterClass = 'buka'; // Supaya tetap masuk di logic awal
+                badgeHTML = `<div class="absolute top-4 left-4 bg-emerald-500/90 backdrop-blur-sm text-white text-[10px] font-extrabold px-3 py-1.5 rounded-full shadow-lg border border-emerald-400 z-20">PENDAFTARAN DIBUKA</div>`;
+                cardUrl = `https://${ev.subdomain}.f1swimming.com?id=${ev.id}`;
+                actionText = "Detail & Daftar";
+                filterClass = 'buka';
             }
 
             // Lokasi
@@ -105,20 +109,34 @@ document.addEventListener('DOMContentLoaded', async () => {
                 bgImage = ev.config.header_url;
             }
 
+            // RENDER HTML KARTU (CINEMATIC GRADIENT)
             html += `
-            <div class="bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-shadow border border-gray-100 group event-card ${filterClass}">
-                <div class="h-48 overflow-hidden relative bg-blue-900 flex items-center justify-center">
-                    <img src="${bgImage}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 mix-blend-overlay" alt="${ev.event_name}">
-                    <h2 class="absolute text-white/40 font-black text-4xl uppercase tracking-tighter mix-blend-overlay pointer-events-none text-center px-4 leading-none">${ev.event_name}</h2>
-                    ${badgeHTML}
+            <a href="${cardUrl}" class="block relative rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 group event-card aspect-[4/3] sm:aspect-[16/10] bg-slate-900 ${filterClass}">
+                
+                <!-- Gambar Cover Full -->
+                <img src="${bgImage}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 z-0" alt="${ev.event_name}">
+                
+                <!-- Gradient Hitam dari Bawah -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
+                
+                <!-- Badge Mengambang -->
+                ${badgeHTML}
+                
+                <!-- Konten Teks -->
+                <div class="absolute bottom-0 left-0 w-full p-5 sm:p-6 flex flex-col justify-end z-20">
+                    <p class="text-[10px] md:text-xs font-bold text-amber-400 mb-1.5 flex items-center gap-1.5 drop-shadow-md">🏆 ${dateText}</p>
+                    <h3 class="text-xl md:text-2xl font-extrabold text-white mb-1.5 leading-tight drop-shadow-lg line-clamp-2" title="${ev.event_name}">${ev.event_name}</h3>
+                    <p class="text-xs md:text-sm text-slate-300 font-medium flex items-center gap-1.5 mb-4 truncate drop-shadow-md"><span class="text-red-400">📍</span> ${lokasiText}</p>
+
+                    <!-- Area CTA Bawah -->
+                    <div class="flex justify-between items-center pt-3 md:pt-4 border-t border-white/20">
+                        <span class="text-xs font-bold text-white/80 group-hover:text-white transition-colors tracking-wide uppercase">${actionText}</span>
+                        <span class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:bg-blue-600 group-hover:scale-110 transition-all backdrop-blur-sm border border-white/10 shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+                        </span>
+                    </div>
                 </div>
-                <div class="p-6">
-                    <p class="text-xs font-bold text-amber-500 mb-1 flex items-center gap-1.5">🏆 ${dateText}</p>
-                    <h3 class="text-xl font-extrabold text-slate-800 mb-2 truncate" title="${ev.event_name}">${ev.event_name}</h3>
-                    <p class="text-xs text-slate-500 mb-5 font-bold flex items-center gap-1.5"><span class="text-red-400 text-sm">📍</span> ${lokasiText}</p>
-                    ${btnHTML}
-                </div>
-            </div>
+            </a>
             `;
         });
 
