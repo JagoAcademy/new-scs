@@ -154,13 +154,17 @@
                 if (isCatMatch || matchedBrands.length > 0) {
                     hasResult = true;
                     
-                    // Bikin list badge HTML
                     let brandsHtml = '';
-                    // Jika user ngetik sesuatu, highlight yang cocok. Jika tidak, tampilkan semua.
                     const displayBrands = filterText ? (isCatMatch ? cat.brands : matchedBrands) : cat.brands;
 
+                    // --- INI DIA SULAP GOOGLE IMAGE SEARCH-NYA ---
                     displayBrands.forEach(brand => {
-                        brandsHtml += `<span class="brand-badge inline-block bg-${cat.color}-50 text-${cat.color}-700 border border-${cat.color}-100 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm">${brand}</span>`;
+                        const searchQuery = encodeURIComponent(`${brand} logo png`);
+                        const googleImageURL = `https://www.google.com/search?tbm=isch&q=${searchQuery}`;
+                        
+                        brandsHtml += `<a href="${googleImageURL}" target="_blank" title="Cari logo ${brand} di Google" class="brand-badge inline-flex items-center gap-1 bg-${cat.color}-50 hover:bg-${cat.color}-600 hover:text-white text-${cat.color}-700 border border-${cat.color}-100 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors cursor-pointer">
+                            <span class="text-[10px]">🔍</span> ${brand}
+                        </a>`;
                     });
 
                     // Generate Card
