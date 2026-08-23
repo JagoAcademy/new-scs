@@ -2,6 +2,7 @@ import { supabaseClient } from './supabase.js';
 
 let currentEventId = null;
 let currentPayMethod = 'transfer';
+let eventTitle = ''; // Simpan nama event buat share
 
 document.addEventListener('DOMContentLoaded', async () => {
     // ==========================================
@@ -85,6 +86,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        eventTitle = eventData.event_name;
         document.getElementById('headerEventName').innerText = eventData.event_name;
         document.getElementById('headerSubdomain').innerText = `${eventData.subdomain}.f1swimming.com`;
 
@@ -157,12 +159,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         // HANDLE SUBMIT BUTTON MULTI-PURPOSE
         if (btnSubmitUpgrade) {
             btnSubmitUpgrade.onclick = async () => {
-                
-                // KONDISI 1 & 2: TRANSFER BANK & QRIS (BUTUH BUKTI BAYAR)
                 if (currentPayMethod === 'transfer' || currentPayMethod === 'qris') {
                     const fileInput = document.getElementById('uploadBuktiBayar').files[0];
                     if (!fileInput) return alert("Pilih foto bukti transfer terlebih dahulu bos!");
-                    
                     if (fileInput.size > 2 * 1024 * 1024) return alert("Ups! Ukuran file maksimal 2MB ya.");
 
                     btnSubmitUpgrade.innerText = "⏳ Mengirim Data...";
@@ -199,7 +198,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 }
 
-                // KONDISI 3: VOUCHER
                 if (currentPayMethod === 'voucher') {
                     const vCode = document.getElementById('inputVoucherCode').value.trim().toUpperCase();
                     if (!vCode) return alert("Masukkan kode voucher terlebih dahulu!");
@@ -235,40 +233,89 @@ document.addEventListener('DOMContentLoaded', async () => {
         const linkInput = document.getElementById('publicLinkInput');
         if (linkInput) linkInput.value = publicLink;
 
-        const btnCopyLink = document.getElementById('btnCopyLink');
-        if (btnCopyLink) {
-            btnCopyLink.addEventListener('click', () => {
-                linkInput.select();
-                document.execCommand('copy'); 
-                const originalText = btnCopyLink.innerText;
-                btnCopyLink.innerText = "Tersalin!";
-                btnCopyLink.classList.replace('bg-blue-600', 'bg-green-500');
-                setTimeout(() => {
-                    btnCopyLink.innerText = originalText;
-                    btnCopyLink.classList.replace('bg-green-500', 'bg-blue-600');
-                }, 2000);
-            });
-        }
-
         const publicResultLink = `https://${eventData.subdomain}.f1swimming.com/result?id=${currentEventId}`;
         const resultLinkInput = document.getElementById('publicResultLinkInput');
         if (resultLinkInput) resultLinkInput.value = publicResultLink;
 
-        const btnCopyResultLink = document.getElementById('btnCopyResultLink');
-        if (btnCopyResultLink) {
-            btnCopyResultLink.addEventListener('click', () => {
-                resultLinkInput.select();
-                document.execCommand('copy'); 
-                const originalText = btnCopyResultLink.innerText;
-                btnCopyResultLink.innerText = "Tersalin!";
-                btnCopyResultLink.classList.replace('bg-red-600', 'bg-green-500');
-                setTimeout(() => {
-                    btnCopyResultLink.innerText = originalText;
-                    btnCopyResultLink.classList.replace('bg-green-500', 'bg-red-600');
-                }, 2000);
-            });
+        // FUNGSI COPY
+        document.getElementById('btnCopyLink').addEventListener('click', () => {
+            linkInput.select();
+            document.execCommand('copy'); 
+            const btn = document.getElementById('btnCopyLink');
+            const originalText = btn.innerText;
+            btn.innerText = "Tersalin!";
+            btn.classList.replace('bg-blue-600', 'bg-green-500');
+            setTimeout(() => { btn.innerText = originalText; btn.classList.replace('bg-green-500', 'bg-blue-600'); }, 2000);
+        });
+
+        document.getElementById('btnCopyResultLink').addEventListener('click', () => {
+            resultLinkInput.select();
+            document.execCommand('copy'); 
+            const btn = document.getElementById('btnCopyResultLink');
+            const originalText = btn.innerText;
+            btn.innerText = "Tersalin!";
+            btn.classList.replace('bg-red-600', 'bg-green-500');
+            setTimeout(() => { btn.innerText = originalText; btn.classList.replace('bg-green-500', 'bg-red-600'); }, 2000);
+        });
+
+        // FUNGSI SHARE NATIVE
+        async function shareLink(title, text, url) {
+            if (navigator.share) {
+                try {
+                    await navigator.share({ title, text, url });
+                } catch (err) { console.log("Share dibatalkan", err); }
+            } else {
+                // Fallback ke WhatsApp Web/App
+                window.open(`https://wa.me/?text=${encodeURIComponent(text + "\n" + url)}`, '_blank');
+            }
         }
 
+        document.getElementById('btnShareLink').addEventListener('click', () => {
+            shareLink(`Pendaftaran Lomba: ${eventTitle}`, `Yuk daftar lomba renang ${eventTitle} sekarang! Klik link berikut:`, publicLink);
+        });
+
+        document.getElementById('btnShareResult').addEventListener('click', () => {
+            shareLink(`Live Result Lomba: ${eventTitle}`, `Pantau hasil pertandingan dan perolehan medali ${eventTitle} secara LIVE di sini:`, publicResultLink);
+        });
+
+        // FUNGSI DOWNLOAD QR CODE
+        async function downloadQR(url, filename, buttonId) {
+            const btn = document.getElementById(buttonId);
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<span>⏳</span> Wait...`;
+            btn.disabled = true;
+
+            try {
+                const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(url)}`;
+                const response = await fetch(qrApi);
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(blobUrl);
+            } catch (e) {
+                // Kalau kena blokir browser, buka di tab baru aja biar user save image as manual
+                window.open(`https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(url)}`, '_blank');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        document.getElementById('btnDownloadQR').addEventListener('click', () => {
+            downloadQR(publicLink, `QR_Daftar_${eventTitle.replace(/\s+/g, '_')}.png`, 'btnDownloadQR');
+        });
+
+        document.getElementById('btnDownloadQRResult').addEventListener('click', () => {
+            downloadQR(publicResultLink, `QR_LiveResult_${eventTitle.replace(/\s+/g, '_')}.png`, 'btnDownloadQRResult');
+        });
+
+        // TAUTAN HALAMAN
         document.getElementById('btnSettingsLomba').onclick = () => window.location.href = `/settings-lomba.html?id=${currentEventId}`;
         document.getElementById('btnLiveResult').onclick = () => window.location.href = `/live-result.html?id=${currentEventId}`;
         document.getElementById('btnDataPeserta').onclick = () => window.location.href = `/event-peserta.html?id=${currentEventId}`;
