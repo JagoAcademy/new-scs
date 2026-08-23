@@ -5,14 +5,13 @@ let dataGaya = [];
 let dataEstafet = []; 
 let currentEventId = null;
 
-// State JSONB Config (Termasuk WA Admin, Nama Kolam, & Biaya Estafet)
+// State JSONB Config (Update: Pake Tarif Berjenjang)
 let configForm = {
     header_url: '',
     bg_url: '',
-    biaya_normal: '',
+    tarif_individu: [], // Array objek: [{qty: 1, price: 150000}, {qty: 2, price: 250000}]
+    tarif_tambahan: '', // Harga per nomor ekstra kalau daftar > max paket
     biaya_estafet: '', 
-    min_diskon: '',
-    biaya_diskon: '',
     admin_wa_1: '', 
     admin_wa_2: '', 
     info_pembayaran: '',
@@ -51,17 +50,25 @@ async function loadDataLomba() {
         configForm.header_url = eventConfig.header_url || '';
         configForm.bg_url = eventConfig.bg_url || '';
         
-        // [BUG FIX] Pakai ?? agar angka 0 tetap dihitung sebagai 0, bukan dianggap kosong
-        configForm.biaya_normal = eventConfig.biaya_normal ?? '';
         configForm.biaya_estafet = eventConfig.biaya_estafet ?? ''; 
-        configForm.min_diskon = eventConfig.min_diskon ?? '';
-        configForm.biaya_diskon = eventConfig.biaya_diskon ?? '';
-        
         configForm.admin_wa_1 = eventConfig.admin_wa_1 || ''; 
         configForm.admin_wa_2 = eventConfig.admin_wa_2 || ''; 
         configForm.info_pembayaran = eventConfig.info_pembayaran || ''; 
         configForm.qris_url = eventConfig.qris_url || ''; 
         configForm.nama_kolam = eventConfig.nama_kolam || ''; 
+
+        // LOGIC TARIF BERJENJANG DENGAN BACKWARD COMPATIBILITY
+        configForm.tarif_individu = eventConfig.tarif_individu || [];
+        configForm.tarif_tambahan = eventConfig.tarif_tambahan ?? '';
+
+        // Kalau datanya database versi lama (masih pake biaya_normal), konversi otomatis ke berjenjang
+        if (configForm.tarif_individu.length === 0) {
+            if (eventConfig.biaya_normal) {
+                configForm.tarif_individu.push({ qty: 1, price: eventConfig.biaya_normal });
+            } else {
+                configForm.tarif_individu.push({ qty: 1, price: '' }); // Default 1 baris kosong
+            }
+        }
 
         // Set status event
         isEventClosed = data?.is_closed || false;
@@ -83,18 +90,15 @@ async function loadDataLomba() {
 }
 
 function renderFormConfig() {
-    document.getElementById('inputBiayaNormal').value = configForm.biaya_normal;
-    document.getElementById('inputMinDiskon').value = configForm.min_diskon;
-    document.getElementById('inputBiayaDiskon').value = configForm.biaya_diskon;
+    // Render Tarif Individu Dinamis
+    window.renderTarifIndividu();
     
-    // Tulis nilai estafet ke input HTML
+    // Tulis nilai lainnya ke input HTML
+    if (document.getElementById('inputTarifTambahan')) document.getElementById('inputTarifTambahan').value = configForm.tarif_tambahan;
     if (document.getElementById('inputBiayaEstafet')) document.getElementById('inputBiayaEstafet').value = configForm.biaya_estafet;
-    
-    // Tulis WA ke Input Box
     if (document.getElementById('inputAdminWA1')) document.getElementById('inputAdminWA1').value = configForm.admin_wa_1;
     if (document.getElementById('inputAdminWA2')) document.getElementById('inputAdminWA2').value = configForm.admin_wa_2;
     if (document.getElementById('inputInfoPembayaran')) document.getElementById('inputInfoPembayaran').value = configForm.info_pembayaran; 
-    
     if (document.getElementById('inputNamaKolam')) document.getElementById('inputNamaKolam').value = configForm.nama_kolam;
 
     if (configForm.header_url) {
@@ -117,8 +121,8 @@ function renderFormConfig() {
     const labelStatus = document.getElementById('labelStatusEvent');
     
     if (toggleInput && labelStatus) {
-        toggleInput.checked = !isEventClosed; // Kalau false (buka), brarti checked
-        toggleInput.disabled = false; // Buka gembok HTML setelah loading beres!
+        toggleInput.checked = !isEventClosed;
+        toggleInput.disabled = false;
         
         if (isEventClosed) {
             labelStatus.innerText = "PENDAFTARAN DITUTUP";
@@ -133,12 +137,12 @@ function renderFormConfig() {
             
             if (willBeClosed) {
                 if(!confirm("Yakin ingin MENUTUP pendaftaran lomba ini? Halaman publik tidak akan bisa menerima peserta baru.")) {
-                    e.target.checked = true; // Batal, balikin toggle
+                    e.target.checked = true;
                     return;
                 }
             } else {
                 if(!confirm("Yakin ingin MEMBUKA kembali pendaftaran lomba ini?")) {
-                    e.target.checked = false; // Batal, balikin toggle
+                    e.target.checked = false;
                     return;
                 }
             }
@@ -164,12 +168,61 @@ function renderFormConfig() {
                 }
             } catch(err) {
                 alert("Gagal mengubah status: " + err.message);
-                e.target.checked = !willBeClosed; // Balikin toggle kalau error
+                e.target.checked = !willBeClosed;
             } finally {
                 toggleInput.disabled = false;
             }
         });
     }
+}
+
+// ==========================================
+// LOGIKA DYNAMIC TIERED PRICING (TARIF BERJENJANG)
+// ==========================================
+window.renderTarifIndividu = function() {
+    const container = document.getElementById('containerTarifIndividu');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    configForm.tarif_individu.forEach((t, i) => {
+        container.innerHTML += `
+            <div class="flex items-center gap-2">
+                <div class="w-24 shrink-0 flex items-center border border-slate-300 rounded-lg bg-white overflow-hidden focus-within:ring-2 ring-blue-500">
+                    <input type="number" value="${t.qty}" onchange="updateTarifQty(${i}, this.value)" class="w-full p-2.5 text-sm text-center font-black text-slate-800 outline-none" min="1">
+                    <span class="px-2 text-[10px] bg-slate-100 border-l border-slate-300 text-slate-500 font-bold h-full flex items-center">Nomor</span>
+                </div>
+                <span class="font-black text-slate-400 text-lg">=</span>
+                <div class="flex-1 flex items-center border border-slate-300 rounded-lg bg-white overflow-hidden focus-within:ring-2 ring-blue-500">
+                    <span class="px-3 text-xs bg-slate-100 border-r border-slate-300 text-slate-500 font-bold h-full flex items-center">Rp</span>
+                    <input type="number" value="${t.price}" onchange="updateTarifPrice(${i}, this.value)" class="w-full p-2.5 text-sm font-bold text-slate-800 outline-none" placeholder="150000">
+                </div>
+                <button onclick="hapusTarifIndividu(${i})" class="w-10 h-10 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-500 rounded-lg transition-colors border border-red-100 shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+            </div>
+        `;
+    });
+}
+
+window.updateTarifQty = (i, val) => { configForm.tarif_individu[i].qty = parseInt(val) || 1; }
+window.updateTarifPrice = (i, val) => { configForm.tarif_individu[i].price = val; }
+
+window.tambahTarifIndividu = () => {
+    let nextQty = 1;
+    if (configForm.tarif_individu.length > 0) {
+        nextQty = parseInt(configForm.tarif_individu[configForm.tarif_individu.length - 1].qty) + 1;
+    }
+    configForm.tarif_individu.push({ qty: nextQty, price: '' });
+    renderTarifIndividu();
+}
+
+window.hapusTarifIndividu = (i) => {
+    configForm.tarif_individu.splice(i, 1);
+    // Kalau kehapus semua, sisain 1 baris default biar ga nge-bug
+    if (configForm.tarif_individu.length === 0) {
+        configForm.tarif_individu.push({ qty: 1, price: '' });
+    }
+    renderTarifIndividu();
 }
 
 async function handleImageUpload(event, keyName, previewId) {
@@ -421,13 +474,12 @@ window.simpanKeDatabase = async function() {
     btnSave.innerHTML = "Menyimpan...";
     btnSave.disabled = true;
 
-    configForm.biaya_normal = document.getElementById('inputBiayaNormal').value;
+    // AMBIL NILAI TARIF TAMBAHAN (SISA TARIF INDIVIDU UDAH DI-BINDING LEWAT ONCHANGE)
+    if(document.getElementById('inputTarifTambahan')) {
+        configForm.tarif_tambahan = document.getElementById('inputTarifTambahan').value;
+    }
     
-    // AMBIL BIAYA ESTAFET SAAT DISIMPAN
     if(document.getElementById('inputBiayaEstafet')) configForm.biaya_estafet = document.getElementById('inputBiayaEstafet').value;
-    
-    configForm.min_diskon = document.getElementById('inputMinDiskon').value;
-    configForm.biaya_diskon = document.getElementById('inputBiayaDiskon').value;
     
     // MASUKIN WA & NAMA KOLAM KE DALAM CONFIG JSONB
     if (document.getElementById('inputAdminWA1')) configForm.admin_wa_1 = document.getElementById('inputAdminWA1').value;
