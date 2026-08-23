@@ -5,12 +5,14 @@ let dataGaya = [];
 let dataEstafet = []; 
 let currentEventId = null;
 
-// State JSONB Config (Update: Pake Tarif Berjenjang)
+// TAMBAHAN: Simpan Role User yang lagi login
+let userRole = null; 
+
 let configForm = {
     header_url: '',
     bg_url: '',
-    tarif_individu: [], // Array objek: [{qty: 1, price: 150000}, {qty: 2, price: 250000}]
-    tarif_tambahan: '', // Harga per nomor ekstra kalau daftar > max paket
+    tarif_individu: [], 
+    tarif_tambahan: '', 
     biaya_estafet: '', 
     admin_wa_1: '', 
     admin_wa_2: '', 
@@ -19,7 +21,6 @@ let configForm = {
     nama_kolam: '' 
 };
 
-// State Status Event
 let isEventClosed = false;
 
 async function loadDataLomba() {
@@ -33,19 +34,62 @@ async function loadDataLomba() {
     }
 
     try {
+        // ==========================================
+        // 🛡️ GERBANG SATPAM: AUTH & ROLE CHECKING
+        // ==========================================
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) {
+            alert("Akses Ditolak! Anda harus login.");
+            window.location.replace('/auth.html');
+            return;
+        }
+
+        const currentUserId = session.user.id;
+        const currentUserEmail = session.user.email;
+
         const { data, error } = await supabaseClient
             .from('events')
-            .select('config_ku, config_gaya, config_estafet, config, is_closed')
+            .select('config_ku, config_gaya, config_estafet, config, is_closed, owner_id')
             .eq('id', currentEventId)
             .single();
 
         if (error) throw error;
 
+        // Tentukan apakah user ini Owner / Super Admin
+        let isOwner = data.owner_id === currentUserId || currentUserEmail === 'radityaraja@gmail.com';
+
+        if (isOwner) {
+            userRole = 'Owner';
+        } else {
+            // Cek di tabel kolaborator
+            const { data: collabData } = await supabaseClient
+                .from('event_collaborators')
+                .select('role')
+                .eq('event_id', currentEventId)
+                .eq('user_id', currentUserId)
+                .single();
+
+            if (!collabData) {
+                alert("Akses Ditolak! Anda bukan panitia di event ini.");
+                window.location.replace('/dashboard.html');
+                return;
+            }
+
+            userRole = collabData.role;
+
+            // KICK JIKA BUKAN CO-ADMIN
+            if (userRole !== 'Co-Admin') {
+                alert(`🔒 Akses Terbatas!\nPeran Anda sebagai [${userRole}] tidak memiliki izin untuk membuka Pengaturan Lomba.`);
+                window.location.replace(`/event-dashboard.html?id=${currentEventId}`);
+                return;
+            }
+        }
+        // ==========================================
+
         dataKU = data?.config_ku || [];
         dataGaya = data?.config_gaya || [];
         dataEstafet = data?.config_estafet || [];
         
-        // Tarik data dari brankas JSONB config
         const eventConfig = data?.config || {};
         configForm.header_url = eventConfig.header_url || '';
         configForm.bg_url = eventConfig.bg_url || '';
@@ -57,23 +101,19 @@ async function loadDataLomba() {
         configForm.qris_url = eventConfig.qris_url || ''; 
         configForm.nama_kolam = eventConfig.nama_kolam || ''; 
 
-        // LOGIC TARIF BERJENJANG DENGAN BACKWARD COMPATIBILITY
         configForm.tarif_individu = eventConfig.tarif_individu || [];
         configForm.tarif_tambahan = eventConfig.tarif_tambahan ?? '';
 
-        // Kalau datanya database versi lama (masih pake biaya_normal), konversi otomatis ke berjenjang
         if (configForm.tarif_individu.length === 0) {
             if (eventConfig.biaya_normal) {
                 configForm.tarif_individu.push({ qty: 1, price: eventConfig.biaya_normal });
             } else {
-                configForm.tarif_individu.push({ qty: 1, price: '' }); // Default 1 baris kosong
+                configForm.tarif_individu.push({ qty: 1, price: '' }); 
             }
         }
 
-        // Set status event
         isEventClosed = data?.is_closed || false;
 
-        // Default Data jika kosong
         if (dataKU.length === 0) dataKU = [{ id: 1, nama: 'KU A', tahunMulai: 2011, tahunAkhir: 2012, aktif: true }];
         if (dataGaya.length === 0) dataGaya = [{ id: 1, nama: 'Gaya Bebas', jarak: [{ id: 101, nama: '50m', aktif: true }] }];
         if (dataEstafet.length === 0) dataEstafet = [{ id: 1, nama: 'Estafet Gaya Bebas', list: [{ id: 101, jarak: '4x50m', jenis: 'Mix', aktif: true }] }];
@@ -90,10 +130,8 @@ async function loadDataLomba() {
 }
 
 function renderFormConfig() {
-    // Render Tarif Individu Dinamis
     window.renderTarifIndividu();
     
-    // Tulis nilai lainnya ke input HTML
     if (document.getElementById('inputTarifTambahan')) document.getElementById('inputTarifTambahan').value = configForm.tarif_tambahan;
     if (document.getElementById('inputBiayaEstafet')) document.getElementById('inputBiayaEstafet').value = configForm.biaya_estafet;
     if (document.getElementById('inputAdminWA1')) document.getElementById('inputAdminWA1').value = configForm.admin_wa_1;
@@ -115,6 +153,34 @@ function renderFormConfig() {
     }
 
     // ==========================================
+    // 🔒 RESTRIKSI CO-ADMIN (LOCK HARGA & REKENING)
+    // ==========================================
+    if (userRole !== 'Owner') {
+        const lockedIds = ['inputTarifTambahan', 'inputBiayaEstafet', 'inputInfoPembayaran', 'inputQris'];
+        lockedIds.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                el.disabled = true;
+                el.classList.add('bg-slate-100', 'cursor-not-allowed', 'opacity-60');
+            }
+        });
+
+        // Hide "Tambah Tarif" button
+        const btnTambahTarif = document.querySelector('button[onclick="tambahTarifIndividu()"]');
+        if(btnTambahTarif) btnTambahTarif.style.display = 'none';
+
+        // Tampilkan Banner Peringatan
+        const bannerContainer = document.querySelector('.max-w-4xl.mx-auto');
+        if(bannerContainer && !document.getElementById('coAdminBanner')) {
+            const banner = document.createElement('div');
+            banner.id = 'coAdminBanner';
+            banner.className = 'bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl mb-6 shadow-sm flex gap-3 items-start animate-fade-in mt-6';
+            banner.innerHTML = `<span class="text-xl">⚠️</span> <div><h3 class="font-bold text-sm">Akses Mode Co-Admin</h3><p class="text-xs mt-1">Anda dapat mengatur KU, Nomor, dan Venue. Namun, pengaturan Harga Pendaftaran dan Rekening Pembayaran <strong>dikunci dan hanya dapat diubah oleh Owner Klub</strong> untuk alasan keamanan.</p></div>`;
+            bannerContainer.insertBefore(banner, bannerContainer.children[1]); // Insert under Title
+        }
+    }
+
+    // ==========================================
     // RENDER STATUS TOGGLE PENDAFTARAN
     // ==========================================
     const toggleInput = document.getElementById('toggleStatusEvent');
@@ -132,73 +198,77 @@ function renderFormConfig() {
             labelStatus.className = "text-xs font-black text-emerald-600 bg-emerald-100 px-2.5 py-1 rounded-md uppercase tracking-widest";
         }
         
-        toggleInput.addEventListener('change', async (e) => {
-            const willBeClosed = !e.target.checked;
-            
-            if (willBeClosed) {
-                if(!confirm("Yakin ingin MENUTUP pendaftaran lomba ini? Halaman publik tidak akan bisa menerima peserta baru.")) {
-                    e.target.checked = true;
-                    return;
-                }
-            } else {
-                if(!confirm("Yakin ingin MEMBUKA kembali pendaftaran lomba ini?")) {
-                    e.target.checked = false;
-                    return;
-                }
-            }
-            
+        // Cuma Owner yang boleh Buka/Tutup Pendaftaran
+        if (userRole !== 'Owner') {
             toggleInput.disabled = true;
-            try {
-                const { error } = await supabaseClient
-                    .from('events')
-                    .update({ is_closed: willBeClosed })
-                    .eq('id', currentEventId);
-                    
-                if (error) throw error;
-                
-                isEventClosed = willBeClosed;
-                if (isEventClosed) {
-                    labelStatus.innerText = "PENDAFTARAN DITUTUP";
-                    labelStatus.className = "text-xs font-black text-red-600 bg-red-100 px-2.5 py-1 rounded-md uppercase tracking-widest";
-                    alert("Pendaftaran resmi DITUTUP.");
+            toggleInput.classList.add('cursor-not-allowed', 'opacity-50');
+        } else {
+            toggleInput.addEventListener('change', async (e) => {
+                const willBeClosed = !e.target.checked;
+                if (willBeClosed) {
+                    if(!confirm("Yakin ingin MENUTUP pendaftaran lomba ini? Halaman publik tidak akan bisa menerima peserta baru.")) {
+                        e.target.checked = true;
+                        return;
+                    }
                 } else {
-                    labelStatus.innerText = "PENDAFTARAN DIBUKA";
-                    labelStatus.className = "text-xs font-black text-emerald-600 bg-emerald-100 px-2.5 py-1 rounded-md uppercase tracking-widest";
-                    alert("Pendaftaran resmi DIBUKA.");
+                    if(!confirm("Yakin ingin MEMBUKA kembali pendaftaran lomba ini?")) {
+                        e.target.checked = false;
+                        return;
+                    }
                 }
-            } catch(err) {
-                alert("Gagal mengubah status: " + err.message);
-                e.target.checked = !willBeClosed;
-            } finally {
-                toggleInput.disabled = false;
-            }
-        });
+                
+                toggleInput.disabled = true;
+                try {
+                    const { error } = await supabaseClient.from('events').update({ is_closed: willBeClosed }).eq('id', currentEventId);
+                    if (error) throw error;
+                    
+                    isEventClosed = willBeClosed;
+                    if (isEventClosed) {
+                        labelStatus.innerText = "PENDAFTARAN DITUTUP";
+                        labelStatus.className = "text-xs font-black text-red-600 bg-red-100 px-2.5 py-1 rounded-md uppercase tracking-widest";
+                    } else {
+                        labelStatus.innerText = "PENDAFTARAN DIBUKA";
+                        labelStatus.className = "text-xs font-black text-emerald-600 bg-emerald-100 px-2.5 py-1 rounded-md uppercase tracking-widest";
+                    }
+                } catch(err) {
+                    alert("Gagal mengubah status: " + err.message);
+                    e.target.checked = !willBeClosed;
+                } finally {
+                    toggleInput.disabled = false;
+                }
+            });
+        }
     }
 }
 
 // ==========================================
-// LOGIKA DYNAMIC TIERED PRICING (TARIF BERJENJANG)
+// LOGIKA DYNAMIC TIERED PRICING DENGAN KUNCI CO-ADMIN
 // ==========================================
 window.renderTarifIndividu = function() {
     const container = document.getElementById('containerTarifIndividu');
     if (!container) return;
     container.innerHTML = '';
     
+    // Siapin attribut disable kalau dia bukan Owner
+    const isLocked = userRole !== 'Owner';
+    const inputClass = isLocked ? "w-full p-2.5 text-sm text-center font-black text-slate-400 outline-none cursor-not-allowed bg-slate-100" : "w-full p-2.5 text-sm text-center font-black text-slate-800 outline-none";
+    const priceClass = isLocked ? "w-full p-2.5 text-sm font-bold text-slate-400 outline-none cursor-not-allowed bg-slate-100" : "w-full p-2.5 text-sm font-bold text-slate-800 outline-none";
+
     configForm.tarif_individu.forEach((t, i) => {
+        const btnHapus = isLocked ? '' : `<button onclick="hapusTarifIndividu(${i})" class="w-10 h-10 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-500 rounded-lg transition-colors border border-red-100 shrink-0"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>`;
+
         container.innerHTML += `
             <div class="flex items-center gap-2">
                 <div class="w-24 shrink-0 flex items-center border border-slate-300 rounded-lg bg-white overflow-hidden focus-within:ring-2 ring-blue-500">
-                    <input type="number" value="${t.qty}" onchange="updateTarifQty(${i}, this.value)" class="w-full p-2.5 text-sm text-center font-black text-slate-800 outline-none" min="1">
+                    <input type="number" value="${t.qty}" onchange="updateTarifQty(${i}, this.value)" class="${inputClass}" min="1" ${isLocked ? 'disabled' : ''}>
                     <span class="px-2 text-[10px] bg-slate-100 border-l border-slate-300 text-slate-500 font-bold h-full flex items-center">Nomor</span>
                 </div>
                 <span class="font-black text-slate-400 text-lg">=</span>
                 <div class="flex-1 flex items-center border border-slate-300 rounded-lg bg-white overflow-hidden focus-within:ring-2 ring-blue-500">
                     <span class="px-3 text-xs bg-slate-100 border-r border-slate-300 text-slate-500 font-bold h-full flex items-center">Rp</span>
-                    <input type="number" value="${t.price}" onchange="updateTarifPrice(${i}, this.value)" class="w-full p-2.5 text-sm font-bold text-slate-800 outline-none" placeholder="150000">
+                    <input type="number" value="${t.price}" onchange="updateTarifPrice(${i}, this.value)" class="${priceClass}" placeholder="150000" ${isLocked ? 'disabled' : ''}>
                 </div>
-                <button onclick="hapusTarifIndividu(${i})" class="w-10 h-10 flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-500 rounded-lg transition-colors border border-red-100 shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </button>
+                ${btnHapus}
             </div>
         `;
     });
@@ -218,7 +288,6 @@ window.tambahTarifIndividu = () => {
 
 window.hapusTarifIndividu = (i) => {
     configForm.tarif_individu.splice(i, 1);
-    // Kalau kehapus semua, sisain 1 baris default biar ga nge-bug
     if (configForm.tarif_individu.length === 0) {
         configForm.tarif_individu.push({ qty: 1, price: '' });
     }
@@ -226,6 +295,11 @@ window.hapusTarifIndividu = (i) => {
 }
 
 async function handleImageUpload(event, keyName, previewId) {
+    if (userRole !== 'Owner' && (keyName === 'qris_url')) {
+        alert("Co-Admin tidak dapat mengubah QRIS!");
+        return;
+    }
+
     const file = event.target.files[0];
     if (!file) return;
 
@@ -268,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================
-// RENDER KU, GAYA, ESTAFET
+// RENDER KU, GAYA, ESTAFET (Aman untuk Co-Admin)
 // ==========================================
 window.renderKU = function() { 
     const container = document.getElementById('kuContainer'); 
@@ -370,79 +444,23 @@ window.renderEstafet = function() {
 }
 
 // ==========================================
-// SEMUA LOGIKA MODAL
+// SEMUA LOGIKA MODAL (Aman dipanggil HTML)
 // ==========================================
 window.openModal = (id) => { const el = document.getElementById(id); if(el) { el.classList.remove('hidden'); el.classList.add('flex'); } }
 window.closeModal = (id) => { const el = document.getElementById(id); if(el) { el.classList.add('hidden'); el.classList.remove('flex'); } }
 
-window.openModalKU = () => { 
-    document.getElementById('kuId').value = ''; 
-    document.getElementById('kuNama').value = ''; 
-    document.getElementById('kuTahunMulai').value = ''; 
-    document.getElementById('kuTahunAkhir').value = ''; 
-    document.getElementById('modalKUTitle').innerText = 'Buat KU Baru'; 
-    const btnSave = document.getElementById('btnSaveKU'); 
-    btnSave.innerText = 'Simpan'; 
-    btnSave.className = 'w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm mt-2 transition-colors'; 
-    window.openModal('modalKU'); 
-}
-
-window.editKU = (id) => { 
-    const ku = dataKU.find(k => k.id === id); 
-    document.getElementById('kuId').value = ku.id; 
-    document.getElementById('kuNama').value = ku.nama; 
-    document.getElementById('kuTahunMulai').value = ku.tahunMulai; 
-    document.getElementById('kuTahunAkhir').value = ku.tahunAkhir; 
-    document.getElementById('modalKUTitle').innerText = 'Edit Kelompok Umur'; 
-    const btnSave = document.getElementById('btnSaveKU'); 
-    btnSave.innerText = 'Simpan Perubahan'; 
-    btnSave.className = 'w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm mt-2 transition-colors'; 
-    window.openModal('modalKU'); 
-}
-
-window.saveKU = () => { 
-    const id = document.getElementById('kuId').value; 
-    const nama = document.getElementById('kuNama').value; 
-    const tahunMulai = document.getElementById('kuTahunMulai').value; 
-    const tahunAkhir = document.getElementById('kuTahunAkhir').value; 
-    if(!nama) return alert('Nama KU wajib diisi!'); 
-    if(id) { 
-        const index = dataKU.findIndex(k => k.id == id); 
-        dataKU[index] = { ...dataKU[index], nama, tahunMulai, tahunAkhir }; 
-    } else { 
-        dataKU.push({ id: Date.now(), nama, tahunMulai, tahunAkhir, aktif: true }); 
-    } 
-    window.renderKU(); 
-    window.closeModal('modalKU'); 
-}
-
+window.openModalKU = () => { document.getElementById('kuId').value = ''; document.getElementById('kuNama').value = ''; document.getElementById('kuTahunMulai').value = ''; document.getElementById('kuTahunAkhir').value = ''; document.getElementById('modalKUTitle').innerText = 'Buat KU Baru'; const btnSave = document.getElementById('btnSaveKU'); btnSave.innerText = 'Simpan'; btnSave.className = 'w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm mt-2 transition-colors'; window.openModal('modalKU'); }
+window.editKU = (id) => { const ku = dataKU.find(k => k.id === id); document.getElementById('kuId').value = ku.id; document.getElementById('kuNama').value = ku.nama; document.getElementById('kuTahunMulai').value = ku.tahunMulai; document.getElementById('kuTahunAkhir').value = ku.tahunAkhir; document.getElementById('modalKUTitle').innerText = 'Edit Kelompok Umur'; const btnSave = document.getElementById('btnSaveKU'); btnSave.innerText = 'Simpan Perubahan'; btnSave.className = 'w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm mt-2 transition-colors'; window.openModal('modalKU'); }
+window.saveKU = () => { const id = document.getElementById('kuId').value; const nama = document.getElementById('kuNama').value; const tahunMulai = document.getElementById('kuTahunMulai').value; const tahunAkhir = document.getElementById('kuTahunAkhir').value; if(!nama) return alert('Nama KU wajib diisi!'); if(id) { const index = dataKU.findIndex(k => k.id == id); dataKU[index] = { ...dataKU[index], nama, tahunMulai, tahunAkhir }; } else { dataKU.push({ id: Date.now(), nama, tahunMulai, tahunAkhir, aktif: true }); } window.renderKU(); window.closeModal('modalKU'); }
 window.deleteKU = (id) => { if(confirm('Yakin hapus Kelompok Umur ini?')) { dataKU = dataKU.filter(k => k.id !== id); window.renderKU(); } }
 window.toggleKU = (id) => { const index = dataKU.findIndex(k => k.id == id); dataKU[index].aktif = !dataKU[index].aktif; }
 
 window.openModalGaya = () => { document.getElementById('gayaId').value = ''; document.getElementById('gayaNama').value = ''; window.openModal('modalGaya'); }
-window.saveGaya = () => { 
-    const id = document.getElementById('gayaId').value; 
-    const nama = document.getElementById('gayaNama').value; 
-    if(!nama) return alert('Nama Gaya wajib diisi!'); 
-    if(id) { const index = dataGaya.findIndex(g => g.id == id); dataGaya[index].nama = nama; } 
-    else { dataGaya.push({ id: Date.now(), nama, jarak: [] }); } 
-    window.renderGaya(); 
-    window.closeModal('modalGaya'); 
-}
+window.saveGaya = () => { const id = document.getElementById('gayaId').value; const nama = document.getElementById('gayaNama').value; if(!nama) return alert('Nama Gaya wajib diisi!'); if(id) { const index = dataGaya.findIndex(g => g.id == id); dataGaya[index].nama = nama; } else { dataGaya.push({ id: Date.now(), nama, jarak: [] }); } window.renderGaya(); window.closeModal('modalGaya'); }
 window.deleteGaya = (id) => { if(confirm('Hapus Kategori Gaya ini?')) { dataGaya = dataGaya.filter(g => g.id !== id); window.renderGaya(); } }
 
 window.openModalJarak = (gayaId) => { document.getElementById('jarakParentId').value = gayaId; document.getElementById('jarakId').value = ''; document.getElementById('jarakNama').value = ''; window.openModal('modalJarak'); }
-window.saveJarak = () => { 
-    const gayaId = document.getElementById('jarakParentId').value; 
-    let nama = document.getElementById('jarakNama').value; 
-    if(!nama) return; 
-    nama = nama.trim().toLowerCase().replace(/\s*meter\s*$/i, ''); 
-    if (!nama.endsWith('m')) nama += 'm'; 
-    const gayaIndex = dataGaya.findIndex(g => g.id == gayaId); 
-    dataGaya[gayaIndex].jarak.push({ id: Date.now(), nama, aktif: true }); 
-    window.renderGaya(); 
-    window.closeModal('modalJarak'); 
-}
+window.saveJarak = () => { const gayaId = document.getElementById('jarakParentId').value; let nama = document.getElementById('jarakNama').value; if(!nama) return; nama = nama.trim().toLowerCase().replace(/\s*meter\s*$/i, ''); if (!nama.endsWith('m')) nama += 'm'; const gayaIndex = dataGaya.findIndex(g => g.id == gayaId); dataGaya[gayaIndex].jarak.push({ id: Date.now(), nama, aktif: true }); window.renderGaya(); window.closeModal('modalJarak'); }
 window.deleteJarak = (gayaId, jarakId) => { if(confirm('Hapus jarak ini?')) { const gayaIndex = dataGaya.findIndex(g => g.id == gayaId); dataGaya[gayaIndex].jarak = dataGaya[gayaIndex].jarak.filter(j => j.id !== jarakId); window.renderGaya(); } }
 window.toggleJarak = (gayaId, jarakId) => { const gayaIndex = dataGaya.findIndex(g => g.id == gayaId); const jarakIndex = dataGaya[gayaIndex].jarak.findIndex(j => j.id == jarakId); dataGaya[gayaIndex].jarak[jarakIndex].aktif = !dataGaya[gayaIndex].jarak[jarakIndex].aktif; }
 
@@ -451,40 +469,28 @@ window.saveEstafet = () => { const nama = document.getElementById('estafetNama')
 window.deleteEstafet = (id) => { if(confirm('Hapus Kategori Estafet ini?')) { dataEstafet = dataEstafet.filter(e => e.id !== id); window.renderEstafet(); } }
 
 window.openModalItemEstafet = (estafetId) => { document.getElementById('itemEstafetParentId').value = estafetId; document.getElementById('itemEstafetJarak').value = ''; document.getElementById('itemEstafetJenis').value = 'Putra'; window.openModal('modalItemEstafet'); }
-window.saveItemEstafet = () => { 
-    const parentId = document.getElementById('itemEstafetParentId').value; 
-    let jarak = document.getElementById('itemEstafetJarak').value; 
-    const jenis = document.getElementById('itemEstafetJenis').value; 
-    if(!jarak) return alert('Jarak wajib diisi!'); 
-    jarak = jarak.trim().toLowerCase().replace(/\s*meter\s*$/i, ''); 
-    if (!jarak.endsWith('m')) jarak += 'm'; 
-    const index = dataEstafet.findIndex(e => e.id == parentId); 
-    dataEstafet[index].list.push({ id: Date.now(), jarak, jenis, aktif: true }); 
-    window.renderEstafet(); 
-    window.closeModal('modalItemEstafet'); 
-}
+window.saveItemEstafet = () => { const parentId = document.getElementById('itemEstafetParentId').value; let jarak = document.getElementById('itemEstafetJarak').value; const jenis = document.getElementById('itemEstafetJenis').value; if(!jarak) return alert('Jarak wajib diisi!'); jarak = jarak.trim().toLowerCase().replace(/\s*meter\s*$/i, ''); if (!jarak.endsWith('m')) jarak += 'm'; const index = dataEstafet.findIndex(e => e.id == parentId); dataEstafet[index].list.push({ id: Date.now(), jarak, jenis, aktif: true }); window.renderEstafet(); window.closeModal('modalItemEstafet'); }
 window.deleteItemEstafet = (parentId, itemId) => { if(confirm('Hapus Nomor Estafet ini?')) { const index = dataEstafet.findIndex(e => e.id == parentId); dataEstafet[index].list = dataEstafet[index].list.filter(i => i.id !== itemId); window.renderEstafet(); } }
 window.toggleItemEstafet = (parentId, itemId) => { const parentIndex = dataEstafet.findIndex(e => e.id == parentId); const itemIndex = dataEstafet[parentIndex].list.findIndex(i => i.id == itemId); dataEstafet[parentIndex].list[itemIndex].aktif = !dataEstafet[parentIndex].list[itemIndex].aktif; }
 
 // ==========================================
-// SIMPAN SEMUA KE DATABASE
+// SIMPAN SEMUA KE DATABASE DENGAN KUNCI CO-ADMIN
 // ==========================================
 window.simpanKeDatabase = async function() {
     const btnSave = document.querySelector('button[onclick="simpanKeDatabase()"]');
     btnSave.innerHTML = "Menyimpan...";
     btnSave.disabled = true;
 
-    // AMBIL NILAI TARIF TAMBAHAN (SISA TARIF INDIVIDU UDAH DI-BINDING LEWAT ONCHANGE)
-    if(document.getElementById('inputTarifTambahan')) {
-        configForm.tarif_tambahan = document.getElementById('inputTarifTambahan').value;
+    // HANYA OWNER YANG BOLEH TIMPA HARGA & REKENING
+    if (userRole === 'Owner') {
+        if(document.getElementById('inputTarifTambahan')) configForm.tarif_tambahan = document.getElementById('inputTarifTambahan').value;
+        if(document.getElementById('inputBiayaEstafet')) configForm.biaya_estafet = document.getElementById('inputBiayaEstafet').value;
+        if(document.getElementById('inputInfoPembayaran')) configForm.info_pembayaran = document.getElementById('inputInfoPembayaran').value;
     }
     
-    if(document.getElementById('inputBiayaEstafet')) configForm.biaya_estafet = document.getElementById('inputBiayaEstafet').value;
-    
-    // MASUKIN WA & NAMA KOLAM KE DALAM CONFIG JSONB
+    // Admin WA & Nama Kolam boleh diubah sama Co-Admin
     if (document.getElementById('inputAdminWA1')) configForm.admin_wa_1 = document.getElementById('inputAdminWA1').value;
     if (document.getElementById('inputAdminWA2')) configForm.admin_wa_2 = document.getElementById('inputAdminWA2').value;
-    if (document.getElementById('inputInfoPembayaran')) configForm.info_pembayaran = document.getElementById('inputInfoPembayaran').value;
     if (document.getElementById('inputNamaKolam')) configForm.nama_kolam = document.getElementById('inputNamaKolam').value; 
 
     try {
@@ -503,7 +509,7 @@ window.simpanKeDatabase = async function() {
 
         if (error) throw error;
         
-        alert("Konfigurasi Lomba & Informasi Pendaftaran berhasil disimpan!");
+        alert("Konfigurasi Lomba berhasil disimpan!");
         window.location.href = `/event-dashboard.html?id=${currentEventId}`;
 
     } catch (err) {
