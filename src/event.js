@@ -73,7 +73,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             let cardUrl = '';
 
             // Tentukan Status Event & URL Destinasi
-            if (today > endDate) {
+            if (ev.is_closed === true) {
+                // 🛑 DITUTUP PAKSA VIA DATABASE (KUOTA PENUH DLL)
+                badgeHTML = `<div class="absolute top-4 left-4 bg-red-900/90 backdrop-blur-sm text-red-200 text-[10px] font-extrabold px-3 py-1.5 rounded-full shadow-lg border border-red-500 z-20">🛑 PENDAFTARAN DITUTUP</div>`;
+                cardUrl = `https://${ev.subdomain}.f1swimming.com?id=${ev.id}`;
+                actionText = "Kuota Penuh / Ditutup";
+                filterClass = 'tutup';
+            } else if (today > endDate) {
                 // Selesai
                 badgeHTML = `<div class="absolute top-4 left-4 bg-slate-900/80 backdrop-blur-sm text-white text-[10px] font-extrabold px-3 py-1.5 rounded-full shadow-lg border border-slate-700 z-20">SELESAI</div>`;
                 cardUrl = `https://${ev.subdomain}.f1swimming.com/result?id=${ev.id}`;
