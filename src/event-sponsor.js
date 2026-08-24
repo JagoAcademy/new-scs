@@ -29,7 +29,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentEventName = eventData.event_name;
         currentEventTier = eventData.event_tier || 'FREEMIUM';
         
-        const isAuthorized = eventData.owner_id === session.user.id || session.user.email === 'radityaraja@gmail.com';
+        // Pintu masuk untuk Super Admin (Lu dan Radit)
+        const allowedAdmins = ['radityaraja@gmail.com', 'fajar@f1swimming.com'];
+        const isAuthorized = eventData.owner_id === session.user.id || allowedAdmins.includes(session.user.email);
+        
         if (!isAuthorized) {
             alert("Akses Ditolak.");
             return window.location.replace('/dashboard.html');
@@ -110,38 +113,48 @@ function renderCards(filterCat = 'all') {
 
         let statusUI = '';
         if (isDeal && !subData) {
-            statusUI = `<button class="w-full bg-emerald-50 text-emerald-600 font-black py-2 rounded-xl text-[10px] tracking-widest border border-emerald-200 cursor-default">🟢 OFFICIAL PARTNER</button>`;
+            statusUI = `<button class="w-full bg-emerald-50 text-emerald-600 font-black py-2.5 rounded-xl text-[10px] tracking-widest border border-emerald-200 cursor-default">🟢 OFFICIAL PARTNER</button>`;
         } else if (!subData) {
-            // Tombol Ajukan (Cegatan Kasta PRO dieksekusi di function handleAjukanSponsor)
-            statusUI = `<button onclick="handleAjukanSponsor(${sp.id}, '${encodeURIComponent(sp.sponsor_name)}', '${sp.logo_url}')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl text-xs transition shadow-sm border border-blue-700 cursor-pointer">AJUKAN SPONSOR</button>`;
+            // Tombol Ajukan (Revamp jadi PITCHING SEKARANG dengan hover panah/roket)
+            statusUI = `
+                <button onclick="handleAjukanSponsor(${sp.id}, '${encodeURIComponent(sp.sponsor_name)}', '${sp.logo_url}')" 
+                        class="w-full bg-blue-600 hover:bg-slate-900 text-white font-bold py-2.5 rounded-xl text-xs transition-all duration-300 shadow-sm hover:shadow-md border border-blue-700 hover:border-slate-800 cursor-pointer group flex justify-center items-center gap-1.5 overflow-hidden">
+                    <span>PITCHING SEKARANG</span> 
+                    <span class="opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-0 transition-all duration-300 text-xs">🚀</span>
+                </button>`;
         } else if (subData.status === 'Menunggu Review') {
-            statusUI = `<button class="w-full bg-amber-50 text-amber-600 font-black py-2 rounded-xl text-[10px] tracking-widest border border-amber-200 animate-pulse cursor-default">🟡 PROPOSAL SUBMITTED</button>`;
+            statusUI = `<button class="w-full bg-amber-50 text-amber-600 font-black py-2.5 rounded-xl text-[10px] tracking-widest border border-amber-200 animate-pulse cursor-default">🟡 PROPOSAL SUBMITTED</button>`;
         } else if (subData.status === 'Disetujui') {
-            statusUI = `<button class="w-full bg-blue-50 text-blue-600 font-black py-2 rounded-xl text-[10px] tracking-widest border border-blue-200 cursor-default">🔵 APPROVED</button>`;
+            statusUI = `<button class="w-full bg-blue-50 text-blue-600 font-black py-2.5 rounded-xl text-[10px] tracking-widest border border-blue-200 cursor-default">🔵 APPROVED</button>`;
         } else {
-            statusUI = `<button class="w-full bg-red-50 text-red-600 font-black py-2 rounded-xl text-[10px] tracking-widest border border-red-200 cursor-default">🔴 REJECTED</button>`;
+            statusUI = `<button class="w-full bg-red-50 text-red-600 font-black py-2.5 rounded-xl text-[10px] tracking-widest border border-red-200 cursor-default">🔴 REJECTED</button>`;
         }
 
         const spKategori = sp.kategori || 'General';
         
-        // Logika Filter (Hanya berlaku untuk Unofficial Sponsor)
+        // Logika Filter
         if(sp.sponsor_type !== 'scs_partner') {
             if (filterCat !== 'all' && spKategori !== filterCat) return; 
             countUnofficial++;
         }
 
-        const tagStatus = sp.sponsor_type === 'scs_partner' ? '🟢 OFFICIAL' : '⚪ PROSPECTIVE';
-        const safeSyarat = encodeURIComponent(sp.syarat || 'Silakan ajukan proposal untuk mengetahui detail.');
+        // Logic Badge Kasta Brand (Perintah Psikologi UX Bos)
+        let badgeTopRight = '';
+        if (sp.sponsor_type === 'scs_partner') {
+            badgeTopRight = `<span class="text-[8px] font-black text-emerald-700 uppercase tracking-widest bg-emerald-100 border border-emerald-200 px-2 py-1 rounded shrink-0">🟢 OFFICIAL</span>`;
+        } else {
+            badgeTopRight = `<span class="text-[8px] font-black text-amber-900 uppercase tracking-widest bg-gradient-to-r from-amber-200 to-yellow-400 border border-amber-300 px-3 py-1 rounded-full shrink-0 shadow-sm flex items-center gap-1">💎 HIGH POTENTIAL</span>`;
+        }
 
-        // COMPACT CARD LAYOUT UX (Daging Semua)
+        // COMPACT CARD LAYOUT UX
         const cardHtml = `
-            <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between h-full">
+            <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between h-full group">
                 <div>
                     <div class="flex justify-between items-start mb-3">
-                        <div class="w-14 h-10 flex items-center justify-center bg-slate-50 rounded-lg border border-slate-100 p-1">
+                        <div class="w-14 h-10 flex items-center justify-center bg-slate-50 rounded-lg border border-slate-100 p-1 group-hover:scale-105 transition-transform">
                             <img src="${sp.logo_url || '/images/logo.png'}" class="max-w-full max-h-full object-contain">
                         </div>
-                        <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-1 rounded shrink-0">${tagStatus}</span>
+                        ${badgeTopRight}
                     </div>
                     <h3 class="font-black text-slate-800 text-sm leading-tight mb-1 truncate">${sp.sponsor_name}</h3>
                     <p class="text-[10px] font-bold text-slate-500 mb-3">${spKategori}</p>
@@ -161,7 +174,6 @@ function renderCards(filterCat = 'all') {
         else gridUnofficial.innerHTML += cardHtml;
     });
 
-    // Tampilkan Empty State jika hasil filter kosong
     if (emptyState) {
         if (countUnofficial === 0 && masterSponsors.filter(s => s.sponsor_type !== 'scs_partner').length > 0) {
             emptyState.classList.remove('hidden');
