@@ -47,37 +47,42 @@ function renderUI() {
     const tBodyJR = document.getElementById('tabel-kas-jr');
     tBodyJR.innerHTML = '';
     jrTransactions.forEach(t => {
+        // Konversi jumlah ke Number untuk memastikan kalkulasi tidak menjadi string gabungan
+        const nominal = Number(t.jumlah);
         const isMasuk = t.jenis === 'masuk';
-        if(isMasuk) jrMasuk += t.nominal; else jrKeluar += t.nominal;
+        
+        if(isMasuk) jrMasuk += nominal; else jrKeluar += nominal;
         
         tBodyJR.innerHTML += `
             <tr class="border-b border-slate-100 hover:bg-slate-50">
-                <td class="p-3 text-slate-500">${t.tgl}</td>
-                <td class="p-3 font-medium text-slate-800">${t.ket}</td>
-                <td class="p-3"><span class="px-2 py-1 rounded text-[10px] font-bold uppercase ${isMasuk ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">${t.jenis}</span></td>
-                <td class="p-3 text-right font-bold ${isMasuk ? 'text-emerald-600' : 'text-red-600'}">${formatRp(t.nominal)}</td>
+                <td class="p-3 text-slate-500">${t.tanggal || '-'}</td>
+                <td class="p-3 font-medium text-slate-800">${t.keterangan || '-'}</td>
+                <td class="p-3"><span class="px-2 py-1 rounded text-[10px] font-bold uppercase ${isMasuk ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">${t.jenis || '-'}</span></td>
+                <td class="p-3 text-right font-bold ${isMasuk ? 'text-emerald-600' : 'text-red-600'}">${formatRp(nominal)}</td>
             </tr>
         `;
     });
     if(jrTransactions.length === 0) tBodyJR.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">Data kosong atau gagal ditarik dari DB.</td></tr>`;
 
-    // --- Render Tabel F1 ---
+    // --- Render Tabel F1 (Kerangka siap pakai dengan struktur kolom yang sama) ---
     const tBodyF1 = document.getElementById('tabel-kas-f1');
     tBodyF1.innerHTML = '';
     f1Transactions.forEach(t => {
+        const nominal = Number(t.jumlah);
         const isMasuk = t.jenis === 'masuk';
-        if(isMasuk) f1Masuk += t.nominal; else f1Keluar += t.nominal;
+        
+        if(isMasuk) f1Masuk += nominal; else f1Keluar += nominal;
         
         tBodyF1.innerHTML += `
             <tr class="border-b border-slate-100 hover:bg-slate-50">
-                <td class="p-3 text-slate-500">${t.tgl}</td>
-                <td class="p-3 font-medium text-slate-800">${t.ket}</td>
-                <td class="p-3"><span class="px-2 py-1 rounded text-[10px] font-bold uppercase ${isMasuk ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700'}">${t.jenis}</span></td>
-                <td class="p-3 text-right font-bold ${isMasuk ? 'text-emerald-600' : 'text-orange-600'}">${formatRp(t.nominal)}</td>
+                <td class="p-3 text-slate-500">${t.tanggal || '-'}</td>
+                <td class="p-3 font-medium text-slate-800">${t.keterangan || '-'}</td>
+                <td class="p-3"><span class="px-2 py-1 rounded text-[10px] font-bold uppercase ${isMasuk ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700'}">${t.jenis || '-'}</span></td>
+                <td class="p-3 text-right font-bold ${isMasuk ? 'text-emerald-600' : 'text-orange-600'}">${formatRp(nominal)}</td>
             </tr>
         `;
     });
-    if(f1Transactions.length === 0) tBodyF1.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">Data kosong atau gagal ditarik dari DB.</td></tr>`;
+    if(f1Transactions.length === 0) tBodyF1.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">Data kosong. (SCS belum profit/tabel belum dibuat).</td></tr>`;
 
     // --- Update Summary Dashboard PT TPI ---
     const jrLaba = jrMasuk - jrKeluar;
@@ -96,34 +101,40 @@ function renderUI() {
 }
 
 // -------------------------------------------------------------------
-// SISTEM TARIK DATA DARI 2 DATABASE SUPABASE (NO DUMMY DATA)
+// SISTEM TARIK DATA DARI 2 DATABASE SUPABASE
 // -------------------------------------------------------------------
 async function fetchSemuaData() {
     console.log("Memulai fetching dari Multi-Node Supabase...");
 
-    // 1. Tarik Data Jago Renang (Menggunakan config.js)
-    // NOTE: Ganti 'transaksi_jr' dengan nama tabel asli di DB Jago Renang Anda
+    // 1. Tarik Data Jago Renang (Tabel 'akunting')
     try {
-        const { data: dataJR, error: errJR } = await supaJR.from('transaksi_jr').select('*').order('tgl', { ascending: false });
+        const { data: dataJR, error: errJR } = await supaJR
+            .from('akunting')
+            .select('*')
+            .order('tanggal', { ascending: false });
+            
         if (errJR) throw errJR;
         if (dataJR) jrTransactions = dataJR;
-        console.log("Data JR Berhasil ditarik:", dataJR);
+        console.log("Data Akunting JR ditarik:", dataJR);
     } catch (error) {
         console.error("Gagal menarik data Jago Renang:", error.message);
     }
 
-    // 2. Tarik Data F1 Swimming (Menggunakan supabase.js)
-    // NOTE: Ganti 'transaksi_f1' dengan nama tabel asli di DB SCS Anda
+    // 2. Tarik Data F1 Swimming (Kerangka Tabel 'akunting_f1')
     try {
-        const { data: dataF1, error: errF1 } = await supaSCS.from('transaksi_f1').select('*').order('tgl', { ascending: false });
+        const { data: dataF1, error: errF1 } = await supaSCS
+            .from('akunting_f1')
+            .select('*')
+            .order('tanggal', { ascending: false });
+            
         if (errF1) throw errF1;
         if (dataF1) f1Transactions = dataF1;
-        console.log("Data F1 Berhasil ditarik:", dataF1);
     } catch (error) {
-        console.error("Gagal menarik data F1 Swimming:", error.message);
+        // Mode diam (silent) karena tabel F1 mungkin belum dibuat
+        console.warn("F1 Akunting belum aktif atau gagal ditarik.");
     }
 
-    // Render ulang setelah mencoba menarik data
+    // Render ulang setelah menarik data
     renderUI();
 }
 
@@ -136,20 +147,23 @@ document.getElementById('form-jr-kas')?.addEventListener('submit', async functio
     btnSubmit.innerText = "Menyimpan ke DB...";
     btnSubmit.disabled = true;
 
-    const tgl = document.getElementById('jr-tgl').value;
+    // Ambil value sesuai kolom DB: tanggal, jenis, keterangan, jumlah
+    const tanggal = document.getElementById('jr-tgl').value;
     const jenis = document.getElementById('jr-jenis').value;
-    const ket = document.getElementById('jr-ket').value;
-    const nominal = parseFloat(document.getElementById('jr-nominal').value);
+    const keterangan = document.getElementById('jr-ket').value;
+    const jumlah = parseFloat(document.getElementById('jr-nominal').value);
 
-    // Insert ke tabel DB Jago Renang
-    const { data, error } = await supaJR.from('transaksi_jr').insert([{ tgl, jenis, ket, nominal }]);
+    // Insert ke tabel 'akunting' Jago Renang
+    const { data, error } = await supaJR
+        .from('akunting')
+        .insert([{ tanggal, jenis, keterangan, jumlah }]);
     
     if (error) {
         alert("Gagal simpan ke DB Jago Renang: " + error.message);
     } else {
-        alert("Berhasil simpan ke Buku Besar Jago Renang!");
+        alert("Berhasil dicatat di Buku Besar Jago Renang!");
         this.reset();
-        await fetchSemuaData(); // Tarik ulang dari DB biar update
+        await fetchSemuaData(); // Tarik ulang biar UI langsung update
     }
     
     btnSubmit.innerText = "Simpan ke DB Jago Renang";
@@ -162,20 +176,22 @@ document.getElementById('form-f1-kas')?.addEventListener('submit', async functio
     btnSubmit.innerText = "Menyimpan ke DB...";
     btnSubmit.disabled = true;
 
-    const tgl = document.getElementById('f1-tgl').value;
+    const tanggal = document.getElementById('f1-tgl').value;
     const jenis = document.getElementById('f1-jenis').value;
-    const ket = document.getElementById('f1-ket').value;
-    const nominal = parseFloat(document.getElementById('f1-nominal').value);
+    const keterangan = document.getElementById('f1-ket').value;
+    const jumlah = parseFloat(document.getElementById('f1-nominal').value);
 
-    // Insert ke tabel DB SCS
-    const { data, error } = await supaSCS.from('transaksi_f1').insert([{ tgl, jenis, ket, nominal }]);
+    // Insert ke tabel 'akunting_f1' SCS
+    const { data, error } = await supaSCS
+        .from('akunting_f1')
+        .insert([{ tanggal, jenis, keterangan, jumlah }]);
     
     if (error) {
-        alert("Gagal simpan ke DB F1/SCS: " + error.message);
+        alert("Pastikan tabel 'akunting_f1' sudah dibuat di Supabase SCS. Error: " + error.message);
     } else {
-        alert("Berhasil simpan ke Buku Besar F1!");
+        alert("Berhasil dicatat di Buku Besar F1!");
         this.reset();
-        await fetchSemuaData(); // Tarik ulang dari DB biar update
+        await fetchSemuaData(); 
     }
 
     btnSubmit.innerText = "Simpan ke DB SCS (F1)";
