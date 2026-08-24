@@ -1,6 +1,12 @@
-// State Management (Ambil dari LocalStorage jika ada, jika kosong buat array baru)
-let transactions = JSON.parse(localStorage.getItem('scs_transactions')) || [];
-let employees = JSON.parse(localStorage.getItem('scs_employees')) || [];
+// Memanggil Supabase Jago Renang (dari config.js)
+import { sb as supaJR } from './config.js';
+
+// Memanggil Supabase SCS/F1 (dari supabase.js)
+import { supabaseClient as supaSCS } from './supabase.js';
+
+// State Management
+let jrTransactions = [];
+let f1Transactions = [];
 
 // Fungsi Format Rupiah
 const formatRp = (angka) => {
@@ -8,155 +14,173 @@ const formatRp = (angka) => {
         style: 'currency', 
         currency: 'IDR', 
         minimumFractionDigits: 0 
-    }).format(angka);
+    }).format(angka || 0);
 };
 
 // Logika Ganti Tab
 window.switchTab = function(tabId) {
-    // Sembunyikan semua konten
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.add('hidden');
         tab.classList.remove('block');
     });
-    // Reset gaya semua tombol
+    
     document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('bg-blue-900', 'text-white');
-        btn.classList.add('text-slate-600');
+        btn.classList.remove('bg-slate-900', 'text-white', 'bg-blue-100', 'bg-red-100');
+        btn.classList.add('text-slate-600', 'bg-transparent');
     });
 
-    // Tampilkan tab aktif
     document.getElementById(tabId).classList.remove('hidden');
     document.getElementById(tabId).classList.add('block');
     
-    // Warnai tombol aktif
     const activeBtn = document.getElementById('btn-' + tabId.replace('tab-', ''));
-    activeBtn.classList.remove('text-slate-600');
-    activeBtn.classList.add('bg-blue-900', 'text-white');
+    if(tabId === 'tab-tpi') activeBtn.classList.add('bg-slate-900', 'text-white');
+    if(tabId === 'tab-jr') activeBtn.classList.add('bg-blue-600', 'text-white');
+    if(tabId === 'tab-f1') activeBtn.classList.add('bg-red-600', 'text-white');
 };
 
-// Render UI (Perbarui Tabel dan Angka)
+// Fungsi Render UI (Tabel & Kalkulasi)
 function renderUI() {
-    let totalMasuk = 0;
-    let totalKeluar = 0;
+    let jrMasuk = 0, jrKeluar = 0;
+    let f1Masuk = 0, f1Keluar = 0;
 
-    // 1. Render Tabel Transaksi
-    const tBodyTrans = document.getElementById('tabel-transaksi');
-    tBodyTrans.innerHTML = '';
-    
-    transactions.forEach((t, index) => {
-        if (t.jenis === 'masuk') totalMasuk += t.nominal;
-        if (t.jenis === 'keluar') totalKeluar += t.nominal;
-
+    // --- Render Tabel JR ---
+    const tBodyJR = document.getElementById('tabel-kas-jr');
+    tBodyJR.innerHTML = '';
+    jrTransactions.forEach(t => {
         const isMasuk = t.jenis === 'masuk';
-        const badgeClass = isMasuk ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700';
-        const nominalClass = isMasuk ? 'text-emerald-600' : 'text-red-600';
+        if(isMasuk) jrMasuk += t.nominal; else jrKeluar += t.nominal;
         
-        tBodyTrans.innerHTML += `
-            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                <td class="p-3 whitespace-nowrap text-slate-500">${t.tgl}</td>
+        tBodyJR.innerHTML += `
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+                <td class="p-3 text-slate-500">${t.tgl}</td>
                 <td class="p-3 font-medium text-slate-800">${t.ket}</td>
-                <td class="p-3">
-                    <span class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${badgeClass}">
-                        ${t.jenis}
-                    </span>
-                </td>
-                <td class="p-3 text-right font-bold ${nominalClass}">${formatRp(t.nominal)}</td>
-                <td class="p-3 text-center">
-                    <button onclick="hapusTransaksi(${index})" class="text-red-400 hover:text-red-600 font-bold text-xs p-1">Hapus</button>
-                </td>
+                <td class="p-3"><span class="px-2 py-1 rounded text-[10px] font-bold uppercase ${isMasuk ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">${t.jenis}</span></td>
+                <td class="p-3 text-right font-bold ${isMasuk ? 'text-emerald-600' : 'text-red-600'}">${formatRp(t.nominal)}</td>
             </tr>
         `;
     });
+    if(jrTransactions.length === 0) tBodyJR.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">Data kosong atau gagal ditarik dari DB.</td></tr>`;
 
-    // 2. Render Dashboard Laba Rugi
-    const labaBersih = totalMasuk - totalKeluar;
-    document.getElementById('ui-pemasukan').innerText = formatRp(totalMasuk);
-    document.getElementById('ui-pengeluaran').innerText = formatRp(totalKeluar);
-    
-    const uiLaba = document.getElementById('ui-laba');
-    uiLaba.innerText = formatRp(labaBersih);
-    uiLaba.className = labaBersih >= 0 ? 'text-2xl font-black text-blue-950' : 'text-2xl font-black text-red-600';
-
-    // 3. Render Tabel Karyawan
-    const tBodyKar = document.getElementById('tabel-karyawan');
-    tBodyKar.innerHTML = '';
-
-    employees.forEach((emp, index) => {
-        tBodyKar.innerHTML += `
-            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                <td class="p-3 font-bold text-blue-950">${emp.nama}</td>
-                <td class="p-3 text-slate-500">${emp.posisi}</td>
-                <td class="p-3 text-right font-medium text-slate-700">${formatRp(emp.gaji)}</td>
-                <td class="p-3 text-center">
-                    <button onclick="bayarGaji(${index})" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors mr-2">Bayar Gaji</button>
-                    <button onclick="hapusKaryawan(${index})" class="text-red-400 hover:text-red-600 font-bold text-xs p-1">Hapus</button>
-                </td>
+    // --- Render Tabel F1 ---
+    const tBodyF1 = document.getElementById('tabel-kas-f1');
+    tBodyF1.innerHTML = '';
+    f1Transactions.forEach(t => {
+        const isMasuk = t.jenis === 'masuk';
+        if(isMasuk) f1Masuk += t.nominal; else f1Keluar += t.nominal;
+        
+        tBodyF1.innerHTML += `
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+                <td class="p-3 text-slate-500">${t.tgl}</td>
+                <td class="p-3 font-medium text-slate-800">${t.ket}</td>
+                <td class="p-3"><span class="px-2 py-1 rounded text-[10px] font-bold uppercase ${isMasuk ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700'}">${t.jenis}</span></td>
+                <td class="p-3 text-right font-bold ${isMasuk ? 'text-emerald-600' : 'text-orange-600'}">${formatRp(t.nominal)}</td>
             </tr>
         `;
     });
+    if(f1Transactions.length === 0) tBodyF1.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">Data kosong atau gagal ditarik dari DB.</td></tr>`;
 
-    // Simpan otomatis ke Local Storage tiap kali UI dirender
-    localStorage.setItem('scs_transactions', JSON.stringify(transactions));
-    localStorage.setItem('scs_employees', JSON.stringify(employees));
+    // --- Update Summary Dashboard PT TPI ---
+    const jrLaba = jrMasuk - jrKeluar;
+    const f1Laba = f1Masuk - f1Keluar;
+    const totalTPI = jrLaba + f1Laba;
+
+    document.getElementById('ui-masuk-jr').innerText = formatRp(jrMasuk);
+    document.getElementById('ui-keluar-jr').innerText = formatRp(jrKeluar);
+    document.getElementById('ui-laba-jr').innerText = formatRp(jrLaba);
+
+    document.getElementById('ui-masuk-f1').innerText = formatRp(f1Masuk);
+    document.getElementById('ui-keluar-f1').innerText = formatRp(f1Keluar);
+    document.getElementById('ui-laba-f1').innerText = formatRp(f1Laba);
+
+    document.getElementById('ui-laba-tpi').innerText = formatRp(totalTPI);
 }
 
-// Handler Submit Transaksi Baru
-document.getElementById('form-transaksi')?.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const tgl = document.getElementById('input-tgl').value;
-    const jenis = document.getElementById('input-jenis').value;
-    const ket = document.getElementById('input-ket').value;
-    const nominal = parseFloat(document.getElementById('input-nominal').value);
+// -------------------------------------------------------------------
+// SISTEM TARIK DATA DARI 2 DATABASE SUPABASE (NO DUMMY DATA)
+// -------------------------------------------------------------------
+async function fetchSemuaData() {
+    console.log("Memulai fetching dari Multi-Node Supabase...");
 
-    transactions.push({ tgl, jenis, ket, nominal });
-    this.reset();
+    // 1. Tarik Data Jago Renang (Menggunakan config.js)
+    // NOTE: Ganti 'transaksi_jr' dengan nama tabel asli di DB Jago Renang Anda
+    try {
+        const { data: dataJR, error: errJR } = await supaJR.from('transaksi_jr').select('*').order('tgl', { ascending: false });
+        if (errJR) throw errJR;
+        if (dataJR) jrTransactions = dataJR;
+        console.log("Data JR Berhasil ditarik:", dataJR);
+    } catch (error) {
+        console.error("Gagal menarik data Jago Renang:", error.message);
+    }
+
+    // 2. Tarik Data F1 Swimming (Menggunakan supabase.js)
+    // NOTE: Ganti 'transaksi_f1' dengan nama tabel asli di DB SCS Anda
+    try {
+        const { data: dataF1, error: errF1 } = await supaSCS.from('transaksi_f1').select('*').order('tgl', { ascending: false });
+        if (errF1) throw errF1;
+        if (dataF1) f1Transactions = dataF1;
+        console.log("Data F1 Berhasil ditarik:", dataF1);
+    } catch (error) {
+        console.error("Gagal menarik data F1 Swimming:", error.message);
+    }
+
+    // Render ulang setelah mencoba menarik data
     renderUI();
-});
+}
 
-// Handler Submit Karyawan Baru
-document.getElementById('form-karyawan')?.addEventListener('submit', function(e) {
+// -------------------------------------------------------------------
+// SISTEM INPUT DATA KE SUPABASE
+// -------------------------------------------------------------------
+document.getElementById('form-jr-kas')?.addEventListener('submit', async function(e) {
     e.preventDefault();
-    const nama = document.getElementById('input-nama-kar').value;
-    const posisi = document.getElementById('input-posisi-kar').value;
-    const gaji = parseFloat(document.getElementById('input-gaji-kar').value);
+    const btnSubmit = document.getElementById('btn-submit-jr');
+    btnSubmit.innerText = "Menyimpan ke DB...";
+    btnSubmit.disabled = true;
 
-    employees.push({ nama, posisi, gaji });
-    this.reset();
-    renderUI();
-});
+    const tgl = document.getElementById('jr-tgl').value;
+    const jenis = document.getElementById('jr-jenis').value;
+    const ket = document.getElementById('jr-ket').value;
+    const nominal = parseFloat(document.getElementById('jr-nominal').value);
 
-// Fungsi Tombol Bayar Gaji (Jembatan antara data Karyawan & Arus Kas)
-window.bayarGaji = function(index) {
-    const emp = employees[index];
-    const tglHariIni = new Date().toISOString().split('T')[0];
+    // Insert ke tabel DB Jago Renang
+    const { data, error } = await supaJR.from('transaksi_jr').insert([{ tgl, jenis, ket, nominal }]);
     
-    // Konfirmasi mencegah salah pencet
-    if(confirm(`Bayar gaji ${emp.nama} sebesar ${formatRp(emp.gaji)}? Data ini akan masuk ke pengeluaran otomatis.`)) {
-        transactions.push({
-            tgl: tglHariIni,
-            jenis: 'keluar',
-            ket: `Gaji: ${emp.nama} (${emp.posisi})`,
-            nominal: emp.gaji
-        });
-        renderUI();
-        alert('Gaji berhasil dibayarkan dan tercatat di Arus Kas!');
+    if (error) {
+        alert("Gagal simpan ke DB Jago Renang: " + error.message);
+    } else {
+        alert("Berhasil simpan ke Buku Besar Jago Renang!");
+        this.reset();
+        await fetchSemuaData(); // Tarik ulang dari DB biar update
     }
-};
+    
+    btnSubmit.innerText = "Simpan ke DB Jago Renang";
+    btnSubmit.disabled = false;
+});
 
-// Fungsi Hapus Data
-window.hapusTransaksi = function(index) {
-    if(confirm('Yakin ingin menghapus transaksi ini?')) {
-        transactions.splice(index, 1);
-        renderUI();
+document.getElementById('form-f1-kas')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btnSubmit = document.getElementById('btn-submit-f1');
+    btnSubmit.innerText = "Menyimpan ke DB...";
+    btnSubmit.disabled = true;
+
+    const tgl = document.getElementById('f1-tgl').value;
+    const jenis = document.getElementById('f1-jenis').value;
+    const ket = document.getElementById('f1-ket').value;
+    const nominal = parseFloat(document.getElementById('f1-nominal').value);
+
+    // Insert ke tabel DB SCS
+    const { data, error } = await supaSCS.from('transaksi_f1').insert([{ tgl, jenis, ket, nominal }]);
+    
+    if (error) {
+        alert("Gagal simpan ke DB F1/SCS: " + error.message);
+    } else {
+        alert("Berhasil simpan ke Buku Besar F1!");
+        this.reset();
+        await fetchSemuaData(); // Tarik ulang dari DB biar update
     }
-};
 
-window.hapusKaryawan = function(index) {
-    if(confirm('Yakin ingin menghapus data karyawan ini?')) {
-        employees.splice(index, 1);
-        renderUI();
-    }
-};
+    btnSubmit.innerText = "Simpan ke DB SCS (F1)";
+    btnSubmit.disabled = false;
+});
 
-// Render awal saat halaman dimuat
-document.addEventListener('DOMContentLoaded', renderUI);
+// Jalankan fetch saat halaman dimuat
+document.addEventListener('DOMContentLoaded', fetchSemuaData);
