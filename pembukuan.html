@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembukuan PT. TEKNOLOGI PRESTASI INDONESIA</title>
+    <!-- Jika di Vite, panggil style.css utama Anda -->
+    <link rel="stylesheet" href="/src/style.css">
+    <!-- Jika ingin test standalone, uncomment baris CDN Tailwind di bawah ini -->
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen p-4 md:p-8">
+
+    <div class="max-w-5xl mx-auto">
+        <!-- Header -->
+        <header class="mb-8 border-b border-slate-200 pb-4">
+            <h1 class="text-3xl font-black text-blue-950">Dashboard Keuangan</h1>
+            <p class="text-sm font-bold text-slate-500 tracking-widest uppercase mt-1">PT. Teknologi Prestasi Indonesia</p>
+        </header>
+
+        <!-- Navigasi Tabs -->
+        <nav class="flex gap-2 mb-6 bg-white p-2 rounded-xl shadow-sm border border-slate-100">
+            <button onclick="switchTab('tab-dashboard')" id="btn-dashboard" class="tab-btn flex-1 py-2 px-4 rounded-lg font-bold text-sm bg-blue-900 text-white transition-all">Laba Rugi</button>
+            <button onclick="switchTab('tab-transaksi')" id="btn-transaksi" class="tab-btn flex-1 py-2 px-4 rounded-lg font-bold text-sm text-slate-600 hover:bg-slate-100 transition-all">Arus Kas</button>
+            <button onclick="switchTab('tab-karyawan')" id="btn-karyawan" class="tab-btn flex-1 py-2 px-4 rounded-lg font-bold text-sm text-slate-600 hover:bg-slate-100 transition-all">Penggajian</button>
+        </nav>
+
+        <!-- TAB: DASHBOARD LABA RUGI -->
+        <div id="tab-dashboard" class="tab-content block">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-emerald-500">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Pemasukan</p>
+                    <h3 id="ui-pemasukan" class="text-2xl font-black text-emerald-600">Rp 0</h3>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-red-500">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Pengeluaran</p>
+                    <h3 id="ui-pengeluaran" class="text-2xl font-black text-red-600">Rp 0</h3>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-blue-900">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Laba Bersih</p>
+                    <h3 id="ui-laba" class="text-2xl font-black text-blue-950">Rp 0</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: ARUS KAS -->
+        <div id="tab-transaksi" class="tab-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Form Input -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 md:col-span-1 h-fit">
+                    <h3 class="font-bold text-blue-950 mb-4">Catat Transaksi</h3>
+                    <form id="form-transaksi" class="flex flex-col gap-3">
+                        <div>
+                            <label class="text-xs font-bold text-slate-500">Tanggal</label>
+                            <input type="date" id="input-tgl" required class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 outline-none">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500">Jenis Transaksi</label>
+                            <select id="input-jenis" required class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 outline-none">
+                                <option value="masuk">Pemasukan (+)</option>
+                                <option value="keluar">Pengeluaran (-)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500">Keterangan</label>
+                            <input type="text" id="input-ket" placeholder="Misal: DP Sponsorship" required class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 outline-none">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500">Nominal (Rp)</label>
+                            <input type="number" id="input-nominal" placeholder="0" required class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 outline-none">
+                        </div>
+                        <button type="submit" class="mt-2 w-full bg-blue-900 text-white font-bold py-2.5 rounded-lg hover:bg-blue-800 transition-colors">Simpan Transaksi</button>
+                    </form>
+                </div>
+                <!-- Tabel History -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 md:col-span-2 overflow-x-auto">
+                    <h3 class="font-bold text-blue-950 mb-4">Riwayat Arus Kas</h3>
+                    <table class="w-full text-left border-collapse min-w-[500px]">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
+                                <th class="p-3">Tanggal</th>
+                                <th class="p-3">Keterangan</th>
+                                <th class="p-3">Jenis</th>
+                                <th class="p-3 text-right">Nominal</th>
+                                <th class="p-3 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-transaksi" class="text-sm">
+                            <!-- Baris Transaksi Akan Dirender Di Sini -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: KARYAWAN & PENGGAJIAN -->
+        <div id="tab-karyawan" class="tab-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Form Karyawan -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 md:col-span-1 h-fit">
+                    <h3 class="font-bold text-blue-950 mb-4">Tambah Karyawan</h3>
+                    <form id="form-karyawan" class="flex flex-col gap-3">
+                        <div>
+                            <label class="text-xs font-bold text-slate-500">Nama Lengkap</label>
+                            <input type="text" id="input-nama-kar" placeholder="Misal: Budi Santoso" required class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 outline-none">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500">Posisi / Jabatan</label>
+                            <input type="text" id="input-posisi-kar" placeholder="Misal: Pelatih Kepala" required class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 outline-none">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500">Gaji Pokok (Rp)</label>
+                            <input type="number" id="input-gaji-kar" placeholder="0" required class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-900 outline-none">
+                        </div>
+                        <button type="submit" class="mt-2 w-full bg-slate-800 text-white font-bold py-2.5 rounded-lg hover:bg-slate-700 transition-colors">Simpan Karyawan</button>
+                    </form>
+                </div>
+                <!-- Tabel Karyawan -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 md:col-span-2 overflow-x-auto">
+                    <h3 class="font-bold text-blue-950 mb-4">Daftar Karyawan & Gaji</h3>
+                    <table class="w-full text-left border-collapse min-w-[500px]">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
+                                <th class="p-3">Nama</th>
+                                <th class="p-3">Posisi</th>
+                                <th class="p-3 text-right">Gaji Pokok</th>
+                                <th class="p-3 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-karyawan" class="text-sm">
+                            <!-- Baris Karyawan Akan Dirender Di Sini -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Panggil File JS -->
+    <script type="module" src="/src/pembukuan.js"></script>
+</body>
+</html>

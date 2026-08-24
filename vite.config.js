@@ -41,7 +41,7 @@ export default defineConfig({
         eventResult: resolve(__dirname, 'book/event-result.html'), // Hasil Resmi Per Nomor Lomba
         eventSertifikatSetup: resolve(__dirname, 'book/event-sertifikat.html'), // Dapur Admin Setup Koordinat Sertifikat
         clubTestimony: resolve (__dirname, 'admin-testi.html'), // Testimoni Klub
-
+pembukuan: resolve(__dirname, 'pembukuan.html'),
         // --- 5. SUPER ADMIN PUSAT ---
         admin: resolve(__dirname, 'admin.html'), // Panel Kontrol Super Admin SCS
         adminAds: resolve(__dirname, 'admin-ads.html'),
