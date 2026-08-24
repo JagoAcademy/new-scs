@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Daftar email dewa (Super Admin)
-    const allowedAdmins = ['radityaraja@gmail.com', 'fajar@f1swimming.com'];
+    const allowedAdmins = ['radityaraja@gmail.com', 'fajar@f1swimming.com', 'jagorenangakademi@gmail.com'];
 
     // Kalau email user tidak ada di dalam daftar dewa, tendang!
     if (!allowedAdmins.includes(user.email)) {
