@@ -73,10 +73,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.tautanEkstra = config.tautan_ekstra || [];
 
         // 5. Injeksi Input HTML
-        // Status Event
+        // Status Event (PERBAIKAN KOLOM IS_CLOSED)
         const toggleStatus = document.getElementById('toggleStatusEvent');
         const labelStatus = document.getElementById('labelStatusEvent');
-        toggleStatus.checked = eventData.is_registration_open || false;
+        
+        // Logika: Jika is_closed false/null, maka saklar DIBUKA (true)
+        toggleStatus.checked = !eventData.is_closed; 
+        
         labelStatus.innerText = toggleStatus.checked ? 'DIBUKA' : 'DITUTUP';
         labelStatus.className = toggleStatus.checked 
             ? 'text-xs font-black text-emerald-600 bg-emerald-100 px-2.5 py-1 rounded-md uppercase tracking-widest'
@@ -583,7 +586,9 @@ window.simpanKeDatabase = async () => {
             tautan_ekstra: window.tautanEkstra
         };
 
+        // BACA SAKLAR: Kalo true (DIBUKA), berarti is_closed = false
         const isRegistrationOpen = document.getElementById('toggleStatusEvent').checked;
+        const isClosedStatus = !isRegistrationOpen;
 
         // Tembak Database
         const { error } = await supabaseClient
@@ -593,7 +598,7 @@ window.simpanKeDatabase = async () => {
                 config_gaya: window.configGaya,
                 config_estafet: window.configEstafet,
                 config: newConfig,
-                is_registration_open: isRegistrationOpen
+                is_closed: isClosedStatus
             })
             .eq('id', currentEventId);
 
