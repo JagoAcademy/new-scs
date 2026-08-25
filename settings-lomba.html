@@ -221,7 +221,7 @@
                                     Link Grup WA, JukNis, dll. Muncul di form pendaftaran publik.
                                 </p>
                             </div>
-                            <button onclick="tambahTautan()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[10px] font-bold shadow-sm shrink-0 transition-colors">+ Tambah</button>
+                            <button onclick="window.tambahTautan()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[10px] font-bold shadow-sm shrink-0 transition-colors">+ Tambah</button>
                         </div>
                         
                         <!-- Container Loop Link -->
@@ -267,20 +267,20 @@
     <div class="fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-40">
         <div class="max-w-4xl mx-auto flex justify-end gap-3">
             <button onclick="window.history.back()" class="px-5 py-2.5 text-slate-600 font-bold text-sm rounded-xl hover:bg-slate-100 transition-colors">Batal</button>
-            <button onclick="simpanKeDatabase()" class="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-md transition-colors">
+            <button onclick="window.simpanKeDatabase()" class="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-md transition-colors">
                 Simpan Pengaturan
             </button>
         </div>
     </div>
 
-    <!-- MODAL POPUPS (KU, Gaya, Jarak, Estafet - Tetap Sama) -->
+    <!-- MODAL POPUPS -->
 
     <!-- Modal KU -->
     <div id="modalKU" class="fixed inset-0 bg-slate-900/40 z-[100] hidden items-center justify-center px-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl w-full max-w-sm shadow-xl overflow-hidden modal-enter">
             <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <h3 class="font-bold text-slate-800" id="modalKUTitle">Buat KU Baru</h3>
-                <button onclick="closeModal('modalKU')" class="text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors">Tutup</button>
+                <button onclick="window.closeModal('modalKU')" class="text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors">Tutup</button>
             </div>
             <div class="p-5 space-y-4">
                 <input type="hidden" id="kuId">
@@ -298,7 +298,7 @@
                         <input type="number" id="kuTahunAkhir" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                 </div>
-                <button id="btnSaveKU" onclick="saveKU()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm mt-2 transition-colors">Simpan</button>
+                <button id="btnSaveKU" onclick="window.saveKU()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm mt-2 transition-colors">Simpan</button>
             </div>
         </div>
     </div>
@@ -308,7 +308,7 @@
         <div class="bg-white rounded-2xl w-full max-w-sm shadow-xl overflow-hidden modal-enter">
             <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <h3 class="font-bold text-slate-800" id="modalGayaTitle">Kategori Gaya (Individu)</h3>
-                <button onclick="closeModal('modalGaya')" class="text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors">Tutup</button>
+                <button onclick="window.closeModal('modalGaya')" class="text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors">Tutup</button>
             </div>
             <div class="p-5 space-y-4">
                 <input type="hidden" id="gayaId">
@@ -316,7 +316,7 @@
                     <label class="block text-xs font-bold text-slate-600 mb-1">Nama Gaya</label>
                     <input type="text" id="gayaNama" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Contoh: Gaya Bebas">
                 </div>
-                <button onclick="saveGaya()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm mt-2 transition-colors">Simpan</button>
+                <button onclick="window.saveGaya()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm mt-2 transition-colors">Simpan</button>
             </div>
         </div>
     </div>
@@ -326,7 +326,7 @@
         <div class="bg-white rounded-2xl w-full max-w-xs shadow-xl overflow-hidden modal-enter">
             <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <h3 class="font-bold text-slate-800" id="modalJarakTitle">Tambah Jarak Individu</h3>
-                <button onclick="closeModal('modalJarak')" class="text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors">Tutup</button>
+                <button onclick="window.closeModal('modalJarak')" class="text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors">Tutup</button>
             </div>
             <div class="p-5 space-y-4">
                 <input type="hidden" id="jarakParentId">
@@ -335,7 +335,7 @@
                     <label class="block text-xs font-bold text-slate-600 mb-1">Jarak</label>
                     <input type="text" id="jarakNama" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Contoh: 50m">
                 </div>
-                <button onclick="saveJarak()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm mt-2 transition-colors">Simpan</button>
+                <button onclick="window.saveJarak()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm mt-2 transition-colors">Simpan</button>
             </div>
         </div>
     </div>
@@ -345,7 +345,7 @@
         <div class="bg-white rounded-2xl w-full max-w-sm shadow-xl overflow-hidden modal-enter">
             <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <h3 class="font-bold text-slate-800">Kategori Estafet Baru</h3>
-                <button onclick="closeModal('modalEstafet')" class="text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors">Tutup</button>
+                <button onclick="window.closeModal('modalEstafet')" class="text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors">Tutup</button>
             </div>
             <div class="p-5 space-y-4">
                 <input type="hidden" id="estafetId">
@@ -353,7 +353,7 @@
                     <label class="block text-xs font-bold text-slate-600 mb-1">Nama Kategori Estafet</label>
                     <input type="text" id="estafetNama" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Contoh: Estafet Gaya Ganti">
                 </div>
-                <button onclick="saveEstafet()" class="w-full py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-sm mt-2 transition-colors">Simpan Kategori</button>
+                <button onclick="window.saveEstafet()" class="w-full py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-sm mt-2 transition-colors">Simpan Kategori</button>
             </div>
         </div>
     </div>
@@ -363,7 +363,7 @@
         <div class="bg-white rounded-2xl w-full max-w-xs shadow-xl overflow-hidden modal-enter">
             <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <h3 class="font-bold text-slate-800">Tambah Detail Estafet</h3>
-                <button onclick="closeModal('modalItemEstafet')" class="text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors">Tutup</button>
+                <button onclick="window.closeModal('modalItemEstafet')" class="text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors">Tutup</button>
             </div>
             <div class="p-5 space-y-4">
                 <input type="hidden" id="itemEstafetParentId">
@@ -379,7 +379,7 @@
                         <option value="Mix">Mix (2 Pa & 2 Pi)</option>
                     </select>
                 </div>
-                <button onclick="saveItemEstafet()" class="w-full py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-sm mt-2 transition-colors">Simpan Nomor</button>
+                <button onclick="window.saveItemEstafet()" class="w-full py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-sm mt-2 transition-colors">Simpan Nomor</button>
             </div>
         </div>
     </div>
