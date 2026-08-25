@@ -6,6 +6,15 @@ let f1Transactions = [];
 let dbFeeCoach = [];
 let dbFeeMarketing = [];
 
+// --- DATABASE SUNTIKAN NAMA PEGAWAI ---
+const dataPegawaiMap = {
+    'ADIT': { nama: 'FAJAR ADITYA', nik: '3578010411910002' },
+    'NISA': { nama: 'CHOIRUN NISA ARIFIANTI', nik: '3578046411010003' },
+    'FADLUN': { nama: 'FADLUN NAJIH', nik: '3524141811010004' },
+    'AMEL': { nama: 'AMELIA AINUR JULININGTIYAS', nik: '3578014107070003' },
+    'AFFIX': { nama: 'AFFIX NUR RIZZA', nik: '3515182012010006' }
+};
+
 // --- HELPER FORMATTING ---
 const formatRp = (angka) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0);
@@ -128,7 +137,7 @@ async function fetchSemuaData() {
     renderUI();
 }
 
-// --- LOGIKA FORM: ARUS TUTUP BUKU (LAPORAN & SLIP GAJI) ---
+// --- LOGIKA FORM: CETAK SLIP GAJI & CASHFLOW ---
 document.getElementById('form-tutup-buku')?.addEventListener('submit', function(e) {
     e.preventDefault();
     
@@ -147,7 +156,35 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
         return d >= s && d <= e;
     };
 
-    // 1. Filter Cashflow JR
+    // 1. Ganti Judul Berdasarkan Pilihan (Slip Gaji / Cashflow)
+    if (coachSelected === 'semua') {
+        document.getElementById('rep-title').innerText = 'LAPORAN TUTUP BUKU & CASHFLOW';
+        document.getElementById('rep-subtitle').innerText = 'PT. Teknologi Prestasi Indonesia';
+        document.getElementById('rep-periode-cf').classList.remove('hidden');
+    } else {
+        document.getElementById('rep-title').innerText = 'SLIP GAJI';
+        document.getElementById('rep-subtitle').innerText = 'JR ACADEMY';
+        document.getElementById('rep-periode-cf').classList.add('hidden');
+    }
+
+    // 2. Map Nama Pegawai
+    let namaCetakLengkap = coachSelected;
+    let namaTTD = coachSelected;
+    
+    if (coachSelected === 'semua') {
+        namaCetakLengkap = 'REKAP SELURUH PEGAWAI';
+        namaTTD = 'Pegawai';
+    } else if (dataPegawaiMap[coachSelected]) {
+        // Jika nama panggilan ada di kamus HTML
+        const dataPgw = dataPegawaiMap[coachSelected];
+        namaCetakLengkap = `${dataPgw.nama} | NIK: ${dataPgw.nik}`;
+        namaTTD = dataPgw.nama;
+    }
+    
+    document.getElementById('rep-pegawai').innerText = namaCetakLengkap;
+    document.getElementById('rep-ttd-nama').innerText = namaTTD;
+
+    // 3. Filter Cashflow JR (Hanya muncul jika pilih semua pegawai)
     let totalMasuk = 0; let totalKeluar = 0;
     if (coachSelected === 'semua') {
         document.getElementById('rep-cashflow-section').style.display = 'block';
@@ -166,7 +203,7 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
         document.getElementById('rep-cashflow-section').style.display = 'none';
     }
 
-    // 2. Filter Fee Coach
+    // 4. Filter Fee Coach
     const filteredFc = dbFeeCoach.filter(t => {
         const matchDate = checkDate(t.tanggal, coachStart, coachEnd);
         const matchCoach = coachSelected === 'semua' || t.nama_coach === coachSelected;
@@ -186,9 +223,9 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
                 <td class="p-3 border-b border-slate-200 text-right font-bold text-slate-800">${formatRp(fee)}</td>
             </tr>`;
     });
-    if (filteredFc.length === 0) tbodyFc.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Tidak ada data.</td></tr>`;
+    if (filteredFc.length === 0) tbodyFc.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Tidak ada data honor mengajar.</td></tr>`;
 
-    // 3. Filter Fee Marketing
+    // 5. Filter Fee Marketing
     const filteredFm = dbFeeMarketing.filter(t => {
         const matchDate = checkDate(t.tanggal_cair, coachStart, coachEnd);
         const matchAdmin = coachSelected === 'semua' || t.admin_id === coachSelected;
@@ -207,9 +244,9 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
                 <td class="p-3 border-b border-slate-200 text-right font-bold text-emerald-600">${formatRp(fee)}</td>
             </tr>`;
     });
-    if (filteredFm.length === 0) tbodyFm.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">Tidak ada komisi.</td></tr>`;
+    if (filteredFm.length === 0) tbodyFm.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">Tidak ada komisi marketing.</td></tr>`;
 
-    // 4. Set Header Kop Laporan
+    // 6. Set Header Kop Laporan Periode Tanggal
     const getText = (s, e) => {
         if(s && e) return `${formatDate(s)} s/d ${formatDate(e)}`;
         if(s && !e) return `Sejak ${formatDate(s)}`;
@@ -219,11 +256,11 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
     
     document.getElementById('rep-periode-cf').innerText = `Arus Kas: ${getText(cfStart, cfEnd)}`;
     document.getElementById('rep-periode-coach').innerText = `Gaji/Fee: ${getText(coachStart, coachEnd)}`;
-    document.getElementById('rep-pegawai').innerText = coachSelected === 'semua' ? 'REKAP SELURUH PEGAWAI' : coachSelected;
-    document.getElementById('rep-ttd-nama').innerText = coachSelected === 'semua' ? 'Pegawai' : coachSelected;
     
+    // Kalkulasi Total
     document.getElementById('rep-thp').innerText = formatRp(sumFeeCoach + sumFeeMarketing);
 
+    // Buka Halaman
     document.getElementById('page-dashboard').classList.remove('block');
     document.getElementById('page-dashboard').classList.add('hidden');
     document.getElementById('page-report').classList.remove('hidden');

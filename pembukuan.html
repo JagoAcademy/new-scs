@@ -39,7 +39,6 @@
         <!-- TAB 1: SUMMARY PT TPI -->
         <div id="tab-tpi" class="tab-content block">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <!-- Summary JR -->
                 <div class="bg-gradient-to-br from-blue-900 to-blue-950 p-6 rounded-2xl shadow-md text-white border border-blue-800">
                     <h3 class="font-black text-xl mb-4 text-blue-100">Kinerja Jago Renang</h3>
                     <div class="space-y-2">
@@ -61,8 +60,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Summary F1 -->
                 <div class="bg-gradient-to-br from-red-900 to-red-950 p-6 rounded-2xl shadow-md text-white border border-red-800">
                     <h3 class="font-black text-xl mb-4 text-red-100">Kinerja F1 Swimming (SCS)</h3>
                     <div class="space-y-2">
@@ -98,7 +95,6 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Kolom Kiri: Form Transaksi & Form Tutup Buku -->
                 <div class="md:col-span-1 flex flex-col gap-6">
-                    
                     <!-- Form Kas JR -->
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-blue-100 border-t-4 border-t-blue-600">
                         <h3 class="font-black text-blue-900 mb-4 flex items-center gap-2"><span>➕</span> Transaksi JR Baru</h3>
@@ -122,14 +118,10 @@
                         </form>
                     </div>
 
-                    <!-- ========================================== -->
-                    <!-- FITUR YELLOW: ARUS TUTUP BUKU (MONTHLY) -->
-                    <!-- ========================================== -->
+                    <!-- ARUS TUTUP BUKU (MONTHLY) -->
                     <div class="bg-white p-6 rounded-2xl shadow-md border border-yellow-200 border-t-4 border-t-yellow-500">
-                        <h3 class="font-black text-slate-800 mb-4 flex items-center gap-2"><span>📁</span> Arus Tutup Buku (monthly)</h3>
+                        <h3 class="font-black text-slate-800 mb-4 flex items-center gap-2"><span>📁</span> Arus Tutup Buku</h3>
                         <form id="form-tutup-buku" class="flex flex-col gap-4">
-                            
-                            <!-- Section 1: Tanggal Cashflow -->
                             <div class="bg-yellow-50/50 p-3 rounded-lg border border-yellow-100">
                                 <p class="text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Tanggal Cashflow</p>
                                 <div class="grid grid-cols-2 gap-2">
@@ -143,8 +135,6 @@
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Section 2: Pilih Pegawai / Coach -->
                             <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
                                 <p class="text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Data Gaji & Fee</p>
                                 <div class="mb-2">
@@ -163,13 +153,10 @@
                                         <input type="date" id="tutup-coach-end" class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-xs bg-white outline-none focus:border-slate-500">
                                     </div>
                                 </div>
-                                <!-- Tombol Tambah Pegawai Sesuai Sketsa -->
                                 <button type="button" onclick="alert('Fitur tambah form multi-pegawai sedang dikembangkan!')" class="w-full bg-slate-200 text-slate-600 font-bold py-1.5 rounded text-[11px] hover:bg-slate-300 transition-colors border border-slate-300 border-dashed">
                                     (+) Tambah Pegawai
                                 </button>
                             </div>
-
-                            <!-- TOMBOL BLACK DIKEMBALIKAN (Sesuai Request) -->
                             <button type="submit" class="mt-2 w-full bg-slate-900 text-white font-black py-3 rounded-lg hover:bg-slate-800 transition-colors shadow-sm flex items-center justify-center gap-2">
                                 Cetak Slip Gaji <span class="text-lg">»</span>
                             </button>
@@ -244,18 +231,18 @@
         </div>
 
         <div class="bg-white p-8 md:p-12 rounded-2xl shadow-xl print-shadow-none relative overflow-hidden border border-slate-200">
-            <!-- Kop Laporan -->
+            <!-- Kop Laporan Dinamis -->
             <div class="text-center border-b-2 border-slate-800 pb-6 mb-6">
-                <h1 class="text-3xl font-black text-slate-900 tracking-tight">LAPORAN TUTUP BUKU & SLIP GAJI</h1>
-                <p class="text-lg font-bold text-blue-900 mt-1">Jago Renang Academy</p>
-                <div class="flex justify-center gap-4 mt-3">
-                    <p id="rep-periode-cf" class="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded border border-slate-200">Arus Kas: -</p>
+                <h1 id="rep-title" class="text-3xl font-black text-slate-900 tracking-tight">SLIP GAJI</h1>
+                <p id="rep-subtitle" class="text-lg font-bold text-blue-900 mt-1">JR ACADEMY</p>
+                <div class="flex justify-center gap-4 mt-3 no-print">
+                    <p id="rep-periode-cf" class="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded border border-slate-200 hidden">Arus Kas: -</p>
                     <p id="rep-periode-coach" class="text-xs font-bold text-slate-500 bg-yellow-50 text-yellow-800 px-3 py-1 rounded border border-yellow-200">Periode Gaji: -</p>
                 </div>
-                <p id="rep-pegawai" class="text-sm font-black text-slate-800 mt-4 uppercase tracking-widest">Pegawai: -</p>
+                <p id="rep-pegawai" class="text-sm font-black text-slate-800 mt-4 uppercase tracking-widest">NAMA PEGAWAI NIK</p>
             </div>
 
-            <!-- 1. Cashflow -->
+            <!-- 1. Cashflow (Disembunyikan saat cetak slip gaji) -->
             <div id="rep-cashflow-section" class="mb-10">
                 <h2 class="text-lg font-black text-slate-800 mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">📊 Rangkuman Arus Kas</h2>
                 <div class="grid grid-cols-3 gap-4">
@@ -308,7 +295,7 @@
             </div>
 
             <!-- 4. Cetak Slip Gaji (Take Home Pay) -->
-            <div class="bg-slate-900 p-6 rounded-2xl text-white flex justify-between items-center shadow-lg print-shadow-none">
+            <div class="bg-slate-900 p-6 rounded-2xl text-white flex justify-between items-center shadow-lg print-shadow-none mt-4">
                 <div>
                     <p class="text-sm font-bold text-slate-300 uppercase tracking-widest mb-1">Total Take Home Pay</p>
                     <p class="text-xs text-slate-400">Total akumulasi dari Fee Coach & Marketing.</p>
