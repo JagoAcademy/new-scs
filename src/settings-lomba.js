@@ -228,21 +228,27 @@ window.hapusTautan = (index) => {
 });
 
 // ========================================================
-// KELOMPOK UMUR (KU) LOGIC
+// KELOMPOK UMUR (KU) LOGIC - REVISI UI KE LIST/BAR
 // ========================================================
 window.renderKU = () => {
     const container = document.getElementById('kuContainer');
+    // Ubah container jadi flex col (baris ke bawah) bukan grid
+    container.className = "flex flex-col gap-2";
     container.innerHTML = '';
+    
     window.configKU.sort((a,b) => b.tahunAkhir - a.tahunAkhir).forEach(ku => {
         container.innerHTML += `
-            <div class="p-3 border border-slate-200 rounded-xl flex justify-between items-center bg-slate-50 hover:border-blue-300 transition-colors">
-                <div>
-                    <h3 class="text-sm font-extrabold text-blue-900">${ku.nama}</h3>
-                    <p class="text-[10px] text-slate-500 font-medium">${ku.tahunMulai} - ${ku.tahunAkhir}</p>
+            <div class="p-3 md:px-4 border border-slate-200 rounded-lg flex flex-col md:flex-row md:items-center justify-between bg-slate-50 hover:bg-white hover:border-blue-300 transition-colors gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">KU</div>
+                    <div>
+                        <h3 class="text-sm font-extrabold text-blue-900 leading-tight">${ku.nama}</h3>
+                        <p class="text-[11px] text-slate-500 font-medium">Tahun Kelahiran: <span class="font-bold text-slate-700">${ku.tahunMulai} - ${ku.tahunAkhir}</span></p>
+                    </div>
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="window.openModalKU('${ku.id}')" class="text-blue-500 hover:text-blue-700 bg-white shadow-sm border border-slate-100 p-1.5 rounded-md text-xs">✏️</button>
-                    <button onclick="window.deleteKU('${ku.id}')" class="text-red-500 hover:text-red-700 bg-white shadow-sm border border-slate-100 p-1.5 rounded-md text-xs">🗑️</button>
+                <div class="flex gap-2 shrink-0">
+                    <button onclick="window.openModalKU('${ku.id}')" class="text-blue-600 hover:text-white bg-blue-50 hover:bg-blue-600 border border-blue-200 px-3 py-1.5 rounded text-xs font-bold transition-colors">Edit</button>
+                    <button onclick="window.deleteKU('${ku.id}')" class="text-red-500 hover:text-white bg-red-50 hover:bg-red-500 border border-red-200 px-3 py-1.5 rounded text-xs font-bold transition-colors">Hapus</button>
                 </div>
             </div>
         `;
@@ -293,35 +299,40 @@ window.deleteKU = (id) => {
 };
 
 // ========================================================
-// GAYA & JARAK (INDIVIDU) LOGIC
+// GAYA & JARAK (INDIVIDU) LOGIC - REVISI UI KE LIST/BAR
 // ========================================================
 window.renderGaya = () => {
     const container = document.getElementById('gayaContainer');
+    container.className = "flex flex-col gap-3"; // Ubah container jadi list ke bawah
     container.innerHTML = '';
+    
     window.configGaya.forEach(gaya => {
         let jarakHtml = '';
         (gaya.jarak || []).forEach(jrk => {
-            const bgBadge = jrk.aktif ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-slate-100 text-slate-400 border-slate-200 line-through';
+            const bgBadge = jrk.aktif ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-slate-100 text-slate-400 border-slate-200 line-through';
             jarakHtml += `
-                <div class="flex items-center gap-1.5 ${bgBadge} px-2 py-1 rounded-md border text-[10px] font-bold cursor-pointer group" onclick="window.toggleJarak('${gaya.id}', '${jrk.id}')">
+                <div class="flex items-center gap-1.5 ${bgBadge} px-2.5 py-1 rounded border text-[11px] font-bold cursor-pointer group shadow-sm transition-colors" onclick="window.toggleJarak('${gaya.id}', '${jrk.id}')">
                     <span>${jrk.nama}</span>
-                    <button onclick="event.stopPropagation(); window.deleteJarak('${gaya.id}', '${jrk.id}')" class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 ml-1">×</button>
+                    <button onclick="event.stopPropagation(); window.deleteJarak('${gaya.id}', '${jrk.id}')" class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 ml-1 bg-white/50 rounded-full w-4 h-4 flex items-center justify-center transition-all">×</button>
                 </div>
             `;
         });
 
         container.innerHTML += `
-            <div class="p-4 border border-slate-200 rounded-xl mb-3 bg-slate-50">
-                <div class="flex justify-between items-center mb-3 border-b border-slate-100 pb-2">
-                    <h3 class="text-sm font-black text-slate-800">${gaya.nama}</h3>
-                    <div class="flex gap-2">
-                        <button onclick="window.openModalJarak('${gaya.id}')" class="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded font-bold shadow-sm">+ Jarak</button>
-                        <button onclick="window.openModalGaya('${gaya.id}')" class="text-xs bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 px-2 py-1 rounded shadow-sm">✏️</button>
-                        <button onclick="window.deleteGaya('${gaya.id}')" class="text-xs bg-white border border-slate-200 hover:bg-red-50 text-red-500 px-2 py-1 rounded shadow-sm">🗑️</button>
+            <div class="p-4 border border-slate-200 rounded-xl bg-white shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)]">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 border-b border-slate-100 pb-3 gap-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">🏊‍♂️</span>
+                        <h3 class="text-base font-black text-slate-800">${gaya.nama}</h3>
+                    </div>
+                    <div class="flex gap-2 shrink-0">
+                        <button onclick="window.openModalJarak('${gaya.id}')" class="text-xs bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-200 px-3 py-1.5 rounded font-bold shadow-sm transition-colors">+ Tambah Jarak</button>
+                        <button onclick="window.openModalGaya('${gaya.id}')" class="text-xs bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 px-3 py-1.5 rounded font-bold shadow-sm transition-colors">Edit</button>
+                        <button onclick="window.deleteGaya('${gaya.id}')" class="text-xs bg-white border border-slate-200 hover:bg-red-50 hover:text-red-600 text-slate-400 px-3 py-1.5 rounded font-bold shadow-sm transition-colors">Hapus</button>
                     </div>
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    ${jarakHtml || '<span class="text-[10px] text-slate-400 italic">Belum ada jarak ditambahkan.</span>'}
+                    ${jarakHtml || '<span class="text-[11px] text-slate-400 italic bg-slate-50 px-3 py-1.5 rounded border border-slate-100">Belum ada jarak ditambahkan. Klik tombol "+ Tambah Jarak" di atas.</span>'}
                 </div>
             </div>
         `;
@@ -409,11 +420,13 @@ window.toggleJarak = (gayaId, jarakId) => {
 };
 
 // ========================================================
-// ESTAFET LOGIC
+// ESTAFET LOGIC - REVISI UI KE LIST/BAR
 // ========================================================
 window.renderEstafet = () => {
     const container = document.getElementById('estafetContainer');
+    container.className = "flex flex-col gap-3"; // List ke bawah
     container.innerHTML = '';
+    
     window.configEstafet.forEach(estafet => {
         let itemsHtml = '';
         (estafet.items || []).forEach(item => {
@@ -422,25 +435,28 @@ window.renderEstafet = () => {
             if(item.jenis === 'Putri') bgBadge = 'bg-pink-100 text-pink-700 border-pink-200';
 
             itemsHtml += `
-                <div class="flex items-center gap-1.5 ${bgBadge} px-2 py-1 rounded-md border text-[10px] font-bold group">
+                <div class="flex items-center gap-1.5 ${bgBadge} px-2.5 py-1 rounded border text-[11px] font-bold group shadow-sm">
                     <span>${item.jarak} (${item.jenis})</span>
-                    <button onclick="window.deleteItemEstafet('${estafet.id}', '${item.id}')" class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 ml-1">×</button>
+                    <button onclick="window.deleteItemEstafet('${estafet.id}', '${item.id}')" class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 ml-1 bg-white/50 rounded-full w-4 h-4 flex items-center justify-center transition-all">×</button>
                 </div>
             `;
         });
 
         container.innerHTML += `
-            <div class="p-4 border border-purple-100 rounded-xl mb-3 bg-purple-50/50">
-                <div class="flex justify-between items-center mb-3 border-b border-purple-100 pb-2">
-                    <h3 class="text-sm font-black text-purple-900">${estafet.nama}</h3>
-                    <div class="flex gap-2">
-                        <button onclick="window.openModalItemEstafet('${estafet.id}')" class="text-xs bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded font-bold shadow-sm">+ Tambah</button>
-                        <button onclick="window.openModalEstafet('${estafet.id}')" class="text-xs bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 px-2 py-1 rounded shadow-sm">✏️</button>
-                        <button onclick="window.deleteEstafet('${estafet.id}')" class="text-xs bg-white border border-slate-200 hover:bg-red-50 text-red-500 px-2 py-1 rounded shadow-sm">🗑️</button>
+            <div class="p-4 border border-purple-200 rounded-xl bg-purple-50/30 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 border-b border-purple-100 pb-3 gap-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">⚡</span>
+                        <h3 class="text-base font-black text-purple-900">${estafet.nama}</h3>
+                    </div>
+                    <div class="flex gap-2 shrink-0">
+                        <button onclick="window.openModalItemEstafet('${estafet.id}')" class="text-xs bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded font-bold shadow-sm transition-colors">+ Tambah Regu</button>
+                        <button onclick="window.openModalEstafet('${estafet.id}')" class="text-xs bg-white border border-purple-200 hover:bg-purple-50 text-purple-700 px-3 py-1.5 rounded font-bold shadow-sm transition-colors">Edit</button>
+                        <button onclick="window.deleteEstafet('${estafet.id}')" class="text-xs bg-white border border-slate-200 hover:bg-red-50 hover:text-red-600 text-slate-400 px-3 py-1.5 rounded font-bold shadow-sm transition-colors">Hapus</button>
                     </div>
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    ${itemsHtml || '<span class="text-[10px] text-slate-400 italic">Belum ada regu estafet ditambahkan.</span>'}
+                    ${itemsHtml || '<span class="text-[11px] text-purple-400 italic bg-white px-3 py-1.5 rounded border border-purple-100">Belum ada regu estafet ditambahkan. Klik tombol "+ Tambah Regu" di atas.</span>'}
                 </div>
             </div>
         `;
