@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Nonaktifkan pengaturan Biaya & Tarif biar gak diubah sepihak
             document.getElementById('inputTarifTambahan').disabled = true;
             document.getElementById('inputBiayaEstafet').disabled = true;
-            const btnTambahTarif = document.querySelector('button[onclick="tambahTarifIndividu()"]');
+            const btnTambahTarif = document.querySelector('button[onclick="window.tambahTarifIndividu()"]');
             if(btnTambahTarif) btnTambahTarif.classList.add('hidden');
 
             console.log("Co-Admin Mode Activated: Payment info hidden.");
@@ -142,7 +142,6 @@ window.renderTarifIndividu = () => {
 };
 
 window.tambahTarifIndividu = () => {
-    // Sinkronisasi data yg diinput sebelum nambah baris baru
     window.tarifIndividu.forEach((t, i) => {
         if(document.getElementById(`tarif_qty_${i}`)) {
             t.qty = document.getElementById(`tarif_qty_${i}`).value;
@@ -165,7 +164,7 @@ window.hapusTarifIndividu = (index) => {
 };
 
 // ========================================================
-// RENDER & MANAJEMEN TAUTAN EKSTRA
+// RENDER & MANAJEMEN TAUTAN EKSTRA (JUKNIS/WA)
 // ========================================================
 window.renderTautanEkstra = () => {
     const container = document.getElementById('containerTautanEkstra');
@@ -406,7 +405,6 @@ window.toggleJarak = (gayaId, jarakId) => {
     }
 };
 
-
 // ========================================================
 // ESTAFET LOGIC
 // ========================================================
@@ -527,7 +525,7 @@ window.closeModal = (modalId) => {
 // MASTER SAVE KE DATABASE
 // ========================================================
 window.simpanKeDatabase = async () => {
-    const btn = document.querySelector('button[onclick="simpanKeDatabase()"]');
+    const btn = document.querySelector('button[onclick="window.simpanKeDatabase()"]');
     btn.innerHTML = 'Menyimpan... ⏳';
     btn.disabled = true;
 
@@ -572,7 +570,7 @@ window.simpanKeDatabase = async () => {
         // Rakit Data Config
         const newConfig = {
             ...currentEventData.config,
-            biaya_normal: document.getElementById('inputTarifTambahan').value, // Digunakan sbg tarif ekstensi
+            biaya_normal: document.getElementById('inputTarifTambahan').value, 
             biaya_estafet: document.getElementById('inputBiayaEstafet').value,
             nama_kolam: document.getElementById('inputNamaKolam').value,
             admin_wa_1: document.getElementById('inputAdminWA1').value,
