@@ -59,8 +59,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('inputBiayaEstafet').disabled = true;
             const btnTambahTarif = document.querySelector('button[onclick="window.tambahTarifIndividu()"]');
             if(btnTambahTarif) btnTambahTarif.classList.add('hidden');
-
-            console.log("Co-Admin Mode Activated: Payment info hidden.");
         }
 
         // 4. Injeksi Data ke State
@@ -228,11 +226,10 @@ window.hapusTautan = (index) => {
 });
 
 // ========================================================
-// KELOMPOK UMUR (KU) LOGIC - REVISI UI KE LIST/BAR
+// KELOMPOK UMUR (KU) LOGIC 
 // ========================================================
 window.renderKU = () => {
     const container = document.getElementById('kuContainer');
-    // Ubah container jadi flex col (baris ke bawah) bukan grid
     container.className = "flex flex-col gap-2";
     container.innerHTML = '';
     
@@ -257,7 +254,10 @@ window.renderKU = () => {
 
 window.openModalKU = (id = null) => {
     if (id) {
-        const ku = window.configKU.find(k => k.id === id);
+        // PERBAIKAN BUG STRING VS INTEGER
+        const ku = window.configKU.find(k => String(k.id) === String(id));
+        if (!ku) return alert("Data KU tidak ditemukan!");
+        
         document.getElementById('kuId').value = ku.id;
         document.getElementById('kuNama').value = ku.nama;
         document.getElementById('kuTahunMulai').value = ku.tahunMulai;
@@ -282,7 +282,7 @@ window.saveKU = () => {
 
     if(!nama || !tahunMulai || !tahunAkhir) return alert("Semua kolom KU wajib diisi!");
 
-    const existingIndex = window.configKU.findIndex(k => k.id === id);
+    const existingIndex = window.configKU.findIndex(k => String(k.id) === String(id));
     const newData = { id, nama, tahunMulai: Number(tahunMulai), tahunAkhir: Number(tahunAkhir) };
 
     if (existingIndex > -1) window.configKU[existingIndex] = newData;
@@ -294,16 +294,16 @@ window.saveKU = () => {
 
 window.deleteKU = (id) => {
     if(!confirm("Yakin hapus KU ini?")) return;
-    window.configKU = window.configKU.filter(k => k.id !== id);
+    window.configKU = window.configKU.filter(k => String(k.id) !== String(id));
     window.renderKU();
 };
 
 // ========================================================
-// GAYA & JARAK (INDIVIDU) LOGIC - REVISI UI KE LIST/BAR
+// GAYA & JARAK (INDIVIDU) LOGIC 
 // ========================================================
 window.renderGaya = () => {
     const container = document.getElementById('gayaContainer');
-    container.className = "flex flex-col gap-3"; // Ubah container jadi list ke bawah
+    container.className = "flex flex-col gap-3"; 
     container.innerHTML = '';
     
     window.configGaya.forEach(gaya => {
@@ -341,7 +341,9 @@ window.renderGaya = () => {
 
 window.openModalGaya = (id = null) => {
     if (id) {
-        const gaya = window.configGaya.find(g => g.id === id);
+        const gaya = window.configGaya.find(g => String(g.id) === String(id));
+        if (!gaya) return alert("Data Gaya tidak ditemukan!");
+        
         document.getElementById('gayaId').value = gaya.id;
         document.getElementById('gayaNama').value = gaya.nama;
         document.getElementById('modalGayaTitle').innerText = "Edit Kategori Gaya";
@@ -359,7 +361,7 @@ window.saveGaya = () => {
     const nama = document.getElementById('gayaNama').value.trim();
     if(!nama) return alert("Nama gaya wajib diisi!");
 
-    const existingIndex = window.configGaya.findIndex(g => g.id === id);
+    const existingIndex = window.configGaya.findIndex(g => String(g.id) === String(id));
     if (existingIndex > -1) {
         window.configGaya[existingIndex].nama = nama;
     } else {
@@ -372,7 +374,7 @@ window.saveGaya = () => {
 
 window.deleteGaya = (id) => {
     if(!confirm("Yakin hapus kategori gaya ini beserta semua jaraknya?")) return;
-    window.configGaya = window.configGaya.filter(g => g.id !== id);
+    window.configGaya = window.configGaya.filter(g => String(g.id) !== String(id));
     window.renderGaya();
 };
 
@@ -391,7 +393,7 @@ window.saveJarak = () => {
     
     if(!nama) return alert("Jarak wajib diisi!");
 
-    const gaya = window.configGaya.find(g => g.id === gayaId);
+    const gaya = window.configGaya.find(g => String(g.id) === String(gayaId));
     if(gaya) {
         gaya.jarak.push({ id: jarakId, nama: nama, aktif: true });
         window.renderGaya();
@@ -401,17 +403,17 @@ window.saveJarak = () => {
 
 window.deleteJarak = (gayaId, jarakId) => {
     if(!confirm("Hapus jarak ini?")) return;
-    const gaya = window.configGaya.find(g => g.id === gayaId);
+    const gaya = window.configGaya.find(g => String(g.id) === String(gayaId));
     if(gaya) {
-        gaya.jarak = gaya.jarak.filter(j => j.id !== jarakId);
+        gaya.jarak = gaya.jarak.filter(j => String(j.id) !== String(jarakId));
         window.renderGaya();
     }
 };
 
 window.toggleJarak = (gayaId, jarakId) => {
-    const gaya = window.configGaya.find(g => g.id === gayaId);
+    const gaya = window.configGaya.find(g => String(g.id) === String(gayaId));
     if(gaya) {
-        const jrk = gaya.jarak.find(j => j.id === jarakId);
+        const jrk = gaya.jarak.find(j => String(j.id) === String(jarakId));
         if(jrk) {
             jrk.aktif = !jrk.aktif;
             window.renderGaya();
@@ -420,11 +422,11 @@ window.toggleJarak = (gayaId, jarakId) => {
 };
 
 // ========================================================
-// ESTAFET LOGIC - REVISI UI KE LIST/BAR
+// ESTAFET LOGIC
 // ========================================================
 window.renderEstafet = () => {
     const container = document.getElementById('estafetContainer');
-    container.className = "flex flex-col gap-3"; // List ke bawah
+    container.className = "flex flex-col gap-3"; 
     container.innerHTML = '';
     
     window.configEstafet.forEach(estafet => {
@@ -465,7 +467,9 @@ window.renderEstafet = () => {
 
 window.openModalEstafet = (id = null) => {
     if (id) {
-        const estafet = window.configEstafet.find(e => e.id === id);
+        const estafet = window.configEstafet.find(e => String(e.id) === String(id));
+        if (!estafet) return alert("Data Estafet tidak ditemukan!");
+        
         document.getElementById('estafetId').value = estafet.id;
         document.getElementById('estafetNama').value = estafet.nama;
     } else {
@@ -481,7 +485,7 @@ window.saveEstafet = () => {
     const nama = document.getElementById('estafetNama').value.trim();
     if(!nama) return alert("Nama kategori estafet wajib diisi!");
 
-    const existingIndex = window.configEstafet.findIndex(e => e.id === id);
+    const existingIndex = window.configEstafet.findIndex(e => String(e.id) === String(id));
     if (existingIndex > -1) {
         window.configEstafet[existingIndex].nama = nama;
     } else {
@@ -494,7 +498,7 @@ window.saveEstafet = () => {
 
 window.deleteEstafet = (id) => {
     if(!confirm("Yakin hapus kategori estafet ini?")) return;
-    window.configEstafet = window.configEstafet.filter(e => e.id !== id);
+    window.configEstafet = window.configEstafet.filter(e => String(e.id) !== String(id));
     window.renderEstafet();
 };
 
@@ -513,7 +517,7 @@ window.saveItemEstafet = () => {
     
     if(!jarak) return alert("Jarak estafet wajib diisi!");
 
-    const estafet = window.configEstafet.find(e => e.id === estafetId);
+    const estafet = window.configEstafet.find(e => String(e.id) === String(estafetId));
     if(estafet) {
         estafet.items.push({ id: itemId, jarak: jarak, jenis: jenis });
         window.renderEstafet();
@@ -523,9 +527,9 @@ window.saveItemEstafet = () => {
 
 window.deleteItemEstafet = (estafetId, itemId) => {
     if(!confirm("Hapus regu estafet ini?")) return;
-    const estafet = window.configEstafet.find(e => e.id === estafetId);
+    const estafet = window.configEstafet.find(e => String(e.id) === String(estafetId));
     if(estafet) {
-        estafet.items = estafet.items.filter(i => i.id !== itemId);
+        estafet.items = estafet.items.filter(i => String(i.id) !== String(itemId));
         window.renderEstafet();
     }
 };
