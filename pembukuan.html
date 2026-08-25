@@ -36,7 +36,7 @@
             <button onclick="switchTab('tab-f1')" id="btn-f1" class="tab-btn whitespace-nowrap py-2 px-6 rounded-lg font-bold text-sm text-slate-600 hover:bg-red-50 hover:text-red-700 transition-all">🏆 Arus Kas F1 Swimming</button>
         </nav>
 
-        <!-- TAB 1: SUMMARY PT TPI (Tetap Sama) -->
+        <!-- TAB 1: SUMMARY PT TPI -->
         <div id="tab-tpi" class="tab-content block">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <!-- Summary JR -->
@@ -153,7 +153,7 @@
                                         <option value="semua">-- Semua Pegawai --</option>
                                     </select>
                                 </div>
-                                <div class="grid grid-cols-2 gap-2">
+                                <div class="grid grid-cols-2 gap-2 mb-3">
                                     <div>
                                         <label class="text-[10px] font-bold text-slate-500">Tgl Mulai</label>
                                         <input type="date" id="tutup-coach-start" class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-xs bg-white outline-none focus:border-slate-500">
@@ -163,11 +163,15 @@
                                         <input type="date" id="tutup-coach-end" class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-xs bg-white outline-none focus:border-slate-500">
                                     </div>
                                 </div>
+                                <!-- Tombol Tambah Pegawai Sesuai Sketsa -->
+                                <button type="button" onclick="alert('Fitur tambah form multi-pegawai sedang dikembangkan!')" class="w-full bg-slate-200 text-slate-600 font-bold py-1.5 rounded text-[11px] hover:bg-slate-300 transition-colors border border-slate-300 border-dashed">
+                                    (+) Tambah Pegawai
+                                </button>
                             </div>
 
-                            <!-- Button Execute -->
-                            <button type="submit" class="mt-2 w-full bg-yellow-500 text-yellow-950 font-black py-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-sm border border-yellow-600 flex items-center justify-center gap-2">
-                                <span class="text-lg">➕</span> ( + ) Tambah Pegawai
+                            <!-- TOMBOL BLACK DIKEMBALIKAN (Sesuai Request) -->
+                            <button type="submit" class="mt-2 w-full bg-slate-900 text-white font-black py-3 rounded-lg hover:bg-slate-800 transition-colors shadow-sm flex items-center justify-center gap-2">
+                                Cetak Slip Gaji <span class="text-lg">»</span>
                             </button>
                         </form>
                     </div>
@@ -196,7 +200,6 @@
 
         <!-- TAB 3: ARUS KAS F1 SWIMMING -->
         <div id="tab-f1" class="tab-content hidden">
-            <!-- (Kerangka tabel f1 disingkat di snippet ini agar tidak terlalu panjang, isinya sama persis seperti kode sebelumnya) -->
              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-red-100 md:col-span-1 h-fit border-t-4 border-t-red-600">
                     <h3 class="font-black text-red-900 mb-4 flex items-center gap-2"><span>➕</span> Transaksi F1 Baru</h3>
@@ -243,7 +246,7 @@
         <div class="bg-white p-8 md:p-12 rounded-2xl shadow-xl print-shadow-none relative overflow-hidden border border-slate-200">
             <!-- Kop Laporan -->
             <div class="text-center border-b-2 border-slate-800 pb-6 mb-6">
-                <h1 class="text-3xl font-black text-slate-900 tracking-tight">LAPORAN TUTUP BUKU & CETAK SLIP GAJI</h1>
+                <h1 class="text-3xl font-black text-slate-900 tracking-tight">LAPORAN TUTUP BUKU & SLIP GAJI</h1>
                 <p class="text-lg font-bold text-blue-900 mt-1">Jago Renang Academy</p>
                 <div class="flex justify-center gap-4 mt-3">
                     <p id="rep-periode-cf" class="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded border border-slate-200">Arus Kas: -</p>
