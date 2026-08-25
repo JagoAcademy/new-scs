@@ -6,7 +6,6 @@
     <title>Buku Besar Induk - PT TPI</title>
     <link rel="stylesheet" href="/src/style.css">
     <style>
-        /* Gaya khusus saat halaman diprint (Print-Ready) */
         @media print {
             body { background: white !important; }
             .no-print { display: none !important; }
@@ -20,7 +19,6 @@
     <!-- HALAMAN 1: DASHBOARD UTAMA -->
     <!-- ========================================== -->
     <div id="page-dashboard" class="max-w-6xl mx-auto p-4 md:p-8 block">
-        <!-- Header PT TPI -->
         <header class="mb-8 border-b border-slate-200 pb-4 flex justify-between items-end">
             <div>
                 <h1 class="text-3xl font-black text-slate-900">Command Center Keuangan</h1>
@@ -32,14 +30,13 @@
             </div>
         </header>
 
-        <!-- Navigasi Entitas -->
         <nav class="flex gap-2 mb-6 bg-white p-2 rounded-xl shadow-sm border border-slate-100 overflow-x-auto">
             <button onclick="switchTab('tab-tpi')" id="btn-tpi" class="tab-btn whitespace-nowrap py-2 px-6 rounded-lg font-bold text-sm bg-slate-900 text-white transition-all">📊 Summary PT TPI</button>
             <button onclick="switchTab('tab-jr')" id="btn-jr" class="tab-btn whitespace-nowrap py-2 px-6 rounded-lg font-bold text-sm text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-all">🏊‍♂️ Arus Kas Jago Renang</button>
             <button onclick="switchTab('tab-f1')" id="btn-f1" class="tab-btn whitespace-nowrap py-2 px-6 rounded-lg font-bold text-sm text-slate-600 hover:bg-red-50 hover:text-red-700 transition-all">🏆 Arus Kas F1 Swimming</button>
         </nav>
 
-        <!-- TAB 1: SUMMARY PT TPI -->
+        <!-- TAB 1: SUMMARY PT TPI (Tetap Sama) -->
         <div id="tab-tpi" class="tab-content block">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <!-- Summary JR -->
@@ -125,27 +122,52 @@
                         </form>
                     </div>
 
-                    <!-- CONTAINER BARU: ARUS TUTUP BUKU -->
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 border-t-4 border-t-slate-800">
-                        <h3 class="font-black text-slate-800 mb-4 flex items-center gap-2"><span>📁</span> Arus Tutup Buku</h3>
-                        <form id="form-tutup-buku" class="flex flex-col gap-3">
-                            <div>
-                                <label class="text-xs font-bold text-slate-500">Mulai Tanggal</label>
-                                <input type="date" id="tutup-start" class="w-full mt-1 p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
+                    <!-- ========================================== -->
+                    <!-- FITUR YELLOW: ARUS TUTUP BUKU (MONTHLY) -->
+                    <!-- ========================================== -->
+                    <div class="bg-white p-6 rounded-2xl shadow-md border border-yellow-200 border-t-4 border-t-yellow-500">
+                        <h3 class="font-black text-slate-800 mb-4 flex items-center gap-2"><span>📁</span> Arus Tutup Buku (monthly)</h3>
+                        <form id="form-tutup-buku" class="flex flex-col gap-4">
+                            
+                            <!-- Section 1: Tanggal Cashflow -->
+                            <div class="bg-yellow-50/50 p-3 rounded-lg border border-yellow-100">
+                                <p class="text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Tanggal Cashflow</p>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-500">Mulai Tanggal</label>
+                                        <input type="date" id="tutup-cf-start" class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-xs bg-white outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500">
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-500">Sampai Tanggal</label>
+                                        <input type="date" id="tutup-cf-end" class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-xs bg-white outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500">
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <label class="text-xs font-bold text-slate-500">Sampai Tanggal (Cut-off)</label>
-                                <input type="date" id="tutup-end" class="w-full mt-1 p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
+
+                            <!-- Section 2: Pilih Pegawai / Coach -->
+                            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                <p class="text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Data Gaji & Fee</p>
+                                <div class="mb-2">
+                                    <label class="text-[10px] font-bold text-slate-500">Pilih Pegawai / Coach</label>
+                                    <select id="tutup-coach" class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-xs bg-white outline-none focus:border-slate-500">
+                                        <option value="semua">-- Semua Pegawai --</option>
+                                    </select>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-500">Tgl Mulai</label>
+                                        <input type="date" id="tutup-coach-start" class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-xs bg-white outline-none focus:border-slate-500">
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-500">Tgl Cut Off</label>
+                                        <input type="date" id="tutup-coach-end" class="w-full mt-1 p-2 border border-slate-300 rounded-lg text-xs bg-white outline-none focus:border-slate-500">
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <label class="text-xs font-bold text-slate-500">Pegawai / Coach</label>
-                                <select id="tutup-coach" class="w-full mt-1 p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
-                                    <option value="semua">-- Semua Pegawai --</option>
-                                    <!-- Options generated by JS -->
-                                </select>
-                            </div>
-                            <button type="submit" class="mt-2 w-full bg-slate-800 text-white font-bold py-2.5 rounded-lg hover:bg-slate-900 transition-colors shadow-md flex items-center justify-center gap-2">
-                                Execute Data <span class="text-lg">»</span>
+
+                            <!-- Button Execute -->
+                            <button type="submit" class="mt-2 w-full bg-yellow-500 text-yellow-950 font-black py-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-sm border border-yellow-600 flex items-center justify-center gap-2">
+                                <span class="text-lg">➕</span> ( + ) Tambah Pegawai
                             </button>
                         </form>
                     </div>
@@ -172,10 +194,10 @@
             </div>
         </div>
 
-        <!-- TAB 3: ARUS KAS F1 SWIMMING (Tetap Sama) -->
+        <!-- TAB 3: ARUS KAS F1 SWIMMING -->
         <div id="tab-f1" class="tab-content hidden">
-            <!-- (Isi form dan tabel F1 sama seperti kode sebelumnya, disembunyikan di snippet ini agar fokus) -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- (Kerangka tabel f1 disingkat di snippet ini agar tidak terlalu panjang, isinya sama persis seperti kode sebelumnya) -->
+             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-red-100 md:col-span-1 h-fit border-t-4 border-t-red-600">
                     <h3 class="font-black text-red-900 mb-4 flex items-center gap-2"><span>➕</span> Transaksi F1 Baru</h3>
                     <form id="form-f1-kas" class="flex flex-col gap-3">
@@ -205,11 +227,10 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- HALAMAN 2: SLIP GAJI & CASHFLOW (Hidden Default) -->
+    <!-- HALAMAN 2: CETAK SLIP GAJI & CASHFLOW -->
     <!-- ========================================== -->
     <div id="page-report" class="hidden max-w-4xl mx-auto p-4 md:p-10 min-h-screen bg-slate-50">
         
-        <!-- Tombol Aksi -->
         <div class="flex justify-between items-center mb-8 no-print">
             <button onclick="closeReport()" class="text-blue-600 font-bold hover:text-blue-800 transition-colors flex items-center gap-2">
                 <span>&larr;</span> Kembali ke Dashboard
@@ -219,19 +240,21 @@
             </button>
         </div>
 
-        <!-- Kertas Laporan -->
-        <div class="bg-white p-8 md:p-12 rounded-2xl shadow-xl print-shadow-none relative overflow-hidden">
+        <div class="bg-white p-8 md:p-12 rounded-2xl shadow-xl print-shadow-none relative overflow-hidden border border-slate-200">
             <!-- Kop Laporan -->
             <div class="text-center border-b-2 border-slate-800 pb-6 mb-6">
-                <h1 class="text-3xl font-black text-slate-900 tracking-tight">LAPORAN TUTUP BUKU & SLIP GAJI</h1>
+                <h1 class="text-3xl font-black text-slate-900 tracking-tight">LAPORAN TUTUP BUKU & CETAK SLIP GAJI</h1>
                 <p class="text-lg font-bold text-blue-900 mt-1">Jago Renang Academy</p>
-                <p id="rep-periode" class="text-sm font-medium text-slate-500 mt-2">Periode: -</p>
-                <p id="rep-pegawai" class="text-sm font-bold text-slate-700 mt-1 bg-slate-100 inline-block px-3 py-1 rounded-full uppercase tracking-widest border border-slate-200">Pegawai: -</p>
+                <div class="flex justify-center gap-4 mt-3">
+                    <p id="rep-periode-cf" class="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded border border-slate-200">Arus Kas: -</p>
+                    <p id="rep-periode-coach" class="text-xs font-bold text-slate-500 bg-yellow-50 text-yellow-800 px-3 py-1 rounded border border-yellow-200">Periode Gaji: -</p>
+                </div>
+                <p id="rep-pegawai" class="text-sm font-black text-slate-800 mt-4 uppercase tracking-widest">Pegawai: -</p>
             </div>
 
-            <!-- Konten: 1. Cashflow (Hanya Muncul Jika Pilih Semua Pegawai) -->
+            <!-- 1. Cashflow -->
             <div id="rep-cashflow-section" class="mb-10">
-                <h2 class="text-lg font-black text-slate-800 mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">📊 Rangkuman Arus Kas (Jago Renang)</h2>
+                <h2 class="text-lg font-black text-slate-800 mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">📊 Rangkuman Arus Kas</h2>
                 <div class="grid grid-cols-3 gap-4">
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-center">
                         <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Pemasukan</p>
@@ -248,9 +271,9 @@
                 </div>
             </div>
 
-            <!-- Konten: 2. Detail Fee Coach -->
+            <!-- 2. Detail Fee Coach -->
             <div class="mb-8">
-                <h2 class="text-lg font-black text-slate-800 mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">🏊‍♂️ Rincian Honor Mengajar (Fee Coach)</h2>
+                <h2 class="text-lg font-black text-slate-800 mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">🏊‍♂️ Rincian Honor Mengajar</h2>
                 <table class="w-full text-left border-collapse text-sm border border-slate-200">
                     <thead class="bg-slate-100 text-slate-600">
                         <tr>
@@ -265,9 +288,9 @@
                 </table>
             </div>
 
-            <!-- Konten: 3. Detail Fee Marketing -->
+            <!-- 3. Detail Fee Marketing -->
             <div class="mb-10">
-                <h2 class="text-lg font-black text-slate-800 mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">📢 Rincian Komisi Marketing (Admin)</h2>
+                <h2 class="text-lg font-black text-slate-800 mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">📢 Rincian Komisi Marketing</h2>
                 <table class="w-full text-left border-collapse text-sm border border-slate-200">
                     <thead class="bg-slate-100 text-slate-600">
                         <tr>
@@ -281,18 +304,17 @@
                 </table>
             </div>
 
-            <!-- Konten: 4. Total Take Home Pay -->
-            <div class="bg-slate-800 p-6 rounded-2xl text-white flex justify-between items-center shadow-lg print-shadow-none">
+            <!-- 4. Cetak Slip Gaji (Take Home Pay) -->
+            <div class="bg-slate-900 p-6 rounded-2xl text-white flex justify-between items-center shadow-lg print-shadow-none">
                 <div>
                     <p class="text-sm font-bold text-slate-300 uppercase tracking-widest mb-1">Total Take Home Pay</p>
-                    <p class="text-xs text-slate-400">Total akumulasi dari Fee Coach & Fee Marketing periode ini.</p>
+                    <p class="text-xs text-slate-400">Total akumulasi dari Fee Coach & Marketing.</p>
                 </div>
                 <div class="text-right">
                     <h2 id="rep-thp" class="text-4xl font-black text-emerald-400 tracking-tight">Rp 0</h2>
                 </div>
             </div>
 
-            <!-- Signatures -->
             <div class="mt-16 flex justify-between px-10 text-center text-sm font-bold text-slate-600 no-print">
                 <div>
                     <p class="mb-16">Disetujui Oleh,</p>
@@ -303,7 +325,6 @@
                     <p class="border-t border-slate-400 pt-2 inline-block px-4 uppercase text-slate-800" id="rep-ttd-nama">Pegawai Bersangkutan</p>
                 </div>
             </div>
-
         </div>
     </div>
 
