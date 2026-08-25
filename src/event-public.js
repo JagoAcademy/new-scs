@@ -141,6 +141,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // =========================================================
+        // INJEKSI TAUTAN EKSTRA (JUKNIS / WA GROUP) - UX BARU!
+        // =========================================================
+        if (config.tautan_ekstra && config.tautan_ekstra.length > 0) {
+            const containerTautan = document.getElementById('containerTautanEkstraPublik');
+            if (containerTautan) {
+                containerTautan.classList.remove('hidden');
+                config.tautan_ekstra.forEach(link => {
+                    if(link.title && link.url) {
+                        // Membuat SOLID PILL BUTTON yang elegan
+                        containerTautan.innerHTML += `
+                            <a href="${link.url}" target="_blank" class="flex-1 sm:flex-none inline-flex justify-center items-center gap-2 bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 hover:border-indigo-600 font-extrabold py-2.5 px-5 rounded-xl text-xs md:text-sm transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap">
+                                🔗 ${link.title}
+                            </a>
+                        `;
+                    }
+                });
+            }
+        }
+
+        // =========================================================
         // 1. FLOATING WHATSAPP BUTTON
         // =========================================================
         const btnToggleMenu = document.getElementById('btnToggleWAMenu');
@@ -383,7 +403,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // ==========================================
-    // LOGIKA PENDAFTARAN INDIVIDU (UPDATE CALCULATOR TIERED PRICING)
+    // LOGIKA PENDAFTARAN INDIVIDU
     // ==========================================
     document.getElementById('btnKirimPendaftaran').addEventListener('click', async () => {
         const btn = document.getElementById('btnKirimPendaftaran');
@@ -454,37 +474,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return alert(`❌ GAGAL! Atlet ini sudah pernah didaftarkan di nomor:\n\n${nomorBentrok.join(', ')}\n\nSilakan hilangkan centang pada nomor tersebut jika ingin menambah nomor gaya baru.`);
             }
 
-            // ========================================================
-            // KALKULASI TAGIHAN (DYNAMIC TIERED PRICING)
-            // ========================================================
+            // KALKULASI TAGIHAN
             const config = currentEvent.config || {};
             let qty = selectedNomor.length;
             let totalBiaya = 0;
 
             if (config.tarif_individu && config.tarif_individu.length > 0) {
-                // Pastikan urut dari qty paling kecil
                 let sortedTiers = [...config.tarif_individu].sort((a,b) => a.qty - b.qty);
                 let maxTier = sortedTiers[sortedTiers.length - 1];
-
                 let exactTier = sortedTiers.find(t => t.qty == qty);
                 
                 if (exactTier) {
                     totalBiaya = Number(exactTier.price);
                 } else if (qty > maxTier.qty) {
-                    // Kalau daftarnya lebih dari paket maksimum, hitung tambahannya
                     let basePrice = Number(maxTier.price);
                     let extraQty = qty - maxTier.qty;
                     let extraPrice = Number(config.tarif_tambahan || 0);
                     totalBiaya = basePrice + (extraQty * extraPrice);
                 } else {
-                    // Fallback kalau loncat-lompat isinya
                     let lowerTier = sortedTiers.slice().reverse().find(t => t.qty < qty);
                     if(lowerTier) {
                         totalBiaya = Number(lowerTier.price) + ((qty - lowerTier.qty) * Number(config.tarif_tambahan || 0));
                     }
                 }
             } else {
-                // BACKWARD COMPATIBILITY
                 totalBiaya = qty >= Number(config.min_diskon || 999) 
                     ? qty * Number(config.biaya_diskon || 0) 
                     : qty * Number(config.biaya_normal || 0);
@@ -546,7 +559,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // ==========================================
-    // LOGIKA PENDAFTARAN ESTAFET (TIKET SLOT)
+    // LOGIKA PENDAFTARAN ESTAFET
     // ==========================================
     const btnEstafet = document.getElementById('btnKirimEstafet');
     if(btnEstafet) {
@@ -619,7 +632,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ==========================================
-    // SISTEM KERANJANG & PEMBAYARAN KOLEKTIF (CARD LAYOUT DEWA)
+    // SISTEM KERANJANG & PEMBAYARAN KOLEKTIF
     // ==========================================
     async function loadTagihan() {
         if (!currentEvent) return;
@@ -642,10 +655,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (error) return console.error(error);
 
         dataTagihan = data || [];
-        renderDaftarTagihan(); // Fungsi ini di-update bray!
+        renderDaftarTagihan();
     }
 
-    // NGE-RENDER LIST CART DALAM BENTUK KARTU (BUKAN TABEL)
     function renderDaftarTagihan() {
         const area = document.getElementById('areaPembayaran');
         const container = document.getElementById('listTagihanContainer');
@@ -710,7 +722,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 ${badgeTipe}
                                 <span class="bg-slate-200 text-slate-700 text-[9px] font-bold px-2 py-0.5 rounded">${arrayNomor.length} Nomor</span>
                             </div>
-                            ${aksiHtml} <!-- TOMBOL HAPUS NONGOL JELAS DI SINI BOS! -->
+                            ${aksiHtml}
                         </div>
                         <p class="text-[10px] text-slate-600 font-medium leading-relaxed">${listNomor}</p>
                     </div>
