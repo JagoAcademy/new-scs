@@ -3,7 +3,7 @@ import { supabaseClient } from './supabase.js';
 let currentEventId = null;
 let allHeats = []; 
 let currentSelectedEventNumber = null;
-let activeSponsors = []; // Wadah penyimpan sponsor buat dibagi rata
+let activeSponsors = []; // Wadah penyimpan sponsor
 
 let refreshInterval = 30; 
 let timeLeft = refreshInterval;
@@ -49,6 +49,7 @@ async function fetchSponsors() {
 
         if (linkErr || !linkData || !linkData.sponsor_ids || linkData.sponsor_ids.length === 0) return;
 
+        // SEKARANG KITA TARIK JUGA DATA TARGETING-NYA
         const { data: sponsors, error: spErr } = await supabaseClient
             .from('master_sponsors')
             .select('*')
@@ -56,7 +57,7 @@ async function fetchSponsors() {
 
         if (spErr || !sponsors || sponsors.length === 0) return;
         
-        activeSponsors = sponsors; // Simpan ke global buat dibagi-bagi di per-Event
+        activeSponsors = sponsors; // Simpan ke global 
 
         let html = `
             <div class="w-full mb-6 bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 text-center">
@@ -64,9 +65,6 @@ async function fetchSponsors() {
                 <div class="flex items-center justify-center gap-4 md:gap-6 flex-wrap w-full">
         `;
 
-        // ==========================================
-        // VAKSIN RENDER SPONSOR UTAMA (ANTI-MELAR)
-        // ==========================================
         let boxWidth = sponsors.length === 1 ? '160px' : (sponsors.length === 2 ? '120px' : '90px');
 
         sponsors.forEach(sp => {
@@ -215,18 +213,61 @@ function renderResults(eventNumber) {
         }
 
         // ==========================================
-        // VAKSIN RENDER SPONSOR PER-HEAT (ANTI-MELAR)
+        // 🧠 OTAK DYNAMIC SMART-TARGETING (AD-TECH)
         // ==========================================
         let eventSponsorHeader = '';
         if (activeSponsors.length > 0) {
-            const spIndex = (heat.event_number - 1) % activeSponsors.length;
-            const sp = activeSponsors[spIndex];
+            
+            const heatGender = heat.gender.toUpperCase();
+            const heatKU = heat.kelompok_umur.toUpperCase();
+
+            // 1. Filter sponsor yang nyangkut dengan kriteria Heat ini
+            let matchedSponsors = activeSponsors.filter(sp => {
+                let matchGender = false;
+                let matchUmur = false;
+
+                // --- LOGIKA GENDER ---
+                if (!sp.target_gender || sp.target_gender === 'ALL') {
+                    matchGender = true;
+                } else {
+                    // Kalau target 'Putra', heat-nya harus Putra/Mix
+                    matchGender = heatGender.includes(sp.target_gender.toUpperCase());
+                }
+
+                // --- LOGIKA UMUR (Future-Proof, gak pakai tahun!) ---
+                if (!sp.target_umur || sp.target_umur === 'ALL') {
+                    matchUmur = true;
+                } else if (sp.target_umur === 'KIDS') {
+                    const kidsKeywords = ['PEMULA', 'TAHUN', 'THN', 'SD', 'TK', 'GRUP', 'GROUP', 'KIDS', 'UMUR', 'YOUTH'];
+                    matchUmur = kidsKeywords.some(kw => heatKU.includes(kw));
+                } else if (sp.target_umur === 'ADULT') {
+                    const adultKeywords = ['OPEN', 'SENIOR', 'DEWASA', 'MAHASISWA', 'MASTER', 'BEBAS'];
+                    matchUmur = adultKeywords.some(kw => heatKU.includes(kw));
+                }
+
+                return matchGender && matchUmur;
+            });
+
+            // 2. SAFETY FALLBACK (Anti Kolom Kosong)
+            // Kalau misal gak ada satupun sponsor yang cocok (krn over-targeted), 
+            // kita panggil cadangan: Sponsor yang targetnya ALL & ALL.
+            if (matchedSponsors.length === 0) {
+                matchedSponsors = activeSponsors.filter(sp => (!sp.target_gender || sp.target_gender === 'ALL') && (!sp.target_umur || sp.target_umur === 'ALL'));
+            }
+            
+            // Kalau masih kosong melompong juga (Admin belum sedia sponsor ALL), 
+            // tampilkan siapa aja yang aktif biar webnya gak bolong!
+            if (matchedSponsors.length === 0) {
+                matchedSponsors = activeSponsors;
+            }
+
+            // 3. Render banner bergiliran (Round-Robin) DARI ARRAY YANG UDAH DI-FILTER
+            const spIndex = (heat.event_number - 1) % matchedSponsors.length;
+            const sp = matchedSponsors[spIndex];
             const spLogo = sp.logo_url || '/images/logo.png';
             
             eventSponsorHeader = `
                 <a href="${sp.link_url || '#'}" target="_blank" class="flex items-center justify-between bg-slate-50 hover:bg-amber-50/80 transition-colors border-b border-slate-200 px-4 py-3 -mx-3 -mt-3 md:-mx-4 md:-mt-4 mb-3 rounded-t-xl group">
-                    
-                    <!-- Kiri: Teks & Tagline -->
                     <div class="flex flex-col md:flex-row md:items-center gap-0.5 md:gap-2 flex-1 min-w-0 pr-4">
                         <span class="text-[9px] md:text-[10px] font-black text-slate-400 group-hover:text-amber-500 uppercase tracking-widest transition-colors shrink-0">
                             Supported By:
@@ -235,8 +276,6 @@ function renderResults(eventNumber) {
                             ${sp.sponsor_name}
                         </span>
                     </div>
-                    
-                    <!-- Kanan: LOGO RENDERER BARU -->
                     <div class="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm flex items-center justify-center shrink-0 transition-transform group-hover:scale-105" 
                          style="aspect-ratio: 16/9; width: 72px;">
                         <img src="${spLogo}" 
@@ -245,10 +284,10 @@ function renderResults(eventNumber) {
                              loading="lazy" 
                              onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'text-[8px] font-bold text-slate-400 text-center leading-tight uppercase\\'>${sp.sponsor_name}</span>';">
                     </div>
-                    
                 </a>
             `;
         }
+        // ==========================================
 
         htmlContent += `
         <div class="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-slate-200 mb-4 overflow-hidden relative">
