@@ -2,7 +2,7 @@ import { supabaseClient } from './supabase.js';
 
 let currentEventId = null;
 let currentEventName = '';
-let currentEventTier = 'FREEMIUM'; // Simpan kasta event
+let currentEventTier = 'FREEMIUM'; 
 let masterSponsors = [];
 let sponsorSubmissions = []; 
 let eventSponsorsDeal = []; 
@@ -22,14 +22,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) return window.location.replace('/auth.html');
         
-        // Tarik event_tier sekalian
         const { data: eventData, error } = await supabaseClient.from('events').select('owner_id, event_name, event_tier').eq('id', currentEventId).single();
         if (error || !eventData) throw new Error("Event tidak ditemukan.");
 
         currentEventName = eventData.event_name;
         currentEventTier = eventData.event_tier || 'FREEMIUM';
         
-        // Pintu masuk untuk Super Admin (Lu dan Radit)
         const allowedAdmins = ['radityaraja@gmail.com', 'fajar@f1swimming.com'];
         const isAuthorized = eventData.owner_id === session.user.id || allowedAdmins.includes(session.user.email);
         
@@ -43,7 +41,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (err) { alert(err.message); }
 });
 
-// Render Badge Status Event di Pojok Kanan Atas
 function renderEventBadge(tier) {
     const container = document.getElementById('eventStatusBadgeContainer');
     if(!container) return;
@@ -71,11 +68,10 @@ async function fetchSponsorData() {
         eventSponsorsDeal = deals ? (deals.sponsor_ids || []) : [];
 
         populateFilters();
-        renderCards('all'); // Render semua by default
+        renderCards('all'); 
     } catch(err) { console.error("Gagal memuat:", err); }
 }
 
-// Injeksi Kategori Otomatis ke Dropdown
 function populateFilters() {
     const selectKategori = document.getElementById('filterKategori');
     if(!selectKategori) return;
@@ -115,7 +111,6 @@ function renderCards(filterCat = 'all') {
         if (isDeal && !subData) {
             statusUI = `<button class="w-full bg-emerald-50 text-emerald-600 font-black py-2.5 rounded-xl text-[10px] tracking-widest border border-emerald-200 cursor-default">🟢 OFFICIAL PARTNER</button>`;
         } else if (!subData) {
-            // Tombol Ajukan (Revamp jadi PITCHING SEKARANG dengan hover panah/roket)
             statusUI = `
                 <button onclick="handleAjukanSponsor(${sp.id}, '${encodeURIComponent(sp.sponsor_name)}', '${sp.logo_url}')" 
                         class="w-full bg-blue-600 hover:bg-slate-900 text-white font-bold py-2.5 rounded-xl text-xs transition-all duration-300 shadow-sm hover:shadow-md border border-blue-700 hover:border-slate-800 cursor-pointer group flex justify-center items-center gap-1.5 overflow-hidden">
@@ -132,21 +127,24 @@ function renderCards(filterCat = 'all') {
 
         const spKategori = sp.kategori || 'General';
         
-        // Logika Filter
         if(sp.sponsor_type !== 'scs_partner') {
             if (filterCat !== 'all' && spKategori !== filterCat) return; 
             countUnofficial++;
         }
 
-        // Logic Badge Kasta Brand (Perintah Psikologi UX Bos)
+        // LOGIKA BADGE PERBAIKAN: Pisahin 4 kasta dengan presisi!
         let badgeTopRight = '';
         if (sp.sponsor_type === 'scs_partner') {
             badgeTopRight = `<span class="text-[8px] font-black text-emerald-700 uppercase tracking-widest bg-emerald-100 border border-emerald-200 px-2 py-1 rounded shrink-0">🟢 OFFICIAL</span>`;
-        } else {
+        } else if (sp.sponsor_type === 'corporate') {
+            badgeTopRight = `<span class="text-[8px] font-black text-blue-700 uppercase tracking-widest bg-blue-100 border border-blue-200 px-2 py-1 rounded shrink-0 shadow-sm flex items-center gap-1">🏢 CORPORATE</span>`;
+        } else if (sp.sponsor_type === 'high_potential') {
             badgeTopRight = `<span class="text-[8px] font-black text-amber-900 uppercase tracking-widest bg-gradient-to-r from-amber-200 to-yellow-400 border border-amber-300 px-3 py-1 rounded-full shrink-0 shadow-sm flex items-center gap-1">💎 HIGH POTENTIAL</span>`;
+        } else {
+            // Ini untuk status 'unofficial' (katalog dummy biasa)
+            badgeTopRight = `<span class="text-[8px] font-black text-slate-500 uppercase tracking-widest bg-slate-100 border border-slate-200 px-2 py-1 rounded shrink-0">⚪ PROSPECTIVE</span>`;
         }
 
-        // COMPACT CARD LAYOUT UX
         const cardHtml = `
             <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between h-full group">
                 <div>
@@ -185,14 +183,12 @@ function renderCards(filterCat = 'all') {
     }
 }
 
-// LOGIKA CEGATAN KASTA EVENT
 window.handleAjukanSponsor = function(spId, nameEncoded, logoUrl) {
     if(currentEventTier !== 'PRO') {
         alert(`🔒 Fitur "Approach Sponsor" terkunci.\n\nStatus Event Anda saat ini adalah [${currentEventTier}]. Silakan kembali ke Dashboard dan lakukan UPGRADE TO PRO untuk membuka akses eksklusif mencari sponsor!`);
         return;
     }
     
-    // Kalau udah PRO, baru buka modal pengajuannya
     bukaModalPengajuan(spId, nameEncoded, logoUrl);
 }
 

@@ -2,7 +2,7 @@ import { supabaseClient } from './supabase.js';
 
 let reusedLogoUrl = null;
 let allSponsors = [];
-let corporateRowCount = 0; // Penghitung dinamis untuk bulk insert
+let corporateRowCount = 0; 
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (sessionStorage.getItem('aztec_key') !== 'buka_sesame') return window.location.replace('/dashboard.html');
@@ -13,9 +13,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupCorporateFlow();
 });
 
-// ==========================================
-// 1. RENDER & FILTER GALLERY
-// ==========================================
 async function loadGallery() {
     const grid = document.getElementById('sponsorGrid');
     const loading = document.getElementById('loadingState');
@@ -44,12 +41,15 @@ function renderCards(data) {
     let htmlContent = '';
     data.forEach(sponsor => {
         let badge = '';
+        // LOGIKA 4 KASTA ADMIN
         if (sponsor.sponsor_type === 'scs_partner') {
             badge = `<span class="bg-emerald-900/40 text-emerald-400 text-[9px] px-2 py-1 rounded border border-emerald-500/30 uppercase font-black tracking-wider flex items-center gap-1 w-max"><span>🟢</span> OFFICIAL</span>`;
         } else if (sponsor.sponsor_type === 'corporate') {
             badge = `<span class="bg-blue-900/40 text-blue-400 text-[9px] px-2 py-1 rounded border border-blue-500/30 uppercase font-black tracking-wider flex items-center gap-1 w-max"><span>🏢</span> CORPORATE</span>`;
+        } else if (sponsor.sponsor_type === 'high_potential') {
+            badge = `<span class="bg-amber-900/40 text-amber-400 text-[9px] px-2 py-1 rounded border border-amber-500/30 uppercase font-black tracking-wider flex items-center gap-1 w-max"><span>💎</span> HIGH POTENTIAL</span>`;
         } else {
-            badge = `<span class="bg-slate-700/50 text-slate-300 text-[9px] px-2 py-1 rounded border border-slate-600 uppercase font-black tracking-wider flex items-center gap-1 w-max"><span>⚪</span> PROSPECTIVE</span>`;
+            badge = `<span class="bg-slate-700/50 text-slate-300 text-[9px] px-2 py-1 rounded border border-slate-600 uppercase font-black tracking-wider flex items-center gap-1 w-max"><span>⚪</span> REGULAR</span>`;
         }
 
         const sponsorDataString = encodeURIComponent(JSON.stringify(sponsor));
@@ -63,8 +63,9 @@ function renderCards(data) {
                     <h3 class="font-black text-white text-sm truncate leading-tight">${sponsor.sponsor_name}</h3>
                     <p class="text-[10px] text-slate-400 mt-1 mb-3 truncate">${sponsor.kategori || 'General'}</p>
                 </div>
-                <div class="border-t border-slate-700/50 pt-3">
+                <div class="border-t border-slate-700/50 pt-3 flex flex-col gap-2">
                     ${badge}
+                    ${(sponsor.sponsor_type === 'corporate' && sponsor.link_url) ? `<p class="text-[9px] text-blue-400 truncate bg-blue-900/20 p-1 rounded border border-blue-800/50">🔗 ${sponsor.link_url}</p>` : ''}
                 </div>
             </div>
         `;
@@ -90,9 +91,6 @@ function setupFilters() {
     });
 }
 
-// ==========================================
-// 2. MODAL SINGLE (EDIT/ADD)
-// ==========================================
 window.openEditModal = function(encodedData) {
     const sponsor = JSON.parse(decodeURIComponent(encodedData));
     document.getElementById('editSponsorId').value = sponsor.id;
@@ -124,7 +122,7 @@ function setupModalListeners() {
     document.getElementById('btnAddNewSponsor').addEventListener('click', () => {
         document.getElementById('editSponsorId').value = '';
         ['editSponsorName', 'editSponsorUrl', 'editSponsorKategori', 'editSponsorBenefit', 'editSponsorSyarat', 'editUploadLogo'].forEach(id => document.getElementById(id).value = '');
-        document.getElementById('editSponsorType').value = 'unofficial';
+        document.getElementById('editSponsorType').value = 'unofficial'; // Default Regular
         reusedLogoUrl = null;
         document.getElementById('editPreviewLogo').classList.add('hidden');
         document.getElementById('modalTitleText').innerHTML = '<span>➕</span> TAMBAH SPONSOR';
@@ -200,9 +198,6 @@ function setupModalListeners() {
     });
 }
 
-// ==========================================
-// 3. MASTERPIECE FLOW: BULK CORPORATE INJECTION
-// ==========================================
 function setupCorporateFlow() {
     const btnOpen = document.getElementById('btnOpenCorporateModal');
     const btnClose = document.getElementById('btnCloseCorporate');
@@ -214,7 +209,7 @@ function setupCorporateFlow() {
     btnOpen.addEventListener('click', () => {
         listContainer.innerHTML = '';
         corporateRowCount = 0;
-        appendCorporateRow(); // Bikin minimal 1 form aktif saat dibuka
+        appendCorporateRow(); 
         modal.classList.remove('hidden');
     });
 
@@ -226,7 +221,6 @@ function setupCorporateFlow() {
         let payloadArray = [];
         let uploadPromises = [];
 
-        // Validasi Awal: Pastikan ada minimal 1 nama terisi
         let hasData = false;
         rows.forEach(row => {
             if (row.querySelector('.corp-name').value.trim() !== '') hasData = true;
@@ -238,10 +232,9 @@ function setupCorporateFlow() {
         btnSave.disabled = true;
 
         try {
-            // LOOPING ROW & BIKIN PROMISE UPLOAD GAMBAR PARALEL
             rows.forEach((row, index) => {
                 const name = row.querySelector('.corp-name').value.trim();
-                if (!name) return; // Skip baris kosong
+                if (!name) return; 
 
                 const url = row.querySelector('.corp-url').value.trim();
                 const category = row.querySelector('.corp-category').value.trim() || 'Corporate Deal';
@@ -259,33 +252,29 @@ function setupCorporateFlow() {
                         }
                     }
 
-                    // Push sebagai Entitas Independen dengan label 'corporate'
                     payloadArray.push({
                         sponsor_name: name,
                         link_url: url,
-                        sponsor_type: 'corporate', // <--- Magic identifier nya di sini
+                        sponsor_type: 'corporate', 
                         kategori: category,
                         jenis_bantuan: 'Corporate Special Deal',
                         syarat: 'Exclusive Corporate Campaign'
                     });
 
-                    // Update object array payload dengan logo setelah beres nunggu upload
                     payloadArray[payloadArray.length - 1].logo_url = finalLogo;
                 })();
 
                 uploadPromises.push(uploadTask);
             });
 
-            // Tunggu semua gambar selesai diupload
             await Promise.all(uploadPromises);
 
-            // SUNTIK BULK INSERT KE DATABASE
             const { error: dbErr } = await supabaseClient.from('master_sponsors').insert(payloadArray);
             if (dbErr) throw dbErr;
 
             alert(`🚀 BOOM! ${payloadArray.length} Brand berhasil disuntik sebagai entitas independen!`);
             modal.classList.add('hidden');
-            document.querySelector('[data-filter="corporate"]').click(); // Auto-switch ke tab Corporate
+            document.querySelector('[data-filter="corporate"]').click(); 
             loadGallery();
 
         } catch (err) {
@@ -297,7 +286,6 @@ function setupCorporateFlow() {
     });
 }
 
-// BIKIN ELEMEN FORM DINAMIS (Corporate Row)
 function appendCorporateRow() {
     corporateRowCount++;
     const container = document.getElementById('corporateBrandList');
@@ -307,7 +295,6 @@ function appendCorporateRow() {
             <button onclick="this.parentElement.remove()" class="absolute -top-3 -right-3 bg-slate-700 hover:bg-red-600 text-white w-8 h-8 rounded-full font-bold shadow-md opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">&times;</button>
             
             <div class="flex flex-col md:flex-row gap-5 items-start">
-                <!-- Image Uploader -->
                 <div class="shrink-0 w-full md:w-32">
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Logo Brand</label>
                     <div class="w-full aspect-square bg-white rounded-lg border-2 border-dashed border-slate-400 flex flex-col items-center justify-center relative overflow-hidden cursor-pointer hover:border-blue-500" onclick="document.getElementById('corpFile${corporateRowCount}').click()">
@@ -327,7 +314,6 @@ function appendCorporateRow() {
                     ">
                 </div>
                 
-                <!-- Input Data -->
                 <div class="flex-1 w-full space-y-4">
                     <div>
                         <label class="block text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1.5">Nama Brand</label>
