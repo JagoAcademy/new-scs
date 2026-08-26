@@ -68,7 +68,9 @@ async function fetchSponsorData() {
         eventSponsorsDeal = deals ? (deals.sponsor_ids || []) : [];
 
         populateFilters();
-        renderCards('all'); 
+        
+        // Eksekusi Nasihat Mas Bagus: Default render 'featured' (High Potential & Corporate) bukan 'all'
+        renderCards('featured'); 
     } catch(err) { console.error("Gagal memuat:", err); }
 }
 
@@ -83,7 +85,13 @@ function populateFilters() {
         }
     });
     
-    selectKategori.innerHTML = '<option value="all">Semua Kategori</option>';
+    // Injeksi Kategori Pilihan di Atas Sendiri
+    selectKategori.innerHTML = `
+        <option value="featured">🌟 Rekomendasi Utama (High Potential)</option>
+        <option value="all">Semua Brand (Tampilkan Seluruh Katalog)</option>
+    `;
+
+    // Looping Kategori Lainnya di Bawahnya
     Array.from(uniqueKategori).sort().forEach(cat => {
         selectKategori.innerHTML += `<option value="${cat}">${cat}</option>`;
     });
@@ -93,7 +101,7 @@ function populateFilters() {
     });
 }
 
-function renderCards(filterCat = 'all') {
+function renderCards(filterCat = 'featured') {
     const gridOfficial = document.getElementById('gridOfficial');
     const gridUnofficial = document.getElementById('gridUnofficial');
     const emptyState = document.getElementById('emptyState');
@@ -127,12 +135,18 @@ function renderCards(filterCat = 'all') {
 
         const spKategori = sp.kategori || 'General';
         
+        // LOGIKA FILTERING BARU (Mencegah Lagging!)
         if(sp.sponsor_type !== 'scs_partner') {
-            if (filterCat !== 'all' && spKategori !== filterCat) return; 
+            if (filterCat === 'featured') {
+                // Saat mode featured, HANYA tampilkan High Potential & Corporate
+                if (sp.sponsor_type !== 'high_potential' && sp.sponsor_type !== 'corporate') return;
+            } else if (filterCat !== 'all' && spKategori !== filterCat) {
+                // Filter kategori biasa
+                return; 
+            }
             countUnofficial++;
         }
 
-        // LOGIKA BADGE PERBAIKAN: Pisahin 4 kasta dengan presisi!
         let badgeTopRight = '';
         if (sp.sponsor_type === 'scs_partner') {
             badgeTopRight = `<span class="text-[8px] font-black text-emerald-700 uppercase tracking-widest bg-emerald-100 border border-emerald-200 px-2 py-1 rounded shrink-0">🟢 OFFICIAL</span>`;
@@ -141,7 +155,6 @@ function renderCards(filterCat = 'all') {
         } else if (sp.sponsor_type === 'high_potential') {
             badgeTopRight = `<span class="text-[8px] font-black text-amber-900 uppercase tracking-widest bg-gradient-to-r from-amber-200 to-yellow-400 border border-amber-300 px-3 py-1 rounded-full shrink-0 shadow-sm flex items-center gap-1">💎 HIGH POTENTIAL</span>`;
         } else {
-            // Ini untuk status 'unofficial' (katalog dummy biasa)
             badgeTopRight = `<span class="text-[8px] font-black text-slate-500 uppercase tracking-widest bg-slate-100 border border-slate-200 px-2 py-1 rounded shrink-0">⚪ PROSPECTIVE</span>`;
         }
 
