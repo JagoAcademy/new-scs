@@ -10,43 +10,71 @@
 
     <div id="bgOverlay" class="fixed inset-0 z-[-1] bg-cover bg-center opacity-10 hidden"></div>
 
-    <!-- HEADER STICKY -->
-    <div id="headerBannerContainer" class="w-full bg-blue-900 bg-cover bg-center shadow-lg sticky top-0 z-50 h-40 md:h-48 transition-all border-b-4 border-amber-400">
-        <div class="absolute inset-0 bg-gradient-to-t from-slate-900/95 via-slate-900/50 to-transparent flex flex-col justify-end p-4 md:p-6">
-            <h1 id="publicEventName" class="text-xl md:text-3xl font-black text-white tracking-tight drop-shadow-md truncate">Memuat Event...</h1>
-            
-            <!-- 📅 TANGGAL LOMBA -->
-            <p id="publicEventDate" class="text-slate-200 text-xs md:text-sm font-medium mt-2 flex items-center gap-1.5 drop-shadow-md">
-                <span class="text-amber-400 text-base">📅</span> <span id="textTanggal">Memuat tanggal...</span>
-            </p>
-
-            <!-- 📍 LOKASI LOMBA -->
-            <p id="publicEventLocation" class="text-slate-200 text-xs md:text-sm font-medium mt-1 flex items-center gap-1.5 drop-shadow-md">
-                <span class="text-red-400 text-base">📍</span> <span id="textLokasi">Memuat lokasi...</span>
-            </p>
-
-            <div class="flex gap-2 md:gap-3 mt-3">
-                <div class="flex items-center gap-1.5 text-slate-100 text-[10px] md:text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full backdrop-blur-sm border border-white/10 shadow-sm">
-                    <span>🏊‍♂️</span> <span id="statPesertaPublik">0 Terdaftar</span>
-                </div>
-                <div class="flex items-center gap-1.5 text-amber-300 text-[10px] md:text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full backdrop-blur-sm border border-white/10 shadow-sm">
-                    <span>🔥</span> <span id="statHeatPublik">0 Heat Est.</span>
-                </div>
-            </div>
+    <!-- 1. HERO IMAGE (CLEAN - ONLY TITLE) -->
+    <div id="headerBannerContainer" class="w-full bg-blue-900 bg-cover bg-center shadow-lg h-[200px] md:h-[300px] transition-all border-b-4 border-amber-400 relative">
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-900/95 via-slate-900/40 to-transparent flex flex-col justify-end p-5 md:p-10 text-center md:text-left">
+            <h1 id="publicEventName" class="text-2xl md:text-4xl font-black text-white tracking-tight drop-shadow-lg truncate">Memuat Event...</h1>
         </div>
     </div>
 
+    <!-- 2. SECOND HEADER / INFO STRIP (STICKY BAR) -->
+    <div class="w-full bg-white shadow-sm z-40 sticky md:top-0 border-b border-slate-200">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex flex-wrap items-center justify-center md:justify-start gap-3 md:gap-8 text-xs md:text-sm font-medium text-slate-700">
+            <div class="flex items-center gap-1.5"><span class="text-amber-500 text-base">📅</span> <span id="stripTanggal">Memuat...</span></div>
+            <div class="flex items-center gap-1.5"><span class="text-red-500 text-base">📍</span> <span id="stripLokasi">Memuat...</span></div>
+            <div class="flex items-center gap-1.5"><span class="text-emerald-500 text-base">💰</span> <span id="stripBiaya">Rp 0</span></div>
+            <div class="flex items-center gap-1.5"><span class="text-blue-500 text-base">👥</span> <span id="stripPeserta">0 Terdaftar</span></div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
     <div class="max-w-2xl mx-auto px-4 mt-6 space-y-6">
         
-        <!-- TAUTAN EKSTRA / JUKNIS (Akan diinjeksi via JS) -->
+        <!-- TAUTAN EKSTRA / JUKNIS -->
         <div id="containerTautanEkstraPublik" class="flex flex-wrap gap-2 md:gap-3 hidden mb-2">
             <!-- Buttons go here -->
         </div>
 
-        <!-- Kotak Informasi Biaya -->
+        <!-- 3. SECTION AKSES CEPAT PENDAFTARAN (ABOVE THE FOLD) -->
+        <div id="sectionAksesCepat" class="bg-[#f8fafc] border border-slate-200 rounded-[12px] p-5 text-center shadow-sm relative overflow-hidden transition-all">
+            <h3 class="text-sm font-extrabold text-slate-800 mb-3">Sudah punya akun SCS? Login untuk isi data otomatis.</h3>
+            
+            <button id="btnGoogleLoginPublic" class="w-full h-[48px] bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold rounded-lg shadow-sm flex items-center justify-center gap-3 transition-colors mb-2">
+                <svg class="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                Masuk dengan Google
+            </button>
+            <p class="text-[11px] text-slate-500 font-medium">Data klub & atlet akan terisi otomatis. Lebih cepat & akurat.</p>
+            
+            <div class="mt-4 pt-4 border-t border-slate-200">
+                <button id="btnToggleManualLogin" class="text-[10px] text-slate-400 font-bold hover:text-slate-600 underline transition-colors">Atau login manual (Email)</button>
+                <div id="areaLogin" class="hidden mt-3 bg-white p-3 rounded-lg border border-slate-200 space-y-2 shadow-inner text-left">
+                    <input type="email" id="loginEmail" placeholder="Email Terdaftar" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="password" id="loginPassword" placeholder="Password" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button id="btnProsesLogin" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-2 rounded-lg text-xs transition-colors">
+                        Masuk & Sinkronisasi
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- AREA IDENTITAS KLUB AKTIF (Hidden by default) -->
+        <div id="activeClubBadge" class="hidden flex items-center justify-between bg-gradient-to-r from-slate-900 to-blue-900 text-white p-4 rounded-2xl shadow-lg border-0">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-white rounded-full overflow-hidden border-2 border-yellow-400 shrink-0">
+                    <img id="activeClubLogo" src="" alt="Logo Klub" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <p class="text-[9px] text-emerald-400 uppercase tracking-widest font-bold mb-0.5">✅ VERIFIED CLUB</p>
+                    <p id="activeClubName" class="text-base font-extrabold text-white tracking-tight drop-shadow-sm">Nama Klub</p>
+                </div>
+            </div>
+            <button id="btnLogout" class="text-[10px] text-red-300 hover:text-red-100 font-bold underline px-2">Logout</button>
+        </div>
+
+        <!-- Kotak Informasi Biaya Lengkap (Bisa di-expand dari Info Strip jika butuh, tapi tetap kita simpan sini sebagai detail) -->
         <div class="bg-blue-900 border border-blue-800 rounded-2xl p-5 shadow-lg text-sm relative overflow-hidden">
             <div class="absolute -right-4 -top-4 text-6xl opacity-10">💸</div>
-            <h3 class="font-bold text-amber-400 mb-1 relative z-10">Informasi Biaya Pendaftaran</h3>
+            <h3 class="font-bold text-amber-400 mb-1 relative z-10">Detail Biaya Pendaftaran</h3>
             <p id="infoBiayaNormal" class="text-blue-100 relative z-10 leading-relaxed text-xs">Biaya per nomor: Memuat...</p>
             <p id="infoBiayaEstafet" class="text-purple-300 font-bold relative z-10 hidden mt-3 border-t border-blue-800/50 pt-2">Biaya Estafet: Memuat...</p>
             <p id="infoDiskon" class="text-blue-200 text-xs mt-2 font-bold relative z-10 hidden"></p>
@@ -56,30 +84,11 @@
         <div class="bg-white/95 backdrop-blur-md text-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl border border-slate-200 space-y-5">
             <h2 class="text-xl font-extrabold text-blue-900 border-b border-slate-100 pb-3">Formulir Pendaftaran Peserta (Individu)</h2>
             
-            <div id="loginBar" class="flex flex-col sm:flex-row justify-between sm:items-center bg-indigo-50 text-indigo-900 p-3.5 rounded-xl border border-indigo-100 gap-3 transition-all">
-                <div class="flex items-center gap-2">
-                    <span class="text-lg">🛡️</span>
-                    <span class="text-xs font-extrabold tracking-wide">Sudah terdaftar di SCS?</span>
-                </div>
-                <button id="btnToggleLogin" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm">
-                    Login di Sini
-                </button>
-            </div>
-
-            <div id="areaLogin" class="hidden bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3 shadow-inner">
-                <input type="email" id="loginEmail" placeholder="Email Terdaftar" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <input type="password" id="loginPassword" placeholder="Password" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <button id="btnProsesLogin" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 rounded-lg text-sm transition-colors shadow-md">
-                    Masuk & Sinkronisasi Data
-                </button>
-            </div>
-
-            <!-- AREA GUEST ONLY -->
+            <!-- AREA GUEST ONLY (Manual Input) -->
             <div id="areaGuestOnly" class="space-y-4">
                 <div>
                     <div class="flex justify-between items-center mb-1">
                         <label class="block text-xs font-bold text-slate-600">Nama Klub / Sekolah / Individu</label>
-                        <a href="/auth.html" target="_blank" class="text-[10px] font-extrabold text-blue-600 hover:text-blue-800 underline decoration-blue-300 underline-offset-2 transition-colors">Daftar SCS lebih mudah input peserta</a>
                     </div>
                     <input type="text" id="inputKlubManual" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-700" placeholder="Contoh: Rock Swimming / SDN 1 Surabaya">
                 </div>
@@ -89,9 +98,12 @@
                 </div>
             </div>
 
+            <!-- AREA PENCARIAN/INPUT ATLET -->
             <div id="areaPencarianAtlet">
                 <label class="block text-xs font-bold text-slate-600 mb-1">Nama Peserta (Atau Pilih dari Data)</label>
+                <!-- Input Manual (Guest) -->
                 <input type="text" id="inputCariAtlet" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold" placeholder="Ketik Nama Peserta...">
+                <!-- Dropdown Otomatis (Logged In) -->
                 <select id="dropdownAtlet" class="hidden w-full px-4 py-3 bg-emerald-50 border border-emerald-400 rounded-xl text-sm font-bold text-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner">
                     <option value="">-- Pilih Peserta dari Data Kamu --</option>
                 </select>
@@ -145,9 +157,7 @@
             </button>
         </div>
 
-        <!-- ======================================================= -->
         <!-- FORM KHUSUS ESTAFET (CUMA MUNCUL KALAU VVIP LOGIN) -->
-        <!-- ======================================================= -->
         <div id="areaEstafetVVIP" class="hidden bg-white/95 backdrop-blur-md text-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl border-t-8 border-purple-600 space-y-5">
             <div class="border-b border-purple-100 pb-3">
                 <h2 class="text-xl font-extrabold text-purple-900 flex items-center gap-2">
@@ -164,7 +174,6 @@
 
             <div>
                 <label class="block text-xs font-bold text-slate-600 mb-1">Pilih Nomor Estafet</label>
-                <!-- Opsi dropdown ini akan disuntik dari event-public.js berdasarkan setingan panitia -->
                 <select id="inputNomorEstafet" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-purple-900 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-sm">
                     <option value="">-- Pilih Kategori & Jarak Estafet --</option>
                 </select>
@@ -172,7 +181,6 @@
 
             <div>
                 <label class="block text-xs font-bold text-slate-600 mb-1">Pilih Kelompok Umur (KU) Tim</label>
-                <!-- Mengambil data KU yang aktif -->
                 <select id="inputKUEstafet" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-sm">
                     <option value="">-- Tentukan KU Regu --</option>
                 </select>
@@ -182,16 +190,14 @@
                 Pesan Slot Estafet
             </button>
         </div>
-        <!-- ======================================================= -->
 
-        <!-- SECTION PEMBAYARAN KOLEKTIF (CARD LAYOUT - MOBILE FRIENDLY) -->
+        <!-- SECTION PEMBAYARAN KOLEKTIF -->
         <div id="areaPembayaran" class="bg-white/95 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-2xl border border-slate-200 hidden mb-10">
             <h2 class="text-xl font-extrabold text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
                 💳 Keranjang & Riwayat Pendaftaran
             </h2>
             <p class="text-xs text-slate-500 mb-5 leading-relaxed">Centang peserta yang ingin dibayar. Anda bisa membayar sekaligus (kolektif) dengan 1 struk transfer. <strong class="text-red-500">Tombol hapus tersedia untuk membatalkan antrian.</strong></p>
             
-            <!-- UX BARU: Select All Checkbox -->
             <div class="mb-5 flex justify-between items-center bg-blue-50/50 p-3 rounded-xl border border-blue-100 shadow-sm">
                 <label class="flex items-center gap-2 text-sm font-black text-blue-900 cursor-pointer">
                     <input type="checkbox" id="checkAllTagihan" class="w-5 h-5 rounded border-blue-300 text-blue-600 focus:ring-blue-500">
@@ -199,7 +205,6 @@
                 </label>
             </div>
 
-            <!-- UX BARU: CARD LIST TAGIHAN -->
             <div id="listTagihanContainer" class="space-y-4 mb-8">
                 <!-- Diinjeksi via JS (Cards) -->
             </div>

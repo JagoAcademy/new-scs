@@ -35,9 +35,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (eventData.is_closed) {
             const formPeserta = document.querySelector('.bg-white\\/95.backdrop-blur-md');
             const boxBiaya = document.querySelector('.bg-blue-900.border.border-blue-800');
+            const sectionAksesCepat = document.getElementById('sectionAksesCepat');
             
             if (formPeserta) formPeserta.classList.add('hidden');
             if (boxBiaya) boxBiaya.classList.add('hidden');
+            if (sectionAksesCepat) sectionAksesCepat.classList.add('hidden');
 
             let waLink = "#";
             if (config.admin_wa_1 || config.admin_wa_2) {
@@ -55,7 +57,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         Mohon maaf, pendaftaran untuk event <strong>${eventData.event_name}</strong> sudah ditutup oleh panitia. Silakan hubungi admin jika ada keperluan mendesak.
                     </p>
                     <a href="${waLink}" target="_blank" class="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-xl transition-all hover:scale-105 shadow-md">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
                         Hubungi Panitia (WA)
                     </a>
                 </div>
@@ -66,33 +67,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // =========================================================
-        // 📅 RENDER TANGGAL & LOKASI LOMBA
+        // 📅 RENDER SECOND HEADER / INFO STRIP
         // =========================================================
-        let formattedDate = 'Tanggal belum ditentukan';
+        let formattedDate = 'Tanggal blm diset';
         const rawDate = eventData.start_date || eventData.event_date || eventData.tanggal;
         if (rawDate) {
             try {
                 const dateObj = new Date(rawDate);
-                if (!isNaN(dateObj.getTime())) formattedDate = dateObj.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-            } catch (e) { console.error("Gagal memformat tanggal:", e); }
+                if (!isNaN(dateObj.getTime())) formattedDate = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            } catch (e) { console.error("Gagal format tanggal:", e); }
         }
-        const elTextTanggal = document.getElementById('textTanggal');
-        if (elTextTanggal) elTextTanggal.innerText = formattedDate;
+        const elStripTanggal = document.getElementById('stripTanggal');
+        if (elStripTanggal) elStripTanggal.innerText = formattedDate;
 
         const namaKota = eventData.kota || '';
         const namaProvinsi = eventData.provinsi || '';
         const namaKolam = config.nama_kolam || '';
         let teksLokasiLengkap = '';
-        if (namaKolam) teksLokasiLengkap += `${namaKolam} - `;
-        if (namaKota && namaProvinsi) teksLokasiLengkap += `${namaKota}, ${namaProvinsi}`;
-        else if (namaKota || namaProvinsi) teksLokasiLengkap += `${namaKota}${namaProvinsi}`;
-        else teksLokasiLengkap = 'Lokasi belum ditentukan';
+        if (namaKolam) teksLokasiLengkap += `${namaKolam}`; // Di Info strip dibikin singkat aja
+        else if (namaKota) teksLokasiLengkap += `${namaKota}`;
+        else teksLokasiLengkap = 'Lokasi blm diset';
         
-        const elTextLokasi = document.getElementById('textLokasi');
-        if (elTextLokasi) elTextLokasi.innerText = teksLokasiLengkap;
+        const elStripLokasi = document.getElementById('stripLokasi');
+        if (elStripLokasi) elStripLokasi.innerText = teksLokasiLengkap;
 
         // =========================================================
-        // RENDER BACKGROUND & BIAYA (REVISI TARIF BERJENJANG)
+        // RENDER BACKGROUND & BIAYA 
         // =========================================================
         if (config.header_url) document.getElementById('headerBannerContainer').style.backgroundImage = `url('${config.header_url}')`;
         if (config.bg_url) {
@@ -103,6 +103,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const infoBiayaNormal = document.getElementById('infoBiayaNormal');
         const infoDiskon = document.getElementById('infoDiskon');
+        let hargaStripTampil = "Rp 0";
 
         if (config.tarif_individu && config.tarif_individu.length > 0) {
             let textTarif = "<span class='font-bold opacity-80'>Pendaftaran Individu:</span><br>";
@@ -119,9 +120,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             infoBiayaNormal.innerHTML = textTarif;
             if(infoDiskon) infoDiskon.classList.add('hidden'); 
+            hargaStripTampil = `Mulai Rp ${Number(sortedTiers[0].price).toLocaleString('id-ID')}`;
         } else {
             const normalPrice = Number(config.biaya_normal || 0).toLocaleString('id-ID');
             infoBiayaNormal.innerText = `Biaya per nomor: Rp ${normalPrice}`;
+            hargaStripTampil = `Rp ${normalPrice}`;
             
             if (config.min_diskon && config.biaya_diskon) {
                 const diskonPrice = Number(config.biaya_diskon).toLocaleString('id-ID');
@@ -129,6 +132,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 infoDiskon.classList.remove('hidden');
             }
         }
+
+        // SET BIAYA DI INFO STRIP
+        const elStripBiaya = document.getElementById('stripBiaya');
+        if (elStripBiaya) elStripBiaya.innerText = hargaStripTampil;
         
         // BIAYA ESTAFET
         if (config.biaya_estafet !== undefined && config.biaya_estafet !== '') {
@@ -141,7 +148,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // =========================================================
-        // INJEKSI TAUTAN EKSTRA (JUKNIS / WA GROUP) - UX BARU!
+        // INJEKSI TAUTAN EKSTRA (JUKNIS / WA GROUP)
         // =========================================================
         if (config.tautan_ekstra && config.tautan_ekstra.length > 0) {
             const containerTautan = document.getElementById('containerTautanEkstraPublik');
@@ -149,7 +156,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 containerTautan.classList.remove('hidden');
                 config.tautan_ekstra.forEach(link => {
                     if(link.title && link.url) {
-                        // Membuat SOLID PILL BUTTON yang elegan
                         containerTautan.innerHTML += `
                             <a href="${link.url}" target="_blank" class="flex-1 sm:flex-none inline-flex justify-center items-center gap-2 bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 hover:border-indigo-600 font-extrabold py-2.5 px-5 rounded-xl text-xs md:text-sm transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap">
                                 🔗 ${link.title}
@@ -221,16 +227,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // =========================================================
         try {
             const { count: countPeserta } = await supabaseClient.from('event_registrations').select('*', { count: 'exact', head: true }).eq('event_id', currentEvent.id);
-            document.getElementById('statPesertaPublik').innerText = `${countPeserta || 0} Terdaftar`;
-
-            const { data: heatsData } = await supabaseClient.from('event_heats').select('event_number').eq('event_id', currentEvent.id);
-            let heatCount = heatsData ? heatsData.length : 0;
-            if (heatCount === 0 && countPeserta > 0) {
-                heatCount = Math.ceil((countPeserta * 2) / 8); 
-                document.getElementById('statHeatPublik').innerText = `${heatCount} Heat Est.`;
-            } else {
-                document.getElementById('statHeatPublik').innerText = `${heatCount} Heat`;
-            }
+            document.getElementById('stripPeserta').innerText = `${countPeserta || 0} Terdaftar`;
         } catch (err) { console.error("Stats Error"); }
 
         // =========================================================
@@ -296,6 +293,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
+        // =========================================================
+        // OTOMATIS CEK SESSION (GOOGLE AUTH SUCCESS)
+        // =========================================================
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) {
+            await applySuccessfulLoginUI(session.user.id);
+        }
+
         loadTagihan();
 
     } catch (err) {
@@ -303,9 +308,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ==========================================
-    // LOGIKA LOGIN VVIP (KLUB)
+    // LOGIKA LOGIN GOOGLE (UX BARU)
     // ==========================================
-    document.getElementById('btnToggleLogin').addEventListener('click', () => {
+    document.getElementById('btnGoogleLoginPublic').addEventListener('click', async () => {
+        try {
+            const { error } = await supabaseClient.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.href // Redirect kembali ke URL event public
+                }
+            });
+            if (error) throw error;
+        } catch (err) {
+            alert("Gagal Inisiasi Google Login: " + err.message);
+        }
+    });
+
+    // ==========================================
+    // TOGGLE & LOGIKA LOGIN MANUAL EMAIL (FALLBACK)
+    // ==========================================
+    document.getElementById('btnToggleManualLogin').addEventListener('click', () => {
         document.getElementById('areaLogin').classList.toggle('hidden');
     });
 
@@ -323,9 +345,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({ email, password });
             if (authError) throw authError;
 
-            const userId = authData.user.id;
+            await applySuccessfulLoginUI(authData.user.id);
+            alert("Login berhasil!");
+        } catch (err) {
+            alert("Gagal login: " + err.message);
+        } finally {
+            btnLogin.innerText = "Masuk & Sinkronisasi"; 
+            btnLogin.disabled = false;
+        }
+    });
+
+    // LOGOUT
+    document.getElementById('btnLogout').addEventListener('click', async () => {
+        await supabaseClient.auth.signOut();
+        window.location.reload();
+    });
+
+    // ==========================================
+    // FUNGSI GLOBAL APLIKASI UI SETELAH LOGIN
+    // ==========================================
+    async function applySuccessfulLoginUI(userId) {
+        try {
             const { data: clubData, error: clubErr } = await supabaseClient.from('clubs').select('*').eq('owner_id', userId).single();
-            if (clubErr) throw new Error("Data profil klub tidak ditemukan untuk akun ini.");
+            if (clubErr || !clubData) throw new Error("Data profil klub tidak ditemukan untuk akun ini.");
             
             isKlubLoggedIn = true;
             loggedInClubData = clubData;
@@ -333,7 +375,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             const { data: athletes, error: athErr } = await supabaseClient.from('athletes').select('*').eq('club_id', clubData.id).order('full_name', { ascending: true });
             if (athErr) throw athErr;
 
-            document.getElementById('areaLogin').classList.add('hidden'); 
+            // HIDE Quick Access Login
+            document.getElementById('sectionAksesCepat').classList.add('hidden');
+            
+            // SHOW Badge Klub Aktif
+            const badge = document.getElementById('activeClubBadge');
+            badge.classList.remove('hidden');
+            badge.classList.add('flex');
+            
+            const namaKlub = clubData.club_name || clubData.nama_klub || "Klub Terdaftar SCS";
+            const avatarUrl = clubData.logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(namaKlub)}&background=1e3a8a&color=fff`;
+            
+            document.getElementById('activeClubName').innerText = namaKlub;
+            document.getElementById('activeClubLogo').src = avatarUrl;
+
+            // Atur Visibilitas Form Input
             document.getElementById('areaGuestOnly').classList.add('hidden'); 
             document.getElementById('areaAkta').classList.add('hidden');
             
@@ -341,21 +397,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const areaEstafet = document.getElementById('areaEstafetVVIP');
             if(areaEstafet) areaEstafet.classList.remove('hidden');
             
-            const namaKlub = clubData.club_name || clubData.nama_klub || "Klub Terdaftar SCS";
-            const avatarUrl = clubData.logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(namaKlub)}&background=1e3a8a&color=fff`;
-
-            const loginBar = document.getElementById('loginBar');
-            loginBar.className = "flex items-center gap-4 bg-gradient-to-r from-slate-900 to-blue-900 text-white p-4 rounded-xl shadow-lg border-0";
-            loginBar.innerHTML = `
-                <div class="w-12 h-12 bg-white rounded-full overflow-hidden border-2 border-yellow-400 shrink-0">
-                    <img src="${avatarUrl}" alt="Logo Klub" class="w-full h-full object-cover">
-                </div>
-                <div>
-                    <p class="text-[9px] text-emerald-400 uppercase tracking-widest font-bold mb-0.5">✅ VERIFIED CLUB</p>
-                    <p class="text-base font-extrabold text-white tracking-tight drop-shadow-sm">${namaKlub}</p>
-                </div>
-            `;
-            
+            // Switch Input Manual Name ke Dropdown Atlet
             document.getElementById('inputCariAtlet').classList.add('hidden');
             const dropdown = document.getElementById('dropdownAtlet');
             dropdown.classList.remove('hidden');
@@ -369,15 +411,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             loadTagihan();
-
         } catch (err) {
-            alert("Gagal login: " + err.message);
-        } finally {
-            btnLogin.innerText = "Masuk & Sinkronisasi Data"; 
-            btnLogin.disabled = false;
+            console.error("Gagal build UI pasca-login:", err);
+            // Kalau misal error gagal ambil profil klub, kita logout aja biar ga stuck
+            await supabaseClient.auth.signOut();
         }
-    });
+    }
 
+    // ==========================================
+    // LOGIKA AUTO-FILL SAAT PILIH ATLET
+    // ==========================================
     document.getElementById('dropdownAtlet').addEventListener('change', (e) => {
         document.querySelectorAll('input[name="nomor_lomba"]:checked').forEach(cb => cb.checked = false);
         const opt = e.target.options[e.target.selectedIndex];
@@ -546,7 +589,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert("✅ Individu berhasil dimasukkan ke Daftar Tagihan!");
             
             const { count } = await supabaseClient.from('event_registrations').select('*', { count: 'exact', head: true }).eq('event_id', currentEvent.id);
-            document.getElementById('statPesertaPublik').innerText = `${count || 0} Terdaftar`;
+            document.getElementById('stripPeserta').innerText = `${count || 0} Terdaftar`;
 
             loadTagihan();
 
@@ -774,7 +817,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     loadTagihan(); 
                     
                     const { count } = await supabaseClient.from('event_registrations').select('*', { count: 'exact', head: true }).eq('event_id', currentEvent.id);
-                    document.getElementById('statPesertaPublik').innerText = `${count || 0} Terdaftar`;
+                    document.getElementById('stripPeserta').innerText = `${count || 0} Terdaftar`;
 
                 } catch (err) {
                     alert("Gagal menghapus data: " + err.message);

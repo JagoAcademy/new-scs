@@ -168,7 +168,8 @@ function renderResults(eventNumber) {
     
     let htmlContent = '';
 
-    heatsToShow.forEach(heat => {
+    // MENGUBAH PARAMETER FOREACH DENGAN INDEX
+    heatsToShow.forEach((heat, index) => {
         let lanesHtml = '';
 
         lanesHtml += `
@@ -249,20 +250,17 @@ function renderResults(eventNumber) {
             });
 
             // 2. SAFETY FALLBACK (Anti Kolom Kosong)
-            // Kalau misal gak ada satupun sponsor yang cocok (krn over-targeted), 
-            // kita panggil cadangan: Sponsor yang targetnya ALL & ALL.
             if (matchedSponsors.length === 0) {
                 matchedSponsors = activeSponsors.filter(sp => (!sp.target_gender || sp.target_gender === 'ALL') && (!sp.target_umur || sp.target_umur === 'ALL'));
             }
             
-            // Kalau masih kosong melompong juga (Admin belum sedia sponsor ALL), 
-            // tampilkan siapa aja yang aktif biar webnya gak bolong!
             if (matchedSponsors.length === 0) {
                 matchedSponsors = activeSponsors;
             }
 
-            // 3. Render banner bergiliran (Round-Robin) DARI ARRAY YANG UDAH DI-FILTER
-            const spIndex = (heat.event_number - 1) % matchedSponsors.length;
+            // 3. FIX: Render banner bergiliran (Round-Robin) DARI ARRAY YANG UDAH DI-FILTER
+            // Menggunakan running 'index' heat yang di-render, BUKAN 'heat.event_number'
+            const spIndex = index % matchedSponsors.length;
             const sp = matchedSponsors[spIndex];
             const spLogo = sp.logo_url || '/images/logo.png';
             

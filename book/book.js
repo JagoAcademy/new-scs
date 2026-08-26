@@ -122,11 +122,10 @@ async function renderCoverSponsors() {
             return;
         }
 
-        // AMBIL MAKSIMAL 3 SPONSOR UTAMA (Sesuai Arahan Bos)
-        const platinumSponsors = sponsors.slice(0, 3);
+        // FIX: Tarik SEMUA sponsor yang di-inject dari database (hapus limit slice)
         let spHtml = '';
 
-        platinumSponsors.forEach(sp => {
+        sponsors.forEach(sp => {
             spHtml += `
                 <img src="${sp.logo_url}" 
                      alt="${sp.sponsor_name}" 
