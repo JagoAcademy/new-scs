@@ -69,7 +69,6 @@ async function fetchSponsorData() {
 
         populateFilters();
         
-        // Eksekusi Nasihat Mas Bagus: Default render 'featured' (High Potential & Corporate) bukan 'all'
         renderCards('featured'); 
     } catch(err) { console.error("Gagal memuat:", err); }
 }
@@ -85,13 +84,11 @@ function populateFilters() {
         }
     });
     
-    // Injeksi Kategori Pilihan di Atas Sendiri
     selectKategori.innerHTML = `
         <option value="featured">🌟 Rekomendasi Utama (High Potential)</option>
         <option value="all">Semua Brand (Tampilkan Seluruh Katalog)</option>
     `;
 
-    // Looping Kategori Lainnya di Bawahnya
     Array.from(uniqueKategori).sort().forEach(cat => {
         selectKategori.innerHTML += `<option value="${cat}">${cat}</option>`;
     });
@@ -135,25 +132,26 @@ function renderCards(filterCat = 'featured') {
 
         const spKategori = sp.kategori || 'General';
         
-        // LOGIKA FILTERING BARU (Mencegah Lagging!)
         if(sp.sponsor_type !== 'scs_partner') {
             if (filterCat === 'featured') {
-                // Saat mode featured, HANYA tampilkan High Potential & Corporate
                 if (sp.sponsor_type !== 'high_potential' && sp.sponsor_type !== 'corporate') return;
             } else if (filterCat !== 'all' && spKategori !== filterCat) {
-                // Filter kategori biasa
                 return; 
             }
             countUnofficial++;
         }
 
+        // ==========================================
+        // LOGIKA PENYATUAN VISUAL UNTUK EO (ILLUSION OF SIMPLICITY)
+        // ==========================================
         let badgeTopRight = '';
         if (sp.sponsor_type === 'scs_partner') {
             badgeTopRight = `<span class="text-[8px] font-black text-emerald-700 uppercase tracking-widest bg-emerald-100 border border-emerald-200 px-2 py-1 rounded shrink-0">🟢 OFFICIAL</span>`;
-        } else if (sp.sponsor_type === 'corporate') {
-            badgeTopRight = `<span class="text-[8px] font-black text-blue-700 uppercase tracking-widest bg-blue-100 border border-blue-200 px-2 py-1 rounded shrink-0 shadow-sm flex items-center gap-1">🏢 CORPORATE</span>`;
-        } else if (sp.sponsor_type === 'high_potential') {
+        
+        // Corporate & High Potential disatukan visualnya menjadi jubah kuning berlian!
+        } else if (sp.sponsor_type === 'corporate' || sp.sponsor_type === 'high_potential') {
             badgeTopRight = `<span class="text-[8px] font-black text-amber-900 uppercase tracking-widest bg-gradient-to-r from-amber-200 to-yellow-400 border border-amber-300 px-3 py-1 rounded-full shrink-0 shadow-sm flex items-center gap-1">💎 HIGH POTENTIAL</span>`;
+        
         } else {
             badgeTopRight = `<span class="text-[8px] font-black text-slate-500 uppercase tracking-widest bg-slate-100 border border-slate-200 px-2 py-1 rounded shrink-0">⚪ PROSPECTIVE</span>`;
         }
