@@ -101,6 +101,10 @@ window.openEditModal = function(encodedData) {
     document.getElementById('editSponsorBenefit').value = sponsor.jenis_bantuan || '';
     document.getElementById('editSponsorSyarat').value = sponsor.syarat || '';
     
+    // TARIK DATA DYNAMIC TARGETING
+    document.getElementById('editTargetGender').value = sponsor.target_gender || 'ALL';
+    document.getElementById('editTargetUmur').value = sponsor.target_umur || 'ALL';
+    
     reusedLogoUrl = sponsor.logo_url || null;
     document.getElementById('editUploadLogo').value = '';
     
@@ -123,6 +127,11 @@ function setupModalListeners() {
         document.getElementById('editSponsorId').value = '';
         ['editSponsorName', 'editSponsorUrl', 'editSponsorKategori', 'editSponsorBenefit', 'editSponsorSyarat', 'editUploadLogo'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('editSponsorType').value = 'unofficial'; // Default Regular
+        
+        // RESET TARGETING
+        document.getElementById('editTargetGender').value = 'ALL';
+        document.getElementById('editTargetUmur').value = 'ALL';
+
         reusedLogoUrl = null;
         document.getElementById('editPreviewLogo').classList.add('hidden');
         document.getElementById('modalTitleText').innerHTML = '<span>➕</span> TAMBAH SPONSOR';
@@ -166,6 +175,7 @@ function setupModalListeners() {
                 finalLogoUrl = urlData.publicUrl;
             }
 
+            // PAYLOAD BARU PLUS TARGETING
             const payloadData = { 
                 sponsor_name: name, 
                 link_url: document.getElementById('editSponsorUrl').value.trim(), 
@@ -173,6 +183,8 @@ function setupModalListeners() {
                 kategori: document.getElementById('editSponsorKategori').value.trim(),
                 jenis_bantuan: document.getElementById('editSponsorBenefit').value.trim(),
                 syarat: document.getElementById('editSponsorSyarat').value.trim(),
+                target_gender: document.getElementById('editTargetGender').value,
+                target_umur: document.getElementById('editTargetUmur').value,
                 logo_url: finalLogoUrl
             };
 
@@ -258,7 +270,9 @@ function setupCorporateFlow() {
                         sponsor_type: 'corporate', 
                         kategori: category,
                         jenis_bantuan: 'Corporate Special Deal',
-                        syarat: 'Exclusive Corporate Campaign'
+                        syarat: 'Exclusive Corporate Campaign',
+                        target_gender: 'ALL', // Set default saat injeksi masal
+                        target_umur: 'ALL'    // Set default saat injeksi masal
                     });
 
                     payloadArray[payloadArray.length - 1].logo_url = finalLogo;

@@ -64,8 +64,8 @@
 
     <!-- MODAL 1: SINGLE EDIT/ADD -->
     <div id="modalEditSponsor" class="fixed inset-0 bg-[#0b1120]/90 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
-        <div class="bg-[#1e293b] rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden my-auto border border-slate-700">
-            <div class="p-5 border-b border-slate-700 bg-[#1e293b] flex justify-between items-center">
+        <div class="bg-[#1e293b] rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden my-auto border border-slate-700 mt-10 mb-10">
+            <div class="p-5 border-b border-slate-700 bg-[#1e293b] flex justify-between items-center sticky top-0 z-10">
                 <h3 id="modalTitleText" class="font-black text-amber-500 text-sm tracking-widest uppercase flex items-center gap-2">
                     <span>✏️</span> DETAIL SPONSOR
                 </h3>
@@ -103,6 +103,33 @@
                     </div>
                 </div>
 
+                <!-- ✨ FITUR BARU: DYNAMIC SMART-TARGETING -->
+                <div class="bg-blue-900/20 p-4 rounded-xl border border-blue-500/30">
+                    <label class="block text-[10px] font-black text-blue-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <span>🎯</span> Dynamic Smart-Targeting (Ad-Tech)
+                    </label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Target Gender</label>
+                            <select id="editTargetGender" class="w-full bg-[#0f172a] border border-slate-600 rounded-lg p-2.5 text-sm text-white focus:border-blue-500 outline-none">
+                                <option value="ALL">Semua Gender</option>
+                                <option value="Putra">Khusus Putra</option>
+                                <option value="Putri">Khusus Putri</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Target Umur</label>
+                            <select id="editTargetUmur" class="w-full bg-[#0f172a] border border-slate-600 rounded-lg p-2.5 text-sm text-white focus:border-blue-500 outline-none">
+                                <option value="ALL">Semua Umur</option>
+                                <option value="KIDS">Anak-anak (Pemula / Kids)</option>
+                                <option value="ADULT">Dewasa (Open / Senior)</option>
+                            </select>
+                            <p class="text-[8px] text-slate-500 mt-1">*(KIDS akan otomatis tayang jika nama KU mengandung "Pemula" atau "Tahun". ADULT jika "Open")</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- AKHIR FITUR BARU -->
+
                 <div>
                     <label class="block text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1.5">🎁 Benefit Yang Ditawarkan</label>
                     <input type="text" id="editSponsorBenefit" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-amber-500 outline-none" placeholder="Contoh: Product Support, Booth, Branding">
@@ -123,7 +150,7 @@
                 </div>
             </div>
 
-            <div class="p-5 bg-[#1e293b] border-t border-slate-700 flex justify-between gap-4">
+            <div class="p-5 bg-[#1e293b] border-t border-slate-700 flex justify-between gap-4 sticky bottom-0 z-10">
                 <button id="btnDeleteSponsor" class="bg-red-900/50 hover:bg-red-600 text-red-200 px-6 py-3 rounded-xl font-bold text-sm transition hidden">Hapus</button>
                 <button id="btnSaveSponsor" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-6 py-3 rounded-xl font-bold text-sm transition shadow-lg flex-1">💾 SIMPAN SPONSOR</button>
             </div>
