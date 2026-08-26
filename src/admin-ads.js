@@ -5,6 +5,10 @@ let filteredEvents = [];
 let currentSelectedEventId = null;
 let masterSponsors = [];
 
+// Variabel Kontrol Filter Bank Sponsor
+let bankSearchQuery = '';
+let bankFilterType = 'default';
+
 let reusedLogoUrl = null;
 let reusedCoverUrl = null;
 
@@ -47,7 +51,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         filteredEvents = [...eventsData];
         renderEventTable();
-        loadMasterBank();
+        
+        // Listener untuk Search & Filter Bank
+        document.getElementById('searchSponsorBank').addEventListener('input', (e) => {
+            bankSearchQuery = e.target.value.toLowerCase();
+            renderMasterBank();
+        });
+
+        document.getElementById('filterSponsorBank').addEventListener('change', (e) => {
+            bankFilterType = e.target.value;
+            renderMasterBank();
+        });
+
+        await loadMasterBank();
 
     } catch (err) {
         alert("Sistem Error: " + err.message);
@@ -74,7 +90,6 @@ function renderEventTable() {
     }
 
     filteredEvents.forEach((ev, index) => {
-        // Tampilan Badge Hijau kalau ada sponsor
         const statusBadge = ev.sponsor_count > 0 
             ? `<span class="bg-emerald-900/40 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest">${ev.sponsor_count} SPONSOR</span>`
             : `<span class="bg-slate-800 text-slate-500 border border-slate-700 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest">KOSONG</span>`;
@@ -112,14 +127,13 @@ function renderEventTable() {
 
 window.pilihEventLomba = function(eventId) {
     currentSelectedEventId = eventId;
-    renderEventTable(); // Update baris yang nyala
+    renderEventTable(); 
 
     const event = eventsData.find(ev => ev.id == eventId);
     if (!event) return;
 
     document.getElementById('labelSelectedEvent').innerText = event.event_name;
 
-    // Bersihkan Form
     reusedLogoUrl = null;
     reusedCoverUrl = null;
     document.getElementById('inputSponsorName').value = '';
@@ -130,7 +144,6 @@ window.pilihEventLomba = function(eventId) {
     document.getElementById('previewCover').classList.add('hidden');
     document.getElementById('statusMsg').classList.add('hidden');
 
-    // Tarik dan Render Sponsor Aktif
     renderActiveSponsors();
 
     const workspace = document.getElementById('adsWorkspace');
@@ -176,7 +189,6 @@ window.removeSponsorFromEvent = async function(sponsorId) {
             const newIds = linkData.sponsor_ids.filter(id => id !== sponsorId);
             await supabaseClient.from('event_sponsors').update({ sponsor_ids: newIds }).eq('id', linkData.id);
             
-            // Update tabel list
             const eventIndex = eventsData.findIndex(ev => ev.id == currentSelectedEventId);
             if (eventIndex !== -1) eventsData[eventIndex].sponsor_count = newIds.length;
             
@@ -187,9 +199,6 @@ window.removeSponsorFromEvent = async function(sponsorId) {
 }
 
 async function loadMasterBank() {
-    const container = document.getElementById('sponsorBankContainer');
-    const counter = document.getElementById('bankCounter');
-    
     try {
         const { data, error } = await supabaseClient
             .from('master_sponsors')
@@ -199,32 +208,68 @@ async function loadMasterBank() {
         if (error) throw error;
         masterSponsors = data || [];
         
-        counter.innerText = `${masterSponsors.length} Brand`;
+        document.getElementById('bankCounter').innerText = `${masterSponsors.length} Total Brand`;
         
-        if (masterSponsors.length === 0) {
-            container.innerHTML = '<p class="text-sm text-slate-500 italic col-span-full">Belum ada data sponsor tersimpan.</p>';
-            return;
+        // Panggil render terpisah biar bisa dipake buat filter
+        renderMasterBank();
+    } catch (err) { console.error("Gagal load Master Bank:", err); }
+}
+
+function renderMasterBank() {
+    const container = document.getElementById('sponsorBankContainer');
+    
+    // LOGIKA FILTER DAN SEARCH
+    let filtered = masterSponsors.filter(sp => {
+        let matchType = false;
+        
+        // 1. Cek Kasta
+        if (bankFilterType === 'default') {
+            matchType = (sp.sponsor_type === 'scs_partner' || sp.sponsor_type === 'corporate');
+        } else if (bankFilterType === 'all') {
+            matchType = true;
+        } else {
+            matchType = (sp.sponsor_type === bankFilterType);
         }
 
-        container.innerHTML = '';
-        masterSponsors.forEach(sponsor => {
-            const sponsorDataString = encodeURIComponent(JSON.stringify(sponsor));
-            
-            container.innerHTML += `
-                <div class="relative bg-slate-800 rounded-xl p-2 hover:ring-2 hover:ring-amber-500 transition-all shadow-md group border border-slate-700">
-                    <button onclick="hapusMasterSponsor(${sponsor.id}, '${sponsor.sponsor_name}', event)" class="absolute top-1 right-1 bg-red-600/90 hover:bg-red-500 text-white p-1 rounded z-20 opacity-0 group-hover:opacity-100 transition-opacity shadow" title="Hapus Sponsor dari Bank">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    </button>
-                    <div onclick="useMasterSponsor('${sponsorDataString}')" class="cursor-pointer">
-                        <div class="h-14 w-full flex items-center justify-center mb-2 overflow-hidden bg-slate-900 rounded border border-slate-800">
-                            <img src="${sponsor.logo_url || '/images/logo.png'}" class="h-full w-full object-contain opacity-50 group-hover:opacity-100 transition-all">
-                        </div>
-                        <p class="text-[10px] font-black text-slate-300 truncate text-center">${sponsor.sponsor_name}</p>
+        // 2. Cek Search Query
+        let matchSearch = true;
+        if (bankSearchQuery) {
+            matchSearch = sp.sponsor_name && sp.sponsor_name.toLowerCase().includes(bankSearchQuery);
+        }
+
+        return matchType && matchSearch;
+    });
+
+    if (filtered.length === 0) {
+        container.innerHTML = '<p class="text-sm text-slate-500 italic col-span-full py-4 text-center">Tidak ada brand yang sesuai dengan filter/pencarian Anda.</p>';
+        return;
+    }
+
+    container.innerHTML = '';
+    filtered.forEach(sponsor => {
+        const sponsorDataString = encodeURIComponent(JSON.stringify(sponsor));
+        
+        // Kasih titik warna kecil di ujung kartu biar admin tau kasta-nya walau lagi di filter All
+        let dotColor = 'bg-slate-500';
+        if (sponsor.sponsor_type === 'scs_partner') dotColor = 'bg-emerald-500';
+        else if (sponsor.sponsor_type === 'corporate') dotColor = 'bg-blue-500';
+        else if (sponsor.sponsor_type === 'high_potential') dotColor = 'bg-amber-500';
+
+        container.innerHTML += `
+            <div class="relative bg-slate-800 rounded-xl p-2 hover:ring-2 hover:ring-amber-500 transition-all shadow-md group border border-slate-700">
+                <div class="absolute top-0 left-0 ${dotColor} w-2 h-2 rounded-full m-2 shadow-sm z-10" title="Kasta: ${sponsor.sponsor_type}"></div>
+                <button onclick="hapusMasterSponsor(${sponsor.id}, '${sponsor.sponsor_name}', event)" class="absolute top-1 right-1 bg-red-600/90 hover:bg-red-500 text-white p-1 rounded z-20 opacity-0 group-hover:opacity-100 transition-opacity shadow" title="Hapus Sponsor dari Bank">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+                <div onclick="useMasterSponsor('${sponsorDataString}')" class="cursor-pointer">
+                    <div class="h-14 w-full flex items-center justify-center mb-2 overflow-hidden bg-slate-900 rounded border border-slate-800 pt-2">
+                        <img src="${sponsor.logo_url || '/images/logo.png'}" class="h-full w-full object-contain opacity-50 group-hover:opacity-100 transition-all">
                     </div>
+                    <p class="text-[10px] font-black text-slate-300 truncate text-center">${sponsor.sponsor_name}</p>
                 </div>
-            `;
-        });
-    } catch (err) { console.error("Gagal load Master Bank:", err); }
+            </div>
+        `;
+    });
 }
 
 window.hapusMasterSponsor = async function(id, nama, event) {
@@ -233,7 +278,7 @@ window.hapusMasterSponsor = async function(id, nama, event) {
     try {
         const { error } = await supabaseClient.from('master_sponsors').delete().eq('id', id);
         if (error) throw error;
-        loadMasterBank(); 
+        await loadMasterBank(); 
     } catch (err) { alert("Gagal menghapus: " + err.message); }
 };
 

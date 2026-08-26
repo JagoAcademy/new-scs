@@ -3,6 +3,7 @@ import { supabaseClient } from './supabase.js';
 let currentEventId = null;
 let allHeats = []; 
 let currentEventHeats = []; 
+let appMode = 'timer'; // Default mode
 
 document.addEventListener('DOMContentLoaded', async () => {
     const { data: { session }, error: authError } = await supabaseClient.auth.getSession();
@@ -15,10 +16,61 @@ document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     currentEventId = urlParams.get('id');
     if (!currentEventId) return alert("ID Event tidak ditemukan!");
-    await loadDataHeats();
+    
+    setupModeToggle();
+    await loadDataHeats(true);
 });
 
-async function loadDataHeats() {
+// ==========================================
+// LOGIKA SWITCHER MODE: TIMER vs REFEREE
+// ==========================================
+function setupModeToggle() {
+    const btnTimer = document.getElementById('btnModeTimer');
+    const btnReferee = document.getElementById('btnModeReferee');
+    const indicator = document.getElementById('panelModeIndicator');
+    
+    if(!btnTimer || !btnReferee) return;
+
+    btnTimer.addEventListener('click', () => {
+        appMode = 'timer';
+        // Styling Button
+        btnTimer.className = "flex-1 sm:flex-none px-4 py-1.5 text-[10px] md:text-xs font-black tracking-widest uppercase rounded bg-red-500 text-white shadow transition-all flex justify-center items-center gap-1";
+        btnTimer.innerHTML = `<span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> TIMER`;
+        
+        btnReferee.className = "flex-1 sm:flex-none px-4 py-1.5 text-[10px] md:text-xs font-black tracking-widest uppercase rounded text-slate-400 hover:text-white transition-all flex justify-center items-center gap-1";
+        
+        // Styling Panel
+        indicator.className = "absolute top-0 right-0 bg-red-100 text-red-600 text-[9px] font-black px-3 py-1 rounded-bl-lg uppercase tracking-widest border-b border-l border-red-200";
+        indicator.innerText = "Mode Input (Draft)";
+
+        const val = document.getElementById('selectEvent').value;
+        if(val) renderAllHeats(val);
+    });
+
+    btnReferee.addEventListener('click', async () => {
+        appMode = 'referee';
+        // Styling Button
+        btnReferee.className = "flex-1 sm:flex-none px-4 py-1.5 text-[10px] md:text-xs font-black tracking-widest uppercase rounded bg-emerald-500 text-white shadow transition-all flex justify-center items-center gap-1";
+        
+        btnTimer.className = "flex-1 sm:flex-none px-4 py-1.5 text-[10px] md:text-xs font-black tracking-widest uppercase rounded text-slate-400 hover:text-white transition-all flex justify-center items-center gap-1";
+        btnTimer.innerHTML = `⏱️ TIMER`;
+
+        // Styling Panel
+        indicator.className = "absolute top-0 right-0 bg-emerald-100 text-emerald-700 text-[9px] font-black px-3 py-1 rounded-bl-lg uppercase tracking-widest border-b border-l border-emerald-200";
+        indicator.innerText = "Mode Wasit (Publish)";
+        
+        // AUTO SYNC DARI TIMER!
+        btnReferee.innerText = "⏳ SYNCING...";
+        await loadDataHeats(false); 
+        btnReferee.innerHTML = `🧑‍⚖️ REFEREE`;
+        
+        const val = document.getElementById('selectEvent').value;
+        if(val) renderAllHeats(val);
+    });
+}
+
+// Tambah parameter isFirstLoad biar dropdown gak keriset pas Referee mencet Sync
+async function loadDataHeats(isFirstLoad = true) {
     try {
         const { data, error } = await supabaseClient
             .from('event_heats')
@@ -29,7 +81,8 @@ async function loadDataHeats() {
 
         if (error) throw error;
         allHeats = data || [];
-        populateEventDropdown();
+        
+        if (isFirstLoad) populateEventDropdown();
     } catch (err) {
         console.error(err);
         alert("Gagal memuat data Start List.");
@@ -90,8 +143,11 @@ function renderAllHeats(eventNumber) {
                 }
             }
 
+            // Input field styling based on mode
+            const inputBg = appMode === 'timer' ? 'bg-slate-100 focus:ring-red-500' : 'bg-emerald-50 focus:ring-emerald-500 border-emerald-200';
+
             lanesHtml += `
-            <div class="flex flex-col md:flex-row md:items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm hover:border-red-300 transition-colors">
+            <div class="flex flex-col md:flex-row md:items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm transition-colors">
                 <div class="flex items-center gap-3 flex-1">
                     <div class="w-8 h-8 rounded bg-slate-800 text-white font-bold flex items-center justify-center shrink-0">${atlet.lane}</div>
                     <div>
@@ -101,18 +157,21 @@ function renderAllHeats(eventNumber) {
                 </div>
                 
                 <div class="flex items-center gap-1 shrink-0 mt-2 md:mt-0">
-                    <input type="text" inputmode="numeric" maxlength="2" id="min_${heatIndex}_${laneIndex}" value="${mm}" placeholder="00" class="w-12 text-center py-2 bg-slate-100 border border-slate-300 rounded focus:ring-2 focus:ring-red-500 font-mono text-sm font-bold outline-none input-waktu">
+                    <input type="text" inputmode="numeric" maxlength="2" id="min_${heatIndex}_${laneIndex}" value="${mm}" placeholder="00" class="w-12 text-center py-2 ${inputBg} border border-slate-300 rounded font-mono text-sm font-bold outline-none input-waktu transition-colors">
                     <span class="font-black text-slate-400">:</span>
-                    <input type="text" inputmode="numeric" maxlength="2" id="sec_${heatIndex}_${laneIndex}" value="${ss}" placeholder="00" class="w-12 text-center py-2 bg-slate-100 border border-slate-300 rounded focus:ring-2 focus:ring-red-500 font-mono text-sm font-bold outline-none input-waktu">
+                    <input type="text" inputmode="numeric" maxlength="2" id="sec_${heatIndex}_${laneIndex}" value="${ss}" placeholder="00" class="w-12 text-center py-2 ${inputBg} border border-slate-300 rounded font-mono text-sm font-bold outline-none input-waktu transition-colors">
                     <span class="font-black text-slate-400">.</span>
-                    <input type="text" inputmode="numeric" maxlength="2" id="ms_${heatIndex}_${laneIndex}" value="${ms}" placeholder="00" class="w-12 text-center py-2 bg-slate-100 border border-slate-300 rounded focus:ring-2 focus:ring-red-500 font-mono text-sm font-bold outline-none input-waktu">
+                    <input type="text" inputmode="numeric" maxlength="2" id="ms_${heatIndex}_${laneIndex}" value="${ms}" placeholder="00" class="w-12 text-center py-2 ${inputBg} border border-slate-300 rounded font-mono text-sm font-bold outline-none input-waktu transition-colors">
                     
                     <button onclick="setDQ(${heatIndex}, ${laneIndex})" class="ml-2 px-2 py-2 bg-red-100 text-red-600 rounded text-xs font-bold hover:bg-red-200 transition-colors">DQ</button>
                 </div>
             </div>`;
         });
 
-        // DI SINI PENAMBAHAN KETERANGAN KU-NYA BRAY
+        // DINAMIS: Tombol berubah wujud berdasarkan kasta/mode
+        let btnText = appMode === 'timer' ? `💾 SIMPAN DRAFT (Timer)` : `✅ SAHKAN WAKTU (Publish)`;
+        let btnColor = appMode === 'timer' ? `bg-slate-800 hover:bg-slate-900` : `bg-emerald-600 hover:bg-emerald-700`;
+
         container.innerHTML += `
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
             <div class="flex justify-between items-end mb-4 border-b border-slate-200 pb-4">
@@ -124,8 +183,8 @@ function renderAllHeats(eventNumber) {
             <div class="space-y-3 mb-4">
                 ${lanesHtml}
             </div>
-            <button id="btnSubmit_${heatIndex}" onclick="submitHeatData(${heatIndex}, '${heat.id}')" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold text-sm py-3 rounded-xl shadow transition-transform active:scale-95 flex items-center justify-center gap-2">
-                💾 Simpan Waktu Heat ${heat.heat_number}
+            <button id="btnSubmit_${heatIndex}" onclick="submitHeatData(${heatIndex}, '${heat.id}')" class="w-full ${btnColor} text-white font-black text-sm py-3.5 rounded-xl shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2 tracking-widest">
+                ${btnText}
             </button>
         </div>`;
     });
@@ -155,7 +214,16 @@ window.setDQ = function(heatIndex, laneIndex) {
 window.submitHeatData = async function(heatIndex, heatDatabaseId) {
     const btn = document.getElementById(`btnSubmit_${heatIndex}`);
     const originalText = btn.innerHTML;
-    btn.innerText = "⏳ Menyimpan...";
+    
+    // CEGATAN REFEREE (Tanda Tangan Digital)
+    if (appMode === 'referee') {
+        const refName = prompt("🛡️ OTORISASI WASIT:\nMasukkan NAMA LENGKAP Anda sebagai penanggung jawab data ini:", "");
+        if (!refName || refName.trim() === '') {
+            return alert("❌ Pengesahan dibatalkan. Nama Referee wajib diisi untuk keamanan data!");
+        }
+    }
+
+    btn.innerText = "⏳ Memproses...";
     btn.disabled = true;
 
     let targetHeat = currentEventHeats[heatIndex];
@@ -187,6 +255,7 @@ window.submitHeatData = async function(heatIndex, heatDatabaseId) {
     });
 
     try {
+        // 1. KEDUANYA (Timer & Referee) BERHAK UPDATE DRAFT KE event_heats
         const { data, error } = await supabaseClient
             .from('event_heats')
             .update({ lanes_data: updatedLanes })
@@ -198,57 +267,69 @@ window.submitHeatData = async function(heatIndex, heatDatabaseId) {
 
         targetHeat.lanes_data = updatedLanes;
         
-        let dataKeRaceResults = [];
+        // 2. LOGIKA BERCABANG: HANYA REFEREE YANG BISA PUSH KE LIVE RESULT
+        if (appMode === 'referee') {
+            let dataKeRaceResults = [];
 
-        updatedLanes.forEach(atlet => {
-            let waktuString = atlet.waktu_tempuh; 
-            let timeSeconds = null;
+            updatedLanes.forEach(atlet => {
+                let waktuString = atlet.waktu_tempuh; 
+                let timeSeconds = null;
 
-            if (waktuString === 'DQ' || waktuString === 'DNS') {
-                timeSeconds = 9999.99; 
-            } else if (waktuString && waktuString !== 'NT') {
-                let parts = waktuString.split(/[:.]/);
-                if (parts.length === 3) {
-                    let menit = parseInt(parts[0]) || 0;
-                    let detik = parseInt(parts[1]) || 0;
-                    let ms = parseInt(parts[2]) || 0;
-                    timeSeconds = (menit * 60) + detik + (ms / 100);
+                if (waktuString === 'DQ' || waktuString === 'DNS') {
+                    timeSeconds = 9999.99; 
+                } else if (waktuString && waktuString !== 'NT') {
+                    let parts = waktuString.split(/[:.]/);
+                    if (parts.length === 3) {
+                        let menit = parseInt(parts[0]) || 0;
+                        let detik = parseInt(parts[1]) || 0;
+                        let ms = parseInt(parts[2]) || 0;
+                        timeSeconds = (menit * 60) + detik + (ms / 100);
+                    }
                 }
+
+                if (timeSeconds !== null) {
+                    dataKeRaceResults.push({
+                        event_id: currentEventId,
+                        athlete_f1_id: atlet.f1_id || null, 
+                        nama_peserta: atlet.nama,
+                        klub_asal: atlet.klub,
+                        nomor_lomba: targetHeat.nomor_lomba, 
+                        kelompok_umur: targetHeat.kelompok_umur, 
+                        gender: targetHeat.gender, 
+                        heat_number: targetHeat.heat_number, 
+                        waktu_string: waktuString, 
+                        time_seconds: timeSeconds 
+                    });
+                }
+            });
+
+            if (dataKeRaceResults.length > 0) {
+                // Hapus data lama (jika ada revisi dari wasit)
+                await supabaseClient.from('race_results')
+                    .delete()
+                    .eq('event_id', currentEventId)
+                    .eq('nomor_lomba', targetHeat.nomor_lomba)
+                    .eq('kelompok_umur', targetHeat.kelompok_umur)
+                    .eq('gender', targetHeat.gender)
+                    .eq('heat_number', targetHeat.heat_number);
+
+                // Insert data sah!
+                const { error: errorInsert } = await supabaseClient.from('race_results').insert(dataKeRaceResults);
+                if (errorInsert) throw errorInsert;
             }
 
-            if (timeSeconds !== null) {
-                dataKeRaceResults.push({
-                    event_id: currentEventId,
-                    athlete_f1_id: atlet.f1_id || null, 
-                    nama_peserta: atlet.nama,
-                    klub_asal: atlet.klub,
-                    nomor_lomba: targetHeat.nomor_lomba, 
-                    kelompok_umur: targetHeat.kelompok_umur, 
-                    gender: targetHeat.gender, 
-                    heat_number: targetHeat.heat_number, 
-                    waktu_string: waktuString, 
-                    time_seconds: timeSeconds 
-                });
-            }
-        });
-
-        if (dataKeRaceResults.length > 0) {
-            await supabaseClient.from('race_results')
-                .delete()
-                .eq('event_id', currentEventId)
-                .eq('nomor_lomba', targetHeat.nomor_lomba)
-                .eq('kelompok_umur', targetHeat.kelompok_umur)
-                .eq('gender', targetHeat.gender)
-                .eq('heat_number', targetHeat.heat_number);
-
-            const { error: errorInsert } = await supabaseClient.from('race_results').insert(dataKeRaceResults);
-            if (errorInsert) throw errorInsert;
+            btn.classList.replace('bg-emerald-600', 'bg-blue-600');
+            btn.innerText = "✅ SAH & TER-PUBLISH!";
+            
+        } else {
+            // JIKA TIMER YANG MENCET, CUMA KASIH FEEDBACK DRAFT TERSIMPAN
+            btn.classList.replace('bg-slate-800', 'bg-red-600');
+            btn.innerText = "💾 DRAFT TERSIMPAN";
         }
 
-        btn.classList.replace('bg-slate-800', 'bg-green-600');
-        btn.innerText = "✅ Tersimpan!";
         setTimeout(() => {
-            btn.classList.replace('bg-green-600', 'bg-slate-800');
+            if (appMode === 'referee') btn.classList.replace('bg-blue-600', 'bg-emerald-600');
+            if (appMode === 'timer') btn.classList.replace('bg-red-600', 'bg-slate-800');
             btn.innerHTML = originalText;
         }, 2000);
         
