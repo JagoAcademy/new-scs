@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const namaProvinsi = eventData.provinsi || '';
         const namaKolam = config.nama_kolam || '';
         let teksLokasiLengkap = '';
-        if (namaKolam) teksLokasiLengkap += `${namaKolam}`; // Di Info strip dibikin singkat aja
+        if (namaKolam) teksLokasiLengkap += `${namaKolam}`; 
         else if (namaKota) teksLokasiLengkap += `${namaKota}`;
         else teksLokasiLengkap = 'Lokasi blm diset';
         
@@ -314,13 +314,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (btnGoogleLoginPublic) {
         btnGoogleLoginPublic.addEventListener('click', async () => {
             try {
-                // Kunci utama the behavior: kita suruh Supabase memulangkan user ke URL spesifik ini (subdomain event)
-                const currentEventUrl = window.location.href;
+                // KUNCI UTAMA: Bersihkan URL dari sampah hash/search sebelum dikirim sebagai Redirect
+                const cleanUrl = window.location.origin + window.location.pathname + window.location.search;
 
                 const { error } = await supabaseClient.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                        redirectTo: currentEventUrl 
+                        redirectTo: cleanUrl 
                     }
                 });
                 
@@ -362,10 +362,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // LOGOUT
+    // ==========================================
+    // LOGOUT (FIXED: BERSIHKAN SAMPAH URL)
+    // ==========================================
     document.getElementById('btnLogout').addEventListener('click', async () => {
         await supabaseClient.auth.signOut();
-        window.location.reload();
+        // Hancurkan sampah token dari URL agar login berikutnya aman
+        window.location.href = window.location.origin + window.location.pathname + window.location.search;
     });
 
     // ==========================================
