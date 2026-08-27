@@ -4,6 +4,31 @@ let currentEventId = null;
 let currentPayMethod = 'transfer';
 let eventTitle = ''; // Simpan nama event buat share
 
+// ==========================================
+// FUNGSI NATIVE SHARE (WEB SHARE API)
+// ==========================================
+window.bagikanNative = async function(title, text, url) {
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: title,
+                text: text,
+                url: url
+            });
+            console.log('Berhasil membuka menu share bawaan HP');
+        } catch (err) {
+            // Abaikan error jika user sengaja mencancel/menutup pop-up share
+            if (err.name !== 'AbortError') {
+                console.error('Error sharing:', err);
+            }
+        }
+    } else {
+        // Fallback untuk browser desktop lama yang tidak support native share
+        navigator.clipboard.writeText(url);
+        alert('Link disalin ke clipboard! (Browser ini tidak mendukung menu share bawaan)');
+    }
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
     // ==========================================
     // LOGIKA DARK MODE TOGGLE
@@ -230,11 +255,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         // ==========================================
         // SISANYA FUNGSI BIASA (LINK, COPY, DKK)
         // ==========================================
-        const publicLink = `https://${eventData.subdomain}.f1swimming.com?id=${currentEventId}`;
+        const publicLink = `https://${eventData.subdomain}.f1swimming.com`;
         const linkInput = document.getElementById('publicLinkInput');
         if (linkInput) linkInput.value = publicLink;
 
-        const publicResultLink = `https://${eventData.subdomain}.f1swimming.com/result?id=${currentEventId}`;
+        const publicResultLink = `https://${eventData.subdomain}.f1swimming.com/result`;
         const resultLinkInput = document.getElementById('publicResultLinkInput');
         if (resultLinkInput) resultLinkInput.value = publicResultLink;
 
@@ -259,20 +284,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             setTimeout(() => { btn.innerText = originalText; btn.classList.replace('bg-green-500', 'bg-red-600'); }, 2000);
         });
 
-        // FUNGSI SHARE NATIVE SOCIAL MEDIA
-        function shareWA(url, text) { window.open(`https://wa.me/?text=${encodeURIComponent(text + "\n\n" + url)}`, '_blank'); }
-        function shareFB(url) { window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank'); }
-        function shareX(url, text) { window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank'); }
-
+        // FUNGSI SHARE NATIVE SOCIAL MEDIA BARU
         const textReg = `Yuk daftar lomba renang ${eventTitle} sekarang! Klik link berikut:`;
-        document.getElementById('btnShareWA_Reg').onclick = () => shareWA(publicLink, textReg);
-        document.getElementById('btnShareFB_Reg').onclick = () => shareFB(publicLink);
-        document.getElementById('btnShareX_Reg').onclick = () => shareX(publicLink, textReg);
+        document.getElementById('btnShareNative_Reg').onclick = () => window.bagikanNative('Pendaftaran Lomba SCS', textReg, publicLink);
+        document.getElementById('btnShareNative3Dots_Reg').onclick = () => window.bagikanNative('Pendaftaran Lomba SCS', textReg, publicLink);
 
         const textRes = `Pantau hasil pertandingan dan perolehan medali ${eventTitle} secara LIVE di sini:`;
-        document.getElementById('btnShareWA_Res').onclick = () => shareWA(publicResultLink, textRes);
-        document.getElementById('btnShareFB_Res').onclick = () => shareFB(publicResultLink);
-        document.getElementById('btnShareX_Res').onclick = () => shareX(publicResultLink, textRes);
+        document.getElementById('btnShareNative_Res').onclick = () => window.bagikanNative('Live Result SCS', textRes, publicResultLink);
+        document.getElementById('btnShareNative3Dots_Res').onclick = () => window.bagikanNative('Live Result SCS', textRes, publicResultLink);
 
         // FUNGSI DOWNLOAD QR CODE BER-BINGKAI (SULAP CANVAS!)
         async function generateFramedQR(url, filename, titleText, topText) {
