@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
             `;
             
-            const mainContainer = document.querySelector('.max-w-2xl.mx-auto.px-4.mt-6');
+            const mainContainer = document.querySelector('.max-w-3xl.mx-auto.px-4.mt-6');
             if(mainContainer) mainContainer.insertAdjacentHTML('afterbegin', alertHtml);
         }
 
@@ -133,11 +133,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        // SET BIAYA DI INFO STRIP
         const elStripBiaya = document.getElementById('stripBiaya');
         if (elStripBiaya) elStripBiaya.innerText = hargaStripTampil;
         
-        // BIAYA ESTAFET
         if (config.biaya_estafet !== undefined && config.biaya_estafet !== '') {
             const estafetPrice = Number(config.biaya_estafet).toLocaleString('id-ID');
             const infoEstafet = document.getElementById('infoBiayaEstafet');
@@ -261,7 +259,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 containerGaya.innerHTML += `
                     <div class="border border-slate-100 p-3 rounded-xl bg-slate-50/50">
                         <p class="font-extrabold text-blue-900 text-xs mb-2">${gaya.nama}</p>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">${jarakHTML}</div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">${jarakHTML}</div>
                     </div>
                 `;
             }
@@ -314,16 +312,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (btnGoogleLoginPublic) {
         btnGoogleLoginPublic.addEventListener('click', async () => {
             try {
-                // KUNCI UTAMA: Bersihkan URL dari sampah hash/search sebelum dikirim sebagai Redirect
                 const cleanUrl = window.location.origin + window.location.pathname + window.location.search;
-
                 const { error } = await supabaseClient.auth.signInWithOAuth({
                     provider: 'google',
-                    options: {
-                        redirectTo: cleanUrl 
-                    }
+                    options: { redirectTo: cleanUrl }
                 });
-                
                 if (error) throw error;
             } catch (err) {
                 alert("Gagal Inisiasi Google Login: " + err.message);
@@ -367,9 +360,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ==========================================
     document.getElementById('btnLogout').addEventListener('click', async () => {
         await supabaseClient.auth.signOut();
-        // Hancurkan sampah token dari URL agar login berikutnya aman
         window.location.href = window.location.origin + window.location.pathname + window.location.search;
     });
+
+    // ==========================================
+    // FUNGSI LOAD ATLET KE DROPDOWN (Bisa Dipanggil Ulang)
+    // ==========================================
+    async function loadAthletesToDropdown(clubId, preselectId = null) {
+        const { data: athletes, error: athErr } = await supabaseClient
+            .from('athletes')
+            .select('*')
+            .eq('club_id', clubId)
+            .order('full_name', { ascending: true });
+            
+        if (athErr) throw athErr;
+
+        const dropdown = document.getElementById('dropdownAtlet');
+        dropdown.innerHTML = '<option value="">-- Pilih Peserta dari Data Kamu --</option>';
+        (athletes || []).forEach(atlet => {
+            const tgl = atlet.dob || ''; 
+            const jk = atlet.gender || ''; 
+            const akta = atlet.akta_url || ''; 
+            dropdown.innerHTML += `<option value="${atlet.f1_id}" data-name="${atlet.full_name}" data-tgl="${tgl}" data-gender="${jk}" data-akta="${akta}">${atlet.full_name} (${atlet.f1_id})</option>`;
+        });
+
+        // Auto-select jika ada atlet baru ditambah
+        if (preselectId) {
+            dropdown.value = preselectId;
+            dropdown.dispatchEvent(new Event('change'));
+        }
+    }
 
     // ==========================================
     // FUNGSI GLOBAL APLIKASI UI SETELAH LOGIN
@@ -377,13 +397,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function applySuccessfulLoginUI(userId) {
         try {
             const { data: clubData, error: clubErr } = await supabaseClient.from('clubs').select('*').eq('owner_id', userId).single();
-            if (clubErr || !clubData) throw new Error("Data profil klub tidak ditemukan untuk akun ini.");
+            if (clubErr || !clubData) {
+                await supabaseClient.auth.signOut();
+                alert("Akun ini belum memiliki Profil Klub. Silakan lengkapi profil di halaman Dashboard terlebih dahulu.");
+                window.location.href = '/dashboard.html';
+                return;
+            }
             
             isKlubLoggedIn = true;
             loggedInClubData = clubData;
 
-            const { data: athletes, error: athErr } = await supabaseClient.from('athletes').select('*').eq('club_id', clubData.id).order('full_name', { ascending: true });
-            if (athErr) throw athErr;
+            // Memuat Atlet ke Dropdown
+            await loadAthletesToDropdown(clubData.id);
 
             // HIDE Quick Access Login
             document.getElementById('sectionAksesCepat').classList.add('hidden');
@@ -403,6 +428,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('areaGuestOnly').classList.add('hidden'); 
             document.getElementById('areaAkta').classList.add('hidden');
             
+            // Tampilkan Tombol Quick Add Athlete
+            const btnQuickAddAthlete = document.getElementById('btnQuickAddAthlete');
+            if (btnQuickAddAthlete) {
+                btnQuickAddAthlete.classList.remove('hidden');
+                btnQuickAddAthlete.classList.add('inline-flex');
+            }
+            
             // MUNCULIN FORM ESTAFET KARENA SUDAH LOGIN VVIP
             const areaEstafet = document.getElementById('areaEstafetVVIP');
             if(areaEstafet) areaEstafet.classList.remove('hidden');
@@ -412,20 +444,101 @@ document.addEventListener('DOMContentLoaded', async () => {
             const dropdown = document.getElementById('dropdownAtlet');
             dropdown.classList.remove('hidden');
 
-            dropdown.innerHTML = '<option value="">-- Pilih Peserta dari Data Kamu --</option>';
-            (athletes || []).forEach(atlet => {
-                const tgl = atlet.dob || ''; 
-                const jk = atlet.gender || ''; 
-                const akta = atlet.akta_url || ''; 
-                dropdown.innerHTML += `<option value="${atlet.f1_id}" data-name="${atlet.full_name}" data-tgl="${tgl}" data-gender="${jk}" data-akta="${akta}">${atlet.full_name} (${atlet.f1_id})</option>`;
-            });
-
             loadTagihan();
         } catch (err) {
             console.error("Gagal build UI pasca-login:", err);
-            // Kalau misal error gagal ambil profil klub, kita logout aja biar ga stuck
             await supabaseClient.auth.signOut();
         }
+    }
+
+    // ==========================================
+    // LOGIKA QUICK ADD ATHLETE (ON-THE-FLY)
+    // ==========================================
+    const btnQuickAddAthlete = document.getElementById('btnQuickAddAthlete');
+    const modalQuickAdd = document.getElementById('modalQuickAddAthlete');
+    const closeQuickAddBtn = document.getElementById('closeQuickAddBtn');
+    const btnSaveQuickAdd = document.getElementById('btnSaveQuickAdd');
+
+    if (btnQuickAddAthlete && modalQuickAdd && closeQuickAddBtn) {
+        btnQuickAddAthlete.addEventListener('click', () => {
+            modalQuickAdd.classList.remove('hidden');
+            setTimeout(() => modalQuickAdd.firstElementChild.classList.remove('scale-95'), 10);
+        });
+
+        closeQuickAddBtn.addEventListener('click', () => {
+            modalQuickAdd.firstElementChild.classList.add('scale-95');
+            setTimeout(() => modalQuickAdd.classList.add('hidden'), 200);
+        });
+    }
+
+    if (btnSaveQuickAdd) {
+        btnSaveQuickAdd.addEventListener('click', async () => {
+            const inputNama = document.getElementById('qaInputNama').value.trim();
+            const inputDOB = document.getElementById('qaInputDOB').value;
+            const inputGender = document.getElementById('qaInputGender').value;
+            const statusMsg = document.getElementById('qaStatusMsg');
+
+            if (!inputNama || !inputDOB) {
+                statusMsg.innerText = "Nama dan Tanggal Lahir wajib diisi!";
+                statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block mt-2";
+                statusMsg.classList.remove('hidden');
+                return;
+            }
+
+            if (!isKlubLoggedIn || !loggedInClubData) return;
+
+            btnSaveQuickAdd.innerText = "Menyimpan ke Database...";
+            btnSaveQuickAdd.disabled = true;
+
+            try {
+                // Generate F1 ID Logic sama persis dengan dashboard[span_1](start_span)[span_1](end_span)
+                const dateObj = new Date(inputDOB);
+                const yy = dateObj.getFullYear().toString().slice(-2);
+                const mm = ('0' + (dateObj.getMonth() + 1)).slice(-2);
+                const random3 = Math.floor(Math.random() * 900) + 100;
+                const generatedF1Id = `F1-${yy}${mm}${random3}`;
+
+                const { error } = await supabaseClient
+                    .from('athletes')
+                    .insert([{
+                        f1_id: generatedF1Id,
+                        full_name: inputNama,
+                        dob: inputDOB,
+                        gender: inputGender,
+                        club_id: loggedInClubData.id 
+                    }]);
+
+                if (error) {
+                    if (error.code === '23505') throw new Error("Atlet dengan Nama dan Tgl Lahir ini sudah terdaftar!");
+                    throw error;
+                }
+
+                statusMsg.innerText = "✅ Atlet Berhasil Ditambahkan!";
+                statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-green-100 text-green-700 block mt-2";
+                statusMsg.classList.remove('hidden');
+
+                // Bersihkan form
+                document.getElementById('qaInputNama').value = '';
+                document.getElementById('qaInputDOB').value = '';
+
+                setTimeout(async () => {
+                    closeQuickAddBtn.click();
+                    btnSaveQuickAdd.innerText = "Simpan & Masukkan ke Form";
+                    btnSaveQuickAdd.disabled = false;
+                    statusMsg.classList.add('hidden');
+                    
+                    // Reload dropdown dan otomatis pilih anak yang baru ditambah
+                    await loadAthletesToDropdown(loggedInClubData.id, generatedF1Id);
+                }, 1000);
+
+            } catch (err) {
+                statusMsg.innerText = err.message;
+                statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block mt-2";
+                statusMsg.classList.remove('hidden');
+                btnSaveQuickAdd.innerText = "Simpan & Masukkan ke Form";
+                btnSaveQuickAdd.disabled = false;
+            }
+        });
     }
 
     // ==========================================
