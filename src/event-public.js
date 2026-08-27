@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Jangan lupa komen baris di bawah ini kalau sudah online!
     // const subdomain = 'fs-samawa'; 
 
-    if (!subdomain || subdomain === 'funswimming' || subdomain === 'localhost') return; 
+    if (!subdomain || subdomain === 'f1swimming' || subdomain === 'localhost') return; 
 
     try {
         const { data: eventData, error } = await supabaseClient
