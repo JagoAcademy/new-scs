@@ -294,7 +294,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // =========================================================
-        // OTOMATIS CEK SESSION (GOOGLE AUTH SUCCESS)
+        // OTOMATIS CEK SESSION (JIKA SUDAH LOGIN SEBELUMNYA)
         // =========================================================
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) {
@@ -308,59 +308,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   
     // ==========================================
-    // LOGIKA LOGIN GOOGLE (SEAMLESS UX - NO REDIRECT)
+    // LOGIKA LOGIN GOOGLE (OAUTH REDIRECT - FIX ORIGIN MISMATCH)
     // ==========================================
     const btnGoogleLoginPublic = document.getElementById('btnGoogleLoginPublic');
     if (btnGoogleLoginPublic) {
-        
-        // Ubah button HTML jadi container kosong biar bisa di-inject tombol Google resmi
-        btnGoogleLoginPublic.innerHTML = ''; 
-        btnGoogleLoginPublic.className = 'flex justify-center w-full mb-2';
+        btnGoogleLoginPublic.addEventListener('click', async () => {
+            try {
+                // Kunci utama the behavior: kita suruh Supabase memulangkan user ke URL spesifik ini (subdomain event)
+                const currentEventUrl = window.location.href;
 
-        const renderGoogleButtonPublic = () => {
-            if (typeof google === 'undefined' || !google.accounts) {
-                setTimeout(renderGoogleButtonPublic, 100); 
-                return;
-            }
-
-            // 1. Inisialisasi Google Auth (Sama persis dengan auth.js)
-            google.accounts.id.initialize({
-                client_id: '1047924463495-3virdj082194chl013ia1js0ls8c99rv.apps.googleusercontent.com',
-                callback: async (response) => {
-                    try {
-                        const { data, error } = await supabaseClient.auth.signInWithIdToken({
-                            provider: 'google',
-                            token: response.credential,
-                        });
-
-                        if (error) throw error;
-                        
-                        // 2. INI "THE BEHAVIOR" NYA BRAY! 
-                        // Langsung tembak UI pendaftaran tanpa window.location.replace
-                        await applySuccessfulLoginUI(data.user.id);
-                        
-                    } catch (err) {
-                        alert("Gagal sinkronisasi Google: " + err.message);
+                const { error } = await supabaseClient.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: currentEventUrl 
                     }
-                }
-            });
-
-            // 3. Render tombol Google menyesuaikan lebar container
-            google.accounts.id.renderButton(
-                btnGoogleLoginPublic, 
-                { 
-                    theme: "outline", 
-                    size: "large", 
-                    text: "continue_with",
-                    shape: "rectangular",
-                    width: btnGoogleLoginPublic.offsetWidth || 300 // Responsive width
-                } 
-            );
-        };
-
-        renderGoogleButtonPublic();
+                });
+                
+                if (error) throw error;
+            } catch (err) {
+                alert("Gagal Inisiasi Google Login: " + err.message);
+            }
+        });
     }
-
 
     // ==========================================
     // TOGGLE & LOGIKA LOGIN MANUAL EMAIL (FALLBACK)
