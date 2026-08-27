@@ -306,28 +306,61 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (err) {
         alert(err.message);
     }
-
+  
     // ==========================================
-    // LOGIKA LOGIN GOOGLE (UX BARU - FIXED REDIRECT)
+    // LOGIKA LOGIN GOOGLE (SEAMLESS UX - NO REDIRECT)
     // ==========================================
-    document.getElementById('btnGoogleLoginPublic').addEventListener('click', async () => {
-        try {
-            // MENGUNCI URL REDIRECT KE F1SWIMMING.COM 
-            // Apapun domain lama yang nyangkut di history user, bakal dipaksa balik ke sini.
-            const currentPath = window.location.pathname + window.location.search;
-            const fixedRedirectUrl = 'https://f1swimming.com' + currentPath;
+    const btnGoogleLoginPublic = document.getElementById('btnGoogleLoginPublic');
+    if (btnGoogleLoginPublic) {
+        
+        // Ubah button HTML jadi container kosong biar bisa di-inject tombol Google resmi
+        btnGoogleLoginPublic.innerHTML = ''; 
+        btnGoogleLoginPublic.className = 'flex justify-center w-full mb-2';
 
-            const { error } = await supabaseClient.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: fixedRedirectUrl // Pasti pulang ke f1swimming.com bray!
+        const renderGoogleButtonPublic = () => {
+            if (typeof google === 'undefined' || !google.accounts) {
+                setTimeout(renderGoogleButtonPublic, 100); 
+                return;
+            }
+
+            // 1. Inisialisasi Google Auth (Sama persis dengan auth.js)
+            google.accounts.id.initialize({
+                client_id: '1047924463495-3virdj082194chl013ia1js0ls8c99rv.apps.googleusercontent.com',
+                callback: async (response) => {
+                    try {
+                        const { data, error } = await supabaseClient.auth.signInWithIdToken({
+                            provider: 'google',
+                            token: response.credential,
+                        });
+
+                        if (error) throw error;
+                        
+                        // 2. INI "THE BEHAVIOR" NYA BRAY! 
+                        // Langsung tembak UI pendaftaran tanpa window.location.replace
+                        await applySuccessfulLoginUI(data.user.id);
+                        
+                    } catch (err) {
+                        alert("Gagal sinkronisasi Google: " + err.message);
+                    }
                 }
             });
-            if (error) throw error;
-        } catch (err) {
-            alert("Gagal Inisiasi Google Login: " + err.message);
-        }
-    });
+
+            // 3. Render tombol Google menyesuaikan lebar container
+            google.accounts.id.renderButton(
+                btnGoogleLoginPublic, 
+                { 
+                    theme: "outline", 
+                    size: "large", 
+                    text: "continue_with",
+                    shape: "rectangular",
+                    width: btnGoogleLoginPublic.offsetWidth || 300 // Responsive width
+                } 
+            );
+        };
+
+        renderGoogleButtonPublic();
+    }
+
 
     // ==========================================
     // TOGGLE & LOGIKA LOGIN MANUAL EMAIL (FALLBACK)
