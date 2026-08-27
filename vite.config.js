@@ -10,7 +10,7 @@ export default defineConfig({
         auth: resolve(__dirname, 'auth.html'), // Login & Register System
         register: resolve(__dirname, 'register.html'), // Form Registrasi
         pricing: resolve(__dirname, 'pricing.html'), // Halaman Harga SCS
-        promosi: resolve(__dirname, 'promosi.html'), // Halaman Promosi
+        promosi: resolve(__dirname, 'promosi.html'), // <--- FIX: Key 'promosi' sebelumnya hilang
         event: resolve(__dirname, 'event.html'), // Kalender Event Publik Nasional
         pulse: resolve(__dirname, 'pulse.html'),
         eventPublic: resolve(__dirname, 'event-public.html'), // Landing page spesifik 1 event
@@ -20,7 +20,8 @@ export default defineConfig({
         result: resolve(__dirname, 'result.html'), // Hasil resmi perlombaan
         cetakSertifikat: resolve(__dirname, 'cetak-sertifikat.html'), // Halaman Cetak Sertifikat Peserta
         sponsorship: resolve(__dirname, 'sponsorship.html'),
-        pitch: resolve(__dirname, 'pitch.html'), // <--- TAMBAHAN: Web-Based Pitch Deck Nestle 🚀
+        pitch: resolve(__dirname, 'pitch.html'), // Web-Based Pitch Deck Nestle 🚀
+        media: resolve(__dirname, 'media.html'), // <--- JAHITAN BARU: SCS Media & Ads Portal 📰💸
 
         // --- 2. DASHBOARD KLUB / PELATIH ---
         dashboard: resolve(__dirname, 'dashboard.html'), // Command Center Manajemen Klub
@@ -30,7 +31,7 @@ export default defineConfig({
         // --- 3. DASHBOARD EO / PANITIA LOMBA ---
         eventDashboard: resolve(__dirname, 'event-dashboard.html'), // Panel Utama Command Center 1 Event
         eventSponsor: resolve(__dirname, 'event-sponsor.html'), // Manajemen Sponsor Deal & Pitching
-        logoSponsor: resolve(__dirname, 'logosponsor.html'), // <--- JAHITAN BARU: Master Database Sponsor HTML 🎯
+        logoSponsor: resolve(__dirname, 'logosponsor.html'), // Master Database Sponsor HTML 🎯
         eventPeserta: resolve(__dirname, 'event-peserta.html'), // List & Verifikasi Peserta Lomba
         settingsLomba: resolve(__dirname, 'settings-lomba.html'), // Setup Nomor Lomba, Usia & Gaya
 
@@ -41,7 +42,8 @@ export default defineConfig({
         eventResult: resolve(__dirname, 'book/event-result.html'), // Hasil Resmi Per Nomor Lomba
         eventSertifikatSetup: resolve(__dirname, 'book/event-sertifikat.html'), // Dapur Admin Setup Koordinat Sertifikat
         clubTestimony: resolve (__dirname, 'admin-testi.html'), // Testimoni Klub
-pembukuan: resolve(__dirname, 'pembukuan.html'),
+        pembukuan: resolve(__dirname, 'pembukuan.html'),
+
         // --- 5. SUPER ADMIN PUSAT ---
         admin: resolve(__dirname, 'admin.html'), // Panel Kontrol Super Admin SCS
         adminAds: resolve(__dirname, 'admin-ads.html'),
