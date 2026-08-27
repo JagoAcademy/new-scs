@@ -308,14 +308,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ==========================================
-    // LOGIKA LOGIN GOOGLE (UX BARU)
+    // LOGIKA LOGIN GOOGLE (UX BARU - FIXED REDIRECT)
     // ==========================================
     document.getElementById('btnGoogleLoginPublic').addEventListener('click', async () => {
         try {
+            // MENGUNCI URL REDIRECT KE F1SWIMMING.COM 
+            // Apapun domain lama yang nyangkut di history user, bakal dipaksa balik ke sini.
+            const currentPath = window.location.pathname + window.location.search;
+            const fixedRedirectUrl = 'https://f1swimming.com' + currentPath;
+
             const { error } = await supabaseClient.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: window.location.href // Redirect kembali ke URL event public
+                    redirectTo: fixedRedirectUrl // Pasti pulang ke f1swimming.com bray!
                 }
             });
             if (error) throw error;
