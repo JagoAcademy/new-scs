@@ -255,11 +255,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         // ==========================================
         // SISANYA FUNGSI BIASA (LINK, COPY, DKK)
         // ==========================================
-        const publicLink = `https://${eventData.subdomain}.f1swimming.com`;
+        
+        // BALIKIN PAKE PARAMETER ?id= BIAR DATA EVENT BISA KETARIK
+        const publicLink = `https://${eventData.subdomain}.f1swimming.com?id=${currentEventId}`;
         const linkInput = document.getElementById('publicLinkInput');
         if (linkInput) linkInput.value = publicLink;
 
-        const publicResultLink = `https://${eventData.subdomain}.f1swimming.com/result`;
+        const publicResultLink = `https://${eventData.subdomain}.f1swimming.com/result?id=${currentEventId}`;
         const resultLinkInput = document.getElementById('publicResultLinkInput');
         if (resultLinkInput) resultLinkInput.value = publicResultLink;
 
@@ -287,10 +289,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         // FUNGSI SHARE NATIVE SOCIAL MEDIA BARU
         const textReg = `Yuk daftar lomba renang ${eventTitle} sekarang! Klik link berikut:`;
         document.getElementById('btnShareNative_Reg').onclick = () => window.bagikanNative('Pendaftaran Lomba SCS', textReg, publicLink);
-        
+
         const textRes = `Pantau hasil pertandingan dan perolehan medali ${eventTitle} secara LIVE di sini:`;
         document.getElementById('btnShareNative_Res').onclick = () => window.bagikanNative('Live Result SCS', textRes, publicResultLink);
-        
 
         // FUNGSI DOWNLOAD QR CODE BER-BINGKAI (SULAP CANVAS!)
         async function generateFramedQR(url, filename, titleText, topText) {
