@@ -287,11 +287,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         // FUNGSI SHARE NATIVE SOCIAL MEDIA BARU
         const textReg = `Yuk daftar lomba renang ${eventTitle} sekarang! Klik link berikut:`;
         document.getElementById('btnShareNative_Reg').onclick = () => window.bagikanNative('Pendaftaran Lomba SCS', textReg, publicLink);
-        document.getElementById('btnShareNative3Dots_Reg').onclick = () => window.bagikanNative('Pendaftaran Lomba SCS', textReg, publicLink);
-
+        
         const textRes = `Pantau hasil pertandingan dan perolehan medali ${eventTitle} secara LIVE di sini:`;
         document.getElementById('btnShareNative_Res').onclick = () => window.bagikanNative('Live Result SCS', textRes, publicResultLink);
-        document.getElementById('btnShareNative3Dots_Res').onclick = () => window.bagikanNative('Live Result SCS', textRes, publicResultLink);
+        
 
         // FUNGSI DOWNLOAD QR CODE BER-BINGKAI (SULAP CANVAS!)
         async function generateFramedQR(url, filename, titleText, topText) {
