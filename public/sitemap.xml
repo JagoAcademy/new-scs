@@ -13,6 +13,13 @@
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
+
+  <!-- Tentang Kami / Pilar SEO Lomba Renang -->
+  <url>
+    <loc>https://f1swimming.com/about.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
   
   <!-- Kalender Event -->
   <url>
