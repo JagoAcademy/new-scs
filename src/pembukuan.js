@@ -15,7 +15,7 @@ const dataPegawaiMap = {
     'AFFIX': { nama: 'AFFIX NUR RIZZA', nik: '3515182012010006' }
 };
 
-// --- DAFTAR "DEWA" YANG BOLEH UBAH DATABASE ---
+// --- DAFTAR "DEWA" YANG BOLEH MASUK ---
 const AUTHORIZED_ADMINS = ['FAJAR', 'INDRA', 'AY'];
 
 // --- HELPER FORMATTING ---
@@ -159,7 +159,6 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
         return d >= s && d <= e;
     };
 
-    // 1. Ganti Judul Berdasarkan Pilihan (Slip Gaji / Cashflow)
     if (coachSelected === 'semua') {
         document.getElementById('rep-title').innerText = 'LAPORAN TUTUP BUKU & CASHFLOW';
         document.getElementById('rep-subtitle').innerText = 'PT. Teknologi Prestasi Indonesia';
@@ -170,7 +169,6 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
         document.getElementById('rep-periode-cf').classList.add('hidden');
     }
 
-    // 2. Map Nama Pegawai
     let namaCetakLengkap = coachSelected;
     let namaTTD = coachSelected;
     
@@ -178,7 +176,6 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
         namaCetakLengkap = 'REKAP SELURUH PEGAWAI';
         namaTTD = 'Pegawai';
     } else if (dataPegawaiMap[coachSelected]) {
-        // Jika nama panggilan ada di kamus HTML
         const dataPgw = dataPegawaiMap[coachSelected];
         namaCetakLengkap = `${dataPgw.nama} | NIK: ${dataPgw.nik}`;
         namaTTD = dataPgw.nama;
@@ -187,7 +184,6 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
     document.getElementById('rep-pegawai').innerText = namaCetakLengkap;
     document.getElementById('rep-ttd-nama').innerText = namaTTD;
 
-    // 3. Filter Cashflow JR (Hanya muncul jika pilih semua pegawai)
     let totalMasuk = 0; let totalKeluar = 0;
     if (coachSelected === 'semua') {
         document.getElementById('rep-cashflow-section').style.display = 'block';
@@ -206,7 +202,6 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
         document.getElementById('rep-cashflow-section').style.display = 'none';
     }
 
-    // 4. Filter Fee Coach
     const filteredFc = dbFeeCoach.filter(t => {
         const matchDate = checkDate(t.tanggal, coachStart, coachEnd);
         const matchCoach = coachSelected === 'semua' || t.nama_coach === coachSelected;
@@ -228,7 +223,6 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
     });
     if (filteredFc.length === 0) tbodyFc.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Tidak ada data honor mengajar.</td></tr>`;
 
-    // 5. Filter Fee Marketing
     const filteredFm = dbFeeMarketing.filter(t => {
         const matchDate = checkDate(t.tanggal_cair, coachStart, coachEnd);
         const matchAdmin = coachSelected === 'semua' || t.admin_id === coachSelected;
@@ -249,7 +243,6 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
     });
     if (filteredFm.length === 0) tbodyFm.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">Tidak ada komisi marketing.</td></tr>`;
 
-    // 6. Set Header Kop Laporan Periode Tanggal
     const getText = (s, e) => {
         if(s && e) return `${formatDate(s)} s/d ${formatDate(e)}`;
         if(s && !e) return `Sejak ${formatDate(s)}`;
@@ -260,10 +253,8 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
     document.getElementById('rep-periode-cf').innerText = `Arus Kas: ${getText(cfStart, cfEnd)}`;
     document.getElementById('rep-periode-coach').innerText = `Gaji/Fee: ${getText(coachStart, coachEnd)}`;
     
-    // Kalkulasi Total
     document.getElementById('rep-thp').innerText = formatRp(sumFeeCoach + sumFeeMarketing);
 
-    // Buka Halaman
     document.getElementById('page-dashboard').classList.remove('block');
     document.getElementById('page-dashboard').classList.add('hidden');
     document.getElementById('page-report').classList.remove('hidden');
@@ -273,13 +264,6 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
 // --- LOGIKA FORM: SIMPAN TRANSAKSI BARU (JR & F1) ---
 document.getElementById('form-jr-kas')?.addEventListener('submit', async function(e) {
     e.preventDefault();
-    
-    // GUARDRAIL: Cek Kasta "Dewa"
-    const currentName = sessionStorage.getItem('pitching_name') || '';
-    if (!AUTHORIZED_ADMINS.includes(currentName.toUpperCase())) {
-        return alert("⛔ AKSES DITOLAK! Anda masuk sebagai mode 'Read-Only'. Hanya Admin Inti (FAJAR, INDRA, AY) yang diizinkan memanipulasi database utama PT TPI.");
-    }
-
     const btnSubmit = document.getElementById('btn-submit-jr');
     btnSubmit.innerText = "Menyimpan...";
     btnSubmit.disabled = true;
@@ -300,13 +284,6 @@ document.getElementById('form-jr-kas')?.addEventListener('submit', async functio
 
 document.getElementById('form-f1-kas')?.addEventListener('submit', async function(e) {
     e.preventDefault();
-    
-    // GUARDRAIL: Cek Kasta "Dewa"
-    const currentName = sessionStorage.getItem('pitching_name') || '';
-    if (!AUTHORIZED_ADMINS.includes(currentName.toUpperCase())) {
-        return alert("⛔ AKSES DITOLAK! Anda masuk sebagai mode 'Read-Only'. Hanya Admin Inti (FAJAR, INDRA, AY) yang diizinkan memanipulasi database utama PT TPI.");
-    }
-
     const btnSubmit = document.getElementById('btn-submit-f1');
     btnSubmit.innerText = "Menyimpan...";
     btnSubmit.disabled = true;
@@ -325,35 +302,38 @@ document.getElementById('form-f1-kas')?.addEventListener('submit', async functio
     btnSubmit.disabled = false;
 });
 
-// INIT JALANKAN PROGRAM DENGAN LOGIKA AKSES PITCHING
+// INIT JALANKAN PROGRAM DENGAN LOGIKA VIP GATEKEEPER
 document.addEventListener('DOMContentLoaded', () => {
-    // --- LOGIKA AKSES PITCHING / INVESTOR ---
-    if (!sessionStorage.getItem('pitching_name')) {
+    const currentSession = sessionStorage.getItem('pitching_name');
+
+    // Jika belum login atau yang login BUKAN Fajar, Indra, AY
+    if (!currentSession || !AUTHORIZED_ADMINS.includes(currentSession.toUpperCase())) {
         const isInvestorAdmin = confirm("Masuk investor atau admin? \n(Klik OK untuk Y, Cancel untuk N)");
         
         if (!isInvestorAdmin) {
-            return window.location.replace('/openinvest.html'); // Terpental jika N
+            return window.location.replace('/openinvest.html');
         }
         
-        const namaInput = prompt("Silakan tulis nama Anda (Gunakan nama yang terdaftar jika Anda Admin):");
+        const namaInput = prompt("Silakan tulis nama Anda:");
         
         if (!namaInput || namaInput.trim() === '') {
-            return window.location.replace('/openinvest.html'); // Terpental jika nama kosong
+            return window.location.replace('/openinvest.html');
         }
         
-        // Simpan role dan nama ke session storage
-        sessionStorage.setItem('pitching_name', namaInput);
-        
-        if (AUTHORIZED_ADMINS.includes(namaInput.toUpperCase())) {
+        const upperName = namaInput.trim().toUpperCase();
+
+        if (AUTHORIZED_ADMINS.includes(upperName)) {
+            // Berhasil Validasi sebagai Dewa
+            sessionStorage.setItem('pitching_name', upperName);
             sessionStorage.setItem('pitching_role', 'Super Admin');
-            alert(`Selamat datang Super Admin ${namaInput.toUpperCase()}! Akses Write Database Terbuka.`);
+            alert(`Selamat datang Super Admin ${upperName}! Akses Database Terbuka.`);
         } else {
-            sessionStorage.setItem('pitching_role', 'Investor');
-            alert(`Selamat datang ${namaInput}! Anda berada di mode Read-Only / View Dashboard.`);
+            // Selain Dewa, langsung tendang keluar!
+            alert("Akses Ditolak! Hubungi Vanessa 089691219977 untuk mendapat key akses halaman ini.");
+            return window.location.replace('/openinvest.html');
         }
     }
-    // ----------------------------------------
 
-    // Jika lolos pengecekan, baru jalankan penarikan data
+    // Jika lolos gatekeeper (Fajar, Indra, AY), jalankan data
     fetchSemuaData();
 });
