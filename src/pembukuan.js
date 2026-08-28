@@ -15,6 +15,9 @@ const dataPegawaiMap = {
     'AFFIX': { nama: 'AFFIX NUR RIZZA', nik: '3515182012010006' }
 };
 
+// --- DAFTAR "DEWA" YANG BOLEH UBAH DATABASE ---
+const AUTHORIZED_ADMINS = ['FAJAR', 'INDRA', 'AY'];
+
 // --- HELPER FORMATTING ---
 const formatRp = (angka) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0);
@@ -270,6 +273,13 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
 // --- LOGIKA FORM: SIMPAN TRANSAKSI BARU (JR & F1) ---
 document.getElementById('form-jr-kas')?.addEventListener('submit', async function(e) {
     e.preventDefault();
+    
+    // GUARDRAIL: Cek Kasta "Dewa"
+    const currentName = sessionStorage.getItem('pitching_name') || '';
+    if (!AUTHORIZED_ADMINS.includes(currentName.toUpperCase())) {
+        return alert("⛔ AKSES DITOLAK! Anda masuk sebagai mode 'Read-Only'. Hanya Admin Inti (FAJAR, INDRA, AY) yang diizinkan memanipulasi database utama PT TPI.");
+    }
+
     const btnSubmit = document.getElementById('btn-submit-jr');
     btnSubmit.innerText = "Menyimpan...";
     btnSubmit.disabled = true;
@@ -290,6 +300,13 @@ document.getElementById('form-jr-kas')?.addEventListener('submit', async functio
 
 document.getElementById('form-f1-kas')?.addEventListener('submit', async function(e) {
     e.preventDefault();
+    
+    // GUARDRAIL: Cek Kasta "Dewa"
+    const currentName = sessionStorage.getItem('pitching_name') || '';
+    if (!AUTHORIZED_ADMINS.includes(currentName.toUpperCase())) {
+        return alert("⛔ AKSES DITOLAK! Anda masuk sebagai mode 'Read-Only'. Hanya Admin Inti (FAJAR, INDRA, AY) yang diizinkan memanipulasi database utama PT TPI.");
+    }
+
     const btnSubmit = document.getElementById('btn-submit-f1');
     btnSubmit.innerText = "Menyimpan...";
     btnSubmit.disabled = true;
@@ -308,5 +325,35 @@ document.getElementById('form-f1-kas')?.addEventListener('submit', async functio
     btnSubmit.disabled = false;
 });
 
-// INIT JALANKAN PROGRAM
-document.addEventListener('DOMContentLoaded', fetchSemuaData);
+// INIT JALANKAN PROGRAM DENGAN LOGIKA AKSES PITCHING
+document.addEventListener('DOMContentLoaded', () => {
+    // --- LOGIKA AKSES PITCHING / INVESTOR ---
+    if (!sessionStorage.getItem('pitching_name')) {
+        const isInvestorAdmin = confirm("Masuk investor atau admin? \n(Klik OK untuk Y, Cancel untuk N)");
+        
+        if (!isInvestorAdmin) {
+            return window.location.replace('/openinvest.html'); // Terpental jika N
+        }
+        
+        const namaInput = prompt("Silakan tulis nama Anda (Gunakan nama yang terdaftar jika Anda Admin):");
+        
+        if (!namaInput || namaInput.trim() === '') {
+            return window.location.replace('/openinvest.html'); // Terpental jika nama kosong
+        }
+        
+        // Simpan role dan nama ke session storage
+        sessionStorage.setItem('pitching_name', namaInput);
+        
+        if (AUTHORIZED_ADMINS.includes(namaInput.toUpperCase())) {
+            sessionStorage.setItem('pitching_role', 'Super Admin');
+            alert(`Selamat datang Super Admin ${namaInput.toUpperCase()}! Akses Write Database Terbuka.`);
+        } else {
+            sessionStorage.setItem('pitching_role', 'Investor');
+            alert(`Selamat datang ${namaInput}! Anda berada di mode Read-Only / View Dashboard.`);
+        }
+    }
+    // ----------------------------------------
+
+    // Jika lolos pengecekan, baru jalankan penarikan data
+    fetchSemuaData();
+});
