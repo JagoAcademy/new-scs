@@ -4,9 +4,43 @@ let reusedLogoUrl = null;
 let allSponsors = [];
 let corporateRowCount = 0; 
 
+// --- DAFTAR "DEWA" YANG BOLEH MASUK ---
+const AUTHORIZED_ADMINS = ['FAJAR', 'INDRA', 'AY'];
+
 document.addEventListener('DOMContentLoaded', async () => {
-    if (sessionStorage.getItem('aztec_key') !== 'buka_sesame') return window.location.replace('/dashboard.html');
+    // --- VIP GATEKEEPER ---
+    const currentSession = sessionStorage.getItem('pitching_name');
+
+    // Jika belum login atau yang login BUKAN Fajar, Indra, AY
+    if (!currentSession || !AUTHORIZED_ADMINS.includes(currentSession.toUpperCase())) {
+        const isInvestorAdmin = confirm("Masuk investor atau admin? \n(Klik OK untuk Y, Cancel untuk N)");
+        
+        if (!isInvestorAdmin) {
+            return window.location.replace('/openinvest.html');
+        }
+        
+        const namaInput = prompt("Silakan tulis nama Anda:");
+        
+        if (!namaInput || namaInput.trim() === '') {
+            return window.location.replace('/openinvest.html');
+        }
+        
+        const upperName = namaInput.trim().toUpperCase();
+
+        if (AUTHORIZED_ADMINS.includes(upperName)) {
+            // Berhasil Validasi sebagai Dewa
+            sessionStorage.setItem('pitching_name', upperName);
+            sessionStorage.setItem('pitching_role', 'Super Admin');
+            alert(`Selamat datang Super Admin ${upperName}! Akses Katalog Sponsor Terbuka.`);
+        } else {
+            // Selain Dewa, langsung tendang keluar!
+            alert("Akses Ditolak! Hubungi Vanessa 89691219977 untuk mendapat key akses halaman ini.");
+            return window.location.replace('/openinvest.html');
+        }
+    }
+    // ----------------------------------------
     
+    // Jika lolos gatekeeper, jalankan fungsi utama
     loadGallery();
     setupModalListeners();
     setupFilters();
