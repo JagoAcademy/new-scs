@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pitch Deck F1Swimming | Open Invest</title>
+    <meta name="description" content="Pitch deck resmi pendanaan PT Teknologi Prestasi Indonesia untuk ekosistem F1Swimming dan SCS.">
+    <link rel="stylesheet" href="/src/style.css">
+    <style>
+        .slide { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .slide.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* CSS Untuk Donut Chart */
+        .donut-90 { background: conic-gradient(#10b981 90%, #334155 0); }
+        .donut-50 { background: conic-gradient(#10b981 50%, #334155 0); }
+        .donut-20 { background: conic-gradient(#10b981 20%, #334155 0); }
+        .donut-10 { background: conic-gradient(#10b981 10%, #334155 0); }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans h-screen w-screen overflow-hidden relative">
+
+    <!-- HEADER / NAVIGATION INDICATOR -->
+    <div class="absolute top-0 left-0 w-full p-6 flex justify-between items-center z-50">
+        <div class="font-black text-xl tracking-widest text-emerald-400">F1SWIMMING</div>
+        <div class="text-sm font-bold text-slate-400 bg-slate-800 px-4 py-1.5 rounded-full">
+            Slide <span id="currentSlideNum">1</span> / 14
+        </div>
+    </div>
+
+    <!-- SLIDES CONTAINER -->
+    <div id="deck" class="w-full h-full flex items-center justify-center px-6 md:px-20 pt-16 pb-24">
+
+        <!-- SLIDE 1 -->
+        <div class="slide active flex-col text-center w-full max-w-5xl" id="slide-1">
+            <h1 class="text-5xl md:text-7xl font-black mb-4 tracking-tight uppercase drop-shadow-lg text-white">Running Project: <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">F1SWIMMING</span></h1>
+            <h2 class="text-xl md:text-3xl font-bold text-slate-300 mb-12">Membawa Masa Depan ke Ekosistem Akuatik Indonesia</h2>
+            
+            <div class="mb-12">
+                <p class="text-lg font-black tracking-widest uppercase text-emerald-400">PT. Teknologi Prestasi Indonesia</p>
+                <p class="text-slate-400">🌐 www.f1swimming.com</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left max-w-4xl mx-auto">
+                <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 shadow-xl">
+                    <h3 class="text-2xl font-black text-blue-400 mb-3">SCS</h3>
+                    <p class="text-sm text-slate-300 font-medium">(Swimming Competition System)</p>
+                    <p class="mt-4 text-slate-400 leading-relaxed">Sistem manajemen kompetisi renang end-to-end.</p>
+                </div>
+                <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 shadow-xl">
+                    <h3 class="text-2xl font-black text-red-400 mb-3">F1-ID</h3>
+                    <p class="text-sm text-slate-300 font-medium">(Identitas Perenang Indonesia)</p>
+                    <p class="mt-4 text-slate-400 leading-relaxed">Database rekor & identitas tunggal atlet nasional.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: APP PROGRESS -->
+        <div class="slide flex-col w-full max-w-5xl" id="slide-2">
+            <h2 class="text-3xl md:text-5xl font-black mb-12 text-center">Project Progression: <span class="text-emerald-400">Aplikasi</span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 items-center">
+                <div class="flex justify-center md:justify-end">
+                    <!-- Donut Chart 90% -->
+                    <div class="w-48 h-48 rounded-full donut-90 flex items-center justify-center relative shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+                        <div class="w-40 h-40 bg-slate-900 rounded-full flex flex-col items-center justify-center">
+                            <span class="text-4xl font-black text-white">90%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:col-span-2 space-y-6">
+                    <div class="bg-slate-800/50 p-6 rounded-2xl border-l-4 border-emerald-500">
+                        <h4 class="font-bold text-emerald-400 text-lg mb-2">🟢 90% Terpenuhi (Development & QA Test)</h4>
+                        <p class="text-slate-300 text-sm leading-relaxed">Sistem SCS dan arsitektur F1-ID telah terbangun, QA (Quality Assurance) internal sukses dieksekusi.</p>
+                    </div>
+                    <div class="bg-slate-800/50 p-6 rounded-2xl border-l-4 border-red-500">
+                        <h4 class="font-bold text-red-400 text-lg mb-2">🔴 10% Belum Terpenuhi (Real Test)</h4>
+                        <p class="text-slate-300 text-sm leading-relaxed">Implementasi langsung di lapangan berskala besar untuk menguji stress-test server secara real-time.</p>
+                    </div>
+                    <div class="bg-blue-900/30 p-6 rounded-2xl border border-blue-800/50 mt-4">
+                        <p class="text-xs uppercase tracking-widest text-blue-400 font-bold mb-3">Validating Progression</p>
+                        <p class="text-slate-300 text-sm font-medium mb-1">🏠 SCS Core = <span class="text-white">www.f1swimming.com</span></p>
+                        <p class="text-slate-300 text-sm font-medium">🌐 F1-ID Profile = <span class="text-white">f1swimming.com/f1-profile</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: CAMPAIGN -->
+        <div class="slide flex-col w-full max-w-5xl" id="slide-3">
+            <h2 class="text-3xl md:text-5xl font-black mb-12 text-center">Project Progression: <span class="text-emerald-400">Campaign & Promosi</span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 items-center">
+                <div class="flex justify-center md:justify-end">
+                    <div class="w-48 h-48 rounded-full donut-50 flex items-center justify-center relative shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+                        <div class="w-40 h-40 bg-slate-900 rounded-full flex flex-col items-center justify-center">
+                            <span class="text-4xl font-black text-white">50%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:col-span-2 space-y-6">
+                    <div class="bg-slate-800/50 p-6 rounded-2xl border-l-4 border-emerald-500">
+                        <h4 class="font-bold text-emerald-400 text-lg mb-2">🟢 50% Terpenuhi (Organic Foundation)</h4>
+                        <p class="text-slate-300 text-sm leading-relaxed">Dominasi keyword organik di Google SEO dan basis awal di Instagram.</p>
+                    </div>
+                    <div class="bg-slate-800/50 p-6 rounded-2xl border-l-4 border-red-500">
+                        <h4 class="font-bold text-red-400 text-lg mb-2">🔴 50% Belum Terpenuhi (Mass Expansion)</h4>
+                        <p class="text-slate-300 text-sm leading-relaxed">Ekspansi digital marketing ke Facebook Ads, penetrasi konten TikTok, dan media sosial lainnya.</p>
+                    </div>
+                    <div class="bg-blue-900/30 p-6 rounded-2xl border border-blue-800/50 mt-4">
+                        <p class="text-xs uppercase tracking-widest text-blue-400 font-bold mb-3">Validating Progression</p>
+                        <p class="text-slate-300 text-sm font-medium mb-1">🔍 Google SEO = <span class="text-white">google.com/search?q=F1+id+f1swimming</span></p>
+                        <p class="text-slate-300 text-sm font-medium">📱 Instagram = <span class="text-white">instagram.com/f1swimming</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: TEAM -->
+        <div class="slide flex-col w-full max-w-5xl" id="slide-4">
+            <h2 class="text-3xl md:text-5xl font-black mb-12 text-center">Project Progression: <span class="text-emerald-400">Team</span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 items-center">
+                <div class="flex justify-center md:justify-end">
+                    <div class="w-48 h-48 rounded-full donut-20 flex items-center justify-center relative shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+                        <div class="w-40 h-40 bg-slate-900 rounded-full flex flex-col items-center justify-center">
+                            <span class="text-4xl font-black text-white">20%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:col-span-2 space-y-6">
+                    <div class="bg-slate-800/50 p-6 rounded-2xl border-l-4 border-emerald-500">
+                        <h4 class="font-bold text-emerald-400 text-lg mb-2">🟢 20% Terpenuhi (Foundational Leadership)</h4>
+                        <p class="text-slate-300 text-sm leading-relaxed">Pondasi legalitas dan core leadership telah terbentuk (Direktur dan Architect Developer).</p>
+                    </div>
+                    <div class="bg-slate-800/50 p-6 rounded-2xl border-l-4 border-red-500">
+                        <h4 class="font-bold text-red-400 text-lg mb-2">🔴 80% Belum Terpenuhi (Operational Scale-Up)</h4>
+                        <p class="text-slate-300 text-sm leading-relaxed">Membutuhkan tim tambahan: Team IT, Team Marketing, Team Promotion, dan Team Operasional Lapangan.</p>
+                    </div>
+                    <div class="bg-blue-900/30 p-6 rounded-2xl border border-blue-800/50 mt-4">
+                        <p class="text-xs uppercase tracking-widest text-blue-400 font-bold mb-3">Validating Progression</p>
+                        <p class="text-slate-300 text-sm font-medium mb-1">🏢 Legalitas = <span class="text-white">PT. Teknologi Prestasi Indonesia (NIB dan No. SK aktif)</span></p>
+                        <p class="text-slate-300 text-sm font-medium mb-1">👩‍💼 Direktur = <span class="text-white">Nuzulul Hidayah (25%)</span></p>
+                        <p class="text-slate-300 text-sm font-medium">👨‍💻 Founder & Architect Dev = <span class="text-white">Fajar Aditya (75%)</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: ASET & MODAL -->
+        <div class="slide flex-col w-full max-w-5xl" id="slide-5">
+            <h2 class="text-3xl md:text-5xl font-black mb-12 text-center">Project Progression: <span class="text-emerald-400">Aset & Modal Usaha</span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 items-center">
+                <div class="flex justify-center md:justify-end">
+                    <div class="w-48 h-48 rounded-full donut-10 flex items-center justify-center relative shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+                        <div class="w-40 h-40 bg-slate-900 rounded-full flex flex-col items-center justify-center">
+                            <span class="text-4xl font-black text-white">10%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:col-span-2 space-y-6">
+                    <div class="bg-slate-800/50 p-6 rounded-2xl border-l-4 border-emerald-500">
+                        <h4 class="font-bold text-emerald-400 text-lg mb-2">🟢 10% Terpenuhi (Bootstrap Assets)</h4>
+                        <p class="text-slate-300 text-sm leading-relaxed">Operasional awal berjalan dengan device personal, Email Corporate, dan infrastruktur server dasar.</p>
+                    </div>
+                    <div class="bg-slate-800/50 p-6 rounded-2xl border-l-4 border-red-500">
+                        <h4 class="font-bold text-red-400 text-lg mb-2">🔴 90% Belum Terpenuhi (Growth Capital)</h4>
+                        <p class="text-slate-300 text-sm leading-relaxed">Membutuhkan aset untuk Pitching EO besar, serta modal pembentukan tim (gaji awal) sebelum fase monetisasi berjalan penuh.</p>
+                    </div>
+                    <div class="bg-blue-900/30 p-6 rounded-2xl border border-blue-800/50 mt-4">
+                        <p class="text-xs uppercase tracking-widest text-blue-400 font-bold mb-3">Validating Progression</p>
+                        <p class="text-slate-300 text-sm font-medium mb-1">📱 Device = <span class="text-white">Personal Device / HP Pribadi Tim</span></p>
+                        <p class="text-slate-300 text-sm font-medium mb-1">🌐 Domain = <span class="text-white">f1swimming.com (Aktif hingga Juni 2027)</span></p>
+                        <p class="text-slate-300 text-sm font-medium">🗄️ Database = <span class="text-white">2 Node Database siap pakai</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: KEBUTUHAN PENDANAAN -->
+        <div class="slide flex-col w-full max-w-6xl" id="slide-6">
+            <h2 class="text-4xl md:text-5xl font-black mb-4 text-center tracking-tight text-white">AKSELERASI PERTUMBUHAN F1SWIMMING</h2>
+            <p class="text-xl text-emerald-400 text-center mb-12 font-bold uppercase tracking-widest">Memilih Kecepatan Skala Ekspansi</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Skenario A -->
+                <div class="bg-slate-800 p-8 rounded-3xl border-2 border-slate-600 hover:border-emerald-500 transition-colors">
+                    <div class="inline-block bg-slate-700 text-emerald-400 font-black px-4 py-1.5 rounded-full text-xs mb-4">SCENARIO A</div>
+                    <h3 class="text-2xl font-black text-white mb-2">MARKET PENETRATION</h3>
+                    <p class="text-3xl font-black text-emerald-400 mb-6 border-b border-slate-700 pb-6">IDR 50.000.000</p>
+                    <p class="text-slate-300 font-medium mb-4 italic">Fokus pada dominasi pasar regional dan pemenuhan infrastruktur operasional dasar.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3"><span class="text-emerald-500">✓</span><span class="text-sm text-slate-300">Memvalidasi model bisnis secara langsung ke EO dan Klub lokal.</span></li>
+                        <li class="flex items-start gap-3"><span class="text-emerald-500">✓</span><span class="text-sm text-slate-300">Menutup celah 10% Real Test dan 50% Aset Pitching awal.</span></li>
+                    </ul>
+                </div>
+                
+                <!-- Skenario B -->
+                <div class="bg-gradient-to-br from-blue-900 to-slate-800 p-8 rounded-3xl border-2 border-blue-500 hover:border-blue-400 transition-colors relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-blue-500 text-white font-black px-6 py-1.5 text-xs rounded-bl-xl shadow-md">REKOMENDASI</div>
+                    <div class="inline-block bg-blue-800 text-blue-300 font-black px-4 py-1.5 rounded-full text-xs mb-4">SCENARIO B</div>
+                    <h3 class="text-2xl font-black text-white mb-2">NATIONAL SCALE-UP</h3>
+                    <p class="text-3xl font-black text-blue-400 mb-6 border-b border-blue-800 pb-6">IDR 100.000.000</p>
+                    <p class="text-blue-100 font-medium mb-4 italic">Mode akselerasi penuh untuk mendominasi manajemen event akuatik secara nasional.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3"><span class="text-blue-400">✓</span><span class="text-sm text-blue-50">Ekspansi masif B2B ke panitia penyelenggara se-Indonesia.</span></li>
+                        <li class="flex items-start gap-3"><span class="text-blue-400">✓</span><span class="text-sm text-blue-50">Skalabilitas server tingkat lanjut dan pembentukan struktur tim perusahaan utuh.</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: ALOKASI DANA -->
+        <div class="slide flex-col w-full max-w-6xl" id="slide-7">
+            <h2 class="text-3xl md:text-5xl font-black mb-12 text-center text-white">Alokasi Penggunaan Dana <span class="text-slate-500 text-2xl">(Use of Funds)</span></h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Kiri: Skenario A -->
+                <div class="bg-slate-800/80 p-8 rounded-3xl border border-slate-700">
+                    <h3 class="text-xl font-black text-emerald-400 mb-6 border-b border-slate-700 pb-3">ALOKASI SCENARIO A (50 Juta)</h3>
+                    <ul class="space-y-5">
+                        <li class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">
+                            <p class="font-bold text-white mb-1"><span class="text-emerald-500">35% (17,5 Juta)</span> Aset & Infrastruktur</p>
+                            <p class="text-xs text-slate-400 leading-relaxed">Pembelian device presentasi (tablet/laptop) dan upgrade server dasar.</p>
+                        </li>
+                        <li class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">
+                            <p class="font-bold text-white mb-1"><span class="text-emerald-500">35% (17,5 Juta)</span> Operational Runway</p>
+                            <p class="text-xs text-slate-400 leading-relaxed">Gaji awal tim inti (Admin/Support) selama fase akuisisi EO pertama.</p>
+                        </li>
+                        <li class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">
+                            <p class="font-bold text-white mb-1"><span class="text-emerald-500">20% (10 Juta)</span> Local Campaign</p>
+                            <p class="text-xs text-slate-400 leading-relaxed">Iklan digital tertarget (IG Ads/SEO) untuk regional Jawa Timur.</p>
+                        </li>
+                        <li class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">
+                            <p class="font-bold text-white mb-1"><span class="text-emerald-500">10% (5 Juta)</span> Real Test Capital</p>
+                            <p class="text-xs text-slate-400 leading-relaxed">Modal sponsor/subsidi awal untuk mengeksekusi Real Test event di lapangan.</p>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Kanan: Skenario B -->
+                <div class="bg-slate-800/80 p-8 rounded-3xl border border-slate-700">
+                    <h3 class="text-xl font-black text-blue-400 mb-6 border-b border-slate-700 pb-3">ALOKASI SCENARIO B (100 Juta)</h3>
+                    <ul class="space-y-5">
+                        <li class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">
+                            <p class="font-bold text-white mb-1"><span class="text-blue-500">28% (28 Juta)</span> IT & Server Scalability</p>
+                            <p class="text-xs text-slate-400 leading-relaxed">Upgrade Node Database dan pengamanan sistem real-time (Heat Builder).</p>
+                        </li>
+                        <li class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">
+                            <p class="font-bold text-white mb-1"><span class="text-blue-500">35% (35 Juta)</span> Talent Acquisition</p>
+                            <p class="text-xs text-slate-400 leading-relaxed">Rekrutmen tim lengkap (DevOps, Sales B2B, Marketing & Content Creator).</p>
+                        </li>
+                        <li class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">
+                            <p class="font-bold text-white mb-1"><span class="text-blue-500">25% (25 Juta)</span> National Aggressive Promo</p>
+                            <p class="text-xs text-slate-400 leading-relaxed">Kampanye masif omnichannel (Meta Ads, TikTok, Google).</p>
+                        </li>
+                        <li class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">
+                            <p class="font-bold text-white mb-1"><span class="text-blue-500">12% (12 Juta)</span> Real Test Capital</p>
+                            <p class="text-xs text-slate-400 leading-relaxed">Modal sponsor/subsidi masif untuk mengeksekusi Real Test skala nasional.</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: PASAR POTENSIAL -->
+        <div class="slide flex-col w-full max-w-6xl text-center" id="slide-8">
+            <h2 class="text-3xl md:text-5xl font-black mb-4 tracking-tight">MENGUASAI 92% MARKET "GRASSROOT" YANG TAK TERSENTUH</h2>
+            <p class="text-xl text-slate-400 mb-12">Fakta Lapangan vs Data Kelembagaan Resmi</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700">
+                    <div class="text-5xl mb-4 opacity-50">📊</div>
+                    <h3 class="text-2xl font-black text-red-400 mb-6">ILUSI DATA RESMI <span class="text-white text-base block mt-1">(THE 8% MARKET)</span></h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <span class="text-slate-500">▪</span>
+                            <p class="text-sm text-slate-300 leading-relaxed">Lembaga resmi saat ini hanya menguasai dan mencatat sekitar 8% database dari total klub dan perenang di Indonesia.</p>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-slate-500">▪</span>
+                            <p class="text-sm text-slate-300 leading-relaxed">Mayoritas software kompetisi (legacy system) hanya melayani segmen 8% ini.</p>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bg-emerald-900/30 p-8 rounded-3xl border border-emerald-800/50">
+                    <div class="text-5xl mb-4">🏊‍♂️</div>
+                    <h3 class="text-2xl font-black text-emerald-400 mb-6">FAKTA LAPANGAN <span class="text-white text-base block mt-1">(THE 92% MARKET)</span></h3>
+                    <p class="text-xs font-bold uppercase tracking-widest text-emerald-500 mb-4">KASUS SURABAYA (VALIDASI)</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3"><span class="text-emerald-400">✓</span><p class="text-sm text-slate-200">1 Kolam renang publik bisa menjadi homebase bagi belasan klub renang.</p></li>
+                        <li class="flex items-start gap-3"><span class="text-emerald-400">✓</span><p class="text-sm text-slate-200"><strong>Fakta Sosial Media:</strong> Terdapat 100++ klub renang aktif beriklan di Surabaya.</p></li>
+                        <li class="flex items-start gap-3"><span class="text-red-400">✗</span><p class="text-sm text-slate-400"><strong>Fakta Sistem Lama:</strong> HANYA 8 Klub di Surabaya yang terdaftar resmi.</p></li>
+                    </ul>
+                    <div class="mt-6 bg-emerald-800/50 p-4 rounded-xl">
+                        <p class="text-sm font-bold text-white">TARGET F1SWIMMING: Mengakuisisi dan mendigitalisasi 92% market grassroot yang tidak tersentuh sistem lama.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: MONETISASI 1 -->
+        <div class="slide flex-col w-full max-w-5xl" id="slide-9">
+            <div class="text-center mb-12">
+                <span class="bg-blue-900/50 text-blue-400 font-black px-4 py-1.5 rounded-full text-xs tracking-widest mb-4 inline-block">B2B SaaS - KLUB</span>
+                <h2 class="text-4xl md:text-5xl font-black mb-3">MONETISASI #1: CLUB MEMBER PRO <span class="text-slate-500">(LIFETIME)</span></h2>
+                <p class="text-xl text-slate-400">Model Freemium untuk Mengakuisisi Database Atlet</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700">
+                    <h3 class="text-lg font-black text-white mb-6 uppercase tracking-widest border-b border-slate-700 pb-3">Strategi Akuisisi & Upsell</h3>
+                    <div class="space-y-6">
+                        <div class="bg-slate-900/50 p-5 rounded-2xl border border-slate-700">
+                            <span class="bg-slate-700 text-white text-[10px] font-black px-2 py-1 rounded-md uppercase tracking-wider mb-2 inline-block">Free Tier</span>
+                            <p class="text-sm text-slate-300">Setiap klub mendapat kuota 20 nama atlet yang diverifikasi gratis oleh sistem F1-ID.</p>
+                        </div>
+                        <div class="bg-blue-900/20 p-5 rounded-2xl border border-blue-800/50">
+                            <span class="bg-blue-600 text-white text-[10px] font-black px-2 py-1 rounded-md uppercase tracking-wider mb-2 inline-block">Pro Tier</span>
+                            <p class="text-sm text-blue-100">Untuk menambah kuota atlet (unlimited), klub dikenakan biaya <strong>Rp 500.000</strong> (Lifetime Status PRO). Mengunci klub ke dalam ekosistem.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 flex flex-col justify-center">
+                    <h3 class="text-lg font-black text-emerald-400 mb-6 uppercase tracking-widest border-b border-slate-700 pb-3">Estimasi Pendapatan Awal</h3>
+                    <p class="text-xs text-slate-400 uppercase tracking-widest font-bold mb-6">Target: Q4 (Sept - Des 2026)</p>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex justify-between items-center border-b border-slate-700/50 pb-2">
+                            <span class="text-slate-400">Target Penetrasi</span> <span class="font-bold text-white">6 Kota</span>
+                        </li>
+                        <li class="flex justify-between items-center border-b border-slate-700/50 pb-2">
+                            <span class="text-slate-400">Target Konversi</span> <span class="font-bold text-white">20 Klub / kota</span>
+                        </li>
+                        <li class="flex justify-between items-center border-b border-slate-700/50 pb-2">
+                            <span class="text-slate-400">Total Klub PRO</span> <span class="font-bold text-emerald-400">120 Klub</span>
+                        </li>
+                    </ul>
+                    
+                    <div class="bg-emerald-900/30 p-5 rounded-2xl border border-emerald-800 text-center">
+                        <p class="text-xs text-emerald-400 font-bold mb-1 uppercase tracking-widest">Gross Revenue (4 Bulan Pertama)</p>
+                        <p class="text-3xl font-black text-white">Rp 60.000.000</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: MONETISASI 2 -->
+        <div class="slide flex-col w-full max-w-5xl" id="slide-10">
+            <div class="text-center mb-12">
+                <span class="bg-red-900/50 text-red-400 font-black px-4 py-1.5 rounded-full text-xs tracking-widest mb-4 inline-block">B2B SaaS - EVENT ORGANIZER</span>
+                <h2 class="text-4xl md:text-5xl font-black mb-3">MONETISASI #2: EVENT PRO & PITCHING</h2>
+                <p class="text-xl text-slate-400">Infrastruktur Manajemen Lomba & Akses Pendanaan</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700">
+                    <h3 class="text-lg font-black text-white mb-6 uppercase tracking-widest border-b border-slate-700 pb-3">Value Proposition EO</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full bg-red-900/50 text-red-400 flex items-center justify-center shrink-0 font-bold">1</div>
+                            <p class="text-sm text-slate-300 pt-1">Fitur "Event Pro" (SCS) membuka akses eksklusif ke direktori In-App Pitching Sponsor <span class="text-blue-400 italic">(f1swimming.com/sponsor-preview)</span>.</p>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full bg-red-900/50 text-red-400 flex items-center justify-center shrink-0 font-bold">2</div>
+                            <p class="text-sm text-slate-300 pt-1">EO dapat langsung mengajukan proposal ke ratusan brand yang sudah tersistem.</p>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full bg-red-900/50 text-red-400 flex items-center justify-center shrink-0 font-bold">3</div>
+                            <p class="text-sm text-white font-bold pt-1">Biaya berlangganan sistem: <span class="text-emerald-400">Rp 500.000 / Event</span>.</p>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 flex flex-col justify-center">
+                    <h3 class="text-lg font-black text-red-400 mb-6 uppercase tracking-widest border-b border-slate-700 pb-3">Estimasi Pendapatan Tahunan</h3>
+                    <p class="text-xs text-slate-400 uppercase tracking-widest font-bold mb-6">Target Lanjutan: Tahun 2027</p>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex justify-between items-center border-b border-slate-700/50 pb-2">
+                            <span class="text-slate-400">Market Size (2025 Scraping)</span> <span class="font-bold text-white">1.200 Event</span>
+                        </li>
+                        <li class="flex justify-between items-center border-b border-slate-700/50 pb-2">
+                            <span class="text-slate-400">Target Market Share (20%)</span> <span class="font-bold text-red-400">240 Event / tahun</span>
+                        </li>
+                    </ul>
+                    
+                    <div class="bg-red-900/30 p-5 rounded-2xl border border-red-800 text-center">
+                        <p class="text-xs text-red-400 font-bold mb-1 uppercase tracking-widest">Gross Revenue (Per Tahun)</p>
+                        <p class="text-3xl font-black text-white">Rp 120.000.000</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: MONETISASI 3 -->
+        <div class="slide flex-col w-full max-w-5xl" id="slide-11">
+            <div class="text-center mb-12">
+                <span class="bg-emerald-900/50 text-emerald-400 font-black px-4 py-1.5 rounded-full text-xs tracking-widest mb-4 inline-block">B2B AGENCY / MAKELAR DIGITAL</span>
+                <h2 class="text-4xl md:text-5xl font-black mb-3">MONETISASI #3: B2B SPONSOR AGENCY</h2>
+                <p class="text-xl text-slate-400">Mengubah Traffic Event Menjadi Mesin Uang (40% Revenue Share)</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700">
+                    <h3 class="text-lg font-black text-white mb-6 uppercase tracking-widest border-b border-slate-700 pb-3">Matchmaking Brand & Event</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <span class="text-emerald-400 font-black mt-1">⇋</span>
+                            <p class="text-sm text-slate-300">F1Swimming bertindak sebagai Agency/Penghubung antara Brand Nasional dengan EO Lokal.</p>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-emerald-400 font-black mt-1">⇋</span>
+                            <p class="text-sm text-slate-300">Mengelola penempatan iklan di Buku Acara, Live Result, dan Live Ads di venue.</p>
+                        </li>
+                        <li class="flex items-start gap-3 mt-4 bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">
+                            <span class="text-emerald-500 font-black mt-1">💰</span>
+                            <p class="text-sm text-white font-bold">F1Swimming memotong <span class="text-emerald-400">40% Agency Fee</span> dari setiap nilai kesepakatan sponsor.</p>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 flex flex-col justify-center">
+                    <h3 class="text-lg font-black text-emerald-400 mb-6 uppercase tracking-widest border-b border-slate-700 pb-3">Simulasi Agency Tahunan</h3>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex justify-between items-center border-b border-slate-700/50 pb-2">
+                            <span class="text-slate-400">Asumsi Deal via Platform</span> <span class="font-bold text-white">100 Event</span>
+                        </li>
+                        <li class="flex justify-between items-center border-b border-slate-700/50 pb-2">
+                            <span class="text-slate-400">Rata-rata Deal Sponsor</span> <span class="font-bold text-white">Rp 5 Juta / Event</span>
+                        </li>
+                        <li class="flex justify-between items-center border-b border-slate-700/50 pb-2">
+                            <span class="text-slate-400">Total Gross Sponsorship Value</span> <span class="font-bold text-slate-300">Rp 500.000.000</span>
+                        </li>
+                    </ul>
+                    
+                    <div class="bg-gradient-to-r from-emerald-900 to-slate-800 p-6 rounded-2xl border border-emerald-700 text-center shadow-lg transform hover:scale-105 transition-transform">
+                        <p class="text-xs text-emerald-400 font-bold mb-1 uppercase tracking-widest">Net Revenue F1Swimming (Fee 40%)</p>
+                        <p class="text-4xl font-black text-white">Rp 200.000.000 <span class="text-lg text-emerald-400">/ Tahun</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: TRANSPARENCY & PAYBACK -->
+        <div class="slide flex-col w-full max-w-5xl" id="slide-12">
+            <h2 class="text-4xl md:text-5xl font-black mb-4 text-center tracking-tight">TRANSPARANSI FINANSIAL & <br><span class="text-emerald-400">MEKANISME PAYBACK</span></h2>
+            <p class="text-xl text-slate-400 text-center mb-12">Membangun Kepercayaan Melalui Open-Book Management</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700">
+                    <h3 class="text-xl font-black text-white mb-6 uppercase tracking-widest border-b border-slate-700 pb-3">100% Financial Transparency</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <span class="text-blue-400">▪</span>
+                            <p class="text-sm text-slate-300">Kami menolak laporan keuangan tertutup yang usang.</p>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-blue-400">▪</span>
+                            <p class="text-sm text-slate-300">Seluruh detail peruntukan dan arus kas pendanaan akan terbuka secara real-time melalui: <span class="text-blue-400 font-bold bg-blue-900/30 px-2 py-1 rounded">f1swimming.com/pembukuan</span>.</p>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-blue-400">▪</span>
+                            <p class="text-sm text-slate-300">Investor memantau laju operasional perusahaan setiap hari.</p>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bg-emerald-900/30 p-8 rounded-3xl border border-emerald-800/50">
+                    <h3 class="text-xl font-black text-emerald-400 mb-6 uppercase tracking-widest border-b border-emerald-800/50 pb-3">50% Net Income Dedication</h3>
+                    <div class="text-5xl mb-6">🔄</div>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <span class="text-emerald-400">✓</span>
+                            <p class="text-sm text-slate-200">Pembagian hasil (PayBack) tidak menunggu tutup buku tahunan.</p>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-emerald-400">✓</span>
+                            <p class="text-sm text-slate-200 leading-relaxed"><strong class="text-white">50% dari Pendapatan Bersih</strong> (After-Tax Profit) bulanan akan langsung dialokasikan untuk mengembalikan dana investor hingga kontrak ROI terpenuhi.</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 13: PENAWARAN INVESTASI -->
+        <div class="slide flex-col w-full max-w-6xl" id="slide-13">
+            <h2 class="text-3xl md:text-5xl font-black mb-4 text-center tracking-tight">SKENARIO ROI & EQUITY</h2>
+            <p class="text-xl text-emerald-400 text-center mb-10 font-bold uppercase tracking-widest">Penawaran Terukur dengan Risiko Terlindung (Risk-Free)</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Skenario A -->
+                <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 relative">
+                    <div class="absolute top-4 right-4 bg-slate-700 text-slate-300 text-xs font-bold px-3 py-1 rounded-full">IDR 50M</div>
+                    <h3 class="text-xl font-black text-white mb-6 uppercase tracking-widest">SCENARIO A</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">
+                            <p class="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1">Jaminan ROI</p>
+                            <p class="text-2xl font-black text-emerald-400">200% <span class="text-sm text-slate-300 font-medium">(Pengembalian Rp 100 Juta)</span></p>
+                        </div>
+                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">
+                            <p class="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1">Tenor Waktu</p>
+                            <p class="text-lg font-bold text-white">Maksimal 15 Bulan <span class="text-xs font-normal text-slate-400 block">(Sept 2026 - Des 2027). Kontrak berakhir saat nominal terpenuhi.</span></p>
+                        </div>
+                        <div class="bg-red-900/20 p-4 rounded-xl border border-red-900/50 mt-4">
+                            <p class="text-xs text-red-400 uppercase tracking-widest font-bold mb-1">Investor Fail-Safe</p>
+                            <p class="text-sm text-slate-300 leading-relaxed">Jika ROI tidak tercapai, dana tidak hangus melainkan otomatis terkonversi menjadi <strong>5% Equity (Saham)</strong> di PT Teknologi Prestasi Indonesia.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Skenario B -->
+                <div class="bg-gradient-to-br from-blue-900 to-slate-800 p-8 rounded-3xl border border-blue-600 relative">
+                    <div class="absolute top-4 right-4 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full">IDR 100M</div>
+                    <h3 class="text-xl font-black text-white mb-6 uppercase tracking-widest">SCENARIO B <span class="text-xs text-blue-300 normal-case block mt-1">(Bebas Pilih Opsi)</span></h3>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-slate-900/50 p-5 rounded-xl border border-blue-500/30 relative overflow-hidden">
+                            <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>
+                            <p class="text-xs text-blue-300 uppercase tracking-widest font-bold mb-2">Opsi 1 (Long-Term)</p>
+                            <p class="text-2xl font-black text-white">7% Direct Equity <span class="text-sm text-slate-300 font-medium block mt-1">Saham langsung untuk menikmati dividen jangka panjang berdasarkan proyeksi monetisasi.</span></p>
+                        </div>
+                        <div class="bg-slate-900/50 p-5 rounded-xl border border-emerald-500/30 relative overflow-hidden mt-4">
+                            <div class="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>
+                            <p class="text-xs text-emerald-400 uppercase tracking-widest font-bold mb-2">Opsi 2 (Short-Term)</p>
+                            <p class="text-2xl font-black text-white">160% Jaminan ROI</p>
+                            <p class="text-sm text-slate-300 mt-1">Total pengembalian Rp 160 Juta dengan tenor maksimal 18 Bulan (Sept 2026 - Mar 2028).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 14: PENUTUP / VISION -->
+        <div class="slide flex-col w-full max-w-4xl text-center" id="slide-14">
+            <h2 class="text-5xl md:text-6xl font-black mb-4 tracking-tight drop-shadow-xl text-white">THE BLUE OCEAN: <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">KAMI ADALAH PELOPOR</span></h2>
+            <p class="text-xl text-slate-400 mb-12 uppercase tracking-widest font-bold">Mendominasi Sebelum yang Lain Menyadari</p>
+
+            <div class="bg-slate-800/80 p-10 md:p-14 rounded-3xl border border-slate-700 shadow-2xl relative overflow-hidden backdrop-blur-md">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-600 rounded-full mix-blend-overlay filter blur-[80px] opacity-20 translate-x-1/2 -translate-y-1/2"></div>
+                <div class="absolute bottom-0 left-0 w-64 h-64 bg-blue-600 rounded-full mix-blend-overlay filter blur-[80px] opacity-20 -translate-x-1/2 translate-y-1/2"></div>
+                
+                <div class="relative z-10 space-y-6">
+                    <p class="text-lg md:text-xl text-slate-300 leading-relaxed font-medium">
+                        Angka <span class="text-white font-black">92% market niche grassroot</span> yang tidak tersentuh bukanlah sekadar asumsi, melainkan fakta berbasis data di lapangan.
+                    </p>
+                    <p class="text-lg md:text-xl text-slate-300 leading-relaxed font-medium">
+                        Melalui analisa mendalam, belum ada satupun startup teknologi di Indonesia yang membangun infrastruktur manajemen dan digitalisasi akuatik sekomprehensif ini.
+                    </p>
+                    <p class="text-xl md:text-2xl text-white leading-relaxed font-black mt-8 pt-8 border-t border-slate-700/50">
+                        F1Swimming hadir bukan untuk bersaing di sistem yang lama, melainkan menciptakan standar baru. Kami adalah pelopor, dan ini adalah momentum terbaik untuk mendominasi pasar.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- NAVIGATION CONTROLS -->
+    <div class="fixed bottom-0 left-0 w-full p-6 flex justify-between items-center bg-gradient-to-t from-slate-900 to-transparent z-50">
+        <button id="prevBtn" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 px-6 rounded-full transition-colors border border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed">
+            &larr; Prev
+        </button>
+        <button id="nextBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all">
+            Next &rarr;
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const currentIndicator = document.getElementById('currentSlideNum');
+            let currentSlide = 0;
+            const totalSlides = slides.length;
+
+            function updateSlides() {
+                slides.forEach((slide, index) => {
+                    slide.classList.remove('active');
+                    if (index === currentSlide) {
+                        slide.classList.add('active');
+                    }
+                });
+                currentIndicator.innerText = currentSlide + 1;
+                prevBtn.disabled = currentSlide === 0;
+                nextBtn.innerText = currentSlide === totalSlides - 1 ? 'Finish' : 'Next \u2192';
+            }
+
+            prevBtn.addEventListener('click', () => {
+                if (currentSlide > 0) {
+                    currentSlide--;
+                    updateSlides();
+                }
+            });
+
+            nextBtn.addEventListener('click', () => {
+                if (currentSlide < totalSlides - 1) {
+                    currentSlide++;
+                    updateSlides();
+                }
+            });
+
+            // Keyboard Navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ') {
+                    if (currentSlide < totalSlides - 1) currentSlide++;
+                    updateSlides();
+                } else if (e.key === 'ArrowLeft') {
+                    if (currentSlide > 0) currentSlide--;
+                    updateSlides();
+                }
+            });
+
+            updateSlides();
+        });
+    </script>
+</body>
+</html>

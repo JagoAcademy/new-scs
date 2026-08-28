@@ -8,10 +8,11 @@ export default defineConfig({
         // --- 1. MAIN & PUBLIC PAGES (Akses Tanpa Login) ---
         main: resolve(__dirname, 'index.html'), // Homepage
         about: resolve(__dirname, 'about.html'), // Halaman Tentang Kami (Pilar SEO)
+        openinvest: resolve(__dirname, 'openinvest.html'), // <--- JAHITAN BARU: Pitch Deck Pendanaan F1Swimming
         auth: resolve(__dirname, 'auth.html'), // Login & Register System
         register: resolve(__dirname, 'register.html'), // Form Registrasi
         pricing: resolve(__dirname, 'pricing.html'), // Halaman Harga SCS
-        promosi: resolve(__dirname, 'promosi.html'), // <--- FIX: Key 'promosi' sebelumnya hilang
+        promosi: resolve(__dirname, 'promosi.html'),
         event: resolve(__dirname, 'event.html'), // Kalender Event Publik Nasional
         pulse: resolve(__dirname, 'pulse.html'),
         eventPublic: resolve(__dirname, 'event-public.html'), // Landing page spesifik 1 event
@@ -21,8 +22,8 @@ export default defineConfig({
         result: resolve(__dirname, 'result.html'), // Hasil resmi perlombaan
         cetakSertifikat: resolve(__dirname, 'cetak-sertifikat.html'), // Halaman Cetak Sertifikat Peserta
         sponsorship: resolve(__dirname, 'sponsorship.html'),
-        pitch: resolve(__dirname, 'pitch.html'), // Web-Based Pitch Deck Nestle 📈
-        media: resolve(__dirname, 'media.html'), // <--- JAHITAN BARU: SCS Media & Ads Portal 📺🚀
+        pitch: resolve(__dirname, 'pitch.html'), // Web-Based Pitch Deck Nestle 
+        media: resolve(__dirname, 'media.html'), // SCS Media & Ads Portal 
 
         // --- 2. DASHBOARD KLUB / PELATIH ---
         dashboard: resolve(__dirname, 'dashboard.html'), // Command Center Manajemen Klub
@@ -32,7 +33,7 @@ export default defineConfig({
         // --- 3. DASHBOARD EO / PANITIA LOMBA ---
         eventDashboard: resolve(__dirname, 'event-dashboard.html'), // Panel Utama Command Center 1 Event
         eventSponsor: resolve(__dirname, 'event-sponsor.html'), // Manajemen Sponsor Deal & Pitching
-        logoSponsor: resolve(__dirname, 'logosponsor.html'), // Master Database Sponsor HTML 👑
+        logoSponsor: resolve(__dirname, 'logosponsor.html'), // Master Database Sponsor HTML 
         eventPeserta: resolve(__dirname, 'event-peserta.html'), // List & Verifikasi Peserta Lomba
         settingsLomba: resolve(__dirname, 'settings-lomba.html'), // Setup Nomor Lomba, Usia & Gaya
 
