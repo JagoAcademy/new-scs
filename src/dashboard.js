@@ -8,6 +8,53 @@ let currentClubId = null;
 let currentClubData = null; 
 
 document.addEventListener('DOMContentLoaded', async () => {
+    
+    // ==========================================
+    // LOGIKA TOGGLE VIEW DESKTOP/MOBILE
+    // ==========================================
+    const btnToggleView = document.getElementById('btnToggleView');
+    const btnToggleViewMobile = document.getElementById('btnToggleViewMobile');
+    const viewportMeta = document.getElementById('viewportMeta');
+    
+    const iconDesktop = document.getElementById('iconDesktop');
+    const iconMobile = document.getElementById('iconMobile');
+    const iconDesktopMobile = document.getElementById('iconDesktopMobile');
+    const iconMobileMobile = document.getElementById('iconMobileMobile');
+
+    // Cek di localStorage apakah user pernah ngeset mode desktop
+    let isDesktopMode = localStorage.getItem('scs_desktop_mode') === 'true';
+
+    function applyViewportMode() {
+        if (isDesktopMode) {
+            viewportMeta.setAttribute('content', 'width=1280');
+            // Ganti icon jadi Mobile (buat tombol balik)
+            if(iconDesktop) iconDesktop.classList.add('hidden');
+            if(iconMobile) iconMobile.classList.remove('hidden');
+            if(iconDesktopMobile) iconDesktopMobile.classList.add('hidden');
+            if(iconMobileMobile) iconMobileMobile.classList.remove('hidden');
+        } else {
+            viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0');
+            // Ganti icon jadi Desktop (buat tombol ngubah)
+            if(iconDesktop) iconDesktop.classList.remove('hidden');
+            if(iconMobile) iconMobile.classList.add('hidden');
+            if(iconDesktopMobile) iconDesktopMobile.classList.remove('hidden');
+            if(iconMobileMobile) iconMobileMobile.classList.add('hidden');
+        }
+    }
+
+    // Apply saat pertama kali load
+    applyViewportMode();
+
+    function toggleViewMode() {
+        isDesktopMode = !isDesktopMode;
+        localStorage.setItem('scs_desktop_mode', isDesktopMode);
+        applyViewportMode();
+    }
+
+    if (btnToggleView) btnToggleView.addEventListener('click', toggleViewMode);
+    if (btnToggleViewMobile) btnToggleViewMobile.addEventListener('click', toggleViewMode);
+
+
     const logoutAction = async () => {
         await supabaseClient.auth.signOut();
         window.location.href = '/'; 
