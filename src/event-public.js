@@ -35,9 +35,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (eventData.is_closed) {
             const formPeserta = document.querySelector('.bg-white\\/95.backdrop-blur-md');
             const boxBiaya = document.querySelector('.bg-blue-900.border.border-blue-800');
+            const sectionAksesCepat = document.getElementById('sectionAksesCepat');
             
             if (formPeserta) formPeserta.classList.add('hidden');
             if (boxBiaya) boxBiaya.classList.add('hidden');
+            if (sectionAksesCepat) sectionAksesCepat.classList.add('hidden');
 
             let waLink = "#";
             if (config.admin_wa_1 || config.admin_wa_2) {
@@ -55,7 +57,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         Mohon maaf, pendaftaran untuk event <strong>${eventData.event_name}</strong> sudah ditutup oleh panitia. Silakan hubungi admin jika ada keperluan mendesak.
                     </p>
                     <a href="${waLink}" target="_blank" class="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-xl transition-all hover:scale-105 shadow-md">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
                         Hubungi Panitia (WA)
                     </a>
                 </div>
@@ -79,13 +80,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         const elStripTanggal = document.getElementById('stripTanggal');
         if (elStripTanggal) elStripTanggal.innerText = formattedDate;
 
-        const namaKota = eventData.kota || '';
-        const namaProvinsi = eventData.provinsi || '';
+        // FIX: Hanya ambil kota/kabupaten tanpa provinsi
+        const rawKota = eventData.kota || '';
+        const namaKota = rawKota.split(',')[0].trim(); 
         const namaKolam = config.nama_kolam || '';
         let teksLokasiLengkap = '';
-        if (namaKolam) teksLokasiLengkap += `${namaKolam}`; 
-        else if (namaKota) teksLokasiLengkap += `${namaKota}`;
-        else teksLokasiLengkap = 'Lokasi blm diset';
+        if (namaKolam && namaKota) {
+            teksLokasiLengkap = `${namaKolam} - ${namaKota}`;
+        } else if (namaKolam) {
+            teksLokasiLengkap = namaKolam;
+        } else if (namaKota) {
+            teksLokasiLengkap = namaKota;
+        } else {
+            teksLokasiLengkap = 'Lokasi blm diset';
+        }
         
         const elStripLokasi = document.getElementById('stripLokasi');
         if (elStripLokasi) elStripLokasi.innerText = teksLokasiLengkap;
@@ -303,54 +311,93 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (err) {
         alert(err.message);
     }
-
+  
+        // ==========================================
+    // LOGIKA LOGIN GOOGLE (KEMBALI KE GOOGLE IDENTITY SERVICES)
     // ==========================================
-    // TOGGLE & LOGIKA LOGIN MANUAL EMAIL 
-    // ==========================================
-    const btnToggleLogin = document.getElementById('btnToggleLogin');
-    if(btnToggleLogin) {
-        btnToggleLogin.addEventListener('click', () => {
-            document.getElementById('areaLogin').classList.toggle('hidden');
-        });
-    }
-
-    const btnProsesLogin = document.getElementById('btnProsesLogin');
-    if(btnProsesLogin) {
-        btnProsesLogin.addEventListener('click', async () => {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            const btnLogin = document.getElementById('btnProsesLogin');
-
-            if(!email || !password) return alert("Email dan Password wajib diisi!");
-            
-            btnLogin.innerText = "Mengecek data..."; 
-            btnLogin.disabled = true;
-
-            try {
-                const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({ email, password });
-                if (authError) throw authError;
-
-                await applySuccessfulLoginUI(authData.user.id);
-                alert("Login berhasil!");
-            } catch (err) {
-                alert("Gagal login: " + err.message);
-            } finally {
-                btnLogin.innerText = "Masuk & Sinkronisasi Data"; 
-                btnLogin.disabled = false;
+    const btnGoogleLoginPublic = document.getElementById('btnGoogleLoginPublic');
+    if (btnGoogleLoginPublic) {
+        btnGoogleLoginPublic.innerHTML = ''; 
+        btnGoogleLoginPublic.className = 'flex justify-center w-full mb-2'; 
+        
+        const renderGoogleButtonPublic = () => {
+            if (typeof google === 'undefined' || !google.accounts) {
+                setTimeout(renderGoogleButtonPublic, 100); 
+                return;
             }
-        });
+
+            google.accounts.id.initialize({
+                client_id: '1047924463495-3virdj082194chl013ia1js0ls8c99rv.apps.googleusercontent.com',
+                callback: async (response) => {
+                    try {
+                        const { data, error } = await supabaseClient.auth.signInWithIdToken({
+                            provider: 'google',
+                            token: response.credential,
+                        });
+
+                        if (error) throw error;
+                        
+                        // Langsung apply UI login tanpa reload halaman
+                        await applySuccessfulLoginUI(data.user.id);
+                        alert("Login berhasil! Data klub disinkronisasi.");
+                    } catch (err) {
+                        alert("Gagal login Google: " + err.message);
+                    }
+                }
+            });
+
+            google.accounts.id.renderButton(
+                btnGoogleLoginPublic, 
+                { 
+                    theme: "outline", 
+                    size: "large", 
+                    text: "continue_with",
+                    shape: "rectangular"
+                } 
+            );
+        };
+
+        renderGoogleButtonPublic();
     }
 
     // ==========================================
-    // LOGOUT
+    // TOGGLE & LOGIKA LOGIN MANUAL EMAIL (FALLBACK)
     // ==========================================
-    const btnLogout = document.getElementById('btnLogout');
-    if(btnLogout) {
-        btnLogout.addEventListener('click', async () => {
-            await supabaseClient.auth.signOut();
-            window.location.reload();
-        });
-    }
+    document.getElementById('btnToggleManualLogin').addEventListener('click', () => {
+        document.getElementById('areaLogin').classList.toggle('hidden');
+    });
+
+    document.getElementById('btnProsesLogin').addEventListener('click', async () => {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        const btnLogin = document.getElementById('btnProsesLogin');
+
+        if(!email || !password) return alert("Email dan Password wajib diisi!");
+        
+        btnLogin.innerText = "Mengecek data..."; 
+        btnLogin.disabled = true;
+
+        try {
+            const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (authError) throw authError;
+
+            await applySuccessfulLoginUI(authData.user.id);
+            alert("Login berhasil!");
+        } catch (err) {
+            alert("Gagal login: " + err.message);
+        } finally {
+            btnLogin.innerText = "Masuk & Sinkronisasi"; 
+            btnLogin.disabled = false;
+        }
+    });
+
+    // ==========================================
+    // LOGOUT (FIXED: BERSIHKAN SAMPAH URL)
+    // ==========================================
+    document.getElementById('btnLogout').addEventListener('click', async () => {
+        await supabaseClient.auth.signOut();
+        window.location.href = window.location.origin + window.location.pathname + window.location.search;
+    });
 
     // ==========================================
     // FUNGSI LOAD ATLET KE DROPDOWN (Bisa Dipanggil Ulang)
@@ -388,7 +435,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (clubErr || !clubData) {
                 await supabaseClient.auth.signOut();
                 alert("Akun ini belum memiliki Profil Klub. Silakan lengkapi profil di halaman Dashboard terlebih dahulu.");
-                window.location.href = 'https://f1swimming.com/dashboard.html';
+                window.location.href = '/dashboard.html';
                 return;
             }
             
@@ -396,29 +443,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             loggedInClubData = clubData;
 
             await loadAthletesToDropdown(clubData.id);
+
+            document.getElementById('sectionAksesCepat').classList.add('hidden');
             
-            // Sembunyikan Area Login Manual
-            const loginBar = document.getElementById('loginBar');
-            if (loginBar) loginBar.classList.add('hidden');
-            const areaLogin = document.getElementById('areaLogin');
-            if (areaLogin) areaLogin.classList.add('hidden');
-            
-            // Tampilkan Badge Klub
             const badge = document.getElementById('activeClubBadge');
-            if(badge) {
-                badge.classList.remove('hidden');
-                badge.classList.add('flex');
-            }
+            badge.classList.remove('hidden');
+            badge.classList.add('flex');
             
             const namaKlub = clubData.club_name || clubData.nama_klub || "Klub Terdaftar SCS";
             const avatarUrl = clubData.logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(namaKlub)}&background=1e3a8a&color=fff`;
             
-            const activeClubName = document.getElementById('activeClubName');
-            if(activeClubName) activeClubName.innerText = namaKlub;
-            const activeClubLogo = document.getElementById('activeClubLogo');
-            if(activeClubLogo) activeClubLogo.src = avatarUrl;
+            document.getElementById('activeClubName').innerText = namaKlub;
+            document.getElementById('activeClubLogo').src = avatarUrl;
 
-            // Atur Form Input
             document.getElementById('areaGuestOnly').classList.add('hidden'); 
             document.getElementById('areaAkta').classList.add('hidden');
             
@@ -651,7 +688,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 }
             } else {
-                totalBiaya = qty >= Number(config.min_diskon || 999) ? qty * Number(config.biaya_diskon || 0) : qty * Number(config.biaya_normal || 0);
+                totalBiaya = qty >= Number(config.min_diskon || 999) 
+                    ? qty * Number(config.biaya_diskon || 0) 
+                    : qty * Number(config.biaya_normal || 0);
             }
 
             btn.innerHTML = "Menambahkan... ⏳"; 
