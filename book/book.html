@@ -6,11 +6,10 @@
     <title>Buku Acara (Heat Sheet) | SCS</title>
     <link rel="stylesheet" href="/src/style.css">
     <style>
-        /* BASE KERTAS A4 (Untuk Layar & Print) */
         .a4-page {
             width: 210mm; 
             min-height: 297mm; 
-            margin: 0 auto 20mm auto; /* Spasi antar kertas di layar */
+            margin: 0 auto 20mm auto;
             background: white;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             flex-shrink: 0; 
@@ -19,7 +18,6 @@
             break-after: page;
         }
 
-        /* KHUSUS HALAMAN COVER PDF (The Grand Entrance) */
         .cover-page {
             display: flex;
             flex-direction: column;
@@ -63,17 +61,21 @@
             flex-wrap: wrap;
         }
         .sponsor-spotlight-logos img {
-            max-height: 70px; /* Ukuran VIP/Platinum */
+            max-height: 70px;
             object-fit: contain;
             filter: grayscale(0%);
         }
 
-        /* KHUSUS HALAMAN KONTEN (Tabel Heat) */
         .content-page {
             padding: 15mm;
         }
 
-        /* PRESISI MUTLAK SAAT PRINT */
+        @media (max-width: 768px) {
+            .a4-page {
+                margin: 0 auto 10mm auto;
+            }
+        }
+
         @media print {
             @page { size: A4 portrait; margin: 0; }
             body, html { height: auto !important; overflow: visible !important; background: white !important; margin: 0; padding: 0; }
@@ -96,39 +98,38 @@
 </head>
 <body class="bg-slate-200 font-sans text-slate-800 min-h-screen flex flex-col print-flex-reset">
 
-    <!-- Top Action Bar -->
-    <nav class="bg-slate-900 text-white shadow-md z-50 shrink-0 sticky top-0 h-[56px] print-hidden">
-        <div class="px-4 h-full flex flex-wrap justify-between items-center gap-3">
-            <div class="flex items-center gap-4">
+    <nav class="bg-slate-900 text-white shadow-md z-50 shrink-0 sticky top-0 h-auto md:h-[56px] py-3 md:py-0 print-hidden">
+        <div class="px-3 md:px-4 h-full flex flex-col md:flex-row justify-between items-center gap-3">
+            <div class="flex items-center justify-between w-full md:w-auto gap-2">
                 <button onclick="window.history.back()" class="text-slate-300 hover:text-white flex items-center gap-1 text-sm font-bold transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    Kembali
+                    <svg class="w-5 h-5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    <span class="hidden sm:inline">Kembali</span>
                 </button>
                 <div class="h-4 w-px bg-slate-600 hidden md:block"></div>
-                <h1 class="text-[11px] md:text-sm font-black tracking-widest text-emerald-400">FINA GENERATOR <span id="infoLintasan" class="text-white ml-2 bg-slate-700 px-2 py-0.5 rounded text-[10px]">10 Lintasan</span></h1>
+                <h1 class="text-xs md:text-sm font-black tracking-widest text-emerald-400 text-right md:text-left flex-1 md:flex-none">
+                    FINA GENERATOR <span id="infoLintasan" class="text-white ml-1 md:ml-2 bg-slate-700 px-2 py-0.5 rounded text-[10px] whitespace-nowrap">10 Lintasan</span>
+                </h1>
             </div>
-            <div class="flex items-center gap-2">
-                <button onclick="bukaHalamanCetak()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 shadow-sm">
+            <div class="flex items-center w-full md:w-auto gap-2">
+                <button onclick="bukaHalamanCetak()" class="flex-1 md:flex-none bg-blue-600 hover:bg-blue-700 px-3 py-2 md:px-4 md:py-2 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2 shadow-sm">
                     🖨️ Cetak PDF
                 </button>
-                <button id="btnSimpanBuku" onclick="simpanKeDatabase()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 px-5 py-2 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2 shadow-sm">
+                <button id="btnSimpanBuku" onclick="simpanKeDatabase()" class="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-700 px-3 py-2 md:px-5 md:py-2 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2 shadow-sm">
                     💾 Kunci Start List
                 </button>
             </div>
         </div>
     </nav>
 
-    <!-- MAIN WORKSPACE -->
-    <div class="flex flex-1 items-start w-full relative print-flex-reset">
+    <div class="flex flex-col md:flex-row flex-1 items-start w-full relative print-flex-reset">
         
-        <!-- SIDEBAR BUILDER -->
-        <div class="sidebar-builder w-[250px] min-w-[250px] max-w-[250px] shrink-0 bg-white border-r border-slate-200 flex flex-col z-40 sticky top-[56px] h-[calc(100vh-56px)] overflow-y-auto pb-4">
-            <div class="p-4 border-b border-slate-100 bg-slate-50 shrink-0">
+        <div class="sidebar-builder w-full md:w-[250px] md:min-w-[250px] md:max-w-[250px] shrink-0 bg-white border-b md:border-b-0 md:border-r border-slate-200 flex flex-col z-40 relative md:sticky top-0 md:top-[56px] h-auto md:h-[calc(100vh-56px)] max-h-[45vh] md:max-h-none overflow-y-auto shadow-md md:shadow-none pb-4">
+            <div class="p-3 md:p-4 border-b border-slate-100 bg-slate-50 shrink-0">
                 <h2 class="font-extrabold text-slate-800 text-sm mb-1">Susunan Acara</h2>
                 <p class="text-[10px] text-slate-500 leading-relaxed">Susun jadwal lomba yang akan di-generate oleh sistem.</p>
             </div>
             
-            <div class="p-4 flex flex-col gap-4 shrink-0">
+            <div class="p-3 md:p-4 flex flex-col gap-3 md:gap-4 shrink-0">
                 <div class="flex flex-col gap-2">
                     <button id="btnAutoLoad" onclick="autoGenerateSemua()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-2.5 rounded-lg text-xs transition-colors shadow-md flex items-center justify-center gap-2">
                         <span>✨</span> Auto-Load Semua Lomba
@@ -144,67 +145,66 @@
                     <div class="h-px bg-slate-200 flex-1"></div>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Pilih Sesi</label>
-                    <select id="buildSesi" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-bold bg-slate-50 outline-none">
-                        <option value="Sesi Pagi">🌅 Sesi Pagi</option>
-                        <option value="Sesi Siang">☀️ Sesi Siang</option>
-                        <option value="Sesi Sore">🌇 Sesi Sore</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Pilih Nomor Lomba</label>
-                    <select id="buildNomor" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-bold outline-none"></select>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Pilih Kelompok Umur</label>
-                    <select id="buildKU" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-bold outline-none"></select>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Pilih Gender</label>
-                    <select id="buildGender" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-bold outline-none">
-                        <option value="Putra">Putra</option>
-                        <option value="Putri">Putri</option>
-                        <option value="Mix">Mix / Campuran</option>
-                    </select>
+                <div class="grid grid-cols-2 md:grid-cols-1 gap-3 md:gap-0">
+                    <div class="mb-3">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Pilih Sesi</label>
+                        <select id="buildSesi" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-bold bg-slate-50 outline-none">
+                            <option value="Sesi Pagi">🌅 Sesi Pagi</option>
+                            <option value="Sesi Siang">☀️ Sesi Siang</option>
+                            <option value="Sesi Sore">🌇 Sesi Sore</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Pilih Nomor Lomba</label>
+                        <select id="buildNomor" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-bold outline-none"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Pilih KU</label>
+                        <select id="buildKU" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-bold outline-none"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Pilih Gender</label>
+                        <select id="buildGender" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-bold outline-none">
+                            <option value="Putra">Putra</option>
+                            <option value="Putri">Putri</option>
+                            <option value="Mix">Mix / Campuran</option>
+                        </select>
+                    </div>
                 </div>
 
-                <button onclick="tambahkanEventLomba()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-xs transition-colors shadow-md flex items-center justify-center gap-2 mt-2">
+                <button onclick="tambahkanEventLomba()" class="w-full col-span-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-xs transition-colors shadow-md flex items-center justify-center gap-2 mt-1 md:mt-2">
                     Tambahkan ke Buku
                 </button>
             </div>
 
-            <!-- Daftar Acara -->
-            <div class="p-3 border-t border-slate-100 bg-slate-50 flex-1 flex flex-col">
+            <div class="p-3 border-t border-slate-100 bg-slate-50 flex-1 flex flex-col min-h-[150px]">
                 <div class="flex justify-between items-center mb-3 px-1">
                     <h3 class="font-bold text-slate-600 text-[10px] uppercase tracking-widest">Daftar Acara:</h3>
                     <button onclick="kosongkanSemuaAcara()" class="text-[10px] text-red-500 font-bold hover:underline">Reset</button>
                 </div>
                 <ul id="listOrderEvents" class="space-y-2 flex-1">
-                    <li class="text-xs text-slate-400 text-center italic mt-10">Belum ada acara ditambahkan.</li>
+                    <li class="text-xs text-slate-400 text-center italic mt-6 md:mt-10">Belum ada acara ditambahkan.</li>
                 </ul>
             </div>
         </div>
 
-        <!-- RIGHT AREA: KERTAS A4 RENDERER -->
-        <div class="flex-1 min-w-0 overflow-x-auto bg-slate-300/50 p-4 md:p-8 print:p-0 print-flex-reset" id="printWrapper">
+        <div class="flex-1 min-w-0 overflow-x-auto bg-slate-300/50 p-2 sm:p-4 md:p-8 w-full print:p-0 print-flex-reset" id="printWrapper">
             
-            <!-- HALAMAN 1: THE GRAND ENTRANCE (COVER) -->
+            <div class="md:hidden w-max mx-auto mb-4 mt-2 bg-slate-800 text-white text-[10px] font-bold px-4 py-2 rounded-full flex items-center justify-center gap-2 print-hidden shadow-md border border-slate-700">
+                <span class="animate-pulse">↔️</span> Geser kiri-kanan untuk melihat kertas
+            </div>
+
             <div class="a4-page cover-page" id="coverPage">
                 
-                <!-- TOP GROUP: Header Web + Judul Event + Box Info -->
                 <div class="w-full flex flex-col items-center pt-8">
-                    <!-- Header Web/App -->
                     <div class="w-full flex justify-between items-start opacity-50 mb-16">
                         <img src="/images/logo.png" alt="SCS Logo" class="h-6 object-contain grayscale">
                         <span class="text-[10px] font-mono font-bold tracking-widest uppercase">Generated by SCS v1.0</span>
                     </div>
 
-                    <!-- Judul Event -->
                     <h1 class="cover-title" id="coverTitle">MEMUAT EVENT...</h1>
                     <h2 class="cover-subtitle">Buku Acara Resmi (Official Start List)</h2>
                     
-                    <!-- Box Info Tanggal & Lokasi -->
                     <div class="bg-white border border-slate-200 rounded-3xl p-8 w-full max-w-lg shadow-xl shadow-slate-200/50 relative overflow-hidden mt-6">
                         <div class="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
                         <p class="text-base font-black text-slate-700 mb-3 flex items-center justify-center gap-3">
@@ -218,32 +218,20 @@
                     </div>
                 </div>
 
-                <!-- MIDDLE GROUP: Auto Spacer (Kunci Flexbox) -->
                 <div class="flex-1 w-full"></div>
 
-                <!-- BOTTOM GROUP: Sponsor & Footer -->
                 <div class="w-full pb-8">
-                    <!-- Sponsor Spotlight (Max 3 Sponsor Platinum) -->
                     <div class="sponsor-spotlight mb-12">
                         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Officially Supported By:</p>
                         <div id="coverSponsors" class="sponsor-spotlight-logos">
-                            <!-- Logo di-inject dari JS -->
                             <span class="text-xs text-slate-300 font-bold italic">Memuat Sponsor...</span>
                         </div>
-                    </div>
-
-                    <!-- Footer Cover -->
-                    <div class="w-full pt-6 border-t border-slate-200 flex flex-col items-center">
-                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Hak Cipta &copy; Swimming Competition System</p>
-                        <p class="text-[8px] text-slate-300 mt-1 font-mono">funswimming.my.id</p>
                     </div>
                 </div>
 
             </div>
 
-            <!-- HALAMAN 2 DST: KONTEN TABEL (HEAT SHEET) -->
             <div class="a4-page content-page" id="contentPage">
-                <!-- Header Minimalis Tiap Halaman Konten -->
                 <div class="flex justify-between items-center border-b-2 border-black pb-3 mb-6">
                     <div class="text-left flex-1">
                         <h1 id="contentTitle" class="text-lg font-black uppercase text-black tracking-tight truncate max-w-sm">MEMUAT EVENT...</h1>
@@ -255,7 +243,6 @@
                     </div>
                 </div>
 
-                <!-- CONTAINER HEAT SHEET DI RENDER KE SINI -->
                 <div id="heatContainer" class="space-y-6">
                     <div class="text-center p-10 text-slate-400 font-bold border-2 border-dashed border-slate-300 rounded-xl print-hidden">
                         👈 Susun Buku Acara di Panel Kiri.
