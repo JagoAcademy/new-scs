@@ -292,7 +292,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // =========================================================
-        // OTOMATIS CEK SESSION (JIKA SUDAH LOGIN SEBELUMNYA)
+        // OTOMATIS CEK SESSION (JIKA SUDAH LOGIN SEBELUMNYA ATAU REDIRECT DARI OAUTH)
         // =========================================================
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) {
@@ -310,17 +310,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ==========================================
     const btnGoogleLoginPublic = document.getElementById('btnGoogleLoginPublic');
     if (btnGoogleLoginPublic) {
-        btnGoogleLoginPublic.addEventListener('click', async () => {
-            try {
-                const cleanUrl = window.location.origin + window.location.pathname + window.location.search;
-                const { error } = await supabaseClient.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: { redirectTo: cleanUrl }
-                });
-                if (error) throw error;
-            } catch (err) {
-                alert("Gagal Inisiasi Google Login: " + err.message);
-            }
+        btnGoogleLoginPublic.addEventListener('click', () => {
+            // FIX ORIGIN MISMATCH: Alihkan user ke halaman auth.html yang udah terdaftar di Google Cloud
+            // Dan sisipin parameter URL saat ini supaya nanti dikembalikan ke sini.
+            const currentUrl = encodeURIComponent(window.location.href);
+            window.location.href = `https://f1swimming.com/auth.html?redirect=${currentUrl}`;
         });
     }
 
@@ -400,7 +394,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (clubErr || !clubData) {
                 await supabaseClient.auth.signOut();
                 alert("Akun ini belum memiliki Profil Klub. Silakan lengkapi profil di halaman Dashboard terlebih dahulu.");
-                window.location.href = '/dashboard.html';
+                window.location.href = 'https://f1swimming.com/dashboard.html';
                 return;
             }
             
@@ -491,7 +485,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             btnSaveQuickAdd.disabled = true;
 
             try {
-                // Generate F1 ID Logic sama persis dengan dashboard[span_1](start_span)[span_1](end_span)
+                // Generate F1 ID Logic sama persis dengan dashboard
                 const dateObj = new Date(inputDOB);
                 const yy = dateObj.getFullYear().toString().slice(-2);
                 const mm = ('0' + (dateObj.getMonth() + 1)).slice(-2);
