@@ -35,11 +35,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (eventData.is_closed) {
             const formPeserta = document.querySelector('.bg-white\\/95.backdrop-blur-md');
             const boxBiaya = document.querySelector('.bg-blue-900.border.border-blue-800');
-            const sectionAksesCepat = document.getElementById('sectionAksesCepat');
             
             if (formPeserta) formPeserta.classList.add('hidden');
             if (boxBiaya) boxBiaya.classList.add('hidden');
-            if (sectionAksesCepat) sectionAksesCepat.classList.add('hidden');
 
             let waLink = "#";
             if (config.admin_wa_1 || config.admin_wa_2) {
@@ -57,6 +55,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         Mohon maaf, pendaftaran untuk event <strong>${eventData.event_name}</strong> sudah ditutup oleh panitia. Silakan hubungi admin jika ada keperluan mendesak.
                     </p>
                     <a href="${waLink}" target="_blank" class="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-xl transition-all hover:scale-105 shadow-md">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
                         Hubungi Panitia (WA)
                     </a>
                 </div>
@@ -292,7 +291,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // =========================================================
-        // OTOMATIS CEK SESSION (JIKA SUDAH LOGIN SEBELUMNYA ATAU REDIRECT DARI OAUTH)
+        // OTOMATIS CEK SESSION (JIKA SUDAH LOGIN SEBELUMNYA)
         // =========================================================
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) {
@@ -304,58 +303,54 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (err) {
         alert(err.message);
     }
-  
+
     // ==========================================
-    // LOGIKA LOGIN GOOGLE (OAUTH REDIRECT - FIX ORIGIN MISMATCH)
+    // TOGGLE & LOGIKA LOGIN MANUAL EMAIL 
     // ==========================================
-    const btnGoogleLoginPublic = document.getElementById('btnGoogleLoginPublic');
-    if (btnGoogleLoginPublic) {
-        btnGoogleLoginPublic.addEventListener('click', () => {
-            // FIX ORIGIN MISMATCH: Alihkan user ke halaman auth.html yang udah terdaftar di Google Cloud
-            // Dan sisipin parameter URL saat ini supaya nanti dikembalikan ke sini.
-            const currentUrl = encodeURIComponent(window.location.href);
-            window.location.href = `https://f1swimming.com/auth.html?redirect=${currentUrl}`;
+    const btnToggleLogin = document.getElementById('btnToggleLogin');
+    if(btnToggleLogin) {
+        btnToggleLogin.addEventListener('click', () => {
+            document.getElementById('areaLogin').classList.toggle('hidden');
+        });
+    }
+
+    const btnProsesLogin = document.getElementById('btnProsesLogin');
+    if(btnProsesLogin) {
+        btnProsesLogin.addEventListener('click', async () => {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const btnLogin = document.getElementById('btnProsesLogin');
+
+            if(!email || !password) return alert("Email dan Password wajib diisi!");
+            
+            btnLogin.innerText = "Mengecek data..."; 
+            btnLogin.disabled = true;
+
+            try {
+                const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (authError) throw authError;
+
+                await applySuccessfulLoginUI(authData.user.id);
+                alert("Login berhasil!");
+            } catch (err) {
+                alert("Gagal login: " + err.message);
+            } finally {
+                btnLogin.innerText = "Masuk & Sinkronisasi Data"; 
+                btnLogin.disabled = false;
+            }
         });
     }
 
     // ==========================================
-    // TOGGLE & LOGIKA LOGIN MANUAL EMAIL (FALLBACK)
+    // LOGOUT
     // ==========================================
-    document.getElementById('btnToggleManualLogin').addEventListener('click', () => {
-        document.getElementById('areaLogin').classList.toggle('hidden');
-    });
-
-    document.getElementById('btnProsesLogin').addEventListener('click', async () => {
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        const btnLogin = document.getElementById('btnProsesLogin');
-
-        if(!email || !password) return alert("Email dan Password wajib diisi!");
-        
-        btnLogin.innerText = "Mengecek data..."; 
-        btnLogin.disabled = true;
-
-        try {
-            const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({ email, password });
-            if (authError) throw authError;
-
-            await applySuccessfulLoginUI(authData.user.id);
-            alert("Login berhasil!");
-        } catch (err) {
-            alert("Gagal login: " + err.message);
-        } finally {
-            btnLogin.innerText = "Masuk & Sinkronisasi"; 
-            btnLogin.disabled = false;
-        }
-    });
-
-    // ==========================================
-    // LOGOUT (FIXED: BERSIHKAN SAMPAH URL)
-    // ==========================================
-    document.getElementById('btnLogout').addEventListener('click', async () => {
-        await supabaseClient.auth.signOut();
-        window.location.href = window.location.origin + window.location.pathname + window.location.search;
-    });
+    const btnLogout = document.getElementById('btnLogout');
+    if(btnLogout) {
+        btnLogout.addEventListener('click', async () => {
+            await supabaseClient.auth.signOut();
+            window.location.reload();
+        });
+    }
 
     // ==========================================
     // FUNGSI LOAD ATLET KE DROPDOWN (Bisa Dipanggil Ulang)
@@ -378,7 +373,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             dropdown.innerHTML += `<option value="${atlet.f1_id}" data-name="${atlet.full_name}" data-tgl="${tgl}" data-gender="${jk}" data-akta="${akta}">${atlet.full_name} (${atlet.f1_id})</option>`;
         });
 
-        // Auto-select jika ada atlet baru ditambah
         if (preselectId) {
             dropdown.value = preselectId;
             dropdown.dispatchEvent(new Event('change'));
@@ -401,39 +395,42 @@ document.addEventListener('DOMContentLoaded', async () => {
             isKlubLoggedIn = true;
             loggedInClubData = clubData;
 
-            // Memuat Atlet ke Dropdown
             await loadAthletesToDropdown(clubData.id);
-
-            // HIDE Quick Access Login
-            document.getElementById('sectionAksesCepat').classList.add('hidden');
             
-            // SHOW Badge Klub Aktif
+            // Sembunyikan Area Login Manual
+            const loginBar = document.getElementById('loginBar');
+            if (loginBar) loginBar.classList.add('hidden');
+            const areaLogin = document.getElementById('areaLogin');
+            if (areaLogin) areaLogin.classList.add('hidden');
+            
+            // Tampilkan Badge Klub
             const badge = document.getElementById('activeClubBadge');
-            badge.classList.remove('hidden');
-            badge.classList.add('flex');
+            if(badge) {
+                badge.classList.remove('hidden');
+                badge.classList.add('flex');
+            }
             
             const namaKlub = clubData.club_name || clubData.nama_klub || "Klub Terdaftar SCS";
             const avatarUrl = clubData.logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(namaKlub)}&background=1e3a8a&color=fff`;
             
-            document.getElementById('activeClubName').innerText = namaKlub;
-            document.getElementById('activeClubLogo').src = avatarUrl;
+            const activeClubName = document.getElementById('activeClubName');
+            if(activeClubName) activeClubName.innerText = namaKlub;
+            const activeClubLogo = document.getElementById('activeClubLogo');
+            if(activeClubLogo) activeClubLogo.src = avatarUrl;
 
-            // Atur Visibilitas Form Input
+            // Atur Form Input
             document.getElementById('areaGuestOnly').classList.add('hidden'); 
             document.getElementById('areaAkta').classList.add('hidden');
             
-            // Tampilkan Tombol Quick Add Athlete
             const btnQuickAddAthlete = document.getElementById('btnQuickAddAthlete');
             if (btnQuickAddAthlete) {
                 btnQuickAddAthlete.classList.remove('hidden');
                 btnQuickAddAthlete.classList.add('inline-flex');
             }
             
-            // MUNCULIN FORM ESTAFET KARENA SUDAH LOGIN VVIP
             const areaEstafet = document.getElementById('areaEstafetVVIP');
             if(areaEstafet) areaEstafet.classList.remove('hidden');
             
-            // Switch Input Manual Name ke Dropdown Atlet
             document.getElementById('inputCariAtlet').classList.add('hidden');
             const dropdown = document.getElementById('dropdownAtlet');
             dropdown.classList.remove('hidden');
@@ -485,7 +482,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             btnSaveQuickAdd.disabled = true;
 
             try {
-                // Generate F1 ID Logic sama persis dengan dashboard
                 const dateObj = new Date(inputDOB);
                 const yy = dateObj.getFullYear().toString().slice(-2);
                 const mm = ('0' + (dateObj.getMonth() + 1)).slice(-2);
@@ -511,7 +507,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-green-100 text-green-700 block mt-2";
                 statusMsg.classList.remove('hidden');
 
-                // Bersihkan form
                 document.getElementById('qaInputNama').value = '';
                 document.getElementById('qaInputDOB').value = '';
 
@@ -521,7 +516,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     btnSaveQuickAdd.disabled = false;
                     statusMsg.classList.add('hidden');
                     
-                    // Reload dropdown dan otomatis pilih anak yang baru ditambah
                     await loadAthletesToDropdown(loggedInClubData.id, generatedF1Id);
                 }, 1000);
 
@@ -634,7 +628,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return alert(`❌ GAGAL! Atlet ini sudah pernah didaftarkan di nomor:\n\n${nomorBentrok.join(', ')}\n\nSilakan hilangkan centang pada nomor tersebut jika ingin menambah nomor gaya baru.`);
             }
 
-            // KALKULASI TAGIHAN
             const config = currentEvent.config || {};
             let qty = selectedNomor.length;
             let totalBiaya = 0;
@@ -658,9 +651,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 }
             } else {
-                totalBiaya = qty >= Number(config.min_diskon || 999) 
-                    ? qty * Number(config.biaya_diskon || 0) 
-                    : qty * Number(config.biaya_normal || 0);
+                totalBiaya = qty >= Number(config.min_diskon || 999) ? qty * Number(config.biaya_diskon || 0) : qty * Number(config.biaya_normal || 0);
             }
 
             btn.innerHTML = "Menambahkan... ⏳"; 
