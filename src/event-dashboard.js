@@ -2,7 +2,7 @@ import { supabaseClient } from './supabase.js';
 
 let currentEventId = null;
 let currentPayMethod = 'transfer';
-let eventTitle = ''; // Simpan nama event buat share
+let eventTitle = ''; 
 
 // ==========================================
 // FUNGSI NATIVE SHARE (WEB SHARE API)
@@ -17,19 +17,56 @@ window.bagikanNative = async function(title, text, url) {
             });
             console.log('Berhasil membuka menu share bawaan HP');
         } catch (err) {
-            // Abaikan error jika user sengaja mencancel/menutup pop-up share
             if (err.name !== 'AbortError') {
                 console.error('Error sharing:', err);
             }
         }
     } else {
-        // Fallback untuk browser desktop lama yang tidak support native share
         navigator.clipboard.writeText(url);
         alert('Link disalin ke clipboard! (Browser ini tidak mendukung menu share bawaan)');
     }
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
+    
+    // ==========================================
+    // LOGIKA TOGGLE VIEW DESKTOP/MOBILE
+    // ==========================================
+    const btnToggleView = document.getElementById('btnToggleView');
+    const viewportMeta = document.getElementById('viewportMeta');
+    
+    const iconDesktop = document.getElementById('iconDesktop');
+    const iconMobile = document.getElementById('iconMobile');
+
+    // Cek di localStorage apakah user pernah ngeset mode desktop
+    let isDesktopMode = localStorage.getItem('scs_desktop_mode') === 'true';
+
+    function applyViewportMode() {
+        if (isDesktopMode) {
+            viewportMeta.setAttribute('content', 'width=1280');
+            // Ganti icon jadi Mobile (buat tombol balik)
+            if(iconDesktop) iconDesktop.classList.add('hidden');
+            if(iconMobile) iconMobile.classList.remove('hidden');
+        } else {
+            viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0');
+            // Ganti icon jadi Desktop (buat tombol ngubah)
+            if(iconDesktop) iconDesktop.classList.remove('hidden');
+            if(iconMobile) iconMobile.classList.add('hidden');
+        }
+    }
+
+    // Apply saat pertama kali load
+    applyViewportMode();
+
+    function toggleViewMode() {
+        isDesktopMode = !isDesktopMode;
+        localStorage.setItem('scs_desktop_mode', isDesktopMode);
+        applyViewportMode();
+    }
+
+    if (btnToggleView) btnToggleView.addEventListener('click', toggleViewMode);
+
+
     // ==========================================
     // LOGIKA DARK MODE TOGGLE
     // ==========================================
