@@ -290,7 +290,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // ==========================================
-        // SISANYA FUNGSI BIASA (LINK, COPY, DKK)
+        // SISANYA FUNGSI BIASA (LINK, COPY, OPEN, DKK)
         // ==========================================
         
         // BALIKIN PAKE PARAMETER ?id= BIAR DATA EVENT BISA KETARIK
@@ -322,6 +322,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.classList.replace('bg-red-600', 'bg-green-500');
             setTimeout(() => { btn.innerText = originalText; btn.classList.replace('bg-green-500', 'bg-red-600'); }, 2000);
         });
+
+        // FUNGSI OPEN LINK LANGSUNG DI TAB BARU
+        const btnOpenLink = document.getElementById('btnOpenLink');
+        if (btnOpenLink) {
+            btnOpenLink.addEventListener('click', () => {
+                window.open(publicLink, '_blank');
+            });
+        }
+        
+        const btnOpenResultLink = document.getElementById('btnOpenResultLink');
+        if (btnOpenResultLink) {
+            btnOpenResultLink.addEventListener('click', () => {
+                window.open(publicResultLink, '_blank');
+            });
+        }
 
         // FUNGSI SHARE NATIVE SOCIAL MEDIA BARU
         const textReg = `Yuk daftar lomba renang ${eventTitle} sekarang! Klik link berikut:`;
