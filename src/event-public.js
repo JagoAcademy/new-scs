@@ -8,12 +8,25 @@ let selectedTagihanIds = new Set();
 
 document.addEventListener('DOMContentLoaded', async () => {
     const hostname = window.location.hostname;
-    const subdomain = hostname.split('.')[0];
+    let subdomain = null;
     
     // Jangan lupa komen baris di bawah ini kalau sudah online!
-    // const subdomain = 'fs-samawa'; 
+    // subdomain = 'fs-samawa'; 
 
-    if (!subdomain || subdomain === 'f1swimming' || subdomain === 'localhost') return; 
+    if (!subdomain) {
+        const domainParts = hostname.split('.');
+        
+        // Validasi: Exact check untuk format <event>.f1swimming.com (3 parts)
+        if (domainParts.length === 3 && domainParts[1] === 'f1swimming' && domainParts[2] === 'com') {
+            subdomain = domainParts[0];
+            console.log(`[SCS-ROUTING] ✅ Valid event subdomain detected: ${subdomain}`);
+        } else {
+            console.warn(`[SCS-ROUTING] ⚠️ Hostname diabaikan atau format tidak valid: ${hostname}`);
+            return; // Stop eksekusi script untuk domain root atau localhost tanpa hardcode
+        }
+    }
+    
+    if (!subdomain || subdomain === 'f1swimming') return;
 
     try {
         const { data: eventData, error } = await supabaseClient
