@@ -326,7 +326,7 @@ function renderSidebarList() {
     listContainer.innerHTML = '';
 
     if(orderOfEvents.length === 0) {
-        listContainer.innerHTML = `<li class="text-xs text-slate-400 text-center italic mt-6 md:mt-10">Belum ada acara ditambahkan.</li>`;
+        listContainer.innerHTML = `<li class="text-xs text-slate-400 text-center italic mt-10">Belum ada acara ditambahkan.</li>`;
         return;
     }
 
