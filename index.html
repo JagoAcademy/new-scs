@@ -37,7 +37,7 @@
     <meta name="theme-color" content="#1e3a8a">
     <link rel="apple-touch-icon" href="/images/weblogo.png">
     
-    <style1>
+    <style>
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         @keyframes neon-blue {
@@ -65,17 +65,16 @@
             animation-play-state: paused;
         }
 
-                /* ANIMASI RUNNING TEXT (HOOK) YANG MULUS ANTI PATAH */
+        /* ANIMASI RUNNING TEXT (HOOK) */
         @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-33.33%); } /* Geser persis sejauh 1 gerbong teks */
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
         }
         .animate-marquee {
-            display: flex;
-            width: max-content;
+            display: inline-block;
+            white-space: nowrap;
             animation: marquee 40s linear infinite;
         }
-
     </style>
     
     <!-- SCHEMA JSON-LD UNTUK GOOGLE AI -->
