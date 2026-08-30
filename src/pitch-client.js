@@ -2,19 +2,19 @@ import { supabaseClient } from './supabase.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     
-    // 1. AMBIL SLUG BRAND DARI URL BROWSER
-    // Coba ambil dari Query Param dulu (berguna kalau lagi tes di localhost: ?brand=xyz)
+    // 1. PRIORITAS UTAMA: Ambil param ?brand= dari URL (Hasil sulap vercel.json)
     const urlParams = new URLSearchParams(window.location.search);
     let brandSlug = urlParams.get('brand');
 
-    // JIKA KOSONG (Berarti lagi di Vercel: /pitch/j99corp), potong langsung dari URL Path!
+    // 2. PLAN B: Kalau Vercel tembus murni dari Path (/pitch/j99corp)
     if (!brandSlug) {
         const pathParts = window.location.pathname.split('/').filter(Boolean);
-        // Hasilnya pathParts = ['pitch', 'j99corp']
         if (pathParts.length >= 2 && pathParts[0] === 'pitch') {
             brandSlug = pathParts[1];
         }
     }
+
+    console.log("🔍 SEDANG MENCARI SLUG DI DATABASE:", brandSlug);
 
     const loadingScreen = document.getElementById('loadingScreen');
     const errorScreen = document.getElementById('errorScreen');
@@ -27,59 +27,49 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-        // 2. Tarik Data Pitching berdasarkan Slug
+        // 3. Tarik Data Pitching berdasarkan Slug persis
         const { data: pitchData, error: pitchErr } = await supabaseClient
             .from('sponsor_pitches')
             .select('*')
             .eq('pitch_slug', brandSlug)
             .single();
 
-        if (pitchErr || !pitchData) throw new Error("Pitching data not found");
+        if (pitchErr || !pitchData) throw new Error("Pitching data not found! Pastikan slug-nya sama persis dengan yang di-generate.");
 
-        // 3. Tarik Master Sponsor yang nyambung sama Pitching ini
-        // Karena sekarang kita pakai array brand_ids, kita tarik brand pertama dulu buat cover
-        const targetSponsorId = (pitchData.brand_ids && pitchData.brand_ids.length > 0) 
-                                ? pitchData.brand_ids[0] 
-                                : pitchData.sponsor_id;
-
-        const { data: sponsorData, error: sponsorErr } = await supabaseClient
-            .from('master_sponsors')
-            .select('*')
-            .eq('id', targetSponsorId)
-            .single();
-
-        if (sponsorErr || !sponsorData) throw new Error("Sponsor data not found");
-
-        // Tarik semua brand kalau corporate-nya bawa banyak brand (Contoh: J99 bawa MS Glow & J Water)
-        let allBrandsData = [sponsorData];
-        if (pitchData.brand_ids && pitchData.brand_ids.length > 1) {
-            const { data: multiBrands } = await supabaseClient
-                .from('master_sponsors')
-                .select('*')
-                .in('id', pitchData.brand_ids);
-            
-            if (multiBrands) {
-                allBrandsData = multiBrands;
-            }
+        // 4. Tarik SEMUA Master Sponsor yang nyambung sama brand_ids di tabel pitch
+        if (!pitchData.brand_ids || pitchData.brand_ids.length === 0) {
+            throw new Error("Tidak ada brand yang disimulasikan di dalam data pitching ini.");
         }
 
-        // 4. Injeksi Teks dan Gambar ke HTML
-        document.title = `Sponsorship Proposal - ${pitchData.company_name || sponsorData.sponsor_name}`;
+        const { data: allBrandsData, error: sponsorErr } = await supabaseClient
+            .from('master_sponsors')
+            .select('*')
+            .in('id', pitchData.brand_ids);
+
+        if (sponsorErr || !allBrandsData || allBrandsData.length === 0) {
+            throw new Error("Sponsor data not found in master database.");
+        }
+
+        // Pakai brand pertama sebagai patokan cover & logo
+        const primaryBrand = allBrandsData[0];
+
+        // 5. Injeksi Teks dan Gambar ke HTML
+        document.title = `Sponsorship Proposal - ${pitchData.company_name}`;
         
-        // Render Foto Cover & Logo (Pake fallback gambar abu-abu kalau kosong)
-        document.getElementById('sponsorCover').src = sponsorData.cover_url || 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?q=80&w=1000&auto=format&fit=crop';
-        document.getElementById('sponsorLogo').src = sponsorData.logo_url || 'https://ui-avatars.com/api/?name=Sponsor&background=fff&color=000';
+        // Render Foto Cover & Logo (Pake fallback gambar kalau kosong)
+        document.getElementById('sponsorCover').src = primaryBrand.cover_url || 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?q=80&w=1000&auto=format&fit=crop';
+        document.getElementById('sponsorLogo').src = primaryBrand.logo_url || 'https://ui-avatars.com/api/?name=Sponsor&background=fff&color=000';
         
         document.getElementById('cpName').innerText = pitchData.cp_name;
-        document.getElementById('brandName').innerText = pitchData.company_name || sponsorData.sponsor_name;
-        document.getElementById('sponsorSyarat').innerText = sponsorData.syarat || "Custom partnership agreement.";
+        document.getElementById('brandName').innerText = pitchData.company_name; // Ganti jadi nama korporatnya
+        document.getElementById('sponsorSyarat').innerText = primaryBrand.syarat || "Custom partnership agreement.";
 
-        // 5. Render Simulasi Live Result di HP Mockup
+        // 6. Render Simulasi Live Result di HP Mockup
         renderSimulation(allBrandsData);
 
-        // 6. Tombol WA langsung ke lu (Admin F1 Swimming)
-        const myWaNumber = "6289691219977"; // WA lu
-        const waText = `Halo tim F1 Swimming, saya ${pitchData.cp_name} dari ${pitchData.company_name || sponsorData.sponsor_name}. Saya sudah melihat presentasinya dan tertarik berdiskusi lebih lanjut.`;
+        // 7. Tombol WA langsung ke Admin F1 Swimming
+        const myWaNumber = "6289691219977"; 
+        const waText = `Halo tim F1 Swimming, saya ${pitchData.cp_name} dari ${pitchData.company_name}. Saya sudah melihat presentasinya dan tertarik berdiskusi lebih lanjut.`;
         document.getElementById('btnWA').addEventListener('click', () => {
             window.open(`https://wa.me/${myWaNumber}?text=${encodeURIComponent(waText)}`, '_blank');
         });
@@ -91,10 +81,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 1000);
 
     } catch (err) {
-        console.error(err);
+        console.error("❌ ERROR SYSTEM:", err.message);
         loadingScreen.classList.add('hidden');
         errorScreen.classList.remove('hidden');
         errorScreen.classList.add('flex');
+        
+        // Kasih tahu klien kalau slug-nya salah
+        errorScreen.innerHTML = `
+            <span class="text-6xl mb-4">📭</span>
+            <h1 class="text-2xl font-black text-slate-800 mb-2">Proposal Tidak Ditemukan</h1>
+            <p class="text-slate-500 font-medium text-sm">Pastikan link URL yang Anda ketik sudah benar.<br>Slug yang dicari: <strong class="text-red-500">${brandSlug}</strong></p>
+        `;
     }
 });
 

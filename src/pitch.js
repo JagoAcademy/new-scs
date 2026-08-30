@@ -1,7 +1,7 @@
 import { supabaseClient } from './supabase.js';
 
 let allSponsors = [];
-let selectedBrands = []; // Array untuk menampung lebih dari 1 brand
+let selectedBrands = []; 
 
 document.addEventListener('DOMContentLoaded', async () => {
     
@@ -140,15 +140,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnGenerate.disabled = true;
 
         try {
-            // Ambil array ID brand yang dipilih
+            // HANYA KIRIM DATA YANG BERSIH SESUAI HIERARKI BARU
             const brandIds = selectedBrands.map(b => b.id);
 
             const { error: insertErr } = await supabaseClient
                 .from('sponsor_pitches')
                 .insert([{
-                    sponsor_id: brandIds[0], // ID pertama sebagai patokan legacy
                     company_name: companyName,
-                    brand_ids: brandIds, // Array brand_ids
+                    brand_ids: brandIds,
                     cp_name: cpName,
                     cp_wa: cpWa,
                     cp_email: cpEmail,
