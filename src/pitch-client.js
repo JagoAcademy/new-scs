@@ -34,11 +34,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             .eq('pitch_slug', brandSlug)
             .single();
 
-        if (pitchErr || !pitchData) throw new Error("Pitching data not found! Pastikan slug-nya sama persis dengan yang di-generate.");
+        if (pitchErr || !pitchData) throw new Error("Data Pitching (Slug) tidak ditemukan di database!");
 
         // 4. Tarik SEMUA Master Sponsor yang nyambung sama brand_ids di tabel pitch
         if (!pitchData.brand_ids || pitchData.brand_ids.length === 0) {
-            throw new Error("Tidak ada brand yang disimulasikan di dalam data pitching ini.");
+            throw new Error("Tidak ada brand_ids yang tersimpan di dalam data pitching ini.");
         }
 
         const { data: allBrandsData, error: sponsorErr } = await supabaseClient
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             .in('id', pitchData.brand_ids);
 
         if (sponsorErr || !allBrandsData || allBrandsData.length === 0) {
-            throw new Error("Sponsor data not found in master database.");
+            throw new Error("Data Master Sponsor gagal ditarik atau id tidak cocok.");
         }
 
         // Pakai brand pertama sebagai patokan cover & logo
@@ -86,11 +86,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         errorScreen.classList.remove('hidden');
         errorScreen.classList.add('flex');
         
-        // Kasih tahu klien kalau slug-nya salah
+        // Kasih tahu klien (dan kita) error aslinya apa
         errorScreen.innerHTML = `
             <span class="text-6xl mb-4">📭</span>
             <h1 class="text-2xl font-black text-slate-800 mb-2">Proposal Tidak Ditemukan</h1>
-            <p class="text-slate-500 font-medium text-sm">Pastikan link URL yang Anda ketik sudah benar.<br>Slug yang dicari: <strong class="text-red-500">${brandSlug}</strong></p>
+            <p class="text-slate-500 font-medium text-sm mb-6">Pastikan link URL yang Anda ketik sudah benar.<br>Slug yang dicari: <strong class="text-red-500">${brandSlug}</strong></p>
+            <div class="bg-red-50 border border-red-200 p-4 rounded-xl text-left w-full max-w-sm">
+                <p class="text-[10px] font-black text-red-600 uppercase mb-1 tracking-widest">Log Error Sistem (Kirim ke Admin):</p>
+                <code class="text-xs text-red-500 font-mono break-words">${err.message}</code>
+            </div>
         `;
     }
 });
