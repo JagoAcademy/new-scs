@@ -4,11 +4,11 @@
   "rewrites": [
     {
       "source": "/pitch/:brand",
-      "destination": "/pitch-client.html?brand=:brand"
+      "destination": "/pitch-client?brand=:brand"
     },
     {
-      "source": "/((?!api/|assets/|src/|images/|pitch/|pitch-client|.*\\..*).*)",
-      "destination": "/event-public.html"
+      "source": "/((?!api/|assets/|src/|images/|pitch|pitch-client|.*\\..*).*)",
+      "destination": "/event-public"
     }
   ]
 }
