@@ -2,19 +2,15 @@ import { supabaseClient } from './supabase.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     
-    // 1. PRIORITAS UTAMA: Ambil param ?brand= dari URL (Hasil sulap vercel.json)
     const urlParams = new URLSearchParams(window.location.search);
     let brandSlug = urlParams.get('brand');
 
-    // 2. PLAN B: Kalau Vercel tembus murni dari Path (/pitch/j99corp)
     if (!brandSlug) {
         const pathParts = window.location.pathname.split('/').filter(Boolean);
         if (pathParts.length >= 2 && pathParts[0] === 'pitch') {
             brandSlug = pathParts[1];
         }
     }
-
-    console.log("🔍 SEDANG MENCARI SLUG DI DATABASE:", brandSlug);
 
     const loadingScreen = document.getElementById('loadingScreen');
     const errorScreen = document.getElementById('errorScreen');
@@ -27,7 +23,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-        // 3. Tarik Data Pitching berdasarkan Slug persis
         const { data: pitchData, error: pitchErr } = await supabaseClient
             .from('sponsor_pitches')
             .select('*')
@@ -35,56 +30,55 @@ document.addEventListener('DOMContentLoaded', async () => {
             .single();
 
         if (pitchErr || !pitchData) throw new Error("Data Pitching (Slug) tidak ditemukan di database!");
-
-        // 4. Tarik SEMUA Master Sponsor yang nyambung sama brand_ids di tabel pitch
-        if (!pitchData.brand_ids || pitchData.brand_ids.length === 0) {
-            throw new Error("Tidak ada brand_ids yang tersimpan di dalam data pitching ini.");
-        }
+        if (!pitchData.brand_ids || pitchData.brand_ids.length === 0) throw new Error("Tidak ada brand_ids yang tersimpan.");
 
         const { data: allBrandsData, error: sponsorErr } = await supabaseClient
             .from('master_sponsors')
             .select('*')
             .in('id', pitchData.brand_ids);
 
-        if (sponsorErr || !allBrandsData || allBrandsData.length === 0) {
-            throw new Error("Data Master Sponsor gagal ditarik atau id tidak cocok.");
-        }
+        if (sponsorErr || !allBrandsData || allBrandsData.length === 0) throw new Error("Data Master Sponsor gagal ditarik.");
 
-        // Pakai brand pertama sebagai patokan cover & logo
         const primaryBrand = allBrandsData[0];
 
-        // 5. Injeksi Teks dan Gambar ke HTML (KEBAL ERROR)
+        // INJEKSI DATA KE HTML
         document.title = `Sponsorship Proposal - ${pitchData.company_name}`;
         
         const coverEl = document.getElementById('sponsorCover');
         if (coverEl) coverEl.src = primaryBrand.cover_url || 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?q=80&w=1000&auto=format&fit=crop';
         
-        const logoEl = document.getElementById('sponsorLogo');
-        if (logoEl) logoEl.src = primaryBrand.logo_url || 'https://ui-avatars.com/api/?name=Sponsor&background=fff&color=000';
+        // LOGIKA CORPORATE LOGO
+        const logoEl = document.getElementById('corporateLogo');
+        if (logoEl) {
+            logoEl.src = pitchData.corporate_logo || primaryBrand.logo_url || 'https://ui-avatars.com/api/?name=Sponsor&background=fff&color=000';
+        }
         
         const cpEl = document.getElementById('cpName');
         if (cpEl) cpEl.innerText = pitchData.cp_name;
         
-        const brandEl = document.getElementById('brandName');
-        if (brandEl) brandEl.innerText = pitchData.company_name; 
+        // LOGIKA APPROACH MESSAGE (COPYWRITING)
+        const msgEl = document.getElementById('approachMessage');
+        if (msgEl) {
+            if (pitchData.approach_message) {
+                msgEl.innerText = pitchData.approach_message;
+            } else {
+                msgEl.innerHTML = `Ini adalah simulasi eksklusif bagaimana brand <strong class="text-slate-800">${pitchData.company_name}</strong> Anda akan mendominasi perhatian ribuan atlet dan orang tua di seluruh event nasional F1 Swimming.`;
+            }
+        }
         
         const syaratEl = document.getElementById('sponsorSyarat');
         if (syaratEl) syaratEl.innerText = primaryBrand.syarat || "Custom partnership agreement.";
 
-        // 6. Render Simulasi Live Result di HP Mockup
         renderSimulation(allBrandsData);
 
-        // 7. Tombol WA langsung ke Admin F1 Swimming
         const btnWaEl = document.getElementById('btnWA');
         if (btnWaEl) {
-            const myWaNumber = "6289691219977"; 
             const waText = `Halo tim F1 Swimming, saya ${pitchData.cp_name} dari ${pitchData.company_name}. Saya sudah melihat presentasinya dan tertarik berdiskusi lebih lanjut.`;
             btnWaEl.addEventListener('click', () => {
-                window.open(`https://wa.me/${myWaNumber}?text=${encodeURIComponent(waText)}`, '_blank');
+                window.open(`https://wa.me/6289691219977?text=${encodeURIComponent(waText)}`, '_blank');
             });
         }
 
-        // Tampilkan halaman
         setTimeout(() => {
             loadingScreen.style.opacity = '0';
             setTimeout(() => loadingScreen.classList.add('hidden'), 500);
@@ -95,74 +89,66 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadingScreen.classList.add('hidden');
         errorScreen.classList.remove('hidden');
         errorScreen.classList.add('flex');
-        
-        // Kasih tahu klien (dan kita) error aslinya apa
         errorScreen.innerHTML = `
             <span class="text-6xl mb-4">📭</span>
             <h1 class="text-2xl font-black text-slate-800 mb-2">Proposal Tidak Ditemukan</h1>
             <p class="text-slate-500 font-medium text-sm mb-6">Pastikan link URL yang Anda ketik sudah benar.<br>Slug yang dicari: <strong class="text-red-500">${brandSlug}</strong></p>
-            <div class="bg-red-50 border border-red-200 p-4 rounded-xl text-left w-full max-w-sm mx-auto">
-                <p class="text-[10px] font-black text-red-600 uppercase mb-1 tracking-widest">Log Error Sistem (Kirim ke Admin):</p>
-                <code class="text-xs text-red-500 font-mono break-words">${err.message}</code>
-            </div>
         `;
     }
 });
 
-// FUNGSI RENDER MOCKUP LIVE RESULT DENGAN MULTI-BRAND
+// SIMULASI DENGAN UI REAL RESULT
 function renderSimulation(brandsArray) {
     const container = document.getElementById('simulationContainer');
-    if (!container) return; // Mencegah error kalau div container hilang
+    if (!container) return; 
     
     let html = '';
+    const dummyEvents = ["Gaya Bebas 50m Putra", "Gaya Dada 50m Putri", "Gaya Punggung 100m Putra", "Estafet 4x50m Bebas", "Gaya Kupu 50m Putra"];
 
-    const dummyEvents = [
-        "Gaya Bebas 50m Putra", "Gaya Dada 50m Putri", 
-        "Gaya Punggung 100m Putra", "Estafet 4x50m Bebas",
-        "Gaya Kupu 50m Putra", "Gaya Bebas 100m Putri",
-        "Gaya Dada 100m Putra", "Gaya Kupu 100m Putri"
-    ];
-
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 5; i++) {
+        let sponsorHeader = '';
         
-        // Injeksi Iklan Sponsor di event urutan ke-2 dan ke-5
-        if (i === 1 || i === 4) {
-            // Logika muter brand jika ada lebih dari 1 brand
-            let spIndex = (i === 1) ? 0 : (brandsArray.length > 1 ? 1 : 0);
+        if (i === 0 || i === 2) {
+            let spIndex = (i === 0) ? 0 : (brandsArray.length > 1 ? 1 : 0);
             let sponsor = brandsArray[spIndex];
 
-            html += `
-            <a href="${sponsor.link_url || '#'}" target="_blank" class="block w-full bg-white rounded-xl shadow-md overflow-hidden border border-amber-200 transform hover:scale-105 transition-transform duration-300 relative group my-3 cursor-pointer">
-                <span class="absolute top-0 right-0 bg-amber-400 text-[7px] font-black px-2 py-0.5 rounded-bl-lg text-amber-900 tracking-widest z-10">SPONSORED</span>
-                <div class="h-20 w-full relative">
-                    <img src="${sponsor.cover_url || sponsor.logo_url}" class="w-full h-full object-cover object-center" onerror="this.src='https://images.unsplash.com/photo-1519331379826-f10be5486c6f?q=80&w=400&auto=format&fit=crop'">
-                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
+            sponsorHeader = `
+            <a href="${sponsor.link_url || '#'}" target="_blank" class="flex items-center justify-between bg-amber-50 hover:bg-amber-100 transition-colors border-b border-amber-200 px-3 py-2 -mx-3 -mt-3 mb-2 rounded-t-xl group cursor-pointer">
+                <div class="flex items-center gap-1.5 flex-1 min-w-0 pr-2">
+                    <span class="text-[7px] font-black text-amber-600 uppercase tracking-widest shrink-0">Supported By:</span>
+                    <span class="text-[9px] font-bold text-slate-800 truncate">${sponsor.sponsor_name}</span>
                 </div>
-                <div class="p-2.5 bg-gradient-to-r from-amber-50 to-white flex justify-between items-center">
-                    <div class="flex items-center gap-2">
-                        <img src="${sponsor.logo_url}" class="w-6 h-6 rounded-md bg-white border border-slate-200 object-contain p-0.5">
-                        <div>
-                            <p class="text-[9px] font-black text-slate-800 uppercase tracking-widest leading-none">${sponsor.sponsor_name}</p>
-                            <p class="text-[7px] text-slate-500 font-medium mt-0.5 uppercase">${sponsor.jenis_bantuan}</p>
-                        </div>
-                    </div>
-                    <span class="text-amber-500 text-xs font-black bg-white w-5 h-5 rounded-full flex items-center justify-center shadow-sm">›</span>
+                <div class="bg-white p-1 rounded border border-slate-200 shadow-sm shrink-0" style="aspect-ratio: 16/9; width: 45px;">
+                    <img src="${sponsor.logo_url}" class="w-full h-full object-contain" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'text-[6px] font-bold text-slate-400\\'>SPONSOR</span>';">
                 </div>
             </a>
             `;
         }
 
-        // Tampilan Kartu Event Biasa
         html += `
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-3 flex justify-between items-center opacity-70">
-            <div>
-                <p class="text-[8px] font-bold text-red-500 mb-0.5 uppercase tracking-wider">Event ${i+1}</p>
-                <p class="text-[11px] font-black text-slate-800">${dummyEvents[i]}</p>
+        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 mb-3 overflow-hidden relative ${i === 0 || i === 2 ? 'border-amber-300 ring-1 ring-amber-100 transform hover:scale-[1.02] transition-transform' : 'opacity-80'}">
+            <div class="absolute left-0 top-0 bottom-0 w-1 ${i === 0 || i === 2 ? 'bg-amber-400' : 'bg-slate-300'} z-10"></div>
+            ${sponsorHeader}
+            <div class="pl-1 mb-2">
+                <h3 class="text-[10px] font-black text-slate-800 uppercase leading-tight">Event #${i+1}: ${dummyEvents[i]}</h3>
+                <p class="text-[7px] text-slate-400 font-bold mt-0.5 uppercase tracking-wider">HEAT 1 <span class="text-slate-300 mx-1">|</span> Dari 3</p>
             </div>
-            <div class="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 text-[10px] font-bold">›</div>
-        </div>
-        `;
+            <div class="bg-slate-50/50 rounded-lg p-1.5 border border-slate-100">
+                <div class="flex items-center text-[7px] font-black text-slate-400 uppercase border-b border-slate-200 pb-1 mb-1 px-1">
+                    <div class="w-5 text-center">LN</div><div class="flex-1 pl-1">ATLET</div><div class="w-10 text-right pr-1">WAKTU</div>
+                </div>
+                <div class="flex items-center py-1 border-b border-slate-100 px-1">
+                    <div class="w-5 flex justify-center shrink-0"><div class="w-3 h-3 rounded bg-slate-200 text-slate-600 text-[6px] font-black flex items-center justify-center">4</div></div>
+                    <div class="flex-1 pl-1"><p class="text-[8px] font-black text-slate-800 uppercase truncate">Fajar Aditya</p></div>
+                    <div class="w-10 shrink-0 text-right pr-1"><span class="font-mono text-[8px] font-black text-emerald-600">28.45</span></div>
+                </div>
+                <div class="flex items-center py-1 border-b border-slate-100 px-1">
+                    <div class="w-5 flex justify-center shrink-0"><div class="w-3 h-3 rounded bg-slate-200 text-slate-600 text-[6px] font-black flex items-center justify-center">5</div></div>
+                    <div class="flex-1 pl-1"><p class="text-[8px] font-black text-slate-800 uppercase truncate">Perenang Dummy 2</p></div>
+                    <div class="w-10 shrink-0 text-right pr-1"><span class="font-mono text-[8px] font-black text-slate-400">NT</span></div>
+                </div>
+            </div>
+        </div>`;
     }
-
     container.innerHTML = html;
 }
