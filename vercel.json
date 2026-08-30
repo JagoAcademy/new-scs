@@ -7,7 +7,7 @@
       "destination": "/pitch-client.html"
     },
     {
-      "source": "/((?!api/|assets/|src/|images/|.*\\..*).*)",
+      "source": "/((?!api/|assets/|src/|images/|pitch/|.*\\..*).*)",
       "destination": "/event-public.html"
     }
   ]
