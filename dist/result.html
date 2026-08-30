@@ -9,9 +9,10 @@
         .spin-anim { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
-  <script type="module" crossorigin src="/assets/result-43f49da8.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/supabase-00114a9c.js">
-  <link rel="stylesheet" href="/assets/style-72907b93.css">
+  <script type="module" crossorigin src="/assets/result-49e66a67.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-3cfb730f.js">
+  <link rel="modulepreload" crossorigin href="/assets/supabase-b7fcd0c7.js">
+  <link rel="stylesheet" href="/assets/style-4a6a5742.css">
 </head>
 <body class="bg-slate-50 font-sans text-slate-800 pb-20">
 
@@ -42,7 +43,11 @@
         </div>
     </div>
 
+    <!-- AREA KONTEN UTAMA -->
     <div class="max-w-3xl mx-auto px-4 mt-6">
+        
+        <!-- WADAH KOSONG BUAT BANNER PARTNER (ANTI-GAGAL) -->
+        <div id="partnerWrapper"></div>
         
         <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 mb-6">
             <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Pilih Nomor Lomba</label>
@@ -50,7 +55,6 @@
                 <option value="">Memuat Lomba...</option>
             </select>
             
-            <!-- TOMBOL UX BARU: OPEN ALL -->
             <button id="btnShowAll" class="mt-3 w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-xl transition-colors border border-slate-200 flex items-center justify-center gap-2 shadow-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 Tampilkan Semua Lomba (Open All)

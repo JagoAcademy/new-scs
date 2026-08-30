@@ -5,310 +5,495 @@
     <meta name="theme-color" content="#1e3a8a">
     <link rel="apple-touch-icon" href="/images/logo.png">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" id="viewportMeta" content="width=device-width, initial-scale=1.0">
     <title>Command Center Event | SCS</title>
     
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         svg { max-width: 100%; height: auto; display: block; }
+        .theme-transition, .theme-transition * { transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease; }
+
+        /* EFEK NEON MERAH & GLOSSY GOLD */
+        @keyframes neon-red-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(220, 38, 38, 0.4), 0 0 20px rgba(220, 38, 38, 0.2); }
+            50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.5); }
+        }
+        .btn-gold-glossy {
+            background: linear-gradient(135deg, #fef08a 0%, #fbbf24 50%, #f59e0b 100%);
+            border: 1px solid #fde047;
+            position: relative;
+            overflow: hidden;
+            animation: neon-red-glow 2s infinite ease-in-out;
+        }
+        .btn-gold-glossy::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 45%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0));
+            z-index: 1;
+        }
     </style>
-  <script type="module" crossorigin src="/assets/eventDashboard-d25c3b04.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/supabase-00114a9c.js">
-  <link rel="stylesheet" href="/assets/style-72907b93.css">
+  <script type="module" crossorigin src="/assets/eventDashboard-1675918d.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-3cfb730f.js">
+  <link rel="modulepreload" crossorigin href="/assets/supabase-b7fcd0c7.js">
+  <link rel="stylesheet" href="/assets/style-4a6a5742.css">
 </head>
-<body class="bg-slate-50 min-h-screen font-sans text-slate-800">
+<body class="bg-slate-50 dark:bg-slate-900 min-h-screen font-sans text-slate-800 dark:text-slate-200 theme-transition pb-20 relative">
 
     <!-- Top Navigation -->
-    <nav class="bg-slate-900 text-white shadow-md px-4 md:px-6 py-3 flex justify-between items-center sticky top-0 z-50">
-        <a href="/dashboard.html" class="flex items-center gap-2 text-slate-300 hover:text-white transition text-sm font-medium">
+    <nav class="bg-slate-900 dark:bg-black text-white shadow-md px-4 md:px-6 py-3 flex justify-between items-center sticky top-0 z-50 border-b border-transparent dark:border-slate-800">
+        <!-- PERBAIKAN: Jarak "Kembali" dilonggarkan -->
+        <a href="/dashboard.html" class="flex items-center gap-2 text-slate-300 hover:text-white transition text-sm font-medium shrink-0 mr-4 md:mr-8">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
             <span class="hidden md:inline">Kembali ke Dashboard</span>
             <span class="md:hidden">Kembali</span>
         </a>
-        <div class="text-[10px] md:text-xs font-bold tracking-widest text-slate-400 uppercase">SCS Command Center</div>
+        
+        <div class="flex items-center gap-3">
+            <!-- TOMBOL TOGGLE VIEW (DESKTOP/MOBILE) -->
+            <button id="btnToggleView" class="flex items-center justify-center p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-md transition-colors" title="Toggle Desktop / Mobile View">
+                <svg id="iconDesktop" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                <svg id="iconMobile" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+            </button>
+
+            <button id="btnToggleDark" class="text-slate-400 hover:text-amber-400 focus:outline-none transition-transform hover:scale-110">
+                <svg id="iconMoon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                <svg id="iconSun" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            </button>
+            
+            <button id="btnNavUpgrade" class="hidden px-3 py-1 rounded border border-scsGold text-[10px] md:text-xs font-bold text-scsGold hover:bg-scsGold hover:text-blue-900 transition-colors uppercase tracking-widest cursor-pointer group relative">
+                Go Pro 👑
+                <span class="absolute top-10 right-0 w-32 bg-slate-800 text-white text-[9px] px-2 py-1 rounded hidden group-hover:block text-center shadow-lg border border-slate-700">Unlock Pro Features</span>
+            </button>
+
+            <div class="text-[10px] md:text-xs font-bold tracking-widest text-slate-400 uppercase border-l border-slate-700 pl-3">SCS Command Center</div>
+        </div>
     </nav>
 
     <!-- Main Content Container -->
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 pb-20 pt-6">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 pt-6">
         
         <!-- 1. HEADER CARD -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 md:p-7 mb-6">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 md:p-7 mb-6">
             <div class="flex flex-col md:flex-row md:items-start justify-between gap-5">
                 <div>
                     <div class="flex flex-wrap items-center gap-2 md:gap-3 mb-2">
-                        <h1 id="headerEventName" class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Memuat Event...</h1>
-                        <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 flex items-center gap-1.5 border border-emerald-200 shrink-0">
+                        <h1 id="headerEventName" class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Memuat Event...</h1>
+                        <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-400 flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800 shrink-0">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
                             LIVE
                         </span>
                     </div>
-                    <p id="headerSubdomain" class="text-slate-500 text-sm font-mono flex items-center gap-1.5">
+                    <p id="headerSubdomain" class="text-slate-500 dark:text-slate-400 text-sm font-mono flex items-center gap-1.5">
                         <svg class="w-4 h-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
-                        ...funswimming.my.id
+                        ...f1swimming.com
                     </p>
                 </div>
                 
-                <button id="btnSettingsLomba" class="w-full md:w-auto px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 hover:border-slate-300 hover:shadow-sm transition-all flex items-center justify-center gap-2 shrink-0 shadow-sm cursor-pointer">
-                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    Settings Lomba
-                </button>
+                <div class="flex flex-col md:items-end gap-3 w-full md:w-auto shrink-0">
+                    <button id="btnSettingsLomba" class="w-full md:w-auto px-5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        Settings Lomba
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- 2. STATS GRID -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-5 flex flex-col justify-center">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 md:p-5 flex flex-col justify-center">
                 <div class="flex items-center gap-3 mb-2">
-                    <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">🏊‍♂️</div>
-                    <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider">Peserta</p>
+                    <div class="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">🏊‍♂️</div>
+                    <p class="text-[10px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Peserta</p>
                 </div>
-                <p id="statPeserta" class="text-2xl md:text-3xl font-black text-slate-800">0</p>
+                <p id="statPeserta" class="text-2xl md:text-3xl font-black text-slate-800 dark:text-white">0</p>
             </div>
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-5 flex flex-col justify-center">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 md:p-5 flex flex-col justify-center">
                 <div class="flex items-center gap-3 mb-2">
-                    <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">🔥</div>
-                    <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider">Heat</p>
+                    <div class="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">🔥</div>
+                    <p class="text-[10px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Heat</p>
                 </div>
-                <p id="statHeat" class="text-2xl md:text-3xl font-black text-slate-800">0</p>
+                <p id="statHeat" class="text-2xl md:text-3xl font-black text-slate-800 dark:text-white">0</p>
             </div>
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-5 flex flex-col justify-center">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 md:p-5 flex flex-col justify-center">
                 <div class="flex items-center gap-3 mb-2">
-                    <div class="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 shrink-0">🏅</div>
-                    <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider">Kategori</p>
+                    <div class="w-8 h-8 rounded-full bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0">🏅</div>
+                    <p class="text-[10px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Kategori</p>
                 </div>
-                <p id="statKategori" class="text-2xl md:text-3xl font-black text-slate-800">0</p>
+                <p id="statKategori" class="text-2xl md:text-3xl font-black text-slate-800 dark:text-white">0</p>
             </div>
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-5 flex flex-col justify-center">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">⚙️</div>
-                    <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider">Setup</p>
-                </div>
-                <div class="w-full">
-                    <div class="flex justify-between items-center mb-1.5">
-                        <span id="statSetup" class="text-[10px] md:text-xs font-bold text-emerald-600">0% Selesai</span>
+            
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 md:p-5 flex flex-col justify-center relative overflow-hidden group">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">💎</div>
+                        <p class="text-[10px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Event Status</p>
                     </div>
-                    <div class="w-full bg-slate-100 rounded-full h-1.5">
-                        <div id="barSetup" class="bg-emerald-500 h-1.5 rounded-full" style="width: 0%"></div>
-                    </div>
+                </div>
+                <div>
+                    <p id="statLayananText" class="text-xl md:text-2xl font-black text-slate-400 uppercase mt-1">MEMUAT...</p>
                 </div>
             </div>
         </div>
 
-        <!-- 3. SECTION: QUICK ACTIONS -->
+        <!-- 3. SECTION: QUICK ACTIONS (UX SHARE & QR CODE DENGAN LOGO) -->
         <div class="mb-10">
             <div class="flex items-center gap-3 mb-5">
-                <div class="p-1.5 bg-blue-100 rounded-md text-blue-600 shrink-0">⚡</div>
-                <h2 class="text-xs md:text-sm font-bold text-slate-600 uppercase tracking-widest shrink-0">Quick Actions (Lomba Berjalan)</h2>
-                <div class="flex-1 h-px bg-slate-300"></div>
+                <div class="p-1.5 bg-blue-100 dark:bg-blue-900/40 rounded-md text-blue-600 dark:text-blue-400 shrink-0">⚡</div>
+                <h2 class="text-xs md:text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest shrink-0">Quick Actions (Lomba Berjalan)</h2>
+                <div class="flex-1 h-px bg-slate-300 dark:bg-slate-700"></div>
             </div>
 
-            <div class="bg-white border border-blue-200 rounded-2xl p-3 md:p-4 mb-3 flex flex-col sm:flex-row sm:items-center gap-3 shadow-sm hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-2 text-blue-600 font-bold whitespace-nowrap pl-2 shrink-0">🔗 Link Pendaftaran</div>
-                <div class="flex-1 w-full flex shadow-sm rounded-xl">
-                    <input type="text" id="publicLinkInput" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 border-r-0 rounded-l-xl font-mono text-xs md:text-sm text-slate-700 outline-none" readonly>
-                    <button id="btnCopyLink" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-r-xl font-bold text-xs md:text-sm transition-colors">Copy</button>
+            <!-- LINK PENDAFTARAN (NEW SHARE UX) -->
+            <div class="bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-900/50 rounded-2xl p-4 md:p-5 mb-4 shadow-sm">
+                <div class="flex justify-between items-start mb-3">
+                    <h3 class="font-extrabold text-blue-600 dark:text-blue-400 flex items-center gap-2 pl-1">🔗 Link Pendaftaran Publik</h3>
+                </div>
+                
+                <div class="flex flex-col gap-3">
+                    <!-- PERBAIKAN UX: Tambah tombol Open -->
+                    <div class="flex shadow-sm rounded-xl overflow-hidden">
+                        <input type="text" id="publicLinkInput" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 border-r-0 font-mono text-xs md:text-sm text-slate-700 dark:text-slate-300 outline-none" readonly>
+                        <button id="btnCopyLink" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 font-bold text-xs md:text-sm transition-colors flex items-center justify-center min-w-[70px] border-r border-blue-700">Copy</button>
+                        <button id="btnOpenLink" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 font-bold text-xs md:text-sm transition-colors flex items-center justify-center min-w-[70px]">Open</button>
+                    </div>
+                    <div class="flex gap-2 mt-1">
+                        <button id="btnShareNative_Reg" class="flex-1 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                            Bagikan
+                        </button>
+                        <button id="btnPreviewQR_Reg" class="flex-1 bg-purple-50 hover:bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border border-purple-200 dark:border-purple-800 py-2.5 rounded-xl font-bold text-xs md:text-sm transition-colors flex items-center justify-center gap-2 shadow-sm">
+                            <span>🔳</span> QR Code
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-white border border-red-200 rounded-2xl p-3 md:p-4 mb-6 flex flex-col sm:flex-row sm:items-center gap-3 shadow-sm hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-2 text-red-600 font-bold whitespace-nowrap pl-2 shrink-0">🏆 Link Live Result</div>
-                <div class="flex-1 w-full flex shadow-sm rounded-xl">
-                    <input type="text" id="publicResultLinkInput" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 border-r-0 rounded-l-xl font-mono text-xs md:text-sm text-slate-700 outline-none" readonly>
-                    <button id="btnCopyResultLink" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-r-xl font-bold text-xs md:text-sm transition-colors">Copy</button>
+            <!-- LINK LIVE RESULT (NEW SHARE UX) -->
+            <div class="bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/50 rounded-2xl p-4 md:p-5 mb-6 shadow-sm">
+                <div class="flex justify-between items-start mb-3">
+                    <h3 class="font-extrabold text-red-600 dark:text-red-400 flex items-center gap-2 pl-1">🏆 Link Live Result</h3>
+                </div>
+                
+                <div class="flex flex-col gap-3">
+                    <!-- PERBAIKAN UX: Tambah tombol Open -->
+                    <div class="flex shadow-sm rounded-xl overflow-hidden">
+                        <input type="text" id="publicResultLinkInput" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 border-r-0 font-mono text-xs md:text-sm text-slate-700 dark:text-slate-300 outline-none" readonly>
+                        <button id="btnCopyResultLink" class="bg-red-600 hover:bg-red-700 text-white px-4 py-3 font-bold text-xs md:text-sm transition-colors flex items-center justify-center min-w-[70px] border-r border-red-700">Copy</button>
+                        <button id="btnOpenResultLink" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 font-bold text-xs md:text-sm transition-colors flex items-center justify-center min-w-[70px]">Open</button>
+                    </div>
+                    <div class="flex gap-2 mt-1">
+                        <button id="btnShareNative_Res" class="flex-1 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                            Bagikan
+                        </button>
+                        <button id="btnPreviewQR_Res" class="flex-1 bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 border border-rose-200 dark:border-rose-800 py-2.5 rounded-xl font-bold text-xs md:text-sm transition-colors flex items-center justify-center gap-2 shadow-sm">
+                            <span>🔳</span> QR Code
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <button id="btnLiveResult" class="group bg-white rounded-2xl p-5 shadow-sm border border-slate-200 hover:-translate-y-1 hover:border-red-300 transition-all text-left flex items-start gap-4">
-                    <div class="w-12 h-12 shrink-0 rounded-xl bg-red-50 flex items-center justify-center group-hover:bg-red-100 text-xl">🎥</div>
+                <button id="btnLiveResult" class="group bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:-translate-y-1 hover:border-red-300 dark:hover:border-red-500/50 transition-all text-left flex items-start gap-4">
+                    <div class="w-12 h-12 shrink-0 rounded-xl bg-red-50 dark:bg-red-900/30 flex items-center justify-center text-xl">🎥</div>
                     <div>
-                        <h3 class="font-bold text-slate-800 text-sm md:text-base mb-1 flex gap-2">Live Result <span class="px-1.5 bg-red-100 text-red-700 text-[9px] rounded flex items-center">ON AIR</span></h3>
-                        <p class="text-xs text-slate-500">Input hasil heat secara realtime.</p>
+                        <h3 class="font-bold text-slate-800 dark:text-slate-200 text-sm md:text-base mb-1 flex gap-2">Live Result <span class="px-1.5 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400 text-[9px] rounded flex items-center">ON AIR</span></h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Input hasil heat secara realtime.</p>
                     </div>
                 </button>
 
-                <button id="btnPusatCetak" class="group bg-white rounded-2xl p-5 shadow-sm border border-slate-200 hover:-translate-y-1 hover:border-indigo-300 transition-all text-left flex items-start gap-4">
-                    <div class="w-12 h-12 shrink-0 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 text-xl">🖨️</div>
+                <button id="btnPusatCetak" class="group bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:-translate-y-1 hover:border-indigo-300 dark:hover:border-indigo-500/50 transition-all text-left flex items-start gap-4">
+                    <div class="w-12 h-12 shrink-0 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-xl">🖨️</div>
                     <div>
-                        <h3 class="font-bold text-slate-800 text-sm md:text-base mb-1">Pusat Cetak</h3>
-                        <p class="text-xs text-slate-500">Buku Acara (Heat) & Hasil Akhir.</p>
+                        <h3 class="font-bold text-slate-800 dark:text-slate-200 text-sm md:text-base mb-1">Pusat Cetak</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Buku Acara, Heat, Hasil & Export.</p>
                     </div>
                 </button>
 
-                <button id="btnDataPeserta" class="group bg-white rounded-2xl p-5 shadow-sm border border-slate-200 hover:-translate-y-1 hover:border-blue-300 transition-all text-left flex items-start gap-4">
-                    <div class="w-12 h-12 shrink-0 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 text-xl">👥</div>
+                <button id="btnDataPeserta" class="group bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:-translate-y-1 hover:border-blue-300 dark:hover:border-blue-500/50 transition-all text-left flex items-start gap-4">
+                    <div class="w-12 h-12 shrink-0 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-xl">👥</div>
                     <div>
-                        <h3 class="font-bold text-slate-800 text-sm md:text-base mb-1">Data Peserta</h3>
-                        <p class="text-xs text-slate-500">Verifikasi atlet terdaftar di event ini.</p>
+                        <h3 class="font-bold text-slate-800 dark:text-slate-200 text-sm md:text-base mb-1">Data Peserta</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Verifikasi atlet terdaftar di event.</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- 4. SECTION: EVENT CONFIGURATION (PRO) -->
+        <div class="mb-10">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="p-1.5 bg-amber-100 dark:bg-amber-900/40 rounded-md text-amber-600 dark:text-amber-400 shrink-0">⭐</div>
+                <h2 class="text-xs md:text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest shrink-0">Layanan Ekstra & PRO</h2>
+                <div class="flex-1 h-px bg-slate-300 dark:bg-slate-700"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button id="btnMenuSertifikat" class="group bg-white dark:bg-slate-800 rounded-2xl p-4 md:p-5 shadow-sm border border-amber-300 dark:border-amber-700 hover:-translate-y-1 transition-all text-left flex flex-col justify-between h-full relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-amber-400 text-slate-900 text-[9px] font-black px-2 py-1 rounded-bl-lg tracking-widest z-10">PRO</div>
+                    <div class="flex justify-between items-start mb-4 relative z-20">
+                        <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl bg-amber-50 dark:bg-amber-900/30 border border-amber-100 dark:border-amber-800 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">📜</div>
+                    </div>
+                    <div class="relative z-20">
+                        <h3 class="font-bold text-slate-800 dark:text-slate-200 text-sm group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">Mesin Sertifikat</h3>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Setup E-Certificate Auto-Generate.</p>
+                    </div>
+                </button>
+
+                <button id="btnHeatBuilderPro" class="group bg-white dark:bg-slate-800 rounded-2xl p-4 md:p-5 shadow-sm border border-amber-300 dark:border-amber-700 hover:-translate-y-1 transition-all text-left flex flex-col justify-between h-full relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-amber-400 text-slate-900 text-[9px] font-black px-2 py-1 rounded-bl-lg tracking-widest z-10">PRO</div>
+                    <div class="flex justify-between items-start mb-4 relative z-20">
+                        <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl bg-amber-50 dark:bg-amber-900/30 border border-amber-100 dark:border-amber-800 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">🛠️</div>
+                    </div>
+                    <div class="relative z-20">
+                        <h3 class="font-bold text-slate-800 dark:text-slate-200 text-sm group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">Heat Builder</h3>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Ganti dan modifikasi formasi lintasan.</p>
                     </div>
                 </button>
             </div>
         </div>
 
-        <!-- 4. SECTION: EVENT CONFIGURATION (MODALS) -->
-        <div>
-            <div class="flex items-center gap-3 mb-5">
-                <div class="p-1.5 bg-orange-100 rounded-md text-orange-600 shrink-0">⚙️</div>
-                <h2 class="text-xs md:text-sm font-bold text-slate-600 uppercase tracking-widest shrink-0">Event Config (Pra-Lomba JSONB)</h2>
-                <div class="flex-1 h-px bg-slate-300"></div>
+        <!-- 5. SECTION BARU: SUPER PRO APPROACH SPONSOR -->
+        <div class="mb-10 relative">
+            <div class="flex items-center gap-3 mb-5 mt-10">
+                <div class="p-1.5 bg-red-100 dark:bg-red-900/40 rounded-md text-red-600 dark:text-red-400 shrink-0">🚀</div>
+                <h2 class="text-xs md:text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest shrink-0">Super PRO Approach Sponsor</h2>
+                <div class="flex-1 h-0.5 bg-red-500 dark:bg-red-700 rounded-full"></div> 
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <button id="btnConfigLanding" class="group bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200 hover:-translate-y-1 hover:border-blue-300 transition-all text-left flex flex-col justify-between h-full">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl bg-blue-50 flex items-center justify-center text-xl">💻</div>
-                        <span id="badgeLanding" class="px-2 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded">Belum</span>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-slate-800 text-sm">Landing Page</h3>
-                        <p class="text-[11px] text-slate-500">Teks sambutan promosi event.</p>
-                    </div>
+            <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 md:p-8 flex flex-col md:flex-row justify-between items-center gap-5">
+                <div>
+                    <h3 class="text-lg font-black text-slate-800 dark:text-slate-100">Manajemen Sponsor Event</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Ajukan proposal pencarian sponsor ke SCS atau kelola brand yang sudah deal di sini.</p>
+                </div>
+                
+                <button id="btnSuperProSponsor" class="btn-gold-glossy w-full md:w-auto text-red-900 hover:text-red-950 font-black px-8 py-3.5 rounded-xl transition-all transform hover:-translate-y-1 hover:scale-[1.02] whitespace-nowrap cursor-pointer">
+                    <span class="relative z-10 flex items-center justify-center gap-2 text-sm tracking-wide">✨ Buka Panel Sponsor &raquo;</span>
                 </button>
-
-                <button id="btnConfigEntry" class="group bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200 hover:-translate-y-1 hover:border-indigo-300 transition-all text-left flex flex-col justify-between h-full">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl bg-indigo-50 flex items-center justify-center text-xl">⏱️</div>
-                        <span id="badgeEntry" class="px-2 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded">Belum</span>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-slate-800 text-sm">Entry Time</h3>
-                        <p class="text-[11px] text-slate-500">Batas waktu minimum pendaftaran.</p>
-                    </div>
-                </button>
-                <!-- TOMBOL SERTIFIKAT PRO -->
-                <button id="btnMenuSertifikat" class="group bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-scsGold hover:-translate-y-1 hover:shadow-md transition-all text-left flex flex-col justify-between h-full relative overflow-hidden">
-    <div class="absolute top-0 right-0 bg-scsGold text-blue-900 text-[9px] font-black px-2 py-1 rounded-bl-lg tracking-widest z-10">PRO</div>
-    <div class="flex justify-between items-start mb-4 relative z-20">
-        <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">📜</div>
-    </div>
-    <div class="relative z-20">
-        <h3 class="font-bold text-slate-800 text-sm group-hover:text-amber-600 transition-colors">Mesin Sertifikat</h3>
-        <p class="text-[11px] text-slate-500 mt-1">Setup E-Certificate Auto-Generate.</p>
-    </div>
-</button>
-
-
-                <button id="btnConfigTiket" class="group bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200 hover:-translate-y-1 hover:border-emerald-300 transition-all text-left flex flex-col justify-between h-full">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl bg-emerald-50 flex items-center justify-center text-xl">🎫</div>
-                        <span id="badgeTiket" class="px-2 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded">Belum</span>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-slate-800 text-sm">Tiket & Info</h3>
-                        <p class="text-[11px] text-slate-500">Harga dan kontak panitia.</p>
-                    </div>
-                </button>
-
-                <button id="btnConfigSponsor" class="group bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-slate-200 hover:-translate-y-1 hover:border-amber-300 transition-all text-left flex flex-col justify-between h-full">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl bg-amber-50 flex items-center justify-center text-xl">🤝</div>
-                        <span id="badgeSponsor" class="px-2 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded">Belum</span>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-slate-800 text-sm">Sponsor</h3>
-                        <p class="text-[11px] text-slate-500">Nama pihak sponsor resmi.</p>
-                    </div>
-                </button>
+                
             </div>
         </div>
-    </div>
 
-    <!-- Modals Config Lomba -->
-    <div id="modalLanding" class="fixed inset-0 bg-black/60 z-[70] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
-            <h3 class="font-extrabold text-lg mb-4">Seting Landing Page</h3>
-            <textarea id="valLandingText" rows="4" class="w-full border rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Tulis ucapan selamat datang..."></textarea>
-            <div class="flex gap-2 mt-4">
-                <button class="btn-close-modal flex-1 bg-slate-200 py-3 rounded-xl font-bold">Batal</button>
-                <button id="btnSaveLanding" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold">Simpan</button>
+        <!-- 6. TIM PANITIA (COLLAB) -->
+        <div class="mb-10">
+            <div class="flex items-center gap-3 mb-5 mt-10">
+                <div class="p-1.5 bg-purple-100 dark:bg-purple-900/40 rounded-md text-purple-600 dark:text-purple-400 shrink-0">👥</div>
+                <h2 class="text-xs md:text-sm font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest shrink-0">Tim Panitia (Collab)</h2>
+                <div class="flex-1 h-px bg-slate-300 dark:bg-slate-700"></div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 md:p-8">
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">Undang klub atau EO lain untuk mengelola event ini bersama.</p>
+                
+                <div class="flex flex-col md:flex-row gap-3 mb-6 bg-slate-50 dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+                    <div class="flex-1 w-full md:w-1/2">
+                        <select id="selectCollabClub" class="w-full px-4 py-3.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-purple-500 outline-none text-sm font-bold">
+                            <option value="">Memuat daftar klub...</option>
+                        </select>
+                    </div>
+                    <div class="w-full md:w-1/3">
+                        <select id="inputCollabRole" class="w-full px-4 py-3.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-purple-500 outline-none text-sm font-bold">
+                            <option value="Co-Admin">Co-Admin</option>
+                            <option value="Tim Pendaftaran">Admin Pendaftaran</option>
+                            <option value="Wasit / Timer">Wasit / Timer</option>
+                            <option value="Tukang Cetak">Tukang Cetak</option>
+                        </select>
+                    </div>
+                    <button id="btnInviteCollab" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3.5 rounded-xl font-bold text-sm transition shadow-md whitespace-nowrap cursor-pointer">
+                        Undang Panitia 🚀
+                    </button>
+                </div>
+                <div id="collabStatusMsg" class="hidden text-sm font-bold text-center rounded-lg p-3 mb-4"></div>
+
+                <div class="space-y-3" id="collabListContainer">
+                    <div class="animate-pulse flex gap-4 items-center bg-slate-50 dark:bg-slate-900 p-4 rounded-xl">
+                        <div class="w-10 h-10 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+                        <div class="w-1/2 h-4 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                    </div>
+                </div>
             </div>
         </div>
+
     </div>
 
-    <div id="modalEntry" class="fixed inset-0 bg-black/60 z-[70] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
-            <h3 class="font-extrabold text-lg mb-4">Seting Entry Time</h3>
-            <input type="text" id="valEntryLimit" class="w-full border rounded-xl p-3 outline-none focus:ring-2 focus:ring-indigo-500 text-sm mb-2" placeholder="Contoh: 00:45:00 (Maksimal waktu)">
-            <div class="flex gap-2 mt-4">
-                <button class="btn-close-modal flex-1 bg-slate-200 py-3 rounded-xl font-bold">Batal</button>
-                <button id="btnSaveEntry" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold">Simpan</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modalTiket" class="fixed inset-0 bg-black/60 z-[70] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
-            <h3 class="font-extrabold text-lg mb-4">Seting Tiket & Info</h3>
-            <input type="number" id="valTiketHarga" class="w-full border rounded-xl p-3 outline-none focus:ring-2 focus:ring-emerald-500 text-sm mb-3" placeholder="Harga Pendaftaran (Rp)">
-            <input type="text" id="valTiketWA" class="w-full border rounded-xl p-3 outline-none focus:ring-2 focus:ring-emerald-500 text-sm" placeholder="No WhatsApp Panitia (628...)">
-            <div class="flex gap-2 mt-4">
-                <button class="btn-close-modal flex-1 bg-slate-200 py-3 rounded-xl font-bold">Batal</button>
-                <button id="btnSaveTiket" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold">Simpan</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modalSponsor" class="fixed inset-0 bg-black/60 z-[70] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
-            <h3 class="font-extrabold text-lg mb-4">Data Sponsor</h3>
-            <input type="text" id="valSponsorName" class="w-full border rounded-xl p-3 outline-none focus:ring-2 focus:ring-amber-500 text-sm mb-2" placeholder="Nama Perusahaan Sponsor">
-            <div class="flex gap-2 mt-4">
-                <button class="btn-close-modal flex-1 bg-slate-200 py-3 rounded-xl font-bold">Batal</button>
-                <button id="btnSaveSponsor" class="flex-1 bg-amber-600 text-white py-3 rounded-xl font-bold">Simpan</button>
-            </div>
-        </div>
-    </div>
+    <!-- AREA MODAL -->
 
     <!-- MODAL PUSAT CETAK -->
-    <div id="modalPusatCetak" class="fixed inset-0 z-[80] bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 transition-opacity">
-        <div class="bg-white rounded-3xl w-full max-w-sm shadow-2xl p-6">
-            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
-                <h3 class="font-black text-slate-800 text-lg">Pusat Cetak</h3>
-                <button id="btnCloseCetak" class="text-slate-400 hover:text-red-500 font-bold text-2xl transition-colors">&times;</button>
+    <div id="modalPusatCetak" class="fixed inset-0 z-[80] bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm shadow-2xl p-6 border dark:border-slate-700">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-100 dark:border-slate-700 pb-3">
+                <h3 class="font-black text-slate-800 dark:text-white text-lg">Pusat Cetak</h3>
+                <button id="btnCloseCetak" class="text-slate-400 hover:text-red-500 text-2xl transition-colors">&times;</button>
             </div>
-            <p class="text-xs text-slate-500 mb-5">Pilih dokumen perlombaan yang ingin Anda buat dan cetak (A4).</p>
             
             <div class="space-y-3">
-                <!-- Pilihan 1: Buku Acara -->
-                <button id="btnMenuBukuAcara" class="w-full bg-slate-50 border border-slate-200 hover:bg-indigo-50 hover:border-indigo-300 rounded-xl p-4 text-left transition-colors flex items-center gap-4 group">
+                <button id="btnMenuBukuAcara" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500 rounded-xl p-4 text-left transition-colors flex items-center gap-4 group cursor-pointer">
                     <div class="text-2xl group-hover:scale-110 transition-transform">📖</div>
                     <div>
-                        <h4 class="font-bold text-slate-800 group-hover:text-indigo-700 text-sm">Buku Acara (Start List)</h4>
-                        <p class="text-[10px] text-slate-500 font-medium mt-0.5">Daftar perenang, urutan heat & lintasan.</p>
-                    </div>
-                </button>
-
-                <!-- Pilihan 2: Custom Heat / Drag & Drop (PRO) -->
-                <button id="btnMenuHeatBuilder" class="w-full bg-slate-50 border border-slate-200 hover:bg-amber-50 hover:border-amber-300 rounded-xl p-4 text-left transition-colors flex items-center justify-between group">
-                    <div class="flex items-center gap-4">
-                        <div class="text-2xl group-hover:scale-110 transition-transform">🛠️</div>
-                        <div>
-                            <h4 class="font-bold text-slate-800 group-hover:text-amber-700 text-sm">Heat Builder</h4>
-                            <p class="text-[10px] text-slate-500 font-medium mt-0.5">Edit formasi lintasan manual.</p>
-                        </div>
-                    </div>
-                    <span class="bg-amber-100 text-amber-700 text-[9px] font-black px-2 py-1 rounded tracking-widest border border-amber-200">PRO</span>
-                </button>
-
-                <!-- Pilihan 3: Cetak PDF (BARU!) -->
-                <button id="btnMenuCetakPDF" class="w-full bg-slate-50 border border-slate-200 hover:bg-red-50 hover:border-red-300 rounded-xl p-4 text-left transition-colors flex items-center gap-4 group">
-                    <div class="text-2xl group-hover:scale-110 transition-transform">🖨️</div>
-                    <div>
-                        <h4 class="font-bold text-slate-800 group-hover:text-red-700 text-sm">Cetak Start List (PDF)</h4>
-                        <p class="text-[10px] text-slate-500 font-medium mt-0.5">Versi rapi untuk diprint di kertas A4.</p>
+                        <h4 class="font-bold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 text-sm">Buku Acara (Start List)</h4>
+                        <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Daftar perenang, urutan heat & lintasan.</p>
                     </div>
                 </button>
                 
-                <!-- Pilihan 4: Hasil Lomba -->
-                <button id="btnMenuHasilLomba" class="w-full bg-slate-50 border border-slate-200 hover:bg-emerald-50 hover:border-emerald-300 rounded-xl p-4 text-left transition-colors flex items-center gap-4 group">
+                <button id="btnMenuHasilLomba" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500 rounded-xl p-4 text-left transition-colors flex items-center gap-4 group cursor-pointer">
                     <div class="text-2xl group-hover:scale-110 transition-transform">🏅</div>
                     <div>
-                        <h4 class="font-bold text-slate-800 group-hover:text-emerald-700 text-sm">Hasil Lomba (Official)</h4>
-                        <p class="text-[10px] text-slate-500 font-medium mt-0.5">Klasemen juara dari gabungan heat.</p>
+                        <h4 class="font-bold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 text-sm">Hasil Lomba (Official)</h4>
+                        <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Klasemen juara dari gabungan heat.</p>
+                    </div>
+                </button>
+
+                <div class="relative py-2 mt-2">
+                    <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-emerald-200 dark:border-emerald-900/50"></div></div>
+                    <div class="relative flex justify-center"><span class="bg-white dark:bg-slate-800 px-3 text-[10px] font-black text-emerald-600 dark:text-emerald-500 uppercase tracking-widest">KHUSUS CETAK & EXPORT</span></div>
+                </div>
+
+                <button id="btnMenuCetakPDF" class="w-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 hover:border-emerald-400 rounded-xl p-4 text-left transition-colors flex items-center gap-4 group cursor-pointer">
+                    <div class="text-2xl group-hover:scale-110 transition-transform">📄</div>
+                    <div>
+                        <h4 class="font-bold text-emerald-900 dark:text-emerald-300 text-sm">To PDF (Start List)</h4>
+                        <p class="text-[10px] text-emerald-700/70 dark:text-emerald-500 mt-0.5">Export rapi format A4 siap print.</p>
+                    </div>
+                </button>
+
+                <button id="btnMenuCetakExcel" class="w-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 hover:border-emerald-400 rounded-xl p-4 text-left transition-colors flex items-center gap-4 group cursor-pointer">
+                    <div class="text-2xl group-hover:scale-110 transition-transform">📊</div>
+                    <div>
+                        <h4 class="font-bold text-emerald-900 dark:text-emerald-300 text-sm">To Excel (Data Register)</h4>
+                        <p class="text-[10px] text-emerald-700/70 dark:text-emerald-500 mt-0.5">Export data event_register format XLS.</p>
                     </div>
                 </button>
             </div>
         </div>
     </div>
+
+    <!-- MODAL UPGRADE PRO ENTERPRISE CHECKOUT EXPERIENCE -->
+    <div id="modalUpgrade" class="fixed inset-0 bg-slate-900/80 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
+            
+            <!-- Header Modal -->
+            <div class="bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-700 p-5">
+                <div class="flex justify-between items-center mb-1">
+                    <h3 class="font-black text-slate-900 dark:text-white text-lg md:text-xl">✨ Upgrade ke SCS Pro</h3>
+                    <button class="btn-close-modal text-slate-400 hover:text-red-500 text-2xl font-bold leading-none">&times;</button>
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Akses fitur sponsor eksklusif, prioritas support, dan layanan ekstra tanpa batas.</p>
+            </div>
+
+            <!-- Scrollable Content -->
+            <div class="p-5 md:p-6 overflow-y-auto max-h-[65vh]">
+                
+                <!-- Pricing Info -->
+                <div class="text-center mb-5">
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mb-1">Biaya Investasi Event</p>
+                    <div class="flex justify-center items-end gap-3">
+                        <p class="text-lg font-bold text-slate-400 line-through decoration-red-500 decoration-2">Rp 1.000.000</p>
+                        <p class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white leading-none tracking-tight">Rp 500.000</p>
+                    </div>
+                    <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold mt-2 bg-emerald-50 dark:bg-emerald-900/30 inline-block px-2.5 py-1 rounded-md border border-emerald-200 dark:border-emerald-800">Promo Launching s/d Jan 2027 🔥</p>
+                </div>
+
+                <!-- Benefit List -->
+                <div class="bg-[#f8fafc] dark:bg-slate-800 p-4 rounded-xl mb-6 border border-slate-100 dark:border-slate-700">
+                    <ul class="text-xs text-slate-700 dark:text-slate-300 space-y-3 font-medium">
+                        <li class="flex items-start gap-2.5">
+                            <span class="text-emerald-500 mt-0.5 text-sm leading-none">✅</span> 
+                            <span><strong>Sponsor Mastery:</strong> Akses Super PRO Approach Sponsor & Prioritas Deal Pusat.</span>
+                        </li>
+                        <li class="flex items-start gap-2.5">
+                            <span class="text-emerald-500 mt-0.5 text-sm leading-none">✅</span> 
+                            <span><strong>Unlimited Extras:</strong> Bebas akses penuh ke Mesin Sertifikat & Heat Builder.</span>
+                        </li>
+                        <li class="flex items-start gap-2.5">
+                            <span class="text-emerald-500 mt-0.5 text-sm leading-none">✅</span> 
+                            <span><strong>Premium Support:</strong> Bantuan prioritas langsung dari tim teknis SCS.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Segmented Control Metode Pembayaran -->
+                <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Pilih Metode Pembayaran</p>
+                <div class="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-lg mb-4">
+                    <button class="pay-tab flex-1 py-2 text-[10px] md:text-xs font-bold rounded-md bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white transition-all" data-target="transfer">🏦 Transfer Bank</button>
+                    <button class="pay-tab flex-1 py-2 text-[10px] md:text-xs font-bold rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all" data-target="qris">⚡ Scan QRIS</button>
+                    <button class="pay-tab flex-1 py-2 text-[10px] md:text-xs font-bold rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all" data-target="voucher">🎟️ Voucher</button>
+                </div>
+
+                <!-- Dynamic Sections -->
+                
+                <!-- Section: Transfer -->
+                <div id="payTransfer" class="pay-section block animate-fade-in">
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-center mb-3">
+                        <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Transfer ke Rekening Resmi SCS</p>
+                        <p class="text-xl md:text-2xl font-black text-blue-700 dark:text-blue-400 tracking-wider mb-1">BCA 1880601951</p>
+                        <p class="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest">a.n. Nuzulul Hidayah</p>
+                        <p class="text-[9px] font-medium text-slate-500 mt-0.5">Dirut PT. Teknologi Prestasi Indonesia (TPI)</p>
+                    </div>
+                </div>
+
+                <!-- Section: QRIS -->
+                <div id="payQris" class="pay-section hidden text-center animate-fade-in">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 inline-block mb-3 shadow-sm">
+                        <!-- QRIS STATIS DARI JR ACADEMY -->
+                        <img src="/images/qrisjr.jpg" alt="QRIS JR Academy" class="w-32 h-32 md:w-40 md:h-40 mx-auto object-contain">
+                    </div>
+                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Scan QRIS by JR Academy</p>
+                    <p class="text-[10px] text-slate-500">Gunakan M-Banking atau E-Wallet untuk scan.</p>
+                </div>
+
+                <!-- UPLOAD BUKTI UNTUK TRANSFER & QRIS -->
+                <div id="uploadBuktiSection" class="block animate-fade-in mt-4">
+                    <label class="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Upload Bukti Pembayaran</label>
+                    <input type="file" id="uploadBuktiBayar" accept=".jpg,.jpeg,.png,.pdf" class="w-full text-xs file:bg-slate-800 file:text-white file:rounded-md file:border-0 file:px-3 file:py-1.5 file:font-bold file:mr-3 file:cursor-pointer text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 outline-none p-1 transition-all">
+                    <p class="text-[9px] text-slate-400 mt-1">Format: JPG, PNG, PDF. Maksimal 2MB.</p>
+                </div>
+
+                <!-- Section: Voucher -->
+                <div id="payVoucher" class="pay-section hidden animate-fade-in">
+                    <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <label class="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Masukkan Kode Voucher Promo</label>
+                        <input type="text" id="inputVoucherCode" placeholder="Contoh: PROGRATIS" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-3 text-sm font-bold text-slate-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none uppercase placeholder:normal-case placeholder:font-normal transition-all">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer Action Button -->
+            <div class="p-5 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-700">
+                <button id="btnSubmitUpgrade" class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 font-bold py-3.5 rounded-xl shadow-lg transition-colors cursor-pointer text-sm">
+                    Konfirmasi Pembayaran
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PREVIEW QR CODE -->
+    <div id="modalPreviewQR" class="fixed inset-0 z-[110] bg-slate-900/80 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm shadow-2xl p-6 border border-slate-200 dark:border-slate-700 flex flex-col items-center relative overflow-hidden">
+            <div class="w-full flex justify-between items-center mb-6 relative z-10">
+                <h3 class="font-black text-slate-800 dark:text-white text-lg" id="qrModalTitle">Preview QR Code</h3>
+                <button class="btn-close-modal text-slate-400 hover:text-red-500 text-2xl font-bold transition-colors">&times;</button>
+            </div>
+            
+            <div id="qrLoading" class="w-full h-64 flex flex-col items-center justify-center text-slate-400 relative z-10">
+                <span class="text-4xl animate-bounce mb-2">⏳</span>
+                <p class="text-xs font-bold uppercase tracking-widest">Mendesain Frame...</p>
+            </div>
+
+            <img id="qrPreviewImage" src="" class="w-full max-w-[280px] h-auto rounded-xl shadow-lg hidden border border-slate-200 relative z-10">
+            
+            <a id="btnDownloadFinalQR" href="#" download="QRCode.png" class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 hidden relative z-10">
+                <span>📥</span> Download Gambar QR
+            </a>
+        </div>
+    </div>
+
+    <!-- Tambahan animasi Tailwind tipis -->
+    <style>
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 
     
 </body>

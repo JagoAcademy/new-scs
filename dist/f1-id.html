@@ -3,7 +3,7 @@
 <head>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1e3a8a">
-    <link rel="apple-touch-icon" href="/images/logo.png">
+    <link rel="apple-touch-icon" href="/images/f1logo.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil F1 ID | SCS</title>
@@ -15,19 +15,30 @@
         }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Animasi Sponsor */
+        @keyframes sponsorGlow {
+            0% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.2); }
+            50% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.6); }
+            100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.2); }
+        }
+        .sponsor-glow {
+            animation: sponsorGlow 3s infinite ease-in-out;
+        }
     </style>
-  <script type="module" crossorigin src="/assets/f1Id-4300cb72.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/supabase-00114a9c.js">
-  <link rel="stylesheet" href="/assets/style-72907b93.css">
+  <script type="module" crossorigin src="/assets/f1Id-0525d3d1.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-3cfb730f.js">
+  <link rel="modulepreload" crossorigin href="/assets/supabase-b7fcd0c7.js">
+  <link rel="stylesheet" href="/assets/style-4a6a5742.css">
 </head>
 <body class="bg-slate-50 min-h-screen font-sans text-slate-800 pb-20 bg-pattern">
 
     <!-- TOP NAVIGATION -->
     <nav class="bg-white/80 backdrop-blur-md shadow-sm p-4 flex justify-between items-center border-b sticky top-0 z-50">
         <a href="/" class="hover:scale-105 transition-transform duration-200">
-            <img src="/images/logo.png" alt="SCS Logo" class="h-8 md:h-10">
+            <img src="/images/f1logo.png" alt="SCS Logo" class="h-8 md:h-10">
         </a>
-        <a href="/auth.html" class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full border border-blue-100 hover:bg-blue-100 transition-colors">
+        <a href="/auth.html" class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full border border-blue-100 hover:bg-blue-100 transition-colors" id="navAuthBtn">
             Login SCS
         </a>
     </nav>
@@ -51,17 +62,25 @@
 
         <!-- PROFILE CARD (DIGITAL ID) -->
         <div id="profileData" class="hidden space-y-6">
-            
+        
+            <!-- SPONSOR UTAMA (SCS PRO) -->
+            <div class="flex justify-center -mb-2 relative z-20">
+                <div class="bg-white px-5 py-2 rounded-t-2xl shadow-md border-t border-x border-slate-200 flex items-center gap-3 sponsor-glow">
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Presented By</span>
+                    <span class="font-black text-blue-900 tracking-tighter text-base md:text-lg italic">SCS PRO</span>
+                </div>
+            </div>
+
             <!-- DIGITAL ID CARD -->
             <div class="relative bg-gradient-to-br from-slate-900 via-blue-950 to-blue-900 rounded-3xl shadow-2xl overflow-hidden border-2 border-blue-800/50">
                 <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2"></div>
                 <div class="absolute bottom-0 left-0 w-64 h-64 bg-amber-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 translate-y-1/2 -translate-x-1/4"></div>
                 
                 <!-- Card Header -->
-                <div class="p-6 flex justify-between items-start relative z-10 border-b border-white/10">
+                <div class="p-4 md:p-6 flex justify-between items-start relative z-10 border-b border-white/10">
                     <div>
-                        <img src="/images/logo.png" class="h-6 opacity-80 filter brightness-0 invert mb-1">
-                        <p class="text-[9px] text-blue-200 tracking-widest font-bold uppercase mt-1">Official Athlete Identity</p>
+                        <img src="/images/f1logo.png" class="h-4 md:h-6 opacity-80 filter brightness-0 invert mb-1">
+                        <p class="hidden md:block text-[9px] text-blue-200 tracking-widest font-bold uppercase mt-0.5">Official Athlete Identity</p>
                     </div>
                     <div id="badgeVerifikasi">
                         <!-- Disuntik JS -->
@@ -69,29 +88,29 @@
                 </div>
 
                 <!-- Card Body -->
-                <div class="p-6 relative z-10 flex flex-col md:flex-row items-center md:items-start gap-6">
+                <div class="p-4 md:p-6 relative z-10 flex flex-row items-center gap-4 md:gap-6">
                     <div class="shrink-0 relative">
-                        <img id="atletFoto" src="" class="w-32 h-32 md:w-36 md:h-36 rounded-2xl object-cover border-4 border-white/10 shadow-xl bg-slate-800">
-                        <div class="absolute -bottom-3 -right-3 w-10 h-10 bg-amber-400 rounded-full border-4 border-slate-900 flex items-center justify-center shadow-lg" id="atletGenderIcon">
+                        <img id="atletFoto" src="" class="w-24 h-24 md:w-36 md:h-36 rounded-2xl object-cover border-2 md:border-4 border-white/10 shadow-xl bg-slate-800">
+                        <div class="absolute -bottom-2 -right-2 md:-bottom-3 md:-right-3 w-8 h-8 md:w-10 md:h-10 bg-amber-400 rounded-full border-[3px] md:border-4 border-slate-900 flex items-center justify-center shadow-lg text-sm md:text-lg" id="atletGenderIcon">
                         </div>
                     </div>
                     
-                    <div class="text-center md:text-left flex-1 w-full">
-                        <h1 id="atletName" class="text-2xl md:text-3xl font-black text-white tracking-tight leading-none mb-2 drop-shadow-md">Memuat...</h1>
+                    <div class="text-left flex-1 min-w-0">
+                        <h1 id="atletName" class="text-xl md:text-3xl font-black text-white tracking-tight leading-none mb-1.5 md:mb-2 truncate drop-shadow-md">Memuat...</h1>
                         
-                        <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 px-3 py-1.5 rounded-lg backdrop-blur-sm mb-4 cursor-pointer hover:bg-white/20 transition-colors" onclick="navigator.clipboard.writeText(document.getElementById('atletF1Id').innerText); alert('F1 ID berhasil disalin!')">
-                            <span class="text-amber-400 text-sm">🆔</span>
-                            <span id="atletF1Id" class="font-mono text-lg font-black text-white tracking-wider">F1-XXXXXX</span>
+                        <div class="inline-flex items-center gap-1.5 md:gap-2 bg-white/10 border border-white/20 px-2 py-1 md:px-3 md:py-1.5 rounded-lg backdrop-blur-sm mb-3 md:mb-4 cursor-pointer hover:bg-white/20 transition-colors" onclick="navigator.clipboard.writeText(document.getElementById('atletF1Id').innerText); alert('F1 ID berhasil disalin!')">
+                            <span class="text-amber-400 text-xs md:text-sm">🆔</span>
+                            <span id="atletF1Id" class="font-mono text-sm md:text-lg font-black text-white tracking-wider">F1-XXXXXX</span>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-3 text-left bg-black/20 p-3 rounded-xl border border-white/5">
-                            <div>
-                                <p class="text-[10px] text-blue-300 font-bold uppercase tracking-wider mb-0.5">Klub Asal</p>
-                                <p id="atletKlub" class="text-sm font-bold text-slate-100 truncate">...</p>
+                        <div class="grid grid-cols-2 gap-2 md:gap-3 text-left bg-black/20 p-2.5 md:p-3 rounded-xl border border-white/5">
+                            <div class="min-w-0">
+                                <p class="text-[8px] md:text-[10px] text-blue-300 font-bold uppercase tracking-wider mb-0.5 truncate">Klub Asal</p>
+                                <p id="atletKlub" class="text-xs md:text-sm font-bold text-slate-100 truncate">...</p>
                             </div>
-                            <div>
-                                <p class="text-[10px] text-blue-300 font-bold uppercase tracking-wider mb-0.5">Usia (Tahun)</p>
-                                <p id="atletUsia" class="text-sm font-bold text-slate-100">...</p>
+                            <div class="min-w-0 pl-2 border-l border-white/10">
+                                <p class="text-[8px] md:text-[10px] text-blue-300 font-bold uppercase tracking-wider mb-0.5 truncate">Usia</p>
+                                <p id="atletUsia" class="text-xs md:text-sm font-bold text-slate-100 truncate">...</p>
                             </div>
                         </div>
                     </div>
@@ -104,8 +123,14 @@
                 <button id="tabBestTime" class="flex-1 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl font-bold text-sm transition-colors">⏱️ Best Time</button>
             </div>
 
-            <!-- TAB CONTENT: PENCAPAIAN (MEDALI) -->
+            <!-- TAB CONTENT: PENCAPAIAN (MEDALI) & SCS ENERGY -->
             <div id="contentPencapaian" class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <!-- SCS ENERGY HEADER (TEAL) -->
+                <div class="bg-teal-600 px-5 py-3 flex justify-between items-center border-b-4 border-teal-800">
+                    <p class="text-white text-xs font-bold italic tracking-wide">Fuel Your Champion!</p>
+                    <span class="font-black text-white text-xl tracking-tighter italic drop-shadow-md">SCS ENERGY</span>
+                </div>
+                
                 <div class="flex items-center justify-between p-5 md:p-6 border-b border-slate-100">
                     <h3 class="font-extrabold text-slate-800 text-lg">Koleksi Medali</h3>
                     <span id="totalMedali" class="text-xs bg-amber-100 text-amber-700 px-3 py-1 rounded-full font-bold">0 Medali</span>
@@ -118,8 +143,14 @@
                 </div>
             </div>
 
-            <!-- TAB CONTENT: BEST TIME -->
+            <!-- TAB CONTENT: BEST TIME & SCS SPEED -->
             <div id="contentBestTime" class="hidden bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <!-- SCS SPEED HEADER (CRIMSON RED) -->
+                <div class="bg-rose-600 px-5 py-3 flex justify-between items-center border-b-4 border-rose-800">
+                    <p class="text-white text-xs font-bold italic tracking-wide">Break Your Limit!</p>
+                    <span class="font-black text-white text-xl tracking-tighter italic drop-shadow-md">SCS SPEED</span>
+                </div>
+
                 <div class="flex items-center justify-between p-5 md:p-6 border-b border-slate-100 bg-blue-50/50">
                     <h3 class="font-extrabold text-blue-900 text-lg">Catatan Waktu Terbaik</h3>
                 </div>

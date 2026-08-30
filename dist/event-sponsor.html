@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Sponsor | SCS</title>
+    
+    <style>.hide-scrollbar::-webkit-scrollbar { display: none; } .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }</style>
+  <script type="module" crossorigin src="/assets/eventSponsor-b2d6cb6c.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-3cfb730f.js">
+  <link rel="modulepreload" crossorigin href="/assets/supabase-b7fcd0c7.js">
+  <link rel="stylesheet" href="/assets/style-4a6a5742.css">
+</head>
+<body class="bg-slate-50 min-h-screen font-sans text-slate-800 pb-20">
+
+    <nav class="bg-slate-900 text-white shadow-md px-4 md:px-6 py-3 flex justify-between items-center sticky top-0 z-50">
+        <a id="btnBackDashboard" href="#" class="flex items-center gap-2 text-slate-300 hover:text-white text-sm font-medium">
+            <span class="hidden md:inline">Kembali ke Dashboard</span><span class="md:hidden">Kembali</span>
+        </a>
+        <div class="text-xs font-bold tracking-widest text-slate-400 uppercase">Panel Sponsor</div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-8">
+        
+        <!-- HEADER DENGAN STATUS BADGE -->
+        <div class="mb-8 flex flex-col md:flex-row md:items-start justify-between gap-4">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+                    🚀 SUPER PRO Approach Sponsor
+                </h1>
+                <p class="text-slate-500 text-sm mt-2">Pilih brand yang ingin Anda ajukan untuk mendukung event Anda.</p>
+            </div>
+            <div id="eventStatusBadgeContainer" class="shrink-0 mt-2 md:mt-0">
+                <!-- Badge di-inject via JS -->
+            </div>
+        </div>
+
+        <!-- SECTION OFFICIAL PARTNERS -->
+        <div class="mb-10">
+            <h2 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">🤝 PARTNER SCS</h2>
+            <p class="text-xs text-slate-500 mb-4">Brand yang memiliki hubungan/kemitraan resmi dengan ekosistem SCS.</p>
+            <div id="gridOfficial" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Injeksi JS -->
+            </div>
+        </div>
+
+        <!-- SECTION PILIH POTENSI SPONSOR (REVAMPED) -->
+        <div class="mb-10 border-t border-slate-200 pt-8">
+            
+            <!-- REVISED ALERT SECTION: HIGH POTENTIAL -->
+            <div class="bg-[#eff6ff] border border-blue-200/80 p-5 rounded-2xl mb-6 shadow-sm">
+                <h4 class="text-blue-900 font-black text-sm mb-1.5 flex items-center gap-2">
+                    💎 HIGH POTENTIAL TARGETS
+                </h4>
+                <p class="text-xs text-blue-800/90 leading-relaxed text-justify font-medium">
+                    🚀 Brand-brand ini sedang terbuka untuk kolaborasi event renang. Ajukan proposal sekarang untuk mengamankan dukungan mereka!
+                </p>
+                <p class="text-[10px] text-blue-600/80 mt-2 italic font-semibold">
+                    *Status 'Prospective' berarti brand ini belum terikat kontrak eksklusif dengan SCS. Kesempatan emas untuk panitia!
+                </p>
+            </div>
+            
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-4">
+                <div>
+                    <h2 class="text-lg font-black text-slate-800 flex items-center gap-2">🌐 PILIH POTENSI SPONSOR</h2>
+                    <p class="text-xs text-slate-500 mt-1">Brand yang tersedia sebagai target pendekatan sponsor.</p>
+                </div>
+                <!-- Dropdown Filter Kategori -->
+                <div class="flex items-center gap-2 w-full md:w-auto">
+                    <select id="filterKategori" class="w-full md:w-48 bg-white border border-slate-300 text-slate-700 text-xs font-bold rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm cursor-pointer">
+                        <option value="all">Semua Kategori</option>
+                        <!-- Kategori di-inject JS -->
+                    </select>
+                </div>
+            </div>
+            
+            <div id="gridUnofficial" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Injeksi JS -->
+            </div>
+
+            <!-- Empty State jika Filter Kosong -->
+            <div id="emptyState" class="hidden text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-300 mt-4">
+                <span class="text-4xl block mb-3 opacity-50">📭</span>
+                <p class="text-sm font-bold text-slate-500">Belum ada sponsor di kategori ini.</p>
+                <p class="text-xs text-slate-400 mt-1">Coba pilih kategori industri yang lain.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL FORM PENGAJUAN (E=MC2) -->
+    <div id="modalPengajuan" class="fixed inset-0 bg-slate-900/80 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden my-auto max-h-[90vh] flex flex-col">
+            <div class="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">
+                <h3 class="font-black text-slate-800 text-base">📝 AJUKAN PENDEKATAN SPONSOR</h3>
+                <button class="btn-close-modal text-slate-400 hover:text-red-500 text-2xl font-bold">&times;</button>
+            </div>
+            <div class="p-6 overflow-y-auto hide-scrollbar flex-1 space-y-5">
+                <input type="hidden" id="propSponsorId">
+                <div class="flex items-center gap-4 bg-slate-100 p-4 rounded-xl">
+                    <img id="propLogo" src="" class="w-12 h-12 object-contain bg-white rounded-lg p-1 border border-slate-200">
+                    <div>
+                        <h4 id="propSponsorName" class="font-black text-slate-800 text-lg">Nama Sponsor</h4>
+                        <p id="propEventName" class="text-xs text-slate-500 font-bold mt-1">Event: Memuat...</p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-800 mb-2">Bentuk dukungan yang diajukan:</label>
+                    <div class="grid grid-cols-2 gap-2 text-sm text-slate-600">
+                        <label class="flex items-center gap-2"><input type="checkbox" name="supportType" value="Product Support" class="w-4 h-4 text-blue-600"> Product Support</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" name="supportType" value="Booth" class="w-4 h-4 text-blue-600"> Booth</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" name="supportType" value="Cash Sponsorship" class="w-4 h-4 text-blue-600"> Cash Sponsorship</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" name="supportType" value="Merchandise" class="w-4 h-4 text-blue-600"> Merchandise</label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-800 mb-2">Benefit untuk sponsor (Kewajiban Anda):</label>
+                    <div class="grid grid-cols-2 gap-2 text-sm text-slate-600">
+                        <label class="flex items-center gap-2"><input type="checkbox" name="benefitOffered" value="Logo Event Page" class="w-4 h-4 text-emerald-600"> Logo pada Event Page</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" name="benefitOffered" value="Logo Result Page" class="w-4 h-4 text-emerald-600"> Logo pada Result Page</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" name="benefitOffered" value="Social Media Exposure" class="w-4 h-4 text-emerald-600"> Social Media Exposure</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" name="benefitOffered" value="Mention MC" class="w-4 h-4 text-emerald-600"> Mention MC</label>
+                        <label class="flex items-center gap-2"><input type="checkbox" name="benefitOffered" value="Booth Area" class="w-4 h-4 text-emerald-600"> Booth Area</label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-800 mb-1">Catatan Tambahan (Estimasi / Detail):</label>
+                    <textarea id="propNote" rows="3" class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Tuliskan estimasi kebutuhan spesifik (misal: 10 dus air mineral)"></textarea>
+                </div>
+            </div>
+            <div class="p-5 bg-slate-50 border-t shrink-0">
+                <button id="btnSubmitProposal" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-blue-700 transition">KIRIM PROPOSAL 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    
+</body>
+</html>

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /admin-ads.html
+Disallow: /settings-lomba.html
+Disallow: /book/
+Disallow: /src/
+
+Sitemap: https://f1swimming.com/sitemap.xml

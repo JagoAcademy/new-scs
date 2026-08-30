@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sponsor Bank SCS | Admin Dashboard</title>
+    
+    <style>
+        body { background-color: #0f172a; } /* Slate 900 */
+        .hide-scrollbar::-webkit-scrollbar { display: none; } 
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+  <script type="module" crossorigin src="/assets/sponsorPreview-abc9c330.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-3cfb730f.js">
+  <link rel="modulepreload" crossorigin href="/assets/supabase-b7fcd0c7.js">
+  <link rel="stylesheet" href="/assets/style-4a6a5742.css">
+</head>
+<body class="font-sans text-slate-200 pb-20 min-h-screen">
+
+    <!-- Topbar -->
+    <nav class="bg-[#0b1120] border-b border-slate-800 px-6 py-3 flex justify-between items-center sticky top-0 z-40">
+        <div class="flex items-center gap-2">
+            <span class="text-blue-500 text-xl">💎</span>
+            <span class="text-xs font-black tracking-widest text-amber-500 uppercase">SPONSOR BANK SCS</span>
+        </div>
+        <a href="/admin.html" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-1.5 rounded-lg text-xs font-bold transition">Kembali ke Admin</a>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-8">
+        
+        <!-- Header & Buttons -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Katalog Brand Sponsor</h1>
+                <p class="text-slate-400 text-sm mt-1">Katalog brand untuk kebutuhan event.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="btnAddNewSponsor" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-5 py-2.5 rounded-xl font-bold text-sm transition shadow-lg flex items-center gap-2">
+                    <span>+</span> TAMBAH SPONSOR
+                </button>
+                <button id="btnOpenCorporateModal" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition shadow-lg flex items-center gap-2">
+                    <span>🏢</span> TAMBAH CORPORATE
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="flex overflow-x-auto hide-scrollbar gap-2 mb-8 pb-2">
+            <button data-filter="all" class="filter-btn shrink-0 bg-amber-500 text-slate-900 px-4 py-2 rounded-lg text-[10px] font-black tracking-widest uppercase transition">SEMUA</button>
+            <button data-filter="scs_partner" class="filter-btn shrink-0 bg-slate-800 text-slate-400 hover:text-slate-200 px-4 py-2 rounded-lg text-[10px] font-black tracking-widest uppercase transition">PARTNER SCS</button>
+            <button data-filter="high_potential" class="filter-btn shrink-0 bg-slate-800 text-slate-400 hover:text-slate-200 px-4 py-2 rounded-lg text-[10px] font-black tracking-widest uppercase transition">HIGH POTENTIAL</button>
+            <button data-filter="corporate" class="filter-btn shrink-0 bg-slate-800 text-slate-400 hover:text-slate-200 px-4 py-2 rounded-lg text-[10px] font-black tracking-widest uppercase transition">CORPORATE LINK</button>
+            <button data-filter="unofficial" class="filter-btn shrink-0 bg-slate-800 text-slate-400 hover:text-slate-200 px-4 py-2 rounded-lg text-[10px] font-black tracking-widest uppercase transition">REGULAR CATALOG</button>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center py-20">
+            <div class="w-10 h-10 border-4 border-slate-700 border-t-amber-500 rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-slate-400 font-bold animate-pulse">Memuat database sponsor...</p>
+        </div>
+
+        <!-- Sponsor Grid -->
+        <div id="sponsorGrid" class="hidden grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <!-- Di-inject JS -->
+        </div>
+
+    </div>
+
+    <!-- MODAL 1: SINGLE EDIT/ADD -->
+    <div id="modalEditSponsor" class="fixed inset-0 bg-[#0b1120]/90 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
+        <div class="bg-[#1e293b] rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden my-auto border border-slate-700 mt-10 mb-10">
+            <div class="p-5 border-b border-slate-700 bg-[#1e293b] flex justify-between items-center sticky top-0 z-10">
+                <h3 id="modalTitleText" class="font-black text-amber-500 text-sm tracking-widest uppercase flex items-center gap-2">
+                    <span>✏️</span> DETAIL SPONSOR
+                </h3>
+                <button id="btnCloseModal" class="text-slate-400 hover:text-white text-2xl font-bold">&times;</button>
+            </div>
+            
+            <div class="p-6 space-y-5">
+                <input type="hidden" id="editSponsorId">
+                <div id="editStatusMsg" class="hidden bg-emerald-900/30 text-emerald-400 p-3 rounded-lg text-xs font-bold border border-emerald-800"></div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Nama Sponsor</label>
+                        <input type="text" id="editSponsorName" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-amber-500 outline-none" placeholder="Biskuit Roma">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">URL Promo / Website</label>
+                        <input type="text" id="editSponsorUrl" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-amber-500 outline-none" placeholder="https://...">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Status Partner (Kasta)</label>
+                        <select id="editSponsorType" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-amber-500 outline-none">
+                            <option value="unofficial">⚪ REGULAR / DUMMY CATALOG (Default)</option>
+                            <option value="high_potential">💎 HIGH POTENTIAL TARGET</option>
+                            <option value="corporate">🏢 CORPORATE (Direct Link Promo)</option>
+                            <option value="scs_partner">🟢 OFFICIAL SCS PARTNER</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Kategori Industri</label>
+                        <input type="text" id="editSponsorKategori" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-amber-500 outline-none" placeholder="FnB">
+                    </div>
+                </div>
+
+                <!-- ✨ FITUR BARU: DYNAMIC SMART-TARGETING -->
+                <div class="bg-blue-900/20 p-4 rounded-xl border border-blue-500/30">
+                    <label class="block text-[10px] font-black text-blue-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <span>🎯</span> Dynamic Smart-Targeting (Ad-Tech)
+                    </label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Target Gender</label>
+                            <select id="editTargetGender" class="w-full bg-[#0f172a] border border-slate-600 rounded-lg p-2.5 text-sm text-white focus:border-blue-500 outline-none">
+                                <option value="ALL">Semua Gender</option>
+                                <option value="Putra">Khusus Putra</option>
+                                <option value="Putri">Khusus Putri</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Target Umur</label>
+                            <select id="editTargetUmur" class="w-full bg-[#0f172a] border border-slate-600 rounded-lg p-2.5 text-sm text-white focus:border-blue-500 outline-none">
+                                <option value="ALL">Semua Umur</option>
+                                <option value="KIDS">Anak-anak (Pemula / Kids)</option>
+                                <option value="ADULT">Dewasa (Open / Senior)</option>
+                            </select>
+                            <p class="text-[8px] text-slate-500 mt-1">*(KIDS akan otomatis tayang jika nama KU mengandung "Pemula" atau "Tahun". ADULT jika "Open")</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- AKHIR FITUR BARU -->
+
+                <div>
+                    <label class="block text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1.5">🎁 Benefit Yang Ditawarkan</label>
+                    <input type="text" id="editSponsorBenefit" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-amber-500 outline-none" placeholder="Contoh: Product Support, Booth, Branding">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1.5">⚠️ Syarat Umum</label>
+                    <textarea id="editSponsorSyarat" rows="3" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-amber-500 outline-none" placeholder="Isi syarat umum..."></textarea>
+                </div>
+
+                <div class="bg-[#0f172a] p-4 rounded-xl border border-slate-700">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Update Logo</label>
+                    <input type="file" id="editUploadLogo" accept="image/*" class="text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-slate-700 file:text-white hover:file:bg-slate-600 cursor-pointer w-full mb-3">
+                    <div class="h-24 w-40 bg-white rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center p-2 relative">
+                        <img id="editPreviewLogo" src="" class="max-h-full max-w-full object-contain hidden z-10">
+                        <span id="logoPlaceholder" class="text-slate-400 text-xs font-bold absolute z-0">Preview</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-5 bg-[#1e293b] border-t border-slate-700 flex justify-between gap-4 sticky bottom-0 z-10">
+                <button id="btnDeleteSponsor" class="bg-red-900/50 hover:bg-red-600 text-red-200 px-6 py-3 rounded-xl font-bold text-sm transition hidden">Hapus</button>
+                <button id="btnSaveSponsor" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-6 py-3 rounded-xl font-bold text-sm transition shadow-lg flex-1">💾 SIMPAN SPONSOR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: BULK CORPORATE INJECTION (Tetap sama) -->
+    <div id="modalCorporate" class="fixed inset-0 bg-[#0b1120]/90 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
+        <div class="bg-[#1e293b] rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden my-auto border border-blue-900/50 max-h-[90vh] flex flex-col">
+            <div class="p-5 border-b border-slate-700 bg-gradient-to-r from-blue-900/40 to-[#1e293b] flex justify-between items-center shrink-0">
+                <div>
+                    <h3 class="font-black text-blue-400 text-sm tracking-widest uppercase flex items-center gap-2 mb-1">
+                        <span>🏢</span> INJEKSI CORPORATE SPONSOR
+                    </h3>
+                    <p class="text-[10px] text-slate-400">Tambahkan banyak brand sekaligus. Sistem akan memecahnya menjadi entitas independen.</p>
+                </div>
+                <button id="btnCloseCorporate" class="text-slate-400 hover:text-white text-2xl font-bold">&times;</button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto hide-scrollbar flex-1 bg-[#0f172a]">
+                <div id="corporateBrandList" class="space-y-6"></div>
+                <button id="btnAddCorporateRow" class="mt-6 w-full border-2 border-dashed border-slate-600 text-slate-400 hover:text-blue-400 hover:border-blue-500/50 hover:bg-blue-900/10 py-4 rounded-xl font-bold text-xs tracking-widest uppercase transition flex items-center justify-center gap-2">
+                    <span>+</span> TAMBAH BRAND LAINNYA
+                </button>
+            </div>
+
+            <div class="p-5 bg-[#1e293b] border-t border-slate-700 flex justify-between gap-4 shrink-0">
+                <button id="btnSaveCorporate" class="w-full bg-blue-600 hover:bg-blue-500 text-white px-6 py-4 rounded-xl font-black text-sm transition shadow-lg uppercase tracking-widest flex justify-center items-center gap-2">
+                    <span>🚀</span> SUNTIK KE DATABASE
+                </button>
+            </div>
+        </div>
+    </div>
+
+    
+</body>
+</html>

@@ -5,40 +5,76 @@
     <meta name="theme-color" content="#1e3a8a">
     <link rel="apple-touch-icon" href="/images/logo.png">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" id="viewportMeta" content="width=device-width, initial-scale=1.0">
     <title>SCS - Club Command Center</title>
     
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* nion */
+        @keyframes neon-merah-putih {
+            0% {
+                box-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(239, 68, 68, 0.2);
+                border-color: rgba(239, 68, 68, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.9), 0 0 20px rgba(239, 68, 68, 0.7), 0 0 35px rgba(239, 68, 68, 0.5);
+                border-color: rgba(239, 68, 68, 0.8);
+            }
+            100% {
+                box-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(239, 68, 68, 0.2);
+                border-color: rgba(239, 68, 68, 0.3);
+            }
+        }
+        .neon-merah-putih {
+            animation: neon-merah-putih 2.5s infinite ease-in-out;
+        }
     </style>
-  <script type="module" crossorigin src="/assets/dashboard-817cc122.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/supabase-00114a9c.js">
-  <link rel="stylesheet" href="/assets/style-72907b93.css">
+  <script type="module" crossorigin src="/assets/dashboard-677a3312.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-3cfb730f.js">
+  <link rel="modulepreload" crossorigin href="/assets/supabase-b7fcd0c7.js">
+  <link rel="stylesheet" href="/assets/style-4a6a5742.css">
 </head>
 <body class="bg-gray-50 min-h-screen font-sans pb-20">
 
     <!-- TOP NAV -->
-    <nav class="bg-white shadow-sm p-4 flex justify-between items-center border-b sticky top-0 z-50">
-        <div class="flex items-center gap-3">
-            <a href="/" class="hover:scale-105 transition-transform duration-200 shrink-0">
-                <img src="/images/logo.png" alt="SCS Logo" class="h-8 md:h-10">
+    <nav class="bg-white shadow-sm p-3 md:p-4 flex justify-between items-center border-b sticky top-0 z-50">
+        
+        <!-- KIRI: Logo Klub | SCS COMMAND CENTER | Toggle Desktop -->
+        <div class="flex items-center gap-2 md:gap-3 overflow-hidden">
+            <a href="#" class="shrink-0">
+                <img src="" id="clubLogoDisplay" alt="Club Logo" class="w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-200 shadow-sm object-cover bg-white">
             </a>
-            <div class="hidden sm:block border-l-2 border-gray-200 pl-3 ml-1">
-                <h1 class="text-sm md:text-lg font-black text-blue-900 tracking-tight">SCS COMMAND CENTER</h1>
+            
+            <div class="border-l-2 border-gray-200 pl-2 md:pl-3 flex items-center gap-2 md:gap-3 shrink-0">
+                <h1 id="secretAdminTrigger" class="text-[11px] sm:text-sm md:text-lg font-black text-blue-900 tracking-tight cursor-pointer select-none transition-all uppercase whitespace-nowrap">
+                    SCS COMMAND CENTER
+                </h1>
+                
+                <!-- TOMBOL TOGGLE VIEW -->
+                <button id="btnToggleView" class="hidden md:flex items-center justify-center p-1.5 ml-1 bg-slate-100 hover:bg-blue-50 text-slate-500 hover:text-blue-600 rounded-md border border-slate-200 transition-colors shadow-sm" title="Toggle Desktop / Mobile View">
+                    <!-- Icon Desktop (Default visible on mobile) -->
+                    <svg id="iconDesktop" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    <!-- Icon Mobile (Default visible on desktop) -->
+                    <svg id="iconMobile" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                </button>
             </div>
         </div>
         
+        <!-- KANAN: Desktop Menu -->
         <div class="hidden md:flex items-center gap-4">
             <div class="relative group cursor-pointer">
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 bg-white hover:bg-gray-50 p-2 px-4 rounded-xl border border-gray-100 transition-colors shadow-sm">
                     <div class="text-right">
-                        <p class="text-sm font-extrabold text-gray-800" id="clubNameDisplay">Memuat...</p>
+                        <p class="text-sm font-black text-gray-800 uppercase tracking-widest" id="clubNameDisplay">Memuat...</p>
                         <div class="flex items-center justify-end gap-1 mt-0.5" id="clubBadges"></div>
                     </div>
-                    <img src="" id="clubLogoDisplay" alt="Club Logo" class="w-11 h-11 rounded-full border-2 border-scsGold shadow-sm object-cover bg-white">
+                    <svg class="w-5 h-5 text-gray-400 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
                 </div>
+                
+                <!-- Dropdown Desktop -->
                 <div class="absolute right-0 mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden transform origin-top-right group-hover:scale-100 scale-95">
                     <div class="p-3 border-b border-gray-50 bg-gray-50/50">
                         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Manajemen Klub</p>
@@ -46,14 +82,20 @@
                     <button id="btnEditProfilKlub" class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 font-bold border-b border-gray-50 flex items-center gap-2"><span>⚙️</span> Pengaturan Klub</button>
                     <button id="btnRankingKlub" class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 font-bold border-b border-gray-50 flex items-center gap-2"><span>🏆</span> Rank Atlet</button>
                     <button id="btnUpgradeTier" class="w-full text-left px-4 py-3 text-sm text-scsGold bg-blue-900 hover:bg-blue-800 font-bold border-b border-gray-50 flex items-center gap-2"><span>🚀</span> Upgrade SCS Pro</button>
-                    <button id="logoutBtn" class="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 font-bold flex items-center gap-2"><span>🚪</span> Keluar Sistem</button>
+                    <button id="logoutBtn" class="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 font-bold flex items-center gap-2"><span>🚪</span> Log Out</button>
                 </div>
             </div>
         </div>
 
-        <div class="md:hidden flex items-center">
+        <!-- KANAN: Mobile Burger Menu -->
+        <div class="md:hidden flex items-center shrink-0 ml-2 gap-2">
+            <!-- Munculin juga tombol toggle di versi mobile -->
+            <button id="btnToggleViewMobile" class="flex items-center justify-center p-2 bg-slate-100 hover:bg-blue-50 text-slate-500 hover:text-blue-600 rounded-lg border border-slate-200 transition-colors shadow-sm" title="Toggle Desktop View">
+                <svg id="iconDesktopMobile" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                <svg id="iconMobileMobile" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+            </button>
             <button id="mobileMenuToggle" class="text-gray-700 p-2 focus:outline-none bg-gray-50 rounded-lg border border-gray-200">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"></path></svg>
             </button>
         </div>
     </nav>
@@ -62,22 +104,19 @@
     <div id="mobileMenuOverlay" class="fixed inset-0 bg-black/50 z-[55] hidden backdrop-blur-sm transition-opacity"></div>
     <div id="mobileMenuPanel" class="fixed top-0 right-0 h-full w-4/5 max-w-sm bg-white z-[60] transform translate-x-full transition-transform duration-300 shadow-2xl flex flex-col">
         <div class="p-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <img src="" id="mobileClubLogoDisplay" class="w-10 h-10 rounded-full border border-gray-300 bg-white object-cover">
-                <div>
-                    <p class="text-sm font-extrabold text-gray-800" id="mobileClubNameDisplay">Klub</p>
-                    <div id="mobileClubBadges" class="flex gap-1 mt-1"></div>
-                </div>
+            <div>
+                <p class="text-base font-black text-gray-800 uppercase tracking-widest" id="mobileClubNameDisplay">Klub</p>
+                <div id="mobileClubBadges" class="flex gap-1 mt-1"></div>
             </div>
-            <button id="closeMobileMenu" class="text-gray-400 hover:text-red-500 text-2xl font-bold">&times;</button>
+            <button id="closeMobileMenu" class="text-gray-400 hover:text-red-500 text-3xl font-bold">&times;</button>
         </div>
         <div class="flex flex-col flex-grow overflow-y-auto p-4 space-y-2">
             <button id="mobileBtnEditProfil" class="w-full text-left p-4 rounded-xl text-sm text-gray-700 hover:bg-blue-50 font-bold border border-gray-100 shadow-sm flex items-center gap-3"><span>⚙️</span> Pengaturan Klub</button>
             <button class="w-full text-left p-4 rounded-xl text-sm text-gray-700 hover:bg-blue-50 font-bold border border-gray-100 shadow-sm flex items-center gap-3"><span>🏆</span> Rank Atlet</button>
-            <button class="w-full text-left p-4 rounded-xl text-sm text-scsGold bg-blue-900 hover:bg-blue-800 font-bold shadow-md flex items-center gap-3"><span>🚀</span> Upgrade SCS Pro</button>
+            <button id="mobileBtnUpgradeTier" class="w-full text-left p-4 rounded-xl text-sm text-scsGold bg-blue-900 hover:bg-blue-800 font-bold shadow-md flex items-center gap-3"><span>🚀</span> Upgrade SCS Pro</button>
         </div>
         <div class="p-4 border-t border-gray-100">
-            <button id="mobileLogoutBtn" class="w-full text-center p-4 rounded-xl text-sm text-red-600 bg-red-50 font-bold border border-red-100 shadow-sm">Keluar Sistem</button>
+            <button id="mobileLogoutBtn" class="w-full text-center p-4 rounded-xl text-sm text-red-600 bg-red-50 font-bold border border-red-100 shadow-sm">Log Out</button>
         </div>
     </div>
 
@@ -107,10 +146,24 @@
                 </div>
                 <div class="w-10 h-10 bg-yellow-50 rounded-full flex items-center justify-center text-xl group-hover:scale-110 transition">⚠️</div>
             </div>
+            
+            <!-- GAMIFICATION POIN KLUB -->
             <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-purple-300 transition">
                 <div>
-                    <p class="text-gray-400 text-[10px] md:text-xs font-bold uppercase tracking-wider mb-1">Poin Klub</p>
-                    <p id="valPoinKlub" class="text-2xl md:text-3xl font-black text-purple-600">1,250</p>
+                    <div class="flex items-center gap-1 mb-1">
+                        <p class="text-gray-400 text-[10px] md:text-xs font-bold uppercase tracking-wider">Poin Klub</p>
+                        <div class="relative group/tooltip cursor-help inline-block">
+                            <span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-gray-200 text-gray-500 text-[9px] font-bold pb-[1px] hover:bg-purple-200 hover:text-purple-700 transition">i</span>
+                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 p-3 bg-gray-900 text-white text-[10px] md:text-xs rounded-xl shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all z-[100] text-center leading-relaxed pointer-events-none">
+                                Setiap Input Atlet: <strong class="text-green-300">+5 Poin</strong><br>
+                                F1 ID Terverifikasi Emas: <strong class="text-amber-400">+5 Poin</strong><br>
+                                <div class="my-2 border-t border-gray-700"></div>
+                                <span class="text-purple-300 font-bold">Klub dengan poin terbanyak per regional berkesempatan mendapat uang pembinaan total Rp 1 Miliar tiap bulan Januari!</span>
+                                <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p id="valPoinKlub" class="text-2xl md:text-3xl font-black text-purple-600">0</p>
                 </div>
                 <div class="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center text-xl group-hover:scale-110 transition">⭐</div>
             </div>
@@ -118,7 +171,7 @@
 
         <!-- Aksi Cepat -->
         <h2 class="text-lg md:text-xl font-extrabold text-blue-900 mb-3 md:mb-4">Aksi Cepat Klub</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-10">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
             <button id="btnAddAthlete" class="bg-blue-900 text-white p-5 rounded-2xl text-left shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden group">
                 <span class="absolute right-4 top-4 text-white/10 text-6xl group-hover:scale-110 transition-transform origin-bottom-right">👤</span>
                 <div class="relative z-10">
@@ -136,11 +189,20 @@
                 </div>
             </button>
             
-            <button id="btnCreateEvent" class="bg-white border-2 border-gray-200 text-gray-800 p-5 rounded-2xl text-left shadow-sm hover:shadow-md hover:border-scsBlue transition-all duration-300 transform hover:-translate-y-1 group">
-                <span class="absolute top-4 right-4 bg-emerald-100 text-emerald-700 text-[10px] font-extrabold px-2 py-1 rounded-full border border-emerald-200">PANITIA</span>
+            <button id="btnCreateEvent" class="bg-white border-2 text-gray-800 p-5 rounded-2xl text-left transition-all duration-300 transform hover:-translate-y-1 group neon-merah-putih">
+                <span class="absolute top-4 right-4 bg-red-100 text-red-700 text-[10px] font-extrabold px-2 py-1 rounded-full border border-red-200 group-hover:bg-red-500 group-hover:text-white transition-colors">PANITIA</span>
                 <span class="text-3xl block mb-2 group-hover:scale-110 transition-transform origin-left">🚀</span>
-                <h3 class="font-bold text-lg group-hover:text-scsBlue transition-colors">Buat Event / Lomba</h3>
-                <p class="text-gray-500 text-xs md:text-sm mt-1">Setup landing page dan pendaftaran event Anda.</p>
+                <h3 class="font-bold text-lg group-hover:text-red-600 transition-colors">Buat Event / Lomba</h3>
+                <p class="text-gray-500 text-xs md:text-sm mt-1 group-hover:text-gray-600 transition-colors">Setup landing page dan pendaftaran event Anda.</p>
+            </button>
+
+            <button id="btnOpenTestimoni" class="bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-5 rounded-2xl text-left shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden group">
+                <span class="absolute right-4 top-4 text-white/10 text-6xl group-hover:scale-110 transition-transform origin-bottom-right">💬</span>
+                <div class="relative z-10">
+                    <span class="text-3xl block mb-2">⭐</span>
+                    <h3 class="font-bold text-lg">Bantu Isi Testimony</h3>
+                    <p class="text-indigo-100 text-xs md:text-sm mt-1">Kita tampilkan di Halaman Depan kami.</p>
+                </div>
             </button>
         </div>
 
@@ -172,7 +234,6 @@
                 </div>
             </div>
 
-            <!-- SEARCH BAR ATLET KLUB -->
             <div class="p-4 border-b border-gray-100 bg-white">
                 <div class="relative w-full shadow-sm rounded-xl">
                     <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
@@ -205,15 +266,17 @@
     <!-- ==============================================================
          AREA MODAL
          ============================================================== -->
+
     <!-- MODAL ONBOARDING -->
     <div id="modalOnboarding" class="fixed inset-0 bg-blue-900/95 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-md">
-        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col">
-            <div class="p-6 border-b border-gray-100 bg-blue-50 text-center">
+        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b border-gray-100 bg-blue-50 text-center shrink-0">
                 <span class="text-4xl block mb-2">🎉</span>
                 <h3 class="font-extrabold text-blue-900 text-xl">Selamat Datang di SCS!</h3>
-                <p class="text-xs text-gray-500 mt-2">Langkah terakhir: Buat profil klub Anda sebelum masuk ke Command Center.</p>
+                <p class="text-xs text-gray-500 mt-2">Langkah terakhir: Lengkapi profil klub Anda sebelum masuk ke Command Center.</p>
             </div>
-            <div class="p-6 space-y-4">
+            <!-- Ditambahkan overflow-y-auto biar kalau layar HP kecil bisa di-scroll -->
+            <div class="p-6 space-y-4 overflow-y-auto hide-scrollbar flex-1">
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-1">Nama Klub <span class="text-red-500">*</span></label>
                     <input type="text" id="onboardClubName" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: Falconey Swimming Club">
@@ -222,15 +285,30 @@
                     <label class="block text-sm font-bold text-gray-700 mb-1">Nama Pelatih (Head Coach) <span class="text-red-500">*</span></label>
                     <input type="text" id="onboardCoachName" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: Coach Badrus">
                 </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">No WhatsApp Klub/Admin <span class="text-red-500">*</span></label>
+                    <input type="tel" id="onboardContactWa" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: 081234567890">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Provinsi <span class="text-red-500">*</span></label>
+                        <select id="onboardProvinsi" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white"></select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Kota/Kab <span class="text-red-500">*</span></label>
+                        <select id="onboardKota" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white" disabled><option value="">Pilih Provinsi Dulu</option></select>
+                    </div>
+                </div>
                 <div id="onboardMsg" class="hidden text-sm font-bold text-center rounded-lg p-3"></div>
             </div>
-            <div class="p-6 bg-gray-50 border-t border-gray-100">
+            <div class="p-6 bg-gray-50 border-t border-gray-100 shrink-0">
                 <button id="btnSaveOnboarding" class="w-full bg-blue-900 text-white font-bold py-3.5 rounded-xl hover:bg-blue-800 transition shadow-lg">Buat Klub & Mulai 🚀</button>
             </div>
         </div>
     </div>
 
-    <!-- 1. MODAL PENGATURAN KLUB & AKUN -->
+
+    <!-- MODAL PENGATURAN KLUB & AKUN -->
     <div id="modalEditProfile" class="fixed inset-0 bg-black/60 z-[80] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
             <div class="p-5 border-b border-gray-100 bg-blue-50 flex justify-between items-center shrink-0">
@@ -303,7 +381,7 @@
         </div>
     </div>
 
-    <!-- 2. MODAL TAMBAH ATLET -->
+    <!-- MODAL TAMBAH ATLET -->
     <div id="modalAddAthlete" class="fixed inset-0 bg-black/60 z-[60] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300">
             <div class="p-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
@@ -351,7 +429,7 @@
         </div>
     </div>
 
-    <!-- 3. MODAL UNIFIED: EDIT & VERIFIKASI (IDE JENIUS!) -->
+    <!-- MODAL UNIFIED: EDIT & VERIFIKASI (TERMASUK PRIVASI) -->
     <div id="modalEditVerify" class="fixed inset-0 bg-black/60 z-[65] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 max-h-[95vh] flex flex-col">
             <div class="p-5 border-b border-gray-100 bg-blue-50 flex justify-between items-center shrink-0">
@@ -360,7 +438,6 @@
             </div>
             
             <div class="p-6 space-y-4 overflow-y-auto hide-scrollbar flex-1">
-                <!-- Pesan Peringatan Administrator -->
                 <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
                     <span class="text-amber-500 text-lg mt-0.5">⚠️</span>
                     <p class="text-[10px] md:text-xs font-bold text-amber-800 leading-relaxed">
@@ -391,6 +468,12 @@
                 <div class="border-t border-gray-100 pt-4 mt-2">
                     <label class="block text-sm font-bold text-gray-700 mb-1">Pas Foto Atlet (Opsional jika sudah ada)</label>
                     <input type="file" id="evFoto" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm file:bg-blue-100 file:text-blue-700 file:border-0 file:rounded file:px-2 file:py-1 file:font-bold hover:file:bg-blue-200">
+                    
+                    <!-- FITUR PRIVASI -->
+                    <label class="flex items-center gap-2 mt-3 cursor-pointer p-2.5 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors">
+                        <input type="checkbox" id="evHideFoto" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                        <span class="text-xs font-bold text-slate-700">🔒 Sembunyikan foto di profil publik (Privasi Anak)</span>
+                    </label>
                 </div>
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-1">Scan Akta Kelahiran (Wajib untuk Verif/Edit)</label>
@@ -400,13 +483,13 @@
                 <div id="evStatusMsg" class="hidden text-sm font-bold text-center rounded-lg p-3"></div>
             </div>
             <div class="p-5 bg-gray-50 border-t border-gray-100 shrink-0">
-                <button id="btnSaveEditVerify" class="w-full bg-blue-900 text-white font-bold py-3.5 rounded-xl hover:bg-blue-800 transition shadow-lg">Kirim Pengajuan ke Admin</button>
+                <button id="btnSaveEditVerify" class="w-full bg-blue-900 text-white font-bold py-3.5 rounded-xl hover:bg-blue-800 transition shadow-lg">Simpan & Kirim Pengajuan</button>
             </div>
         </div>
     </div>
 
 
-    <!-- 4. MODAL BUAT EVENT -->
+    <!-- MODAL BUAT EVENT -->
     <div id="modalCreateEvent" class="fixed inset-0 bg-black/60 z-[70] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300">
             <div class="p-5 border-b border-gray-100 bg-emerald-50 flex justify-between items-center">
@@ -427,7 +510,7 @@
                     <label class="block text-sm font-bold text-gray-700 mb-1">Pilih Subdomain URL</label>
                     <div class="flex shadow-sm rounded-xl overflow-hidden">
                         <input type="text" id="inputSubdomain" class="w-full px-4 py-3 border border-gray-300 border-r-0 focus:ring-2 focus:ring-emerald-500 outline-none">
-                        <span class="bg-gray-100 text-gray-500 px-3 py-3 text-sm border border-gray-300 font-mono">.funswimming.my.id</span>
+                        <span class="bg-gray-100 text-gray-500 px-3 py-3 text-sm border border-gray-300 font-mono">.f1swimming.com</span>
                     </div>
                 </div>
                 
@@ -439,7 +522,6 @@
                     </div>
                 </div>
                 
-                <!-- DROPDOWN REGION BARU -->
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-1">Region / Lokasi Lomba</label>
                     <div class="grid grid-cols-2 gap-3">
@@ -459,8 +541,41 @@
         </div>
     </div>
 
+    <!-- MODAL TESTIMONI -->
+    <div id="modalTestimoni" class="fixed inset-0 bg-black/60 z-[90] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300">
+            <div class="p-5 border-b border-gray-100 bg-indigo-50 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">💬</span>
+                    <h3 class="font-extrabold text-indigo-900 text-lg">Bantu Isi Testimony</h3>
+                </div>
+                <button id="closeModalTestimoniBtn" class="text-gray-400 hover:text-red-500 text-2xl font-bold transition">&times;</button>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <p class="text-sm text-gray-600 font-medium">Review jujur Anda sangat berarti. Kita tampilkan di Halaman Depan kami!</p>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Pesan Testimoni <span class="text-red-500">*</span></label>
+                    <textarea id="inputKlubTesti" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm" placeholder="Contoh: Aplikasi SCS sangat membantu pendaftaran lomba klub kami..."></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Nama Anda <span class="text-red-500">*</span></label>
+                    <input type="text" id="inputKlubTestiName" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm" placeholder="Nama lengkap">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Jabatan di Klub <span class="text-red-500">*</span></label>
+                    <input type="text" id="inputKlubTestiRole" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm" placeholder="Contoh: Head Coach / Manajer">
+                </div>
+                <div id="testiStatusMsg" class="hidden text-sm font-bold text-center rounded-lg p-3"></div>
+            </div>
+            
+            <div class="p-5 bg-gray-50 border-t border-gray-100">
+                <button id="btnKirimTestimoni" class="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl hover:bg-indigo-700 transition shadow-lg">Kirim Testimoni 🚀</button>
+            </div>
+        </div>
+    </div>
 
-    <!-- Panggil File JS -->
+    <!-- Panggil File JS Utama -->
     
 </body>
 </html>

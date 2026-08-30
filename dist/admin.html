@@ -5,14 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Admin | SCS</title>
     
-  <script type="module" crossorigin src="/assets/admin-61d0a569.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/supabase-00114a9c.js">
-  <link rel="stylesheet" href="/assets/style-72907b93.css">
+  <script type="module" crossorigin src="/assets/admin-987e4ec9.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-3cfb730f.js">
+  <link rel="modulepreload" crossorigin href="/assets/supabase-b7fcd0c7.js">
+  <link rel="stylesheet" href="/assets/style-4a6a5742.css">
 </head>
 <body class="bg-slate-900 min-h-screen font-sans text-slate-200 pb-20">
 
     <!-- TOP NAV ADMIN -->
-    <nav class="bg-slate-950 border-b border-slate-800 p-4 sticky top-0 z-50 flex justify-between items-center shadow-lg">
+    <nav class="bg-slate-950 border-b border-slate-800 p-4 sticky top-0 z-50 flex flex-col md:flex-row justify-between items-center shadow-lg gap-4">
         <div class="flex items-center gap-3">
             <span class="text-2xl">👑</span>
             <div>
@@ -20,17 +21,67 @@
                 <p class="text-[10px] text-emerald-400 font-mono">System Control Panel</p>
             </div>
         </div>
-        <button id="btnAdminLogout" class="px-4 py-2 bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white rounded-lg text-xs font-bold transition-colors">Logout</button>
+        
+        <!-- MENU NAVIGASI TAMBAHAN -->
+        <div class="flex items-center gap-2 md:gap-3 flex-wrap justify-center">
+            <!-- Ads Settings -->
+            <a href="/admin-ads.html" class="px-3 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/50 rounded-lg text-[10px] md:text-xs font-bold transition-colors flex items-center gap-2">
+                <span>🎯</span> Ads Settings
+            </a>
+            <!-- Sponsor Bank -->
+            <a href="/sponsor-preview.html" class="px-3 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/50 rounded-lg text-[10px] md:text-xs font-bold transition-colors flex items-center gap-2">
+                <span>💎</span> Sponsor Bank
+            </a>
+            <!-- Testimoni Bank -->
+            <a href="/admin-testi.html" class="px-3 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/50 rounded-lg text-[10px] md:text-xs font-bold transition-colors flex items-center gap-2">
+                <span>💬</span> Manajemen Testi
+            </a>
+            <!-- ACC SPONSOR -->
+            <a href="/admin-approval.html" class="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/50 rounded-lg text-[10px] md:text-xs font-bold transition-colors flex items-center gap-2 shadow-sm">
+                <span>⚖️</span> ACC Sponsor
+            </a>
+            <!-- Tombol Logout -->
+            <button id="btnAdminLogout" class="px-4 py-2 bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white rounded-lg text-[10px] md:text-xs font-bold transition-colors">Logout</button>
+        </div>
     </nav>
+
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
         
+        <!-- SECTION 0: EVENT UPGRADE REQUESTS (TRANSAKSI PRO) -->
+        <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden border-l-4 border-l-blue-500">
+            <div class="p-5 border-b border-slate-700 bg-slate-800/50 flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-extrabold text-white flex items-center gap-2">
+                        <span>🚀</span> Event Upgrade Requests
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">Validasi bukti transfer untuk aktivasi fitur PRO (SaaS Emas).</p>
+                </div>
+                <span id="badgeUpgradeQueue" class="bg-blue-600 text-white font-black px-3 py-1 rounded-full text-xs">0 Pending</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm whitespace-nowrap">
+                    <thead class="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider">
+                        <tr>
+                            <th class="p-4 font-bold">Event & Transaksi</th>
+                            <th class="p-4 font-bold text-amber-400">Nominal Bayar</th>
+                            <th class="p-4 font-bold">Bukti Transfer</th>
+                            <th class="p-4 font-bold text-center">Aksi Dewa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="upgradeQueueTableBody" class="divide-y divide-slate-700/50">
+                        <tr><td colspan="4" class="p-8 text-center text-slate-500">Mencari antrian pembayaran...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- SECTION 1: ANTRIAN VERIFIKASI AWAL F1 ID -->
         <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
             <div class="p-5 border-b border-slate-700 bg-slate-800/50 flex justify-between items-center">
                 <div>
                     <h2 class="text-xl font-extrabold text-white flex items-center gap-2">
-                        <span>⏳</span> F1 ID Verification Queues
+                        <span>🔍</span> F1 ID Verification Queues
                     </h2>
                     <p class="text-xs text-slate-400 mt-1">Review dokumen akta dan foto untuk aktivasi awal atlet.</p>
                 </div>
@@ -58,7 +109,7 @@
             <div class="p-5 border-b border-slate-700 bg-slate-800/50 flex justify-between items-center">
                 <div>
                     <h2 class="text-xl font-extrabold text-white flex items-center gap-2">
-                        <span>📝</span> F1 ID Edit Requests
+                        <span>✏️</span> F1 ID Edit Requests
                     </h2>
                     <p class="text-xs text-slate-400 mt-1">Review usulan perubahan Nama, Tanggal Lahir, atau Gender.</p>
                 </div>
@@ -84,27 +135,48 @@
 
         <!-- SECTION 2: FULL CLUB MANAGER -->
         <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
-            <div class="p-5 border-b border-slate-700 bg-slate-800/50">
-                <h2 class="text-xl font-extrabold text-white flex items-center gap-2">
-                    <span>🏢</span> Full Club Manager
-                </h2>
-                <p class="text-xs text-slate-400 mt-1">Database seluruh klub yang terdaftar di ekosistem SCS.</p>
+            <div class="p-5 border-b border-slate-700 bg-slate-800/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-extrabold text-white flex items-center gap-2">
+                        <span>🏢</span> Full Club Manager
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">Database seluruh klub yang terdaftar di ekosistem SCS.</p>
+                </div>
+                <!-- SEARCH BAR -->
+                <div class="relative w-full md:w-72">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <input type="text" id="searchClub" class="bg-slate-900 border border-slate-700 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-10 p-2.5 text-white placeholder-slate-400" placeholder="Cari nama klub, kota, coach...">
+                </div>
             </div>
+            
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm whitespace-nowrap">
                     <thead class="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider">
                         <tr>
                             <th class="p-4 font-bold w-12 text-center">No</th>
-                            <th class="p-4 font-bold">Nama Klub</th>
-                            <th class="p-4 font-bold">Pelatih Kepala</th>
-                            <th class="p-4 font-bold">Asal Regional</th>
-                            <th class="p-4 font-bold text-center">Ranking</th>
+                            <th class="p-4 font-bold">Nama Club</th>
+                            <th class="p-4 font-bold text-center">Jumlah Atlet</th>
+                            <th class="p-4 font-bold">Asal</th>
+                            <th class="p-4 font-bold">Coach</th>
+                            <th class="p-4 font-bold text-center">Akun</th>
                         </tr>
                     </thead>
                     <tbody id="clubTableBody" class="divide-y divide-slate-700/50">
-                        <tr><td colspan="5" class="p-8 text-center text-slate-500">Memuat database klub...</td></tr>
+                        <tr><td colspan="6" class="p-8 text-center text-slate-500">Memuat database klub...</td></tr>
                     </tbody>
                 </table>
+            </div>
+            
+            <!-- FOOTER INFO LIMIT & PAGINATION -->
+            <div class="p-4 border-t border-slate-700 bg-slate-800/50 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p id="clubCountInfo" class="text-xs text-slate-400 font-medium">Menampilkan 0 klub.</p>
+                <div class="flex items-center gap-2">
+                    <button id="btnPrevClub" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded text-xs font-bold transition disabled:opacity-50 disabled:cursor-not-allowed">&laquo; Prev</button>
+                    <span id="pageInfoClub" class="text-xs font-bold text-slate-300">Page 1</span>
+                    <button id="btnNextClub" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-bold transition disabled:opacity-50 disabled:cursor-not-allowed">Next &raquo;</button>
+                </div>
             </div>
         </div>
 

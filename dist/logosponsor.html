@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCS Sponsor Master Database</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .brand-badge { transition: all 0.2s ease; }
+        .brand-badge:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+    </style>
+</head>
+<body class="text-slate-800 pb-20">
+
+    <!-- Navbar & Search Bar Sticky -->
+    <nav class="sticky top-0 bg-white/90 backdrop-blur-md shadow-sm z-50 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl font-black text-slate-900 flex items-center gap-2">
+                        <span class="text-3xl">🚀</span> SCS Master Sponsor
+                    </h1>
+                    <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">315 Brands • 21 Categories</p>
+                </div>
+                <div class="w-full md:w-96 relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <input type="text" id="searchInput" placeholder="Cari brand (ex: MS Glow, BCA)..." class="w-full pl-10 pr-4 py-3 bg-slate-100 border-transparent rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all font-semibold outline-none shadow-inner">
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 mt-8">
+        <div id="noResult" class="hidden text-center py-20">
+            <span class="text-6xl mb-4 block">📭</span>
+            <h2 class="text-xl font-bold text-slate-700">Brand tidak ditemukan</h2>
+            <p class="text-slate-500 text-sm mt-2">Coba gunakan kata kunci lain atau cari berdasarkan kategori.</p>
+        </div>
+        
+        <!-- Grid Kategori -->
+        <div id="gridContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Card akan di-generate via JS -->
+        </div>
+    </div>
+
+    <!-- Script JS -->
+    <script>
+        const database = [
+            {
+                icon: "💧", title: "Hydration & Isotonic", color: "blue",
+                brands: ["Pocari Sweat", "Aqua", "Le Minerale", "Hydro Coco", "Mizone", "Isoplus", "VIT", "Cleo", "Pristine 8.6", "You C1000 Water", "100 Plus", "Oasis", "Ades", "Club", "Amidis"]
+            },
+            {
+                icon: "🧴", title: "Skincare & Sunblock", color: "rose",
+                brands: ["MS Glow", "Nivea Sun", "Wardah", "Emina", "Kahf", "Azarine", "Skin Aqua", "Biore UV", "Carasun", "Somethinc", "Banana Boat", "Garnier", "Cetaphil", "Vaseline", "Facetology"]
+            },
+            {
+                icon: "🍔", title: "F&B / Healthy Snacks", color: "orange",
+                brands: ["Mie Gacoan", "Kopi Kenangan", "HokBen", "Indomie", "SilverQueen", "Fitbar", "Mixue", "Chitato", "Chatime", "J.CO Donuts", "Roma", "Teh Pucuk Harum", "Haus!", "Richeese Factory", "Kanzler"]
+            },
+            {
+                icon: "🏥", title: "Rumah Sakit & Healthcare", color: "emerald",
+                brands: ["Siloam Hospitals", "Mitra Keluarga", "RS Hermina", "Mayapada Hospital", "Eka Hospital", "RS Pondok Indah (RSPI)", "Primaya Hospital", "RS Premier", "RS EMC", "National Hospital", "RS Husada Utama", "RS Columbia Asia", "RS JIH (Jogja Int. Hospital)", "IHC (Pertamedika)", "RS Pantai Indah Kapuk (PIK)"]
+            },
+            {
+                icon: "✈️", title: "Maskapai & Travel", color: "sky",
+                brands: ["Garuda Indonesia", "Citilink", "Batik Air", "Lion Air", "Super Air Jet", "Pelita Air", "AirAsia", "TransNusa", "Traveloka", "Tiket.com", "KAI", "Agoda", "Mister Aladin", "Pelni", "RedDoorz / OYO"]
+            },
+            {
+                icon: "💊", title: "Suplemen & Farmasi", color: "teal",
+                brands: ["Imboost", "Enervon-C", "CDR", "Tolak Angin", "Antangin", "Sangobion", "Sakatonik ABC", "Stimuno", "Fitkom", "Panadol", "Bodrex", "Promag", "Betadine", "Hansaplast", "Counterpain"]
+            },
+            {
+                icon: "🏨", title: "Hospitality & Hotel", color: "amber",
+                brands: ["Santika / Amaris", "Aston / Favehotel", "Harris / Yello", "Swiss-Belhotel", "Ibis / Novotel", "Whiz Hotel", "Luminor", "Dafam", "POP! Hotels", "Sahid Hotels", "Aryaduta", "Prime Plaza", "MaxOne", "Batiqa", "Cordela"]
+            },
+            {
+                icon: "📶", title: "Telekomunikasi & Provider", color: "red",
+                brands: ["Telkomsel", "Indosat Ooredoo Hutchison", "XL Axiata", "Smartfren", "By.U", "AXIS", "Tri", "IndiHome", "Biznet", "First Media", "MyRepublic", "CBN", "Oxygen.id", "Iconnet", "XL Home"]
+            },
+            {
+                icon: "📚", title: "Edu-Tech & Pendidikan", color: "indigo",
+                brands: ["Ruangguru", "English First (EF)", "Kumon", "Ganesha Operation (GO)", "Quipper", "Brain Academy", "Cakap", "Kelas Pintar", "Erlangga", "LingoAce", "Schoters", "Pahamify", "Colearn", "Kipin School", "Binar Academy"]
+            },
+            {
+                icon: "🏦", title: "Banking & Corporate CSR", color: "cyan",
+                brands: ["BCA", "Bank Mandiri", "BRI", "BNI", "BSI (Bank Syariah)", "CIMB Niaga", "Bank Danamon", "PermataBank", "Maybank Indonesia", "OCBC Indonesia", "Bank Jatim", "Bank Mega", "Bank Jago", "SeaBank", "BTPN"]
+            },
+            {
+                icon: "💳", title: "Fintech & Leasing", color: "violet",
+                brands: ["GoPay", "OVO", "DANA", "LinkAja", "ShopeePay", "Kredivo", "Akulaku", "Adira Finance", "FIFGROUP", "BCA Finance", "BAF", "OTO Finance", "Mandiri Tunas Finance", "WOM Finance", "Flip"]
+            },
+            {
+                icon: "☕", title: "Coffee & Beverages", color: "yellow",
+                brands: ["Kapal Api", "Good Day", "Nescafe", "Torabika", "Luwak White Koffie", "Indocafe", "Kopi ABC", "Caffino", "Kopi Kenangan", "Janji Jiwa", "Fore Coffee", "Tomoro Coffee", "Point Coffee", "Excelso", "Starbucks"]
+            },
+            {
+                icon: "📱", title: "Gadget & Technology", color: "slate",
+                brands: ["Samsung", "Apple", "Xiaomi", "Oppo", "Vivo", "Realme", "Asus", "Lenovo", "Acer", "HP", "Infinix", "Poco", "Huawei", "Sony", "Garmin"]
+            },
+            {
+                icon: "📺", title: "Toko Elektronik & Retail", color: "fuchsia",
+                brands: ["Hartono", "Electronic City", "UFO Elektronika", "Informa Electronics", "Best Denki", "Miami Elektronik", "Log In Megastore", "Candi Elektronik", "A. Takrib", "Atlanta Electronics", "Glodok Elektronik", "Erafone", "iBox", "Els Computer", "Bhinneka"]
+            },
+            {
+                icon: "🍪", title: "Biskuit & Snacks", color: "pink",
+                brands: ["Roma", "Oreo", "Biskuat", "Marie Regal", "Khong Guan", "Nissin", "Monde", "Gery", "Better", "Slai O'Lai", "Sari Gandum", "Tango", "Danisa", "Tim Tam", "Julie's"]
+            },
+            {
+                icon: "🚗", title: "Motor & Mobil", color: "zinc",
+                brands: ["Honda", "Yamaha", "Toyota", "Daihatsu", "Suzuki", "Mitsubishi", "Kawasaki", "Vespa", "Wuling", "Hyundai", "Nissan", "Mazda", "Kia", "Isuzu", "Royal Enfield"]
+            },
+            {
+                icon: "⚡", title: "Electric Vehicle (EV)", color: "lime",
+                brands: ["Wuling", "Hyundai", "BYD", "Neta", "Chery", "MG (Morris Garages)", "Tesla", "Polytron", "Alva", "Gesits", "United E-Motor", "Yadea", "Smoot", "Viar", "VinFast"]
+            },
+            {
+                icon: "🩱", title: "Swimwear & Sportswear", color: "blue",
+                brands: ["Speedo", "Arena", "TYR", "Funkita", "Funky Trunks", "Madwave", "Arena Indonesia", "Mills", "Specs", "Ortuseight", "Nike Swim", "Adidas Swim", "Decathlon", "Puma", "Under Armour"]
+            },
+            {
+                icon: "👟", title: "Footwear / Sepatu", color: "orange",
+                brands: ["Nike", "Adidas", "Puma", "New Balance", "Asics", "Hoka", "On Running", "Skechers", "Converse", "Vans", "Reebok", "Brooks", "Specs", "Ortuseight", "Compass"]
+            },
+            {
+                icon: "🎽", title: "Jersey Print Lokal", color: "purple",
+                brands: ["Mills", "Specs", "Ortuseight", "No Goal", "Etams", "Tropez", "Classico", "MBB Apparel", "Regarsport", "Yahoo Sportwear", "Salvo", "Away", "Riors", "Total Sportswear", "Gmer"]
+            },
+            {
+                icon: "🩲", title: "Underwear & Innerwear", color: "neutral",
+                brands: ["Rider", "GTman", "Sorex", "Crocodile", "Wacoal", "Tref", "Pierre Cardin", "Triset", "Felancy", "Minoshe", "Enchanteur", "H&M Bodywear", "Uniqlo AIRism", "Calvin Klein", "Jockey"]
+            }
+        ];
+
+        const container = document.getElementById('gridContainer');
+        const searchInput = document.getElementById('searchInput');
+        const noResult = document.getElementById('noResult');
+
+        // Fungsi Render Card
+        function renderCards(filterText = '') {
+            container.innerHTML = '';
+            let hasResult = false;
+            const lowerFilter = filterText.toLowerCase();
+
+            database.forEach((cat, index) => {
+                // Filter logic: Cek apakah judul kategori match, ATAU ada brand yang match
+                const isCatMatch = cat.title.toLowerCase().includes(lowerFilter);
+                const matchedBrands = cat.brands.filter(brand => brand.toLowerCase().includes(lowerFilter));
+
+                if (isCatMatch || matchedBrands.length > 0) {
+                    hasResult = true;
+                    
+                    let brandsHtml = '';
+                    const displayBrands = filterText ? (isCatMatch ? cat.brands : matchedBrands) : cat.brands;
+
+                    // --- INI DIA SULAP GOOGLE IMAGE SEARCH-NYA ---
+                    displayBrands.forEach(brand => {
+                        const searchQuery = encodeURIComponent(`${brand} logo png`);
+                        const googleImageURL = `https://www.google.com/search?tbm=isch&q=${searchQuery}`;
+                        
+                        brandsHtml += `<a href="${googleImageURL}" target="_blank" title="Cari logo ${brand} di Google" class="brand-badge inline-flex items-center gap-1 bg-${cat.color}-50 hover:bg-${cat.color}-600 hover:text-white text-${cat.color}-700 border border-${cat.color}-100 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors cursor-pointer">
+                            <span class="text-[10px]">🔍</span> ${brand}
+                        </a>`;
+                    });
+
+                    // Generate Card
+                    const card = document.createElement('div');
+                    card.className = "bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col h-full hover:shadow-md transition-shadow";
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-4 border-b border-slate-100 pb-3">
+                            <h3 class="font-black text-slate-800 text-lg flex items-center gap-2">
+                                <span>${cat.icon}</span> ${cat.title}
+                            </h3>
+                            <button onclick="copyToClipboard(${index})" id="btnCopy${index}" class="shrink-0 bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-widest transition-colors flex items-center gap-1 cursor-pointer">
+                                📋 Copy List
+                            </button>
+                        </div>
+                        <div class="flex flex-wrap gap-2 flex-1 items-start content-start">
+                            ${brandsHtml}
+                        </div>
+                    `;
+                    container.appendChild(card);
+                }
+            });
+
+            if (!hasResult) {
+                noResult.classList.remove('hidden');
+            } else {
+                noResult.classList.add('hidden');
+            }
+        }
+
+        // Search Event Listener
+        searchInput.addEventListener('input', (e) => {
+            renderCards(e.target.value);
+        });
+
+        // Copy Function
+        window.copyToClipboard = function(index) {
+            const cat = database[index];
+            const textToCopy = `Kategori: ${cat.title}\n` + cat.brands.map((b, i) => `${i+1}. ${b}`).join('\n');
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const btn = document.getElementById(`btnCopy${index}`);
+                const originalText = btn.innerHTML;
+                btn.innerHTML = `✅ COPIED!`;
+                btn.classList.replace('bg-slate-100', 'bg-green-100');
+                btn.classList.replace('text-slate-600', 'text-green-700');
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.replace('bg-green-100', 'bg-slate-100');
+                    btn.classList.replace('text-green-700', 'text-slate-600');
+                }, 2000);
+            });
+        }
+
+        // Render awal
+        renderCards();
+    </script>
+</body>
+</html>

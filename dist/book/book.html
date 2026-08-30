@@ -2,75 +2,140 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" id="viewportMeta" content="width=device-width, initial-scale=1.0">
     <title>Buku Acara (Heat Sheet) | SCS</title>
     
     <style>
-        /* Presisi Layar Monitor (Layout Kertas Asli 210mm) */
-        .a4-container {
+        /* BASE KERTAS A4 (Untuk Layar & Print) */
+        .a4-page {
             width: 210mm; 
-            min-width: 210mm; 
             min-height: 297mm; 
-            margin: 0 auto;
+            margin: 0 auto 20mm auto; /* Spasi antar kertas di layar */
             background: white;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            padding: 15mm;
             flex-shrink: 0; 
+            position: relative;
+            page-break-after: always;
+            -moz-column-break-after: page;
+                 break-after: page;
         }
 
-        /* Presisi Mutlak Saat di-Print ke Kertas A4 / PDF */
+        /* KHUSUS HALAMAN COVER PDF (The Grand Entrance) */
+        .cover-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            padding: 20mm;
+            background: linear-gradient(to bottom, #ffffff 80%, #f8fafc 100%);
+        }
+        .cover-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+            letter-spacing: -2px;
+            line-height: 1.1;
+            text-transform: uppercase;
+        }
+        .cover-subtitle {
+            font-size: 1.25rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 700;
+            margin-bottom: 3rem;
+        }
+        .sponsor-spotlight {
+            margin-top: auto;
+            margin-bottom: 2rem;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .sponsor-spotlight-logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+        }
+        .sponsor-spotlight-logos img {
+            max-height: 70px; /* Ukuran VIP/Platinum */
+            -o-object-fit: contain;
+               object-fit: contain;
+            filter: grayscale(0%);
+        }
+
+        /* KHUSUS HALAMAN KONTEN (Tabel Heat) */
+        .content-page {
+            padding: 15mm;
+        }
+
+        /* PRESISI MUTLAK SAAT PRINT */
         @media print {
-            @page { size: A4 portrait; margin: 10mm; }
-            
+            @page { size: A4 portrait; margin: 0; }
             body, html { height: auto !important; overflow: visible !important; background: white !important; margin: 0; padding: 0; }
             .print-flex-reset { display: block !important; height: auto !important; overflow: visible !important; }
-            
             nav, .sidebar-builder, #btnSimpanBuku, .print-hidden { display: none !important; }
             
-            .a4-container { 
+            .a4-page { 
                 box-shadow: none !important; 
                 margin: 0 !important; 
-                padding: 0 !important; 
-                width: 100% !important; 
-                min-width: 100% !important;
+                width: 210mm !important; 
+                min-width: 210mm !important;
+                min-height: 297mm !important;
+                page-break-after: always !important;
+                -moz-column-break-after: page !important;
+                     break-after: page !important;
             }
-            
             .avoid-break { page-break-inside: avoid !important; -moz-column-break-inside: avoid !important; break-inside: avoid !important; margin-bottom: 6mm; }
             * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
         }
     </style>
-  <script type="module" crossorigin src="/assets/book-21791675.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/supabase-00114a9c.js">
-  <link rel="stylesheet" href="/assets/style-72907b93.css">
+  <script type="module" crossorigin src="/assets/book-a51a2211.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-3cfb730f.js">
+  <link rel="modulepreload" crossorigin href="/assets/supabase-b7fcd0c7.js">
+  <link rel="stylesheet" href="/assets/style-4a6a5742.css">
 </head>
 <body class="bg-slate-200 font-sans text-slate-800 min-h-screen flex flex-col print-flex-reset">
 
-    <!-- Top Action Bar (Tinggi diset fix 56px biar sticky sidebar ga meleset) -->
+    <!-- Top Action Bar -->
     <nav class="bg-slate-900 text-white shadow-md z-50 shrink-0 sticky top-0 h-[56px] print-hidden">
         <div class="px-4 h-full flex flex-wrap justify-between items-center gap-3">
-            <div class="flex items-center gap-4">
-                <button onclick="window.history.back()" class="text-slate-300 hover:text-white flex items-center gap-1 text-sm font-bold transition-colors">
+            <div class="flex items-center gap-3 md:gap-4">
+                <button onclick="window.history.back()" class="text-slate-300 hover:text-white flex items-center gap-1 text-sm font-bold transition-colors shrink-0">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                     Kembali
                 </button>
-                <div class="h-4 w-px bg-slate-600 hidden md:block"></div>
-                <h1 class="text-[11px] md:text-sm font-black tracking-widest text-emerald-400">FINA GENERATOR <span id="infoLintasan" class="text-white ml-2 bg-slate-700 px-2 py-0.5 rounded text-[10px]">10 Lintasan</span></h1>
+                
+                <!-- TOMBOL TOGGLE VIEW (DESKTOP/MOBILE) -->
+                <button id="btnToggleView" class="flex items-center justify-center p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-md transition-colors shrink-0" title="Toggle Desktop / Mobile View">
+                    <svg id="iconDesktop" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    <svg id="iconMobile" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                </button>
+
+                <div class="h-4 w-px bg-slate-600 hidden md:block shrink-0"></div>
+                <h1 class="text-[11px] md:text-sm font-black tracking-widest text-emerald-400 truncate">FINA GENERATOR <span id="infoLintasan" class="text-white ml-1 md:ml-2 bg-slate-700 px-2 py-0.5 rounded text-[10px]">10 Lintasan</span></h1>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 shadow-sm">
+                <button onclick="bukaHalamanCetak()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 shadow-sm shrink-0">
                     🖨️ Cetak PDF
                 </button>
-                <button id="btnSimpanBuku" onclick="simpanKeDatabase()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 px-5 py-2 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2 shadow-sm">
+                <button id="btnSimpanBuku" onclick="simpanKeDatabase()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 px-5 py-2 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-2 shadow-sm shrink-0">
                     💾 Kunci Start List
                 </button>
             </div>
         </div>
     </nav>
 
-    <!-- MAIN WORKSPACE: DIKUNCI MATI MODE DESKTOP -->
+    <!-- MAIN WORKSPACE -->
     <div class="flex flex-1 items-start w-full relative print-flex-reset">
         
-        <!-- SIDEBAR: DILOCK LEBARNYA DI 250PX, GAK BISA MELAR GAK BISA MENGKERUT -->
+        <!-- SIDEBAR BUILDER -->
         <div class="sidebar-builder w-[250px] min-w-[250px] max-w-[250px] shrink-0 bg-white border-r border-slate-200 flex flex-col z-40 sticky top-[56px] h-[calc(100vh-56px)] overflow-y-auto pb-4">
             <div class="p-4 border-b border-slate-100 bg-slate-50 shrink-0">
                 <h2 class="font-extrabold text-slate-800 text-sm mb-1">Susunan Acara</h2>
@@ -78,7 +143,6 @@
             </div>
             
             <div class="p-4 flex flex-col gap-4 shrink-0">
-                <!-- TOMBOL ACTION -->
                 <div class="flex flex-col gap-2">
                     <button id="btnAutoLoad" onclick="autoGenerateSemua()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-2.5 rounded-lg text-xs transition-colors shadow-md flex items-center justify-center gap-2">
                         <span>✨</span> Auto-Load Semua Lomba
@@ -136,30 +200,83 @@
             </div>
         </div>
 
-        <!-- RIGHT AREA: KERTAS A4 PREVIEW -->
-        <!-- min-w-0 adalah kunci rahasia Tailwind biar Kertas A4 gak nge-push Sidebar -->
+        <!-- RIGHT AREA: KERTAS A4 RENDERER -->
         <div class="flex-1 min-w-0 overflow-x-auto bg-slate-300/50 p-4 md:p-8 print:p-0 print-flex-reset" id="printWrapper">
-            <div class="a4-container relative" id="kertasA4">
+            
+            <!-- HALAMAN 1: THE GRAND ENTRANCE (COVER) -->
+            <div class="a4-page cover-page" id="coverPage">
                 
-                <!-- HEADER SPONSOR & EVENT -->
-                <div class="flex justify-between items-center border-b-2 border-black pb-4 mb-6">
+                <!-- TOP GROUP: Header Web + Judul Event + Box Info -->
+                <div class="w-full flex flex-col items-center pt-8">
+                    <!-- Header Web/App -->
+                    <div class="w-full flex justify-between items-start opacity-50 mb-16">
+                        <img src="/images/logo.png" alt="SCS Logo" class="h-6 object-contain grayscale">
+                        <span class="text-[10px] font-mono font-bold tracking-widest uppercase">Generated by SCS v1.0</span>
+                    </div>
+
+                    <!-- Judul Event -->
+                    <h1 class="cover-title" id="coverTitle">MEMUAT EVENT...</h1>
+                    <h2 class="cover-subtitle">Buku Acara Resmi (Official Start List)</h2>
+                    
+                    <!-- Box Info Tanggal & Lokasi -->
+                    <div class="bg-white border border-slate-200 rounded-3xl p-8 w-full max-w-lg shadow-xl shadow-slate-200/50 relative overflow-hidden mt-6">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
+                        <p class="text-base font-black text-slate-700 mb-3 flex items-center justify-center gap-3">
+                            <span class="text-xl">📅</span> <span id="coverDate">Tanggal Belum Diset</span>
+                        </p>
+                        <p class="text-base font-black text-slate-700 mb-4 flex items-center justify-center gap-3 text-center leading-snug">
+                            <span class="text-xl">📍</span> <span id="coverLocation">Lokasi Belum Diset</span>
+                        </p>
+                        <div class="h-px w-20 bg-slate-200 mx-auto my-4"></div>
+                        <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Dokumen Resmi Turnamen</p>
+                    </div>
+                </div>
+
+                <!-- MIDDLE GROUP: Auto Spacer (Kunci Flexbox) -->
+                <div class="flex-1 w-full"></div>
+
+                <!-- BOTTOM GROUP: Sponsor & Footer -->
+                <div class="w-full pb-8">
+                    <!-- Sponsor Spotlight (Max 3 Sponsor Platinum) -->
+                    <div class="sponsor-spotlight mb-12">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Officially Supported By:</p>
+                        <div id="coverSponsors" class="sponsor-spotlight-logos">
+                            <!-- Logo di-inject dari JS -->
+                            <span class="text-xs text-slate-300 font-bold italic">Memuat Sponsor...</span>
+                        </div>
+                    </div>
+
+                    <!-- Footer Cover -->
+                    <div class="w-full pt-6 border-t border-slate-200 flex flex-col items-center">
+                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Hak Cipta &copy; Swimming Competition System</p>
+                        <p class="text-[8px] text-slate-300 mt-1 font-mono">funswimming.my.id</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- HALAMAN 2 DST: KONTEN TABEL (HEAT SHEET) -->
+            <div class="a4-page content-page" id="contentPage">
+                <!-- Header Minimalis Tiap Halaman Konten -->
+                <div class="flex justify-between items-center border-b-2 border-black pb-3 mb-6">
                     <div class="text-left flex-1">
-                        <h1 id="eventName" class="text-xl md:text-2xl font-black uppercase text-black tracking-tight">MEMUAT EVENT...</h1>
-                        <p class="text-[10px] md:text-xs font-bold text-slate-700 mt-0.5 uppercase">Buku Acara (Start List) Resmi</p>
+                        <h1 id="contentTitle" class="text-lg font-black uppercase text-black tracking-tight truncate max-w-sm">MEMUAT EVENT...</h1>
+                        <p class="text-[9px] font-bold text-slate-500 mt-0.5 uppercase">Buku Acara Resmi</p>
                     </div>
                     <div class="text-right">
-                        <p class="text-[9px] font-mono text-slate-500">Generated by SCS (funswimming.my.id)</p>
+                        <img src="/images/logo.png" class="h-5 opacity-40 grayscale object-contain mb-1 ml-auto">
+                        <p class="text-[8px] font-mono text-slate-400">SCS System</p>
                     </div>
                 </div>
 
                 <!-- CONTAINER HEAT SHEET DI RENDER KE SINI -->
                 <div id="heatContainer" class="space-y-6">
-                    <div class="text-center p-10 text-slate-400 font-bold border-2 border-dashed border-slate-400 rounded-xl print-hidden">
-                        👈 Susun Buku Acara.
+                    <div class="text-center p-10 text-slate-400 font-bold border-2 border-dashed border-slate-300 rounded-xl print-hidden">
+                        👈 Susun Buku Acara di Panel Kiri.
                     </div>
                 </div>
-
             </div>
+
         </div>
     </div>
 

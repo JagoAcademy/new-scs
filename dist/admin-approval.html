@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1024, initial-scale=1.0">
+    <title>Sponsor Approval | SCS Super Admin</title>
+    
+  <script type="module" crossorigin src="/assets/adminApproval-ad612fc0.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-3cfb730f.js">
+  <link rel="modulepreload" crossorigin href="/assets/supabase-b7fcd0c7.js">
+  <link rel="stylesheet" href="/assets/style-4a6a5742.css">
+</head>
+<body class="bg-slate-900 min-h-screen font-sans text-slate-200">
+    
+    <nav class="bg-black shadow-lg px-6 py-4 flex justify-between items-center sticky top-0 z-50 border-b border-amber-500/30">
+        <a href="/admin-ads.html" class="flex items-center gap-2 text-slate-400 hover:text-white transition text-sm font-bold">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Kembali
+        </a>
+        <div class="font-black text-amber-500 tracking-widest uppercase flex items-center gap-2"><span>⚖️</span> SPONSOR APPROVAL</div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-6 py-8">
+        <div class="mb-8 border-b border-slate-800 pb-5">
+            <h1 class="text-3xl font-black text-white">Antrian Proposal Sponsor</h1>
+            <p class="text-slate-400 text-sm mt-1">Review dan setujui pengajuan sponsor dari EO lokal.</p>
+        </div>
+
+        <div class="bg-slate-800/80 rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
+            <table class="w-full text-left border-collapse whitespace-nowrap">
+                <thead class="bg-slate-900/80 text-slate-400 text-[10px] uppercase tracking-wider border-b border-slate-700">
+                    <tr>
+                        <th class="p-4 font-black">NAMA EVENT</th>
+                        <th class="p-4 font-black">BRAND SPONSOR</th>
+                        <th class="p-4 font-black text-center">STATUS</th>
+                        <th class="p-4 font-black text-center">AKSI</th>
+                    </tr>
+                </thead>
+                <tbody id="approvalTableBody" class="text-sm divide-y divide-slate-800/50">
+                    <tr><td colspan="4" class="p-6 text-center text-slate-500 italic">⏳ Memuat antrian...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- MODAL REVIEW ADMIN -->
+    <div id="modalReview" class="fixed inset-0 bg-slate-900/90 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-slate-800 border border-slate-700 rounded-3xl max-w-md w-full shadow-2xl overflow-hidden">
+            <div class="p-5 border-b border-slate-700 bg-slate-900/50 flex justify-between items-center">
+                <h3 class="font-black text-amber-400 text-lg uppercase tracking-widest">📝 Review Proposal</h3>
+                <button class="btn-close text-slate-400 hover:text-red-500 text-2xl">&times;</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="revSubId">
+                <input type="hidden" id="revEventId">
+                <input type="hidden" id="revSponsorId">
+                
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Target Event</p>
+                    <p id="revEventName" class="font-black text-white text-sm mb-3">...</p>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Brand Requested</p>
+                    <p id="revBrandName" class="font-black text-amber-400 text-sm">...</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-2">Tentukan Tipe Deal yang Disetujui:</label>
+                    <select id="revJenisDeal" class="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-sm text-white font-bold focus:ring-2 focus:ring-amber-500 outline-none">
+                        <option value="Product">In-Kind (Produk Support)</option>
+                        <option value="Cash">Cash (Uang Pembinaan)</option>
+                    </select>
+                </div>
+                <div id="revMsg" class="hidden text-sm font-bold text-center rounded-lg p-3"></div>
+            </div>
+            <div class="p-5 border-t border-slate-700 bg-slate-900/50">
+                <button id="btnApprove" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl shadow-lg transition-all text-sm">
+                    ✅ APPROVE & TAYANGKAN LOGO
+                </button>
+            </div>
+        </div>
+    </div>
+
+    
+</body>
+</html>

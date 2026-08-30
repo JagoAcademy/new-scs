@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Homepage Utama (Prioritas Tertinggi) -->
+  <url>
+    <loc>https://f1swimming.com/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <!-- Halaman F1 ID -->
+  <url>
+    <loc>https://f1swimming.com/f1-profile.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Tentang Kami / Pilar SEO Lomba Renang -->
+  <url>
+    <loc>https://f1swimming.com/about.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <!-- Kalender Event -->
+  <url>
+    <loc>https://f1swimming.com/event.html</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Leaderboard / Rank -->
+  <url>
+    <loc>https://f1swimming.com/rank.html</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Halaman Promosi -->
+  <url>
+    <loc>https://f1swimming.com/promosi.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Halaman Harga -->
+  <url>
+    <loc>https://f1swimming.com/pricing.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+</urlset>
