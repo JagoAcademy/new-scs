@@ -5,6 +5,7 @@ let selectedBrands = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
     
+    // 1. CEK AUTHENTICATION
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) {
         alert("Akses ditolak. Wajib Login!");
@@ -17,16 +18,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btnAddBrand = document.getElementById('btnAddBrand');
     const containerBrands = document.getElementById('selectedBrandsContainer');
     const inputSlug = document.getElementById('inputSlug');
-    const inputCorpLogo = document.getElementById('inputCorpLogo');
+    const inputCorpLogo = document.getElementById('inputCorpLogo'); // Ini sekarang File Input
     const inputMessage = document.getElementById('inputMessage');
+    const dataListCorporate = document.getElementById('corporateList');
 
     try {
-        const { data: sponsors, error } = await supabaseClient
+        // 2. LOAD MASTER SPONSORS UNTUK DROPDOWN
+        const { data: sponsors, error: spErr } = await supabaseClient
             .from('master_sponsors')
             .select('*')
             .order('sponsor_name', { ascending: true });
 
-        if (error) throw error;
+        if (spErr) throw spErr;
         
         allSponsors = sponsors;
         selectSponsor.innerHTML = '<option value="">-- Pilih Brand Sponsor --</option>';
@@ -34,11 +37,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             selectSponsor.innerHTML += `<option value="${sp.id}">${sp.sponsor_name} (${sp.kategori})</option>`;
         });
 
+        // 3. LOAD HISTORY CORPORATE UNTUK AUTO-COMPLETE (DATALIST)
+        const { data: pitches, error: pitchErr } = await supabaseClient
+            .from('sponsor_pitches')
+            .select('company_name');
+            
+        if (!pitchErr && pitches) {
+            // Ambil nama unik aja biar gak dobel-dobel di dropdown
+            const uniqueCompanies = [...new Set(pitches.map(p => p.company_name).filter(Boolean))];
+            uniqueCompanies.forEach(company => {
+                dataListCorporate.innerHTML += `<option value="${company}">`;
+            });
+        }
+
         renderSimulation([]);
     } catch (err) {
-        alert("Gagal memuat data: " + err.message);
+        console.error("Gagal memuat data awal:", err.message);
     }
 
+    // FUNGSI RENDER BADGE BRAND TERPILIH
     function renderSelectedBrands() {
         containerBrands.innerHTML = '';
         if (selectedBrands.length === 0) return renderSimulation([]);
@@ -59,6 +76,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // AUTO-GENERATE SLUG DARI NAMA CORPORATE
     function generateSlug() {
         const company = inputCompanyName.value.trim();
         if (company) {
@@ -70,6 +88,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     inputCompanyName.addEventListener('input', generateSlug);
 
+    // TOMBOL TAMBAH BRAND KE ARRAY
     btnAddBrand.addEventListener('click', () => {
         const id = selectSponsor.value;
         if (!id) return alert("Pilih brand dulu!");
@@ -83,6 +102,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderSimulation(selectedBrands); 
     });
 
+    // EKSEKUSI UTAMA (UPLOAD LOGO & SIMPAN KE DB)
     const btnGenerate = document.getElementById('btnGeneratePitch');
     btnGenerate.addEventListener('click', async () => {
         const companyName = inputCompanyName.value.trim();
@@ -93,8 +113,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const cpWa = document.getElementById('inputCPWa').value.trim();
         const cpEmail = document.getElementById('inputCPEmail').value.trim();
         const slug = document.getElementById('inputSlug').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
-        const corpLogo = inputCorpLogo.value.trim() || null;
         const appMessage = inputMessage.value.trim() || null;
+        const logoFile = inputCorpLogo.files[0]; // Tangkap file upload
         
         const statusMsg = document.getElementById('statusMsg');
 
@@ -105,10 +125,35 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        btnGenerate.innerText = "Menyimpan... ⏳";
+        btnGenerate.innerText = "Memproses & Upload Logo... ⏳";
         btnGenerate.disabled = true;
 
         try {
+            let uploadedLogoUrl = null;
+
+            // 1. PROSES UPLOAD LOGO KE STORAGE (JIKA ADA)
+            if (logoFile) {
+                const fileExt = logoFile.name.split('.').pop();
+                const fileName = `corp_${Date.now()}.${fileExt}`;
+                const filePath = `corporate_logos/${fileName}`;
+
+                const { data: uploadData, error: uploadErr } = await supabaseClient
+                    .storage
+                    .from('sponsor-ads')
+                    .upload(filePath, logoFile);
+
+                if (uploadErr) throw new Error("Gagal mengupload logo corporate: " + uploadErr.message);
+
+                // Dapatkan URL publik dari logo yang diupload
+                const { data: publicUrlData } = supabaseClient
+                    .storage
+                    .from('sponsor-ads')
+                    .getPublicUrl(filePath);
+
+                uploadedLogoUrl = publicUrlData.publicUrl;
+            }
+
+            // 2. SIMPAN DATA PITCHING KE DATABASE
             const brandIds = selectedBrands.map(b => b.id);
             const { error: insertErr } = await supabaseClient
                 .from('sponsor_pitches')
@@ -119,7 +164,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     cp_wa: cpWa,
                     cp_email: cpEmail,
                     pitch_slug: slug,
-                    corporate_logo: corpLogo,
+                    corporate_logo: uploadedLogoUrl, // Masukkan URL hasil upload (atau null)
                     approach_message: appMessage,
                     created_by: session.user.id
                 }]);
@@ -129,14 +174,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 throw insertErr;
             }
 
+            // SUKSES
             statusMsg.innerHTML = `✅ <strong>Berhasil!</strong><br>Link klien: <a href="https://f1swimming.com/pitch/${slug}" target="_blank" class="text-blue-600 underline font-mono">f1swimming.com/pitch/${slug}</a>`;
             statusMsg.className = "text-sm text-center rounded-lg p-3 bg-green-100 text-green-800 block mt-2 border border-green-200";
             statusMsg.classList.remove('hidden');
 
+            // RESET FORM PARSIAL
             document.getElementById('inputCPName').value = '';
             document.getElementById('inputCPWa').value = '';
             document.getElementById('inputCPEmail').value = '';
-            inputCorpLogo.value = '';
+            inputCorpLogo.value = ''; // Kosongkan file input
             inputMessage.value = '';
 
         } catch (err) {
