@@ -1,7 +1,7 @@
 import { supabaseClient } from './supabase.js';
 
 let allSponsors = [];
-let selectedSponsor = null;
+let selectedBrands = []; // Array untuk menampung lebih dari 1 brand
 
 document.addEventListener('DOMContentLoaded', async () => {
     
@@ -13,7 +13,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    const inputCompanyName = document.getElementById('inputCompanyName');
     const selectSponsor = document.getElementById('selectSponsor');
+    const btnAddBrand = document.getElementById('btnAddBrand');
+    const containerBrands = document.getElementById('selectedBrandsContainer');
     const inputSlug = document.getElementById('inputSlug');
 
     try {
@@ -33,37 +36,91 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         // 3. Render awal simulasi kosong
-        renderSimulation(null);
+        renderSimulation([]);
 
     } catch (err) {
         console.error(err);
         alert("Gagal memuat data sponsor: " + err.message);
     }
 
-    // 4. Update Simulasi saat Sponsor Dipilih
-    selectSponsor.addEventListener('change', (e) => {
-        const id = e.target.value;
-        if (!id) {
-            selectedSponsor = null;
-            inputSlug.value = "";
-            renderSimulation(null);
+    // FUNGSI MENGGAMBAR BADGE BRAND YANG TERPILIH
+    function renderSelectedBrands() {
+        containerBrands.innerHTML = '';
+        if (selectedBrands.length === 0) {
+            renderSimulation([]);
             return;
         }
 
-        selectedSponsor = allSponsors.find(s => String(s.id) === String(id));
-        
-        // Bikin auto-slug dari nama sponsor (e.g., "Milo Nestle" -> "milo-nestle")
-        const autoSlug = selectedSponsor.sponsor_name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-        inputSlug.value = autoSlug;
+        selectedBrands.forEach(b => {
+            const badge = document.createElement('div');
+            badge.className = "bg-white border border-indigo-200 text-indigo-800 text-[10px] font-black uppercase px-3 py-2 rounded-lg flex items-center gap-2 shadow-sm";
+            badge.innerHTML = `
+                ${b.sponsor_name}
+                <button type="button" class="text-red-400 hover:text-red-600 font-black ml-1 text-sm leading-none focus:outline-none" data-id="${b.id}">&times;</button>
+            `;
+            
+            // Tombol hapus brand
+            badge.querySelector('button').addEventListener('click', (e) => {
+                const removeId = e.target.getAttribute('data-id');
+                selectedBrands = selectedBrands.filter(brand => String(brand.id) !== String(removeId));
+                renderSelectedBrands();
+                generateSlug();
+                renderSimulation(selectedBrands);
+            });
+            
+            containerBrands.appendChild(badge);
+        });
+    }
 
-        // Update Layar HP
-        renderSimulation(selectedSponsor);
+    // FUNGSI MEMBUAT OTOMATIS SLUG URL KLIEN
+    function generateSlug() {
+        const company = inputCompanyName.value.trim();
+        if (company) {
+            let slugBase = company;
+            if (selectedBrands.length > 0) {
+                slugBase += '-' + selectedBrands[0].sponsor_name;
+            }
+            inputSlug.value = slugBase.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+        } else if (selectedBrands.length > 0) {
+            inputSlug.value = selectedBrands[0].sponsor_name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+        } else {
+            inputSlug.value = '';
+        }
+    }
+
+    // LISTENER UNTUK COMPANY NAME -> AUTO SLUG
+    inputCompanyName.addEventListener('input', generateSlug);
+
+    // LISTENER TOMBOL "+ TAMBAH"
+    btnAddBrand.addEventListener('click', () => {
+        const id = selectSponsor.value;
+        if (!id) return alert("Pilih brand dari dropdown terlebih dahulu!");
+
+        const sp = allSponsors.find(s => String(s.id) === String(id));
+        if (!sp) return;
+
+        // Cegah duplikat brand yang sama
+        if (selectedBrands.some(b => b.id === sp.id)) {
+            return alert("Brand ini sudah ditambahkan ke daftar!");
+        }
+
+        selectedBrands.push(sp);
+        
+        // Reset dropdown kembali ke default
+        selectSponsor.value = "";
+
+        renderSelectedBrands();
+        generateSlug();
+        renderSimulation(selectedBrands); // Update Layar HP
     });
 
-    // 5. Fungsi Eksekusi Simpan ke DB
+    // 5. FUNGSI EKSEKUSI SIMPAN KE DATABASE
     const btnGenerate = document.getElementById('btnGeneratePitch');
     btnGenerate.addEventListener('click', async () => {
-        if (!selectedSponsor) return alert("Pilih sponsor dulu, Bos!");
+        const companyName = inputCompanyName.value.trim();
+        
+        if (!companyName) return alert("Nama Perusahaan (Corporate) wajib diisi!");
+        if (selectedBrands.length === 0) return alert("Pilih dan Tambahkan minimal 1 brand!");
         
         const cpName = document.getElementById('inputCPName').value.trim();
         const cpWa = document.getElementById('inputCPWa').value.trim();
@@ -83,10 +140,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         btnGenerate.disabled = true;
 
         try {
+            // Ambil array ID brand yang dipilih
+            const brandIds = selectedBrands.map(b => b.id);
+
             const { error: insertErr } = await supabaseClient
                 .from('sponsor_pitches')
                 .insert([{
-                    sponsor_id: selectedSponsor.id,
+                    sponsor_id: brandIds[0], // ID pertama sebagai patokan legacy
+                    company_name: companyName,
+                    brand_ids: brandIds, // Array brand_ids
                     cp_name: cpName,
                     cp_wa: cpWa,
                     cp_email: cpEmail,
@@ -100,11 +162,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // SUKSES
-            statusMsg.innerHTML = `✅ <strong>Berhasil!</strong><br>Kirim link ini ke klien: <br><a href="https://f1swimming.com/pitch/${slug}" target="_blank" class="text-blue-600 underline font-mono">f1swimming.com/pitch/${slug}</a>`;
-            statusMsg.className = "text-sm text-center rounded-lg p-3 bg-green-100 text-green-800 block mt-2";
+            statusMsg.innerHTML = `✅ <strong>Berhasil!</strong><br>Kirim link ini ke klien: <br><a href="https://f1swimming.com/pitch/${slug}" target="_blank" class="text-blue-600 underline font-mono mt-1 inline-block">f1swimming.com/pitch/${slug}</a>`;
+            statusMsg.className = "text-sm text-center rounded-lg p-3 bg-green-100 text-green-800 block mt-2 border border-green-200";
             statusMsg.classList.remove('hidden');
 
-            // Reset Form
+            // Reset Form Parsial
             document.getElementById('inputCPName').value = '';
             document.getElementById('inputCPWa').value = '';
             document.getElementById('inputCPEmail').value = '';
@@ -121,13 +183,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // ==========================================
-// RENDER SIMULASI HP (MOCKUP LIVE RESULT)
+// RENDER SIMULASI HP (MOCKUP LIVE RESULT) DENGAN ARRAY
 // ==========================================
-function renderSimulation(sponsor) {
+function renderSimulation(brandsArray) {
     const container = document.getElementById('simulationContainer');
     let html = '';
 
-    // Bikin array gaya dummy buat realistis
     const dummyEvents = [
         "Gaya Bebas 50m Putra", "Gaya Bebas 50m Putri", 
         "Gaya Dada 100m Putra", "Gaya Punggung 50m Putri",
@@ -136,12 +197,25 @@ function renderSimulation(sponsor) {
         "Gaya Punggung 100m Putra", "Gaya Kupu 50m Putri"
     ];
 
+    if (!brandsArray || brandsArray.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-slate-400 font-bold text-xs mt-10 italic border-2 border-dashed border-slate-300 rounded-xl p-6">
+                Tambahkan brand di samping kiri untuk melihat simulasi iklan.
+            </div>
+        `;
+        return;
+    }
+
     for (let i = 0; i < 10; i++) {
         
-        // SELIPKAN IKLAN SETELAH EVENT KE-2 DAN KE-6 BIAR KLASIK
-        if (sponsor && (i === 2 || i === 6)) {
+        // SELIPKAN IKLAN SETELAH EVENT KE-2 DAN KE-6 BERGANTIAN
+        if (i === 2 || i === 6) {
+            // Logika ganti brand: kalau brand > 1, event ke-6 pakai brand kedua
+            let spIndex = (i === 2) ? 0 : (brandsArray.length > 1 ? 1 : 0);
+            let sponsor = brandsArray[spIndex];
+            
             html += `
-            <a href="${sponsor.link_url || '#'}" target="_blank" class="block w-full bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.1)] overflow-hidden border-2 border-amber-300 transform hover:scale-105 transition-transform duration-300 relative group">
+            <a href="${sponsor.link_url || '#'}" target="_blank" class="block w-full bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.1)] overflow-hidden border-2 border-amber-300 transform hover:scale-105 transition-transform duration-300 relative group mb-3">
                 <span class="absolute top-0 right-0 bg-amber-400 text-[8px] font-black px-2 py-0.5 rounded-bl-lg text-amber-900 tracking-widest z-10">SPONSORED</span>
                 <img src="${sponsor.cover_url || sponsor.logo_url}" class="w-full h-24 object-cover object-center bg-slate-50" alt="${sponsor.sponsor_name}">
                 <div class="p-2 bg-gradient-to-r from-amber-50 to-white flex justify-between items-center">
@@ -157,7 +231,7 @@ function renderSimulation(sponsor) {
 
         // Tampilan Kartu Event Dummy
         html += `
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-3 flex justify-between items-center opacity-80 pointer-events-none grayscale-[30%]">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-3 flex justify-between items-center opacity-80 pointer-events-none grayscale-[30%] mb-3">
             <div>
                 <p class="text-[9px] font-bold text-red-500 mb-0.5 uppercase tracking-wider">Event ${i+1}</p>
                 <p class="text-xs font-black text-slate-800">${dummyEvents[i]}</p>
