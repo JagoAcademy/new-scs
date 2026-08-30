@@ -8,7 +8,7 @@ export default defineConfig({
         // --- 1. MAIN & PUBLIC PAGES (Akses Tanpa Login) ---
         main: resolve(__dirname, 'index.html'), // Homepage
         about: resolve(__dirname, 'about.html'), // Halaman Tentang Kami (Pilar SEO)
-        openinvest: resolve(__dirname, 'openinvest.html'), // <--- JAHITAN BARU: Pitch Deck Pendanaan F1Swimming
+        openinvest: resolve(__dirname, 'openinvest.html'), // Pitch Deck Pendanaan F1Swimming
         auth: resolve(__dirname, 'auth.html'), // Login & Register System
         register: resolve(__dirname, 'register.html'), // Form Registrasi
         pricing: resolve(__dirname, 'pricing.html'), // Halaman Harga SCS
@@ -23,7 +23,7 @@ export default defineConfig({
         cetakSertifikat: resolve(__dirname, 'cetak-sertifikat.html'), // Halaman Cetak Sertifikat Peserta
         sponsorship: resolve(__dirname, 'sponsorship.html'),
         pitch: resolve(__dirname, 'pitch.html'), // Web-Based Pitch Deck Nestle 
-        pitchClient: resolve(__dirname, 'pitch-client.html'), // <--- INI BARIS BARUNYA BOS: Halaman Front-End Pitching Klien (B2B)
+        pitchClient: resolve(__dirname, 'pitch-client.html'), // Halaman Front-End Pitching Klien (B2B)
         media: resolve(__dirname, 'media.html'), // SCS Media & Ads Portal 
 
         // --- 2. DASHBOARD KLUB / PELATIH ---

@@ -1,14 +1,14 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
-  "rewrites": [
+  "routes": [
     {
-      "source": "/pitch/:brand",
-      "destination": "/pitch-client.html?brand=:brand"
+      "src": "/pitch/(?<brand>[^/]+)",
+      "dest": "/pitch-client.html?brand=$brand"
     },
     {
-      "source": "/((?!api/).*)",
-      "destination": "/event-public.html"
+      "src": "/((?!api/).*)",
+      "dest": "/event-public.html"
     }
   ]
 }

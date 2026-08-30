@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        btnGenerate.innerText = "Meyimpan Pitch Deck... ⏳";
+        btnGenerate.innerText = "Menyimpan Pitch Deck... ⏳";
         btnGenerate.disabled = true;
 
         try {
