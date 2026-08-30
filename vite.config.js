@@ -23,6 +23,7 @@ export default defineConfig({
         cetakSertifikat: resolve(__dirname, 'cetak-sertifikat.html'), // Halaman Cetak Sertifikat Peserta
         sponsorship: resolve(__dirname, 'sponsorship.html'),
         pitch: resolve(__dirname, 'pitch.html'), // Web-Based Pitch Deck Nestle 
+        pitchClient: resolve(__dirname, 'pitch-client.html'), // <--- INI BARIS BARUNYA BOS: Halaman Front-End Pitching Klien (B2B)
         media: resolve(__dirname, 'media.html'), // SCS Media & Ads Portal 
 
         // --- 2. DASHBOARD KLUB / PELATIH ---

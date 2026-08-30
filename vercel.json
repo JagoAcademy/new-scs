@@ -3,6 +3,10 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/pitch/:brand",
+      "destination": "/pitch-client.html?brand=:brand"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/event-public.html"
     }
