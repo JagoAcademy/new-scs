@@ -3,11 +3,11 @@
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/pitch/:brand",
+      "source": "/pitch/(.*)",
       "destination": "/pitch-client.html"
     },
     {
-      "source": "/((?!api/|assets/|src/|images/|pitch|.*\\..*).*)",
+      "source": "/((?!api/|assets/|src/|images/|pitch-client|.*\\..*).*)",
       "destination": "/event-public.html"
     }
   ]
