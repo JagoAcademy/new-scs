@@ -53,26 +53,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Pakai brand pertama sebagai patokan cover & logo
         const primaryBrand = allBrandsData[0];
 
-        // 5. Injeksi Teks dan Gambar ke HTML
+        // 5. Injeksi Teks dan Gambar ke HTML (KEBAL ERROR)
         document.title = `Sponsorship Proposal - ${pitchData.company_name}`;
         
-        // Render Foto Cover & Logo (Pake fallback gambar kalau kosong)
-        document.getElementById('sponsorCover').src = primaryBrand.cover_url || 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?q=80&w=1000&auto=format&fit=crop';
-        document.getElementById('sponsorLogo').src = primaryBrand.logo_url || 'https://ui-avatars.com/api/?name=Sponsor&background=fff&color=000';
+        const coverEl = document.getElementById('sponsorCover');
+        if (coverEl) coverEl.src = primaryBrand.cover_url || 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?q=80&w=1000&auto=format&fit=crop';
         
-        document.getElementById('cpName').innerText = pitchData.cp_name;
-        document.getElementById('brandName').innerText = pitchData.company_name; // Ganti jadi nama korporatnya
-        document.getElementById('sponsorSyarat').innerText = primaryBrand.syarat || "Custom partnership agreement.";
+        const logoEl = document.getElementById('sponsorLogo');
+        if (logoEl) logoEl.src = primaryBrand.logo_url || 'https://ui-avatars.com/api/?name=Sponsor&background=fff&color=000';
+        
+        const cpEl = document.getElementById('cpName');
+        if (cpEl) cpEl.innerText = pitchData.cp_name;
+        
+        const brandEl = document.getElementById('brandName');
+        if (brandEl) brandEl.innerText = pitchData.company_name; 
+        
+        const syaratEl = document.getElementById('sponsorSyarat');
+        if (syaratEl) syaratEl.innerText = primaryBrand.syarat || "Custom partnership agreement.";
 
         // 6. Render Simulasi Live Result di HP Mockup
         renderSimulation(allBrandsData);
 
         // 7. Tombol WA langsung ke Admin F1 Swimming
-        const myWaNumber = "6289691219977"; 
-        const waText = `Halo tim F1 Swimming, saya ${pitchData.cp_name} dari ${pitchData.company_name}. Saya sudah melihat presentasinya dan tertarik berdiskusi lebih lanjut.`;
-        document.getElementById('btnWA').addEventListener('click', () => {
-            window.open(`https://wa.me/${myWaNumber}?text=${encodeURIComponent(waText)}`, '_blank');
-        });
+        const btnWaEl = document.getElementById('btnWA');
+        if (btnWaEl) {
+            const myWaNumber = "6289691219977"; 
+            const waText = `Halo tim F1 Swimming, saya ${pitchData.cp_name} dari ${pitchData.company_name}. Saya sudah melihat presentasinya dan tertarik berdiskusi lebih lanjut.`;
+            btnWaEl.addEventListener('click', () => {
+                window.open(`https://wa.me/${myWaNumber}?text=${encodeURIComponent(waText)}`, '_blank');
+            });
+        }
 
         // Tampilkan halaman
         setTimeout(() => {
@@ -91,7 +101,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <span class="text-6xl mb-4">📭</span>
             <h1 class="text-2xl font-black text-slate-800 mb-2">Proposal Tidak Ditemukan</h1>
             <p class="text-slate-500 font-medium text-sm mb-6">Pastikan link URL yang Anda ketik sudah benar.<br>Slug yang dicari: <strong class="text-red-500">${brandSlug}</strong></p>
-            <div class="bg-red-50 border border-red-200 p-4 rounded-xl text-left w-full max-w-sm">
+            <div class="bg-red-50 border border-red-200 p-4 rounded-xl text-left w-full max-w-sm mx-auto">
                 <p class="text-[10px] font-black text-red-600 uppercase mb-1 tracking-widest">Log Error Sistem (Kirim ke Admin):</p>
                 <code class="text-xs text-red-500 font-mono break-words">${err.message}</code>
             </div>
@@ -102,6 +112,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 // FUNGSI RENDER MOCKUP LIVE RESULT DENGAN MULTI-BRAND
 function renderSimulation(brandsArray) {
     const container = document.getElementById('simulationContainer');
+    if (!container) return; // Mencegah error kalau div container hilang
+    
     let html = '';
 
     const dummyEvents = [
