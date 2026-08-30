@@ -64,6 +64,17 @@
         .animate-slider:hover {
             animation-play-state: paused;
         }
+
+        /* ANIMASI RUNNING TEXT (HOOK) */
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .animate-marquee {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marquee 25s linear infinite;
+        }
     </style>
     
     <!-- SCHEMA JSON-LD UNTUK GOOGLE AI -->
@@ -138,6 +149,21 @@
         </div>
     </nav>
 
+    <!-- INJEKSI RUNNING TEXT (MARQUEE) HOOK DI SINI (100% AMAN DARI CSS MOBILE LU) -->
+    <div class="fixed top-14 md:top-16 w-full bg-blue-950 text-amber-400 z-40 border-b border-blue-900 overflow-hidden shadow-sm">
+        <div class="animate-marquee py-1.5">
+            <span class="text-[10px] md:text-xs font-black tracking-widest uppercase">
+                🚀 F1 Swimming: Pelopor Sistem Lomba Renang End-to-End Gratis Pertama di Indonesia 🚀
+            </span>
+            <span class="text-[10px] md:text-xs font-black tracking-widest uppercase ml-12">
+                🚀 F1 Swimming: Pelopor Sistem Lomba Renang End-to-End Gratis Pertama di Indonesia 🚀
+            </span>
+            <span class="text-[10px] md:text-xs font-black tracking-widest uppercase ml-12">
+                🚀 F1 Swimming: Pelopor Sistem Lomba Renang End-to-End Gratis Pertama di Indonesia 🚀
+            </span>
+        </div>
+    </div>
+
     <div id="mobileMenu" class="fixed inset-0 bg-white z-[110] hidden flex-col pt-6 pb-8 px-6 transition-all duration-300">
         <div class="flex justify-end items-center mb-6 border-b border-gray-100 pb-4">
             <button id="closeMobileBtn" class="p-2 text-slate-400 hover:text-red-500 bg-slate-50 rounded-full transition-colors active:scale-95">
@@ -185,7 +211,8 @@
         </div>
     </div>
 
-    <section class="relative w-full h-[calc(100vh-3.5rem)] md:h-screen pt-14 md:pt-16 flex max-md:block overflow-hidden">
+    <!-- PENGGESERAN KONTEN UTAMA AGAR TIDAK TERTUTUP RUNNING TEXT -->
+    <section class="relative w-full h-[calc(100vh-3.5rem)] md:h-screen pt-20 md:pt-24 flex max-md:block overflow-hidden">
         
         <div class="w-full md:w-1/2 h-full absolute md:relative inset-0 md:inset-auto bg-white z-20 flex flex-col max-md:justify-start max-md:items-start md:justify-center md:items-start p-8 md:p-16 lg:px-20 max-md:pt-[12vh] max-md:pl-6 max-md:pr-0 max-md:[clip-path:polygon(0_0,100%_0,0_100%)] md:border-r border-gray-200 transition-all duration-700 ease-in-out hover:md:w-[60%] group">
             <div class="absolute inset-0 z-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
