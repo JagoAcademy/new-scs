@@ -36,20 +36,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const logoEl = document.getElementById('corporateLogo');
         const cpEl = document.getElementById('cpName');
         const msgEl = document.getElementById('approachMessage');
-        const coverEl = document.getElementById('sponsorCover');
         const syaratEl = document.getElementById('sponsorSyarat');
 
-        // Heading "Halo Bpk/Ibu" dari HTML akan diisi dengan ini
         if (cpEl) cpEl.innerText = pitchData.cp_name;
         
-        // LOGIKA CABANG: KLUB vs BRAND
         if (pitchData.target_type === 'club') {
             
-            if (coverEl) coverEl.src = 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?q=80&w=1000&auto=format&fit=crop';
             if (logoEl) logoEl.src = pitchData.corporate_logo || 'https://ui-avatars.com/api/?name=EO&background=fff&color=000';
             if (syaratEl) syaratEl.innerText = "Sistem Live Result Cepat\nDatabase F1 ID Terpusat\nBebas Manipulasi Umur\nPendapatan Ekstra dari Ads";
             
-            // Teks Default Presentasi Website (KLUB)
             if (msgEl) {
                 msgEl.innerHTML = `Berikut adalah simulasi bagaimana sistem Live Result Digital (SCS) mendigitalisasi event dari <strong class="text-slate-800">${pitchData.company_name}</strong> untuk tampil lebih profesional di mata ribuan peserta.`;
             }
@@ -69,13 +64,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const primaryBrand = allBrandsData[0];
 
-            if (coverEl) coverEl.src = primaryBrand.cover_url || 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?q=80&w=1000&auto=format&fit=crop';
             if (logoEl) logoEl.src = pitchData.corporate_logo || primaryBrand.logo_url || 'https://ui-avatars.com/api/?name=Brand&background=fff&color=000';
             if (syaratEl) syaratEl.innerText = primaryBrand.syarat || "Custom partnership agreement.";
             
-            // Teks Default Presentasi Website (BRAND)
+            // TEKS BAKU WEB SESUAI INSTRUKSI
             if (msgEl) {
-                msgEl.innerHTML = `Berikut adalah simulasi bagaimana brand <strong class="text-slate-800">${pitchData.company_name}</strong> bisa ditampilkan di halaman Live-Result yang dilihat ratusan hingga ribuan pasang mata Athlete, Calon Athlete, dan Orang tua, bahkan yang tidak berkompetisi.<br><br>Silakan klik logo brand yang akan di-direct ke halaman yang sudah kami set default (dummy) atau bisa di-request secara eksklusif oleh bagian terkait (ads and copywriting agency).`;
+                msgEl.innerHTML = `Berikut adalah simulasi bagaimana brand <strong class="text-slate-800">${pitchData.company_name}</strong> bisa ditampilkan di halaman Live-Result yang dilihat ratusan hingga ribuan pasang mata atlet, calon atlet, dan orang tua, bahkan yang tidak berkompetisi.<br><br>Silakan klik logo brand yang akan di-direct ke halaman yang sudah kami set default (dummy) atau bisa di-request secara eksklusif oleh bagian terkait (ads & copywriting agency).`;
             }
 
             renderSimulationBrand(allBrandsData);

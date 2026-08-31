@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     const inputSlug = document.getElementById('inputSlug');
     const inputCorpLogo = document.getElementById('inputCorpLogo');
+    const inputMarketingName = document.getElementById('inputMarketingName');
     const inputMessage = document.getElementById('inputMessage');
     const btnAutoCopywrite = document.getElementById('btnAutoCopywrite');
 
@@ -76,6 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error(err);
     }
 
+    // LOAD HISTORY BESERTA ARRAY BRAND-NYA
     selectHistoryCompany.addEventListener('change', (e) => {
         const pitchId = e.target.value;
         if (!pitchId) return;
@@ -92,6 +94,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.querySelector(`input[name="targetType"][value="${selected.target_type}"]`).checked = true;
                 document.querySelector(`input[name="targetType"][value="${selected.target_type}"]`).dispatchEvent(new Event('change'));
             }
+            
+            // Re-populate selectedBrands array dari database
+            selectedBrands = [];
+            if (selected.brand_ids && selected.brand_ids.length > 0) {
+                selected.brand_ids.forEach(id => {
+                    const sp = allSponsors.find(s => String(s.id) === String(id));
+                    if (sp) selectedBrands.push(sp);
+                });
+            }
+            renderSelectedBrands();
+            renderSimulation(selectedBrands);
+            
             generateSlug();
         }
     });
@@ -102,12 +116,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const company = inputCompanyName.value || '[Nama Perusahaan]';
         const slug = inputSlug.value || 'proposal';
         const link = `https://f1swimming.com/pitch/${slug}`;
+        
+        // Ambil nama marketing dari box input
+        const marketingName = inputMarketingName.value.trim() || 'Tim';
 
         let msg = "";
         if (type === 'brand') {
-            msg = `Halo ${pic},\n\nPerkenalkan saya dari F1 Swimming. Khusus untuk ${company}, kami telah merancang simulasi eksklusif bagaimana brand Anda dapat mendominasi perhatian ribuan atlet dan orang tua di urat nadi kompetisi renang nasional.\n\nSilakan cek proposal interaktif berikut dari HP Anda:\n👉 ${link}\n\nJika berkenan, saya ingin mendiskusikan peluang kolaborasi ini lebih lanjut. Terima kasih!`;
+            msg = `Halo ${pic},\n\nPerkenalkan saya ${marketingName} dari F1 Swimming. Khusus untuk ${company}, kami telah merancang simulasi eksklusif bagaimana brand Anda dapat mendominasi perhatian ribuan atlet dan orang tua di urat nadi kompetisi renang nasional.\n\nSilakan cek proposal interaktif berikut dari HP Anda:\n👉 ${link}\n\nJika berkenan, saya ingin mendiskusikan peluang kolaborasi ini lebih lanjut. Terima kasih!`;
         } else {
-            msg = `Halo ${pic},\n\nPerkenalkan saya dari F1 Swimming. Untuk mendukung kemajuan event dari ${company}, kami ingin mendemonstrasikan bagaimana sistem Live Result Digital (SCS) dapat mendigitalisasi dan meningkatkan profesionalisme perlombaan Anda.\n\nSilakan cek simulasi sistem kami di sini:\n👉 ${link}\n\nMari berdiskusi untuk membawa event Anda ke level berikutnya. Terima kasih!`;
+            msg = `Halo ${pic},\n\nPerkenalkan saya ${marketingName} dari F1 Swimming. Untuk mendukung kemajuan event dari ${company}, kami ingin mendemonstrasikan bagaimana sistem Live Result Digital (SCS) dapat mendigitalisasi dan meningkatkan profesionalisme perlombaan Anda.\n\nSilakan cek simulasi sistem kami di sini:\n👉 ${link}\n\nMari berdiskusi untuk membawa event Anda ke level berikutnya. Terima kasih!`;
         }
         inputMessage.value = msg;
     });
@@ -307,7 +324,6 @@ function renderSimulation(brandsArray) {
                     <div class="w-10 shrink-0 text-right pr-1"><span class="font-mono text-[8px] font-black text-slate-400">NT</span></div>
                 </div>
             </div>
-            
         </div>`;
     }
     container.innerHTML = html;
