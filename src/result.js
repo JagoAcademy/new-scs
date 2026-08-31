@@ -3,7 +3,7 @@ import { supabaseClient } from './supabase.js';
 let currentEventId = null;
 let allHeats = []; 
 let currentSelectedEventNumber = null;
-let activeSponsors = []; 
+let activeSponsors = []; // Wadah penyimpan sponsor
 
 let refreshInterval = 30; 
 let timeLeft = refreshInterval;
@@ -26,23 +26,12 @@ async function fetchEventName() {
     try {
         const { data, error } = await supabaseClient
             .from('events')
-            .select('event_name, config')
+            .select('event_name')
             .eq('id', currentEventId)
             .single();
             
         if (data) {
             document.getElementById('headerEventName').innerText = data.event_name;
-            
-            // LOGIKA TARIK HEADER LOMBA DARI JSONB
-            const config = data.config || {};
-            const headerImgUrl = config.kop_surat || config.header_image || config.banner;
-            
-            if (headerImgUrl) {
-                const bannerWrapper = document.getElementById('eventBannerWrapper');
-                const bannerImg = document.getElementById('eventBannerImg');
-                bannerImg.src = headerImgUrl;
-                bannerWrapper.classList.remove('hidden');
-            }
         }
     } catch (err) { console.error(err); }
 }
@@ -60,6 +49,7 @@ async function fetchSponsors() {
 
         if (linkErr || !linkData || !linkData.sponsor_ids || linkData.sponsor_ids.length === 0) return;
 
+        // SEKARANG KITA TARIK JUGA DATA TARGETING-NYA
         const { data: sponsors, error: spErr } = await supabaseClient
             .from('master_sponsors')
             .select('*')
@@ -67,7 +57,7 @@ async function fetchSponsors() {
 
         if (spErr || !sponsors || sponsors.length === 0) return;
         
-        activeSponsors = sponsors; 
+        activeSponsors = sponsors; // Simpan ke global 
 
         let html = `
             <div class="w-full mb-6 bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 text-center">
@@ -178,6 +168,7 @@ function renderResults(eventNumber) {
     
     let htmlContent = '';
 
+    // MENGUBAH PARAMETER FOREACH DENGAN INDEX
     heatsToShow.forEach((heat, index) => {
         let lanesHtml = '';
 
@@ -222,22 +213,29 @@ function renderResults(eventNumber) {
             lanesHtml += `<p class="text-[10px] text-slate-400 italic text-center py-3">Tidak ada data atlet di Heat ini.</p>`;
         }
 
+        // ==========================================
+        // 🧠 OTAK DYNAMIC SMART-TARGETING (AD-TECH)
+        // ==========================================
         let eventSponsorHeader = '';
         if (activeSponsors.length > 0) {
             
             const heatGender = heat.gender.toUpperCase();
             const heatKU = heat.kelompok_umur.toUpperCase();
 
+            // 1. Filter sponsor yang nyangkut dengan kriteria Heat ini
             let matchedSponsors = activeSponsors.filter(sp => {
                 let matchGender = false;
                 let matchUmur = false;
 
+                // --- LOGIKA GENDER ---
                 if (!sp.target_gender || sp.target_gender === 'ALL') {
                     matchGender = true;
                 } else {
+                    // Kalau target 'Putra', heat-nya harus Putra/Mix
                     matchGender = heatGender.includes(sp.target_gender.toUpperCase());
                 }
 
+                // --- LOGIKA UMUR (Future-Proof, gak pakai tahun!) ---
                 if (!sp.target_umur || sp.target_umur === 'ALL') {
                     matchUmur = true;
                 } else if (sp.target_umur === 'KIDS') {
@@ -251,6 +249,7 @@ function renderResults(eventNumber) {
                 return matchGender && matchUmur;
             });
 
+            // 2. SAFETY FALLBACK (Anti Kolom Kosong)
             if (matchedSponsors.length === 0) {
                 matchedSponsors = activeSponsors.filter(sp => (!sp.target_gender || sp.target_gender === 'ALL') && (!sp.target_umur || sp.target_umur === 'ALL'));
             }
@@ -259,6 +258,8 @@ function renderResults(eventNumber) {
                 matchedSponsors = activeSponsors;
             }
 
+            // 3. FIX: Render banner bergiliran (Round-Robin) DARI ARRAY YANG UDAH DI-FILTER
+            // Menggunakan running 'index' heat yang di-render, BUKAN 'heat.event_number'
             const spIndex = index % matchedSponsors.length;
             const sp = matchedSponsors[spIndex];
             const spLogo = sp.logo_url || '/images/logo.png';
@@ -284,6 +285,7 @@ function renderResults(eventNumber) {
                 </a>
             `;
         }
+        // ==========================================
 
         htmlContent += `
         <div class="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-slate-200 mb-4 overflow-hidden relative">
