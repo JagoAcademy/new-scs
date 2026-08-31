@@ -39,15 +39,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         const coverEl = document.getElementById('sponsorCover');
         const syaratEl = document.getElementById('sponsorSyarat');
 
+        // Heading "Halo Bpk/Ibu" dari HTML akan diisi dengan ini
         if (cpEl) cpEl.innerText = pitchData.cp_name;
         
+        // LOGIKA CABANG: KLUB vs BRAND
         if (pitchData.target_type === 'club') {
+            
             if (coverEl) coverEl.src = 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?q=80&w=1000&auto=format&fit=crop';
             if (logoEl) logoEl.src = pitchData.corporate_logo || 'https://ui-avatars.com/api/?name=EO&background=fff&color=000';
             if (syaratEl) syaratEl.innerText = "Sistem Live Result Cepat\nDatabase F1 ID Terpusat\nBebas Manipulasi Umur\nPendapatan Ekstra dari Ads";
             
+            // Teks Default Presentasi Website (KLUB)
             if (msgEl) {
-                msgEl.innerHTML = pitchData.approach_message || `Ini adalah simulasi bagaimana Sistem SCS mendigitalisasi event dari <strong class="text-slate-800">${pitchData.company_name}</strong> untuk tampil lebih profesional di mata ribuan peserta.`;
+                msgEl.innerHTML = `Berikut adalah simulasi bagaimana sistem Live Result Digital (SCS) mendigitalisasi event dari <strong class="text-slate-800">${pitchData.company_name}</strong> untuk tampil lebih profesional di mata ribuan peserta.`;
             }
 
             renderSimulationClub(pitchData.company_name);
@@ -69,14 +73,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (logoEl) logoEl.src = pitchData.corporate_logo || primaryBrand.logo_url || 'https://ui-avatars.com/api/?name=Brand&background=fff&color=000';
             if (syaratEl) syaratEl.innerText = primaryBrand.syarat || "Custom partnership agreement.";
             
+            // Teks Default Presentasi Website (BRAND)
             if (msgEl) {
-                msgEl.innerHTML = pitchData.approach_message || `Ini adalah simulasi eksklusif bagaimana brand <strong class="text-slate-800">${pitchData.company_name}</strong> Anda akan mendominasi perhatian ribuan atlet.`;
+                msgEl.innerHTML = `Berikut adalah simulasi bagaimana brand <strong class="text-slate-800">${pitchData.company_name}</strong> bisa ditampilkan di halaman Live-Result yang dilihat ratusan hingga ribuan pasang mata Athlete, Calon Athlete, dan Orang tua, bahkan yang tidak berkompetisi.<br><br>Silakan klik logo brand yang akan di-direct ke halaman yang sudah kami set default (dummy) atau bisa di-request secara eksklusif oleh bagian terkait (ads and copywriting agency).`;
             }
 
             renderSimulationBrand(allBrandsData);
         }
 
-        // TOMBOL WA CLIENT KE ADMIN (Nangkep Tombol Desktop & Mobile)
         const btnWaElements = document.querySelectorAll('.btnWaAction');
         if (btnWaElements.length > 0) {
             const waText = `Halo tim F1 Swimming, saya ${pitchData.cp_name} dari ${pitchData.company_name}. Saya sudah melihat penawarannya dan tertarik berdiskusi.`;
@@ -133,7 +137,6 @@ function renderSimulationBrand(brandsArray) {
         let spIndex = i % brandsArray.length;
         let sponsor = brandsArray[spIndex];
         
-        // PERBAIKAN: href udah narik link aslinya (link_url), dikasih target="_blank"
         let sponsorHeader = `
         <a href="${sponsor.link_url || '#'}" target="_blank" class="flex items-center justify-between bg-amber-50 hover:bg-amber-100 transition-colors border-b border-amber-200 px-3 py-2 -mx-3 -mt-3 mb-2 rounded-t-xl group cursor-pointer">
             <div class="flex items-center gap-1.5 flex-1 min-w-0 pr-2">
@@ -153,21 +156,28 @@ function renderSimulationBrand(brandsArray) {
                 <h3 class="text-[10px] font-black text-slate-800 uppercase leading-tight">Event #${i+1}: ${dummyEvents[i]}</h3>
                 <p class="text-[7px] text-slate-400 font-bold mt-0.5 uppercase tracking-wider">HEAT 1 <span class="text-slate-300 mx-1">|</span> Dari 3</p>
             </div>
+            
             <div class="bg-slate-50/50 rounded-lg p-1.5 border border-slate-100">
                 <div class="flex items-center text-[7px] font-black text-slate-400 uppercase border-b border-slate-200 pb-1 mb-1 px-1">
                     <div class="w-5 text-center">LN</div><div class="flex-1 pl-1">ATLET</div><div class="w-10 text-right pr-1">WAKTU</div>
                 </div>
                 <div class="flex items-center py-1 border-b border-slate-100 px-1">
-                    <div class="w-5 flex justify-center shrink-0"><div class="w-3 h-3 rounded bg-slate-200 text-[6px] font-black flex items-center justify-center">4</div></div>
-                    <div class="flex-1 pl-1"><p class="text-[8px] font-black text-slate-800 uppercase truncate">Fajar Aditya</p></div>
-                    <div class="w-10 shrink-0 text-right pr-1"><span class="font-mono text-[8px] font-black text-emerald-600">28.45</span></div>
+                    <div class="w-5 flex justify-center shrink-0"><div class="w-3 h-3 rounded bg-slate-200 text-slate-600 text-[6px] font-black flex items-center justify-center">3</div></div>
+                    <div class="flex-1 pl-1"><p class="text-[8px] font-black text-slate-800 uppercase truncate">Nama Atlit 1</p></div>
+                    <div class="w-10 shrink-0 text-right pr-1"><span class="font-mono text-[8px] font-black text-slate-400">NT</span></div>
                 </div>
                 <div class="flex items-center py-1 border-b border-slate-100 px-1">
-                    <div class="w-5 flex justify-center shrink-0"><div class="w-3 h-3 rounded bg-slate-200 text-[6px] font-black flex items-center justify-center">5</div></div>
-                    <div class="flex-1 pl-1"><p class="text-[8px] font-black text-slate-800 uppercase truncate">Perenang Dummy 2</p></div>
+                    <div class="w-5 flex justify-center shrink-0"><div class="w-3 h-3 rounded bg-amber-200 text-amber-800 text-[6px] font-black flex items-center justify-center">4</div></div>
+                    <div class="flex-1 pl-1"><p class="text-[8px] font-black text-slate-800 uppercase truncate">Nama Atlit 2</p></div>
+                    <div class="w-10 shrink-0 text-right pr-1"><span class="font-mono text-[8px] font-black text-emerald-600">28.45</span></div>
+                </div>
+                <div class="flex items-center py-1 px-1">
+                    <div class="w-5 flex justify-center shrink-0"><div class="w-3 h-3 rounded bg-slate-200 text-slate-600 text-[6px] font-black flex items-center justify-center">5</div></div>
+                    <div class="flex-1 pl-1"><p class="text-[8px] font-black text-slate-800 uppercase truncate">Nama Atlit 3</p></div>
                     <div class="w-10 shrink-0 text-right pr-1"><span class="font-mono text-[8px] font-black text-slate-400">NT</span></div>
                 </div>
             </div>
+            
         </div>`;
     }
     container.innerHTML = html;
