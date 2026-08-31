@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error(err);
     }
 
-    // LOAD HISTORY BESERTA ARRAY BRAND-NYA
+    // LOAD HISTORY & PERTAHANKAN SLUG LAMA (Untuk Update)
     selectHistoryCompany.addEventListener('change', (e) => {
         const pitchId = e.target.value;
         if (!pitchId) return;
@@ -90,12 +90,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('inputCPEmail').value = selected.cp_email || '';
             inputMessage.value = selected.approach_message || '';
             
+            // JANGAN generate slug baru, gunakan slug histori yang sudah ada
+            inputSlug.value = selected.pitch_slug || ''; 
+            
             if (selected.target_type) {
                 document.querySelector(`input[name="targetType"][value="${selected.target_type}"]`).checked = true;
                 document.querySelector(`input[name="targetType"][value="${selected.target_type}"]`).dispatchEvent(new Event('change'));
             }
             
-            // Re-populate selectedBrands array dari database
             selectedBrands = [];
             if (selected.brand_ids && selected.brand_ids.length > 0) {
                 selected.brand_ids.forEach(id => {
@@ -105,8 +107,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             renderSelectedBrands();
             renderSimulation(selectedBrands);
-            
-            generateSlug();
         }
     });
 
@@ -117,7 +117,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const slug = inputSlug.value || 'proposal';
         const link = `https://f1swimming.com/pitch/${slug}`;
         
-        // Ambil nama marketing dari box input
         const marketingName = inputMarketingName.value.trim() || 'Tim';
 
         let msg = "";
@@ -168,6 +167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderSimulation(selectedBrands); 
     });
 
+    // SISTEM UPSERT (INSERT JIKA BARU, UPDATE JIKA SLUG SUDAH ADA)
     const btnGenerate = document.getElementById('btnGeneratePitch');
     btnGenerate.addEventListener('click', async () => {
         const type = document.querySelector('input[name="targetType"]:checked').value;
@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (!cpName || !slug) return alert("Nama PIC dan Slug wajib diisi!");
 
-        btnGenerate.innerText = "Memproses & Menyimpan Draf... ⏳";
+        btnGenerate.innerText = "Memproses Data... ⏳";
         btnGenerate.disabled = true;
 
         try {
@@ -200,22 +200,37 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const brandIds = type === 'brand' ? selectedBrands.map(b => b.id) : [];
             
-            const { error: insertErr } = await supabaseClient.from('sponsor_pitches').insert([{
+            // Siapkan Data Payload
+            let payload = {
                 target_type: type,
                 company_name: companyName,
                 brand_ids: brandIds,
                 cp_name: cpName,
                 cp_wa: cpWa,
                 cp_email: cpEmail,
-                pitch_slug: slug,
-                corporate_logo: uploadedLogoUrl,
+                pitch_slug: slug, // Primary Update Key
                 approach_message: appMessage,
                 created_by: session.user.id
-            }]);
+            };
 
-            if (insertErr) throw new Error(insertErr.code === '23505' ? "Slug URL sudah dipakai!" : insertErr.message);
+            // Jika ada logo baru, masukkan. Jika tidak, pertahankan logo lama (jangan dioverwrite jadi null)
+            if (uploadedLogoUrl) {
+                payload.corporate_logo = uploadedLogoUrl;
+            } else {
+                const { data: existingData } = await supabaseClient.from('sponsor_pitches').select('corporate_logo').eq('pitch_slug', slug).single();
+                if (existingData && existingData.corporate_logo) {
+                    payload.corporate_logo = existingData.corporate_logo;
+                }
+            }
 
-            statusMsg.innerHTML = `<div class="bg-green-100 border border-green-300 text-green-800 p-3 rounded-lg text-sm text-center">✅ <strong>Link & Draf Berhasil Disimpan!</strong></div>`;
+            // PERINTAH UPSERT AJAIB
+            const { error: upsertErr } = await supabaseClient
+                .from('sponsor_pitches')
+                .upsert(payload, { onConflict: 'pitch_slug' });
+
+            if (upsertErr) throw upsertErr;
+
+            statusMsg.innerHTML = `<div class="bg-green-100 border border-green-300 text-green-800 p-3 rounded-lg text-sm text-center">✅ <strong>Link & Draf Berhasil Disimpan/Diperbarui!</strong></div>`;
             statusMsg.classList.remove('hidden');
             actionButtons.classList.remove('hidden');
 
@@ -236,7 +251,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             statusMsg.innerHTML = `<div class="bg-red-100 border border-red-300 text-red-600 p-3 rounded-lg text-sm text-center">❌ ${err.message}</div>`;
             statusMsg.classList.remove('hidden');
         } finally {
-            btnGenerate.innerText = "Generate Link & Simpan Draf";
+            btnGenerate.innerText = "Simpan & Update Draf";
             btnGenerate.disabled = false;
         }
     });
