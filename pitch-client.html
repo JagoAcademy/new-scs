@@ -10,7 +10,7 @@
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-slate-50 font-sans text-slate-800 pb-24">
+<body class="bg-slate-100 font-sans text-slate-800 lg:pb-10 pb-24">
     
     <div id="loadingScreen" class="fixed inset-0 bg-slate-900 z-[100] flex flex-col items-center justify-center text-white transition-opacity duration-500">
         <span class="text-5xl animate-bounce mb-4">🚀</span>
@@ -24,26 +24,50 @@
         <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest border border-slate-200 px-2 py-1 rounded">Exclusive Pitch</span>
     </nav>
 
-    <div class="max-w-md mx-auto bg-white min-h-screen shadow-2xl relative overflow-hidden" id="mainContent">
+    <!-- MAIN WRAPPER: SPLIT VIEW DI DESKTOP, STACK DI MOBILE -->
+    <div class="max-w-6xl mx-auto lg:px-6 lg:py-8 flex flex-col lg:flex-row gap-8 lg:gap-12 items-start" id="mainContent">
         
-        <div class="w-full h-56 bg-slate-200 relative">
-            <img id="sponsorCover" src="" class="w-full h-full object-cover">
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
-            <!-- LOGO CORPORATE -->
-            <img id="corporateLogo" src="" class="absolute -bottom-8 right-6 w-24 h-24 object-contain bg-white rounded-2xl shadow-xl border-4 border-white p-2">
+        <!-- KIRI: KONTEN PROPOSAL -->
+        <div class="w-full lg:w-7/12 bg-white lg:rounded-[2.5rem] shadow-2xl overflow-hidden relative">
+            
+            <div class="w-full h-56 lg:h-72 bg-slate-200 relative">
+                <img id="sponsorCover" src="" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
+                <!-- LOGO CORPORATE -->
+                <img id="corporateLogo" src="" class="absolute -bottom-8 lg:-bottom-10 right-6 lg:right-10 w-24 h-24 lg:w-28 lg:h-28 object-contain bg-white rounded-2xl shadow-xl border-4 border-white p-2">
+            </div>
+
+            <div class="p-6 md:p-10 pt-12 lg:pt-16">
+                <p class="text-xs font-black text-red-500 tracking-widest uppercase mb-2">Private & Confidential</p>
+                <h1 class="text-3xl lg:text-4xl font-black text-slate-900 leading-tight mb-4">Halo <span id="cpName" class="text-blue-600">Bpk/Ibu</span> 👋</h1>
+                
+                <!-- COPYWRITING ORGANIK / DEFAULT -->
+                <p id="approachMessage" class="text-sm lg:text-base text-slate-600 font-medium leading-relaxed mb-8 whitespace-pre-wrap"></p>
+
+                <div class="bg-blue-50 border border-blue-100 rounded-2xl p-6 lg:p-8 mb-8 relative overflow-hidden">
+                    <span class="absolute top-0 right-0 text-6xl lg:text-8xl opacity-10 transform translate-x-4 -translate-y-4">🤝</span>
+                    <h3 class="font-black text-blue-900 mb-3 text-lg relative z-10">Benefit Partnership 🌟</h3>
+                    <p id="sponsorSyarat" class="text-sm text-blue-800 leading-relaxed whitespace-pre-wrap font-medium relative z-10"></p>
+                </div>
+                
+                <!-- TOMBOL WA KHUSUS TAMPIL DI DESKTOP -->
+                <div class="hidden lg:block mt-8">
+                    <button class="btnWaAction bg-emerald-500 hover:bg-emerald-600 text-white font-black py-4 px-8 rounded-full shadow-[0_10px_30px_rgba(16,185,129,0.5)] transition-transform hover:-translate-y-1 flex items-center gap-3 w-full justify-center text-sm lg:text-base">
+                        <span class="text-xl">💬</span> Diskusikan Peluang Ini
+                    </button>
+                </div>
+                
+                <div class="text-center pt-8 border-t border-slate-100 hidden lg:block">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Sistem Powered by F1 Swimming</p>
+                </div>
+            </div>
         </div>
 
-        <div class="p-6 pt-12">
-            <p class="text-xs font-black text-red-500 tracking-widest uppercase mb-2">Private & Confidential</p>
-            <h1 class="text-3xl font-black text-slate-900 leading-tight mb-2">Halo <span id="cpName" class="text-blue-600">Bpk/Ibu</span> 👋</h1>
-            
-            <!-- COPYWRITING ORGANIK / DEFAULT -->
-            <p id="approachMessage" class="text-sm text-slate-500 font-medium leading-relaxed mb-8 whitespace-pre-wrap"></p>
-
-            <!-- SIMULASI LIVE RESULT DI HP MEREKA -->
-            <div class="bg-slate-900 rounded-[2.5rem] p-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.3)] relative border-[6px] border-slate-800 ring-1 ring-slate-200 mb-10 mx-auto w-full max-w-[320px]">
+        <!-- KANAN: SIMULASI HP MOCKUP (STICKY) -->
+        <div class="w-full lg:w-5/12 flex justify-center lg:sticky lg:top-24 pb-8 lg:pb-0">
+            <div class="w-[320px] h-[650px] bg-slate-900 rounded-[2.5rem] p-3 shadow-2xl relative border-4 border-slate-800 ring-4 ring-slate-200">
                 <div class="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-6 bg-slate-900 rounded-b-2xl z-20"></div>
-                <div class="w-full h-[450px] bg-slate-50 rounded-[1.8rem] overflow-y-auto hide-scrollbar relative">
+                <div class="w-full h-full bg-slate-50 rounded-[1.8rem] overflow-y-auto hide-scrollbar relative">
                     <div class="bg-red-600 text-white p-3 pt-8 sticky top-0 z-10 shadow-md">
                         <h3 class="font-black text-xs text-center tracking-widest uppercase">🔴 Live Result SCS</h3>
                         <p class="text-[8px] text-center text-red-200 mt-0.5">Simulasi Penempatan Iklan Real-time</p>
@@ -51,20 +75,17 @@
                     <div class="p-2.5 pb-8" id="simulationContainer"></div>
                 </div>
             </div>
-
-            <div class="bg-blue-50 border border-blue-100 rounded-2xl p-6 mb-8 relative overflow-hidden">
-                <span class="absolute top-0 right-0 text-6xl opacity-10">🤝</span>
-                <h3 class="font-black text-blue-900 mb-3 relative z-10">Benefit Partnership 🌟</h3>
-                <p id="sponsorSyarat" class="text-xs text-blue-800 leading-relaxed whitespace-pre-wrap font-medium relative z-10"></p>
-            </div>
-            <div class="text-center pb-6">
-                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Sistem Powered by F1 Swimming</p>
-            </div>
         </div>
+
+    </div>
+    
+    <div class="text-center pb-6 lg:hidden">
+        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Sistem Powered by F1 Swimming</p>
     </div>
 
-    <div class="fixed bottom-6 left-0 w-full z-50 px-4 flex justify-center">
-        <button id="btnWA" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black py-4 px-8 rounded-full shadow-[0_10px_30px_rgba(16,185,129,0.5)] transition-transform hover:-translate-y-1 flex items-center gap-3 w-full max-w-md justify-center text-sm">
+    <!-- FLOATING CTA DI BAWAH (HANYA MOBILE) -->
+    <div class="fixed bottom-6 left-0 w-full z-50 px-4 flex justify-center lg:hidden">
+        <button class="btnWaAction bg-emerald-500 hover:bg-emerald-600 text-white font-black py-4 px-8 rounded-full shadow-[0_10px_30px_rgba(16,185,129,0.5)] transition-transform hover:-translate-y-1 flex items-center gap-3 w-full max-w-md justify-center text-sm">
             <span class="text-xl">💬</span> Diskusikan Peluang Ini
         </button>
     </div>

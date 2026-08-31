@@ -2,6 +2,7 @@ import { supabaseClient } from './supabase.js';
 
 let allSponsors = [];
 let selectedBrands = []; 
+let historyData = []; // Buat nyimpan full data histori
 
 document.addEventListener('DOMContentLoaded', async () => {
     
@@ -12,7 +13,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // Elemen DOM
     const targetRadios = document.getElementsByName('targetType');
     const lblCompanyName = document.getElementById('lblCompanyName');
     const boxBrandSimulasi = document.getElementById('boxBrandSimulasi');
@@ -31,7 +31,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const statusMsg = document.getElementById('statusMsg');
     const actionButtons = document.getElementById('actionButtons');
 
-    // LOGIKA TOGGLE TARGET (BRAND VS KLUB)
     targetRadios.forEach(radio => {
         radio.addEventListener('change', (e) => {
             if (e.target.value === 'club') {
@@ -47,7 +46,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     try {
-        // Load Data Master Sponsor
         const { data: sponsors } = await supabaseClient
             .from('master_sponsors')
             .select('*')
@@ -59,27 +57,50 @@ document.addEventListener('DOMContentLoaded', async () => {
             selectSponsor.innerHTML += `<option value="${sp.id}">${sp.sponsor_name} (${sp.kategori})</option>`;
         });
 
-        // Load History Company buat Dropdown Terpisah (Bukan Datalist lagi)
-        const { data: pitches } = await supabaseClient.from('sponsor_pitches').select('company_name');
+        // LOAD HISTORY FULL DATA (Biar bisa narik PIC, WA, Email)
+        const { data: pitches } = await supabaseClient
+            .from('sponsor_pitches')
+            .select('*')
+            .order('created_at', { ascending: false });
+
         if (pitches) {
-            const uniqueCompanies = [...new Set(pitches.map(p => p.company_name).filter(Boolean))];
-            uniqueCompanies.forEach(company => {
-                selectHistoryCompany.innerHTML += `<option value="${company}">${company}</option>`;
+            historyData = pitches;
+            const uniqueCompanies = [];
+            pitches.forEach(p => {
+                if (p.company_name && !uniqueCompanies.includes(p.company_name)) {
+                    uniqueCompanies.push(p.company_name);
+                    // Kita simpan ID-nya sebagai value biar gampang dicari
+                    selectHistoryCompany.innerHTML += `<option value="${p.id}">${p.company_name}</option>`;
+                }
             });
         }
     } catch (err) {
         console.error(err);
     }
 
-    // Jika dropdown histori dipilih, pindahkan ke input text
+    // AUTO-FILL SEMUA FORM SAAT HISTORI DIPILIH
     selectHistoryCompany.addEventListener('change', (e) => {
-        if (e.target.value) {
-            inputCompanyName.value = e.target.value;
+        const pitchId = e.target.value;
+        if (!pitchId) return;
+        
+        const selected = historyData.find(p => String(p.id) === String(pitchId));
+        if (selected) {
+            inputCompanyName.value = selected.company_name || '';
+            document.getElementById('inputCPName').value = selected.cp_name || '';
+            document.getElementById('inputCPWa').value = selected.cp_wa || '';
+            document.getElementById('inputCPEmail').value = selected.cp_email || '';
+            inputMessage.value = selected.approach_message || '';
+            
+            // Auto switch radio target
+            if (selected.target_type) {
+                document.querySelector(`input[name="targetType"][value="${selected.target_type}"]`).checked = true;
+                document.querySelector(`input[name="targetType"][value="${selected.target_type}"]`).dispatchEvent(new Event('change'));
+            }
+            
             generateSlug();
         }
     });
 
-    // GENERATE COPYWRITING (ASSISTED OUTREACH)
     btnAutoCopywrite.addEventListener('click', () => {
         const type = document.querySelector('input[name="targetType"]:checked').value;
         const pic = document.getElementById('inputCPName').value || 'Bpk/Ibu';
@@ -121,7 +142,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             inputSlug.value = company.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
         }
     }
-
     inputCompanyName.addEventListener('input', generateSlug);
 
     btnAddBrand.addEventListener('click', () => {
@@ -141,8 +161,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const type = document.querySelector('input[name="targetType"]:checked').value;
         const companyName = inputCompanyName.value.trim();
         if (!companyName) return alert("Nama Perusahaan / Klub wajib diisi!");
-        
-        // Cek brand hanya jika targetnya sponsor
         if (type === 'brand' && selectedBrands.length === 0) return alert("Tambahkan minimal 1 brand!");
         
         const cpName = document.getElementById('inputCPName').value.trim();
@@ -163,7 +181,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const fileExt = logoFile.name.split('.').pop();
                 const fileName = `corp_${Date.now()}.${fileExt}`;
                 const filePath = `corporate_logos/${fileName}`;
-
                 await supabaseClient.storage.from('sponsor-ads').upload(filePath, logoFile);
                 const { data: publicUrlData } = supabaseClient.storage.from('sponsor-ads').getPublicUrl(filePath);
                 uploadedLogoUrl = publicUrlData.publicUrl;
@@ -171,39 +188,33 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const brandIds = type === 'brand' ? selectedBrands.map(b => b.id) : [];
             
-            const { error: insertErr } = await supabaseClient
-                .from('sponsor_pitches')
-                .insert([{
-                    target_type: type, // Menyimpan tipe pitching
-                    company_name: companyName,
-                    brand_ids: brandIds,
-                    cp_name: cpName,
-                    cp_wa: cpWa,
-                    cp_email: cpEmail,
-                    pitch_slug: slug,
-                    corporate_logo: uploadedLogoUrl,
-                    approach_message: appMessage,
-                    created_by: session.user.id
-                }]);
+            const { error: insertErr } = await supabaseClient.from('sponsor_pitches').insert([{
+                target_type: type,
+                company_name: companyName,
+                brand_ids: brandIds,
+                cp_name: cpName,
+                cp_wa: cpWa,
+                cp_email: cpEmail,
+                pitch_slug: slug,
+                corporate_logo: uploadedLogoUrl,
+                approach_message: appMessage,
+                created_by: session.user.id
+            }]);
 
             if (insertErr) throw new Error(insertErr.code === '23505' ? "Slug URL sudah dipakai!" : insertErr.message);
 
-            // TAMPILKAN STATUS & TOMBOL OUTREACH
             statusMsg.innerHTML = `<div class="bg-green-100 border border-green-300 text-green-800 p-3 rounded-lg text-sm text-center">✅ <strong>Link & Draf Berhasil Disimpan!</strong></div>`;
             statusMsg.classList.remove('hidden');
             actionButtons.classList.remove('hidden');
 
-            // FUNGSI TOMBOL AKSI OUTREACH
             document.getElementById('btnCopyTeks').onclick = () => {
                 navigator.clipboard.writeText(appMessage);
                 alert("Teks berhasil disalin ke clipboard!");
             };
-            
             document.getElementById('btnKirimWa').onclick = () => {
                 if (!cpWa) return alert("Nomor WA belum diisi!");
                 window.open(`https://wa.me/${cpWa.replace(/^0/, '62')}?text=${encodeURIComponent(appMessage)}`, '_blank');
             };
-
             document.getElementById('btnKirimEmail').onclick = () => {
                 if (!cpEmail) return alert("Email belum diisi!");
                 window.open(`mailto:${cpEmail}?subject=Peluang Kolaborasi Digital & F1 Swimming&body=${encodeURIComponent(appMessage)}`, '_blank');
@@ -219,7 +230,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 });
 
-// SIMULASI HP
 function renderSimulation(brandsArray) {
     const container = document.getElementById('simulationContainer');
     if (!container) return; 
@@ -228,10 +238,8 @@ function renderSimulation(brandsArray) {
     const companyName = document.getElementById('inputCompanyName').value || 'Nama Klub/EO';
 
     if (type === 'club') {
-        // UI KHUSUS KLUB (Tanpa Iklan Brand)
         let html = '';
         const dummyEvents = ["Gaya Bebas 50m Putra", "Gaya Dada 50m Putri", "Gaya Punggung 100m Putra"];
-        
         for (let i = 0; i < 3; i++) {
             html += `
             <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 mb-3 opacity-80">
@@ -248,35 +256,39 @@ function renderSimulation(brandsArray) {
         return;
     }
 
-    // UI BRAND (Sama Seperti Sebelumnya)
+    // UI BRAND - 10 EVENT UNTUK 10 BRAND
     let html = '';
-    const dummyEvents = ["Gaya Bebas 50m Putra", "Gaya Dada 50m Putri", "Gaya Punggung 100m Putra"];
+    const dummyEvents = [
+        "Gaya Bebas 50m Putra", "Gaya Dada 50m Putri", "Gaya Punggung 100m Putra", 
+        "Estafet 4x50m Bebas", "Gaya Kupu 50m Putra", "Gaya Bebas 100m Putri", 
+        "Gaya Dada 100m Putra", "Gaya Punggung 50m Putri", "Gaya Kupu 100m Putri", "Estafet 4x100m Mix"
+    ];
 
     if (!brandsArray || brandsArray.length === 0) {
         container.innerHTML = `<div class="text-center text-slate-400 font-bold text-xs mt-10 italic border-2 border-dashed border-slate-300 rounded-xl p-6">Tambahkan brand untuk melihat simulasi iklan.</div>`;
         return;
     }
 
-    for (let i = 0; i < 3; i++) {
-        let sponsorHeader = '';
-        if (i === 0 || i === 2) {
-            let spIndex = (i === 0) ? 0 : (brandsArray.length > 1 ? 1 : 0);
-            let sponsor = brandsArray[spIndex];
-            sponsorHeader = `
-            <a href="#" class="flex items-center justify-between bg-amber-50 border-b border-amber-200 px-3 py-2 -mx-3 -mt-3 mb-2 rounded-t-xl">
-                <div class="flex items-center gap-1.5 flex-1 min-w-0 pr-2">
-                    <span class="text-[7px] font-black text-amber-600 uppercase tracking-widest shrink-0">Supported By:</span>
-                    <span class="text-[9px] font-bold text-slate-800 truncate">${sponsor.sponsor_name}</span>
-                </div>
-                <div class="bg-white p-1 rounded border border-slate-200 shadow-sm shrink-0" style="aspect-ratio: 16/9; width: 45px;">
-                    <img src="${sponsor.logo_url}" class="w-full h-full object-contain">
-                </div>
-            </a>`;
-        }
+    // Loop 10 Kali biar semua brand masuk
+    for (let i = 0; i < 10; i++) {
+        // Logika Rotasi Brand (Kalau brand cuma 2, dia muter A, B, A, B. Kalau 10, muncul semua)
+        let spIndex = i % brandsArray.length;
+        let sponsor = brandsArray[spIndex];
+        
+        let sponsorHeader = `
+        <a href="#" class="flex items-center justify-between bg-amber-50 border-b border-amber-200 px-3 py-2 -mx-3 -mt-3 mb-2 rounded-t-xl group">
+            <div class="flex items-center gap-1.5 flex-1 min-w-0 pr-2">
+                <span class="text-[7px] font-black text-amber-600 uppercase tracking-widest shrink-0">Supported By:</span>
+                <span class="text-[9px] font-bold text-slate-800 truncate">${sponsor.sponsor_name}</span>
+            </div>
+            <div class="bg-white p-1 rounded border border-slate-200 shadow-sm shrink-0" style="aspect-ratio: 16/9; width: 45px;">
+                <img src="${sponsor.logo_url}" class="w-full h-full object-contain">
+            </div>
+        </a>`;
 
         html += `
-        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 mb-3 overflow-hidden relative ${i === 0 || i === 2 ? 'border-amber-300 ring-1 ring-amber-100 transform hover:scale-[1.02]' : 'opacity-80'}">
-            <div class="absolute left-0 top-0 bottom-0 w-1 ${i === 0 || i === 2 ? 'bg-amber-400' : 'bg-slate-300'} z-10"></div>
+        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 mb-3 overflow-hidden relative border-amber-300 ring-1 ring-amber-100 transform hover:scale-[1.02] transition-transform">
+            <div class="absolute left-0 top-0 bottom-0 w-1 bg-amber-400 z-10"></div>
             ${sponsorHeader}
             <div class="pl-1 mb-2">
                 <h3 class="text-[10px] font-black text-slate-800 uppercase leading-tight">Event #${i+1}: ${dummyEvents[i]}</h3>
