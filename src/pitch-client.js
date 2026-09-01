@@ -36,17 +36,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         const logoEl = document.getElementById('corporateLogo');
         const cpEl = document.getElementById('cpName');
         const msgEl = document.getElementById('approachMessage');
+        const coverEl = document.getElementById('sponsorCover');
         const syaratEl = document.getElementById('sponsorSyarat');
 
         if (cpEl) cpEl.innerText = pitchData.cp_name;
         
         if (pitchData.target_type === 'club') {
             
+            if (coverEl) coverEl.src = 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?q=80&w=1000&auto=format&fit=crop';
             if (logoEl) logoEl.src = pitchData.corporate_logo || 'https://ui-avatars.com/api/?name=EO&background=fff&color=000';
             if (syaratEl) syaratEl.innerText = "Sistem Live Result Cepat\nDatabase F1 ID Terpusat\nBebas Manipulasi Umur\nPendapatan Ekstra dari Ads";
             
             if (msgEl) {
-                msgEl.innerHTML = `Berikut adalah simulasi bagaimana sistem Live Result Digital (SCS) mendigitalisasi event dari <strong class="text-slate-800">${pitchData.company_name}</strong> untuk tampil lebih profesional di mata ribuan peserta.`;
+                msgEl.innerHTML = pitchData.approach_message || `Berikut adalah simulasi bagaimana sistem Live Result Digital (SCS) mendigitalisasi event dari <strong class="text-slate-800">${pitchData.company_name}</strong> untuk tampil lebih profesional di mata ribuan peserta.`;
             }
 
             renderSimulationClub(pitchData.company_name);
@@ -64,17 +66,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const primaryBrand = allBrandsData[0];
 
+            if (coverEl) coverEl.src = primaryBrand.cover_url || 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?q=80&w=1000&auto=format&fit=crop';
             if (logoEl) logoEl.src = pitchData.corporate_logo || primaryBrand.logo_url || 'https://ui-avatars.com/api/?name=Brand&background=fff&color=000';
             if (syaratEl) syaratEl.innerText = primaryBrand.syarat || "Custom partnership agreement.";
             
-            // TEKS BAKU WEB SESUAI INSTRUKSI
+            // 🚀 REVISI COPYWRITING PITCHING BRAND
             if (msgEl) {
-                msgEl.innerHTML = `Berikut adalah simulasi bagaimana brand <strong class="text-slate-800">${pitchData.company_name}</strong> bisa ditampilkan di halaman Live-Result yang dilihat ratusan hingga ribuan pasang mata atlet, calon atlet, dan orang tua, bahkan yang tidak berkompetisi.<br><br>Silakan klik logo brand yang akan di-direct ke halaman yang sudah kami set default (dummy) atau bisa di-request secara eksklusif oleh bagian terkait (ads & copywriting agency).`;
+                msgEl.innerHTML = pitchData.approach_message || `Berikut adalah simulasi interaktif bagaimana produk dan kampanye visual dari <strong class="text-slate-800">${pitchData.company_name}</strong> diinjeksi langsung ke dalam urat nadi sistem Live-Result digital kami.<br><br>Halaman penyiaran skor ini di-refresh puluhan ribu kali secara real-time oleh atlet, pelatih, dan orang tua sepanjang kompetisi berjalan, memberikan paparan visual tingkat tinggi yang tidak bisa dihindari oleh audiens target Anda.<br><br><div class="bg-amber-50 border border-amber-300 rounded-xl p-3 text-amber-900 text-xs font-medium flex items-start gap-2 shadow-sm animate-pulse"> <span class="text-base leading-none">💡</span> <span class="leading-relaxed"><strong>Panduan Simulasi:</strong> Silakan scroll ke bawah dan <strong>klik pada logo brand Anda</strong> untuk mencoba langsung pengalihan konversi. Setelah itu, Anda dapat meninjau rincian biaya penayangan iklan pada halaman <strong>Sponsor Rate</strong> kami.</span> </div>`;
             }
 
             renderSimulationBrand(allBrandsData);
         }
 
+        // FUNGSI GLOBAL UNTUK TOMBOL WA (Mencakup tombol baru di dalam layar HP)
         const btnWaElements = document.querySelectorAll('.btnWaAction');
         if (btnWaElements.length > 0) {
             const waText = `Halo tim F1 Swimming, saya ${pitchData.cp_name} dari ${pitchData.company_name}. Saya sudah melihat penawarannya dan tertarik berdiskusi.`;
@@ -171,7 +175,6 @@ function renderSimulationBrand(brandsArray) {
                     <div class="w-10 shrink-0 text-right pr-1"><span class="font-mono text-[8px] font-black text-slate-400">NT</span></div>
                 </div>
             </div>
-            
         </div>`;
     }
     container.innerHTML = html;
