@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ==========================================
-    // 1. LOGIKA REGISTRASI SPONSOR
+    // 1. LOGIKA REGISTRASI SPONSOR (Tujuan: Tabel Profiles)
     // ==========================================
     const regForm = document.getElementById('sponsorRegisterForm');
     const btnRegister = document.getElementById('btnRegister');
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const corpName = document.getElementById('corpName').value.trim();
         const email = document.getElementById('email').value.trim();
-        const username = document.getElementById('username').value.trim(); // Sudah di-filter tanpa spasi via HTML
+        const username = document.getElementById('username').value.trim(); 
         const password = document.getElementById('password').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
 
@@ -54,34 +54,37 @@ document.addEventListener('DOMContentLoaded', () => {
         btnRegister.classList.add('opacity-50', 'cursor-not-allowed');
 
         try {
-            // A. Cek ketersediaan Username dulu
-            const { data: existingUser } = await supabaseClient.from('master_sponsors').select('id').eq('username', username).single();
+            // A. Cek ketersediaan Username di tabel profiles
+            const { data: existingUser } = await supabaseClient
+                .from('profiles')
+                .select('id')
+                .eq('username', username)
+                .single();
+                
             if (existingUser) throw new Error("Username sudah digunakan. Silakan pilih username lain.");
 
             // B. Daftar ke Supabase Auth
             const { data: authData, error: authErr } = await supabaseClient.auth.signUp({
                 email: email,
                 password: password,
-                options: { data: { role: 'sponsor', company_name: corpName } }
+                options: { data: { role: 'sponsor' } }
             });
 
             if (authErr) throw authErr;
 
-            // C. Suntik Data ke Tabel master_sponsors dengan GRATIS 1 TOKEN
+            // C. Suntik Data ke Tabel profiles (berdiam di profil dulu)
+            // Relasi master_sponsors akan di-generate nanti di dalam dashboard sponsor
             if (authData.user) {
-                const { error: dbErr } = await supabaseClient.from('master_sponsors').insert([
+                const { error: profileErr } = await supabaseClient.from('profiles').upsert([
                     {
-                        auth_uid: authData.user.id, 
-                        sponsor_name: corpName,
-                        username: username,
-                        email: email, // Disimpan untuk referensi login nanti
-                        sponsor_type: 'placement',
-                        tokens: 1, // 🎁 FREE TOKEN
-                        logo_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(corpName)}&background=0f172a&color=3b82f6`
+                        id: authData.user.id,
+                        email: email,
+                        club_name: corpName, // Menyimpan nama korporasi/usaha
+                        username: username
                     }
                 ]);
 
-                if (dbErr) throw dbErr;
+                if (profileErr) throw profileErr;
             }
 
             btnRegister.innerHTML = "✅ Berhasil! Mengalihkan ke Dashboard...";
@@ -98,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ==========================================
-    // 2. LOGIKA LOGIN SPONSOR (Bisa Email / Username)
+    // 2. LOGIKA LOGIN SPONSOR (Bisa Email / Username via Tabel Profiles)
     // ==========================================
     const loginForm = document.getElementById('sponsorLoginForm');
     const btnLogin = document.getElementById('btnLogin');
@@ -122,16 +125,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Jika tidak ada '@', berarti user mencoba login pakai Username
             if (!identifier.includes('@')) {
-                const { data: sponsorData, error: findErr } = await supabaseClient
-                    .from('master_sponsors')
+                const { data: profileData, error: findErr } = await supabaseClient
+                    .from('profiles')
                     .select('email')
                     .eq('username', identifier)
                     .single();
 
-                if (findErr || !sponsorData || !sponsorData.email) {
+                if (findErr || !profileData || !profileData.email) {
                     throw new Error("Username tidak ditemukan di sistem kami.");
                 }
-                targetEmail = sponsorData.email; // Timpa identifier dengan email aslinya
+                targetEmail = profileData.email; // Timpa identifier dengan email dari profiles
             }
 
             // Eksekusi Login Supabase menggunakan Email
