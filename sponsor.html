@@ -3,73 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sponsorship Portal | F1 Swimming</title>
+    <title>Sponsorship Portal | F1 Swimming Ad-Tech</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
 </head>
-<body class="bg-slate-900 font-sans text-slate-200 h-screen overflow-hidden flex flex-col">
+<body class="bg-slate-900 font-sans text-slate-200 min-h-screen flex flex-col">
 
-    <nav class="bg-black shadow-lg px-6 py-4 flex justify-between items-center border-b border-slate-800 shrink-0">
-        <div class="flex items-center gap-3">
-            <span class="text-lg font-black text-white uppercase tracking-widest">Brand<span class="text-blue-500">Portal</span></span>
+    <!-- TOP NAV RESPOSIVE -->
+    <nav class="bg-black shadow-lg p-3 md:px-6 md:py-4 flex justify-between items-center border-b border-slate-800 sticky top-0 z-40">
+        
+        <!-- Kiri: Logo & Title -->
+        <div class="flex items-center gap-2 md:gap-3">
+            <span class="text-lg md:text-xl font-black text-white uppercase tracking-widest">Brand<span class="text-blue-500">Portal</span></span>
         </div>
-        <div class="flex items-center gap-4">
+        
+        <!-- Kanan: Desktop Info & Avatar -->
+        <div class="hidden md:flex items-center gap-4">
             <div class="text-right">
                 <p id="brandNameUI" class="text-sm font-bold text-white">Memuat...</p>
                 <p id="brandCategoryUI" class="text-[10px] text-amber-500 uppercase tracking-widest font-black">Memuat...</p>
             </div>
             <div class="w-10 h-10 bg-white rounded-lg p-1 border border-slate-700 flex items-center justify-center overflow-hidden">
-                <img id="brandLogoUI" src="" class="w-full h-full object-contain">
+                <img id="brandLogoUI" src="/images/logo.png" class="w-full h-full object-contain">
             </div>
+            <button id="logoutBtnDesk" class="text-xs text-red-400 hover:text-red-300 font-bold ml-2">Log Out</button>
+        </div>
+
+        <!-- Kanan: Mobile Burger -->
+        <div class="md:hidden flex items-center">
+            <button id="mobileMenuToggle" class="text-slate-300 hover:text-white p-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
         </div>
     </nav>
 
-    <div class="flex-1 flex overflow-hidden">
-        <!-- Sidebar Stat -->
-        <div class="w-72 bg-slate-800/50 border-r border-slate-800 p-6 flex flex-col shrink-0">
-            <div class="bg-blue-900/20 border border-blue-500/30 rounded-2xl p-5 mb-6 text-center">
-                <p class="text-xs font-black text-blue-400 uppercase tracking-widest mb-1">Sisa Token Event</p>
-                <div class="text-5xl font-black text-white" id="tokenCountUI">-</div>
-                <p class="text-[10px] text-slate-400 mt-2">1 Token = 1 Injeksi Event</p>
+    <!-- MOBILE MENU OVERLAY -->
+    <div id="mobileMenuOverlay" class="fixed inset-0 bg-black/80 z-[50] hidden backdrop-blur-sm transition-opacity"></div>
+    <div id="mobileMenuPanel" class="fixed top-0 right-0 h-full w-64 bg-slate-800 z-[60] transform translate-x-full transition-transform duration-300 shadow-2xl flex flex-col border-l border-slate-700">
+        <div class="p-5 border-b border-slate-700 bg-slate-900 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-white rounded p-0.5"><img id="mobileLogoUI" src="/images/logo.png" class="w-full h-full object-contain"></div>
+                <div>
+                    <p class="text-xs font-black text-white uppercase tracking-widest truncate max-w-[100px]" id="mobileBrandNameUI">Brand</p>
+                    <p id="mobileBrandCategoryUI" class="text-[9px] text-amber-500 font-bold uppercase">Kategori</p>
+                </div>
+            </div>
+            <button id="closeMobileMenu" class="text-slate-400 hover:text-red-500 text-2xl font-bold">&times;</button>
+        </div>
+        <div class="flex flex-col flex-grow p-4 space-y-2">
+            <button id="btnTopupMobile" class="w-full text-left p-4 rounded-xl text-sm text-white bg-blue-600 hover:bg-blue-500 font-bold shadow-md flex items-center gap-3"><span>💎</span> Beli Token</button>
+        </div>
+        <div class="p-4 border-t border-slate-700">
+            <button id="logoutBtnMob" class="w-full text-center p-3 rounded-xl text-sm text-red-400 bg-red-900/30 font-bold border border-red-500/30">Keluar</button>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="flex-1 flex flex-col lg:flex-row overflow-hidden max-w-7xl mx-auto w-full">
+        
+        <!-- SIDEBAR (Kiri Desktop / Atas Mobile) -->
+        <div class="w-full lg:w-72 bg-slate-800/30 lg:border-r border-b lg:border-b-0 border-slate-800 p-4 lg:p-6 flex flex-col shrink-0 overflow-y-auto hide-scrollbar">
+            
+            <div class="bg-gradient-to-br from-blue-900/40 to-slate-900 border border-blue-500/30 rounded-2xl p-6 mb-6 text-center shadow-lg relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
+                <p class="text-xs font-black text-blue-400 uppercase tracking-widest mb-1">Sisa Token Injeksi</p>
+                <div class="text-6xl font-black text-white drop-shadow-md my-2" id="tokenCountUI">-</div>
+                <p class="text-[10px] text-slate-400">1 Token = 1 Event Live Result</p>
+                
+                <button id="btnTopupDesk" class="w-full mt-4 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2.5 rounded-lg transition-colors">Beli Tambahan Token</button>
             </div>
 
-            <div class="mb-4">
+            <div class="mb-4 bg-slate-800/50 p-4 rounded-2xl border border-slate-700">
                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Redirect URL Default</label>
-                <input type="url" id="defaultUrlInput" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-white outline-none focus:border-blue-500" placeholder="https://link-to-promo.com">
-                <button id="btnSaveUrl" class="mt-2 w-full bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-bold py-2 rounded transition-colors">Simpan Default URL</button>
+                <input type="url" id="defaultUrlInput" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-xs text-white outline-none focus:border-blue-500 font-mono" placeholder="https://link-promo.com">
+                <button id="btnSaveUrl" class="mt-3 w-full bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-bold py-2.5 rounded transition-colors uppercase tracking-wider">Simpan Perubahan</button>
+                <div id="urlStatusMsg" class="hidden text-[10px] font-bold text-center mt-2 text-emerald-400"></div>
             </div>
         </div>
 
-        <!-- Main Workspace -->
-        <div class="flex-1 p-8 overflow-y-auto">
-            <div class="mb-8">
-                <h2 class="text-2xl font-black text-white mb-2">Event Tersedia</h2>
-                <p class="text-sm text-slate-400">Pilih event untuk disuntikkan logo brand Anda. Event yang sudah live tidak memotong token jika di-klik ulang.</p>
+        <!-- WORKSPACE / EVENT LIST -->
+        <div class="flex-1 p-4 lg:p-8 overflow-y-auto">
+            <div class="mb-6 lg:mb-8">
+                <h2 class="text-2xl font-black text-white mb-2 flex items-center gap-2"><span>🎯</span> Target Event Tersedia</h2>
+                <p class="text-sm text-slate-400">Suntikkan brand Anda ke event yang sedang atau akan berjalan.</p>
             </div>
 
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-4" id="eventGrid">
-                <!-- Injeksi JS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="eventGrid">
+                <div class="col-span-full p-8 text-center text-slate-500">
+                    <span class="animate-spin inline-block text-2xl mb-2">↻</span><br>Memuat data event...
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal Suntik -->
-    <div id="injectModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center">
+
+    <!-- ==============================================================
+         AREA MODAL
+         ============================================================== -->
+
+    <!-- MODAL ONBOARDING SPONSOR (PAKSA ISI JIKA KOSONG) -->
+    <div id="modalOnboarding" class="fixed inset-0 bg-slate-900/95 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="bg-slate-800 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-slate-700">
+            <div class="p-6 border-b border-slate-700 bg-slate-900 text-center shrink-0">
+                <span class="text-4xl block mb-2">🎉</span>
+                <h3 class="font-extrabold text-white text-xl">Lengkapi Profil Brand!</h3>
+                <p class="text-xs text-blue-400 mt-2">Dapatkan <strong class="text-white">Gratis 1 Token</strong> setelah melengkapi data ini.</p>
+            </div>
+            
+            <div class="p-6 space-y-4 overflow-y-auto hide-scrollbar flex-1">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Nama Brand / Usaha <span class="text-red-500">*</span></label>
+                    <input type="text" id="onbBrandName" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: Speedo Indonesia">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Kategori Industri <span class="text-red-500">*</span></label>
+                    <select id="onbCategory" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none appearance-none">
+                        <option value="">-- Pilih Kategori Brand --</option>
+                        <option value="apparel">Sport Apparel / Pakaian</option>
+                        <option value="fnb">Food & Beverage (Makanan/Minuman)</option>
+                        <option value="skincare">Beauty & Skincare</option>
+                        <option value="education">Pendidikan / Edutech</option>
+                        <option value="other">Lainnya</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">No WhatsApp PIC <span class="text-red-500">*</span></label>
+                    <input type="tel" id="onbWa" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: 081234567890">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Default Link Tujuan (URL) <span class="text-red-500">*</span></label>
+                    <input type="url" id="onbUrl" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-mono" placeholder="https://...">
+                </div>
+                
+                <div id="onboardMsg" class="hidden text-xs font-bold text-center rounded-lg p-3"></div>
+            </div>
+            
+            <div class="p-6 bg-slate-900 border-t border-slate-700 shrink-0">
+                <button id="btnSaveOnboarding" class="w-full bg-blue-600 text-white font-black py-3.5 rounded-xl hover:bg-blue-500 transition shadow-[0_0_15px_rgba(37,99,235,0.4)]">Mulai Eksplorasi 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SUNTIK EVENT -->
+    <div id="injectModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] hidden flex items-center justify-center p-4">
         <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl relative">
             <h3 class="text-xl font-black text-white mb-2" id="modalEventName">Nama Event</h3>
-            <p class="text-sm text-slate-400 mb-6">Anda akan menggunakan <strong class="text-blue-400">1 Token</strong> untuk menginjeksi logo brand Anda ke ekosistem Live Result event ini.</p>
+            <p class="text-sm text-slate-400 mb-6">Anda akan menggunakan <strong class="text-blue-400">1 Token</strong> untuk menginjeksi logo brand Anda ke seluruh ekosistem Live Result event ini.</p>
             
             <div class="mb-6">
-                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">URL Redirect (Khusus Event Ini)</label>
-                <input type="url" id="modalUrlInput" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-white outline-none focus:border-blue-500">
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">URL Redirect (Bisa disesuaikan)</label>
+                <input type="url" id="modalUrlInput" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-sm text-white outline-none focus:border-blue-500 font-mono">
             </div>
 
+            <div id="injectStatusMsg" class="hidden text-xs font-bold text-center rounded-lg p-3 mb-4"></div>
+
             <div class="flex gap-3">
-                <button onclick="closeModal()" class="flex-1 py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold transition-colors">Batal</button>
-                <button id="btnConfirmInject" class="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black transition-colors shadow-lg">Suntikkan Sekarang 🚀</button>
+                <button onclick="closeModalInject()" class="flex-1 py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold transition-colors">Batal</button>
+                <button id="btnConfirmInject" class="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black transition-colors shadow-[0_0_15px_rgba(37,99,235,0.4)]">Suntik Sekarang 🚀</button>
             </div>
         </div>
     </div>
 
-    <script src="sponsor.js"></script>
+    <script type="module" src="/src/sponsor.js"></script>
 </body>
 </html>
