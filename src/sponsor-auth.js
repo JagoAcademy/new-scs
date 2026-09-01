@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btnRegister = document.getElementById('btnRegister');
 
     // ==========================================
-    // FUNGSI PENERJEMAH ERROR SUPABASE[span_1](start_span)[span_1](end_span)
+    // FUNGSI PENERJEMAH ERROR SUPABASE
     // ==========================================
     function translateAuthError(err) {
         console.error("🔴 RAW ERROR DARI SUPABASE:", err); 
@@ -67,12 +67,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ==========================================
     // LOGIKA LOGIN EMAIL
     // ==========================================
-    formLogin.addEventListener('submit', async () => {
+    formLogin.addEventListener('submit', async (e) => {
+        e.preventDefault(); // 🔥 Mencegah halaman reload
+
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
         const errorMsg = document.getElementById('loginErrorMsg');
 
-        btnLogin.innerHTML = `<span class="animate-spin text-xl">↻</span> Memproses...`;
+        btnLogin.innerHTML = `<span class="animate-spin inline-block text-xl">↻</span> Memproses...`;
         btnLogin.disabled = true;
         errorMsg.classList.add('hidden');
 
@@ -84,6 +86,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (error) throw error;
             
+            // Redirect langsung ke dashboard sponsor setelah berhasil login
             window.location.replace('/sponsor.html');
 
         } catch (err) {
@@ -98,7 +101,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ==========================================
     // LOGIKA REGISTER EMAIL
     // ==========================================
-    formRegister.addEventListener('submit', async () => {
+    formRegister.addEventListener('submit', async (e) => {
+        e.preventDefault(); // 🔥 Mencegah halaman reload
+
         const email = document.getElementById('regEmail').value;
         const password = document.getElementById('regPassword').value;
         const confirmPassword = document.getElementById('regConfirmPassword').value; 
@@ -111,17 +116,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        btnRegister.innerHTML = `<span class="animate-spin text-xl">↻</span> Memproses...`;
+        btnRegister.innerHTML = `<span class="animate-spin inline-block text-xl">↻</span> Memproses...`;
         btnRegister.disabled = true;
         alertMsg.classList.add('hidden');
 
         try {
-            // Murni daftar Auth, tanpa insert SQL sama sekali[span_2](start_span)[span_2](end_span)
+            // Murni Auth signup
             const { data, error } = await supabaseClient.auth.signUp({
                 email: email,
                 password: password,
                 options: {
-                    data: { role: 'sponsor' } // Metadata flag
+                    data: { role: 'sponsor' } // Role tagging untuk referensi masa depan
                 }
             });
 
@@ -131,7 +136,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 throw new Error("Email ini sudah terdaftar. Silakan kembali ke menu Masuk.");
             }
 
-            // Pesan sukses persis dengan sistem utama[span_3](start_span)[span_3](end_span)
             alertMsg.innerHTML = "✅ <strong>Pendaftaran Berhasil!</strong><br>Jika diperlukan, silakan periksa <strong>Kotak Masuk / Spam</strong> email Anda. Atau Anda dapat langsung masuk.";
             alertMsg.className = "bg-emerald-900/30 text-emerald-400 text-xs font-bold p-3 rounded-lg border border-emerald-500/50 text-center leading-relaxed block";
             
@@ -139,7 +143,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('regPassword').value = '';
             document.getElementById('regConfirmPassword').value = '';
 
-            // Otomatis arahkan ke login setelah 2 detik agar flow-nya mulus
+            // Pindah ke tampilan login setelah sukses
             setTimeout(() => {
                 document.getElementById('btnSwitchToLogin').click();
             }, 2500);
@@ -194,7 +198,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             alertMsg.classList.add('hidden');
 
             try {
-                // Diarahkan ke dashboard sponsor setelah reset password[span_4](start_span)[span_4](end_span)
+                // Diarahkan ke dashboard sponsor setelah klik email reset password
                 const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email, {
                     redirectTo: window.location.origin + '/sponsor.html', 
                 });
