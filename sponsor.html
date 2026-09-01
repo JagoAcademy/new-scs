@@ -100,7 +100,8 @@
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </div>
-                        <input type="text" id="searchEvent" autocomplete="off" role="presentation" spellcheck="false" class="bg-slate-900 border border-slate-600 text-white text-xs font-bold rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full pl-9 p-3 outline-none transition-colors" placeholder="Cari event...">
+                        <!-- TRIK ANTI AUTO-FILL CHROME: type="search" + readonly dihapus saat difokuskan -->
+                        <input type="search" id="searchEvent" name="q_event_search" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly');" class="bg-slate-900 border border-slate-600 text-white text-xs font-bold rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full pl-9 p-3 outline-none transition-colors" placeholder="Cari event...">
                     </div>
                     <select id="filterProvinsi" class="bg-slate-900 border border-slate-600 text-slate-300 text-xs font-bold rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3 outline-none w-full sm:w-40 cursor-pointer">
                         <option value="">Semua Provinsi</option>
@@ -141,6 +142,7 @@
             </div>
             
             <div class="p-6 overflow-y-auto hide-scrollbar flex-1">
+                <!-- TAB PROFIL KORPORASI -->
                 <div id="formProfilSponsor" class="space-y-4">
                     <div class="flex items-center gap-4 bg-slate-900 p-4 rounded-xl border border-slate-700">
                         <img src="/images/logo.png" id="editLogoPreview" class="w-14 h-14 rounded-full border-2 border-slate-600 object-cover bg-white">
@@ -165,6 +167,7 @@
                     <div id="statusProfilMsg" class="hidden text-sm font-bold text-center rounded-lg p-3"></div>
                 </div>
                 
+                <!-- TAB KEAMANAN AKUN -->
                 <div id="formAkunSponsor" class="space-y-4 hidden">
                     <div class="p-3 bg-amber-900/30 border border-amber-500/30 rounded-xl text-amber-400 text-xs leading-relaxed mb-2">
                         <strong>Perhatian:</strong> Jika Anda mengubah Email, sistem akan mengirimkan link verifikasi ke email baru Anda.
@@ -185,7 +188,7 @@
         </div>
     </div>
 
-    <!-- MODAL TAMBAH / EDIT BRAND KOMPREHENSIF (SAMA PERSIS DENGAN PREVIEW ADMIN) -->
+    <!-- MODAL TAMBAH / EDIT BRAND KOMPREHENSIF -->
     <div id="modalAddBrand" class="fixed inset-0 bg-[#0b1120]/90 z-[90] hidden flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
         <div class="bg-[#1e293b] rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden my-auto border border-slate-700 mt-10 mb-10">
             <div class="p-5 border-b border-slate-700 bg-[#1e293b] flex justify-between items-center sticky top-0 z-10">
@@ -246,7 +249,7 @@
                                 <option value="KIDS">Anak-anak (Pemula / Kids)</option>
                                 <option value="ADULT">Dewasa (Open / Senior)</option>
                             </select>
-                            <p class="text-[8px] text-slate-500 mt-1">*(KIDS akan otomatis tayang jika nama KU mengandung "Pemula". ADULT jika "Open")</p>
+                            <p class="text-[8px] text-slate-500 mt-1">*(KIDS akan otomatis tayang jika nama KU mengandung "Pemula" atau "Tahun". ADULT jika "Open")</p>
                         </div>
                     </div>
                 </div>
@@ -272,7 +275,7 @@
             </div>
 
             <div class="p-5 bg-[#1e293b] border-t border-slate-700 flex justify-between gap-4 sticky bottom-0 z-10">
-                <button id="btnSaveBrand" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-6 py-3 rounded-xl font-black text-sm transition shadow-lg w-full">💾 SIMPAN SPONSOR</button>
+                <button id="btnSaveBrand" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 px-6 py-3 rounded-xl font-black text-sm transition shadow-lg">💾 SIMPAN SPONSOR</button>
             </div>
         </div>
     </div>
