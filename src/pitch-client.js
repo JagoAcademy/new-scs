@@ -48,13 +48,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (syaratEl) syaratEl.innerText = "Sistem Live Result Cepat\nDatabase F1 ID Terpusat\nBebas Manipulasi Umur\nPendapatan Ekstra dari Ads";
             
             if (msgEl) {
-                msgEl.innerHTML = pitchData.approach_message || `Berikut adalah simulasi bagaimana sistem Live Result Digital (SCS) mendigitalisasi event dari <strong class="text-slate-800">${pitchData.company_name}</strong> untuk tampil lebih profesional di mata ribuan peserta.`;
+                msgEl.innerHTML = `<p class="mb-4">Berikut adalah simulasi bagaimana sistem Live Result Digital (SCS) mendigitalisasi event dari <strong class="text-slate-800">${pitchData.company_name}</strong> untuk tampil lebih profesional di mata ribuan peserta.</p>`;
             }
 
             renderSimulationClub(pitchData.company_name);
 
         } else {
             
+            // =======================================================================
+            // BLOK BRAND: MENGGUNAKAN LOGIKA DAN UI PREMIUM DARI SUHU
+            // =======================================================================
             if (!pitchData.brand_ids || pitchData.brand_ids.length === 0) throw new Error("Tidak ada brand_ids!");
 
             const { data: allBrandsData, error: sponsorErr } = await supabaseClient
@@ -64,24 +67,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (sponsorErr || !allBrandsData || allBrandsData.length === 0) throw new Error("Gagal menarik data Master Sponsor.");
 
-            const primaryBrand = allBrandsData[0];
-
-            if (coverEl) coverEl.src = primaryBrand.cover_url || 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?q=80&w=1000&auto=format&fit=crop';
-            if (logoEl) logoEl.src = pitchData.corporate_logo || primaryBrand.logo_url || 'https://ui-avatars.com/api/?name=Brand&background=fff&color=000';
-            if (syaratEl) syaratEl.innerText = primaryBrand.syarat || "Custom partnership agreement.";
+            if (logoEl) logoEl.src = pitchData.corporate_logo || allBrandsData[0].logo_url || 'https://ui-avatars.com';
+            if (syaratEl) syaratEl.innerText = allBrandsData[0].syarat || "Custom partnership agreement.";
             
-            // 1. REVISI TEKS DESKRIPSI DAN PANDUAN SIMULASI (MSG_EL) - BEBAS DARI ERROR DRAF WA
+            // 1. ISI MSG_EL DENGAN TATA LETAK TAILWIND PREMIUM
             if (msgEl) {
                 msgEl.innerHTML = `
-                    Berikut adalah simulasi interaktif bagaimana produk dan kampanye visual dari <strong class="text-slate-800">${pitchData.company_name}</strong> diinjeksi langsung ke dalam urat nadi sistem Live-Result digital kami.
-                    <br><br>
-                    Halaman penyiaran skor ini di-refresh puluhan ribu kali secara real-time oleh atlet, pelatih, dan orang tua sepanjang kompetisi berjalan, memberikan paparan visual tingkat tinggi yang tidak bisa dihindari oleh audiens target Anda.
-                    <br><br>
-                    <div class="bg-amber-50 border border-amber-300 rounded-xl p-4 text-amber-900 text-xs font-medium flex items-start gap-2.5 shadow-sm">
-                        <span class="text-base leading-none animate-pulse">💡</span>
-                        <span class="text-left leading-relaxed">
-                            <strong>Panduan Simulasi:</strong> Silakan scroll ke bawah pada tampilan layar HP di bawah ini dan <strong>klik pada logo brand Anda</strong> untuk mencoba pengalihan konversi belanja aktif. Setelah mencoba simulasi, Anda dapat meninjau rincian biaya penayangan iklan pada tombol <strong>Sponsor Rate</strong> di bawah.
-                        </span>
+                    <div class="space-y-4 text-slate-600 text-xs md:text-sm leading-relaxed max-w-xl">
+                        <p>
+                            Berikut adalah simulasi interaktif bagaimana produk dan kampanye visual dari <strong class="text-slate-900">${pitchData.company_name}</strong> diinjeksi langsung ke dalam urat nadi sistem Live-Result digital kami.
+                        </p>
+                        <p>
+                            Halaman penyiaran skor ini di-refresh puluhan ribu kali secara real-time oleh atlet, pelatih, dan orang tua sepanjang kompetisi berjalan, memberikan paparan visual tingkat tinggi yang tidak bisa dihindari oleh audiens target Anda.
+                        </p>
+                        
+                        <!-- KOTAK PANDUAN PREMIUM (FLOATING CARD) -->
+                        <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4 text-amber-900 text-xs font-semibold flex items-start gap-3 shadow-sm mt-4 text-left animate-pulse">
+                            <span class="text-base leading-none">💡</span>
+                            <span class="leading-relaxed">
+                                <strong>Panduan Simulasi:</strong> Silakan scroll ke bawah pada tampilan layar HP di bawah ini dan <strong>klik pada logo brand Anda</strong> untuk mencoba pengalihan konversi belanja aktif. Setelah mencoba simulasi, Anda dapat meninjau rincian biaya penayangan iklan pada tombol <strong>Sponsor Rate</strong> di bawah.
+                            </span>
+                        </div>
                     </div>
                 `;
             }
@@ -89,45 +95,49 @@ document.addEventListener('DOMContentLoaded', async () => {
             // 2. RENDER LIVE RESULT MOCKUP
             renderSimulationBrand(allBrandsData);
 
-            // 3. INJEKSI SEKSI PENUTUP DAN TOMBOL SPONSOR-RATE DI BAWAH CONTAINER
+            // 3. SEKSI PENUTUP DAN TOMBOL SPONSOR-RATE (PASTI MUNCUL DI BAWAH HP MOCKUP)
             const container = document.getElementById('simulationContainer');
             if (container) {
+                // Hapus elemen penutup lama jika sudah ada biar tidak duplikat
+                const oldPenutup = document.getElementById('f1-penutup-ads');
+                if (oldPenutup) oldPenutup.remove();
+
                 const penutupHtml = `
-                    <div class="mt-10 border-t border-slate-200 pt-8 text-center pb-8 px-4 max-w-md mx-auto">
-                        <h4 class="text-sm font-black text-slate-800 uppercase tracking-wider mb-2">🚀 Proyeksi Dampak & Biaya Kampanye</h4>
+                    <div id="f1-penutup-ads" class="mt-12 border-t border-slate-200 pt-8 text-center pb-12 px-4 max-w-sm mx-auto">
+                        <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">PROYEKSI DAMPAK & BIAYA KAMPANYE</h4>
                         <p class="text-xs text-slate-500 leading-relaxed mb-6">
                             Untuk melihat skema investasi slot iklan, pembagian target demografi audiens (usia/gender), serta kuota impresi penayangan yang tersedia, silakan masuk ke halaman rincian tarif resmi kami.
                         </p>
                         
                         <div class="flex flex-col gap-3">
                             <!-- TOMBOL UTAMA KE HALAMAN SPONSOR RATE -->
-                            <a href="/sponsor-rate.html" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-2 uppercase tracking-wide transform active:scale-95">
+                            <a href="/sponsor-rate.html" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl text-xs transition-all shadow-lg flex items-center justify-center gap-2 uppercase tracking-wider transform active:scale-95">
                                 📊 LIHAT TARIF SPONSOR (SPONSOR RATE)
                             </a>
                             
                             <!-- TOMBOL SEKUNDER DISKUSI WA -->
-                            <button class="btnWaAction w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-all border border-slate-300 flex items-center justify-center gap-2 uppercase tracking-wide transform active:scale-95">
+                            <button class="btnWaAction w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-xs transition-all border border-slate-300 flex items-center justify-center gap-2 uppercase tracking-wide transform active:scale-95">
                                 💬 DISKUSI VIA WHATSAPP
                             </button>
                         </div>
                     </div>
                 `;
-                // Sisipkan tepat setelah simulasi HP selesai di-render
+                // Injeksi setelah elemen container mockup selesai
                 container.insertAdjacentHTML('afterend', penutupHtml);
 
-                // Re-bind event listener untuk tombol WA yang baru di-inject
-                const newWaBtns = container.parentElement.querySelectorAll('.btnWaAction');
-                const waText = `Halo tim F1 Swimming, saya ${pitchData.cp_name} dari ${pitchData.company_name}. Saya sudah melihat penawaran di halaman simulasi dan tertarik berdiskusi lebih lanjut.`;
-                newWaBtns.forEach(btn => {
-                    btn.addEventListener('click', () => {
+                // Aktivasi event listener untuk tombol WA yang baru di-inject
+                const newWaBtn = document.querySelector('#f1-penutup-ads .btnWaAction');
+                if (newWaBtn) {
+                    const waText = `Halo tim F1 Swimming, saya ${pitchData.cp_name} dari ${pitchData.company_name}. Saya sudah mencoba simulasi sistem Ad-Tech Anda dan tertarik berdiskusi lebih lanjut.`;
+                    newWaBtn.addEventListener('click', () => {
                         window.open(`https://wa.me/6289691219977?text=${encodeURIComponent(waText)}`, '_blank');
                     });
-                });
+                }
             }
         }
 
-        // FUNGSI GLOBAL UNTUK TOMBOL WA (Tombol statis di HTML)
-        const btnWaElements = document.querySelectorAll('.btnWaAction:not(#simulationContainer ~ div .btnWaAction)');
+        // FUNGSI GLOBAL UNTUK TOMBOL WA BAWAAN (Statis di HTML)
+        const btnWaElements = document.querySelectorAll('.btnWaAction:not(#f1-penutup-ads .btnWaAction)');
         if (btnWaElements.length > 0) {
             const waText = `Halo tim F1 Swimming, saya ${pitchData.cp_name} dari ${pitchData.company_name}. Saya sudah melihat penawarannya dan tertarik berdiskusi.`;
             btnWaElements.forEach(btn => {
