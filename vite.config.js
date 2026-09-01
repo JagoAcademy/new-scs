@@ -25,6 +25,7 @@ export default defineConfig({
         pitch: resolve(__dirname, 'pitch.html'), // Web-Based Pitch Deck Nestle 
         pitchClient: resolve(__dirname, 'pitch-client.html'), // Halaman Front-End Pitching Klien (B2B)
         media: resolve(__dirname, 'media.html'), // SCS Media & Ads Portal 
+        sponsorRate: resolve(__dirname, 'sponsor-rate.html'), // 🚀 TAMBAHAN: Halaman Rate Card / Paket Pricing Sponsor
 
         // --- 2. DASHBOARD KLUB / PELATIH ---
         dashboard: resolve(__dirname, 'dashboard.html'), // Command Center Manajemen Klub
@@ -52,6 +53,9 @@ export default defineConfig({
         adminAds: resolve(__dirname, 'admin-ads.html'),
         sponsorPreview: resolve(__dirname, 'sponsor-preview.html'),
         adminApproval: resolve(__dirname, 'admin-approval.html'), // ACC Sponsor
+
+        // --- 6. DASHBOARD BRAND / SPONSOR ---
+        sponsorPortal: resolve(__dirname, 'sponsor.html'), // 🚀 TAMBAHAN: Portal Login Brand untuk Injeksi Token Ad-Tech
       }
     }
   },
