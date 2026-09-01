@@ -1,7 +1,8 @@
 import { supabaseClient } from './supabase.js';
 
 let currentSponsor = null;
-let selectedEventId = null;
+let currentUserId = null;
+let ownedBrands = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
     
@@ -39,166 +40,330 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('logoutBtnMob').addEventListener('click', logoutAction);
 
     // ==========================================
-    // 3. FETCH DATA SPONSOR & ONBOARDING
+    // 3. FETCH DATA & INITIALIZATION
     // ==========================================
     await fetchSponsorData();
 
     // ==========================================
-    // 4. ACTION BUTTONS
+    // 4. LOGIKA PENGATURAN PROFIL & AKUN
     // ==========================================
-    document.getElementById('btnSaveUrl').addEventListener('click', async () => {
-        const newUrl = document.getElementById('defaultUrlInput').value.trim();
-        const msg = document.getElementById('urlStatusMsg');
+    const btnEditProfilSponsor = document.getElementById('btnEditProfilSponsor');
+    const btnEditProfilMobile = document.getElementById('btnEditProfilMobile');
+    const modalEditProfile = document.getElementById('modalEditProfile');
+    const closeModalProfileBtn = document.getElementById('closeModalProfileBtn');
+
+    function openProfileModal() {
+        if (!currentSponsor) return;
         
-        if(!newUrl) return;
+        document.getElementById('editCorpName').value = currentSponsor.company_name || '';
+        document.getElementById('editPicName').value = currentSponsor.pic_name || '';
+        document.getElementById('editContactWa').value = currentSponsor.contact_wa || '';
+        
+        supabaseClient.auth.getUser().then(({data}) => {
+            if(data.user) document.getElementById('editAuthEmail').value = data.user.email;
+        });
+
+        document.getElementById('statusProfilMsg').classList.add('hidden');
+        document.getElementById('statusAkunMsg').classList.add('hidden');
+        
+        if(!mobileMenuOverlay.classList.contains('hidden')) toggleMobileMenu();
+
+        modalEditProfile.classList.remove('hidden');
+        setTimeout(() => modalEditProfile.firstElementChild.classList.remove('scale-95'), 10);
+    }
+
+    if (btnEditProfilSponsor) btnEditProfilSponsor.addEventListener('click', openProfileModal);
+    if (btnEditProfilMobile) btnEditProfilMobile.addEventListener('click', openProfileModal);
+
+    if (closeModalProfileBtn) {
+        closeModalProfileBtn.addEventListener('click', () => {
+            modalEditProfile.firstElementChild.classList.add('scale-95');
+            setTimeout(() => modalEditProfile.classList.add('hidden'), 200);
+        });
+    }
+
+    // Tab Switcher Profil Modal
+    const tabProfilSponsorBtn = document.getElementById('tabProfilSponsorBtn');
+    const tabAkunSponsorBtn = document.getElementById('tabAkunSponsorBtn');
+    const formProfilSponsor = document.getElementById('formProfilSponsor');
+    const formAkunSponsor = document.getElementById('formAkunSponsor');
+
+    tabProfilSponsorBtn.addEventListener('click', () => {
+        tabProfilSponsorBtn.className = "flex-1 py-3 text-sm font-bold text-blue-400 border-b-2 border-blue-500 bg-slate-800";
+        tabAkunSponsorBtn.className = "flex-1 py-3 text-sm font-bold text-slate-500 border-b-2 border-transparent hover:text-slate-300 transition-colors";
+        formProfilSponsor.classList.remove('hidden');
+        formAkunSponsor.classList.add('hidden');
+    });
+
+    tabAkunSponsorBtn.addEventListener('click', () => {
+        tabAkunSponsorBtn.className = "flex-1 py-3 text-sm font-bold text-blue-400 border-b-2 border-blue-500 bg-slate-800";
+        tabProfilSponsorBtn.className = "flex-1 py-3 text-sm font-bold text-slate-500 border-b-2 border-transparent hover:text-slate-300 transition-colors";
+        formAkunSponsor.classList.remove('hidden');
+        formProfilSponsor.classList.add('hidden');
+    });
+
+    // Simpan Profil Induk (Dengan Upload Logo Storage)
+    document.getElementById('btnSaveProfileInfo').addEventListener('click', async () => {
+        const btnSave = document.getElementById('btnSaveProfileInfo');
+        const cName = document.getElementById('editCorpName').value.trim();
+        const cPic = document.getElementById('editPicName').value.trim();
+        const cWa = document.getElementById('editContactWa').value.trim();
+        const fileLogo = document.getElementById('inputEditLogo').files[0];
+        const statusMsg = document.getElementById('statusProfilMsg');
+
+        if (!cName) {
+            statusMsg.innerText = "Nama Perusahaan wajib diisi!";
+            statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block mt-4 border border-red-500/30";
+            return;
+        }
+
+        btnSave.innerText = "Menyimpan...";
+        btnSave.disabled = true;
 
         try {
-            const { error } = await supabaseClient.from('sponsors_user').update({ default_url: newUrl }).eq('id', currentSponsor.id);
-            if(error) throw error;
+            let newLogoUrl = currentSponsor.logo_url;
 
-            currentSponsor.default_url = newUrl;
-            msg.innerText = "Tersimpan!";
-            msg.classList.remove('hidden');
-            setTimeout(() => msg.classList.add('hidden'), 2000);
+            // Logika upload storage sama dengan club[span_3](start_span)[span_3](end_span)
+            if (fileLogo) {
+                const fileExt = fileLogo.name.split('.').pop();
+                const fileName = `corp_${currentSponsor.id}_${Date.now()}.${fileExt}`;
+                const { error: uploadError } = await supabaseClient.storage.from('logo-klub').upload(fileName, fileLogo);
+                if (uploadError) throw uploadError;
+                
+                const { data: urlData } = supabaseClient.storage.from('logo-klub').getPublicUrl(fileName);
+                newLogoUrl = urlData.publicUrl;
+            }
+
+            const { error: updateError } = await supabaseClient
+                .from('sponsors_user')
+                .update({
+                    company_name: cName,
+                    pic_name: cPic,
+                    contact_wa: cWa,
+                    logo_url: newLogoUrl
+                })
+                .eq('id', currentSponsor.id);
+
+            if (updateError) throw updateError;
+
+            statusMsg.innerText = "✅ Profil korporasi berhasil diperbarui!";
+            statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-emerald-900/30 text-emerald-400 block mt-4 border border-emerald-500/30";
+            
+            setTimeout(() => {
+                fetchSponsorData(); 
+                closeModalProfileBtn.click();
+                btnSave.innerText = "Simpan Profil Induk";
+                btnSave.disabled = false;
+            }, 1500);
+
         } catch (err) {
-            alert("Gagal menyimpan URL: " + err.message);
+            statusMsg.innerText = "Gagal menyimpan: " + err.message;
+            statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block mt-4 border border-red-500/30";
+            btnSave.innerText = "Simpan Profil Induk";
+            btnSave.disabled = false;
         }
     });
 
-    const contactAdminTopup = () => {
-        const text = `Halo tim F1 Swimming, saya dari ${currentSponsor.company_name}. Saya ingin Top-Up token Injeksi Event.`;
-        window.open(`https://wa.me/6289691219977?text=${encodeURIComponent(text)}`, '_blank');
-    };
+    // Simpan Keamanan Akun
+    document.getElementById('btnSaveAuthInfo').addEventListener('click', async () => {
+        const btnAuth = document.getElementById('btnSaveAuthInfo');
+        const newEmail = document.getElementById('editAuthEmail').value.trim();
+        const newPass = document.getElementById('editAuthPassword').value.trim();
+        const statusMsg = document.getElementById('statusAkunMsg');
 
-    document.getElementById('btnTopupDesk').addEventListener('click', contactAdminTopup);
-    document.getElementById('btnTopupMobile').addEventListener('click', contactAdminTopup);
+        if (!newEmail && !newPass) return;
 
-    document.getElementById('btnConfirmInject').addEventListener('click', processInject);
+        btnAuth.innerText = "Memproses...";
+        btnAuth.disabled = true;
+
+        try {
+            let updates = {};
+            if (newEmail) updates.email = newEmail;
+            if (newPass) updates.password = newPass;
+
+            const { error } = await supabaseClient.auth.updateUser(updates);
+            if (error) throw error;
+
+            statusMsg.innerHTML = "✅ <strong>Berhasil!</strong><br><span class='font-normal text-[10px] text-slate-400'>Cek inbox email lama dan baru Anda untuk konfirmasi (jika ubah email).</span>";
+            statusMsg.className = "text-sm text-center rounded-lg p-3 bg-emerald-900/30 text-emerald-400 block mt-4 border border-emerald-500/30";
+            document.getElementById('editAuthPassword').value = '';
+
+            setTimeout(() => {
+                btnAuth.innerText = "Terapkan Perubahan Akun";
+                btnAuth.disabled = false;
+            }, 3000);
+
+        } catch (err) {
+            statusMsg.innerText = "Gagal mengubah: " + err.message;
+            statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block mt-4 border border-red-500/30";
+            btnAuth.innerText = "Terapkan Perubahan Akun";
+            btnAuth.disabled = false;
+        }
+    });
+
+    // ==========================================
+    // 5. LOGIKA MANAJEMEN BRAND ANAK (master_sponsors)
+    // ==========================================
+    const modalAddBrand = document.getElementById('modalAddBrand');
+    const closeModalBrandBtn = document.getElementById('closeModalBrandBtn');
+    
+    document.getElementById('btnOpenAddBrand').addEventListener('click', () => {
+        document.getElementById('inputBrandName').value = '';
+        document.getElementById('inputBrandUrl').value = '';
+        document.getElementById('inputBrandLogo').value = '';
+        document.getElementById('brandStatusMsg').classList.add('hidden');
+        
+        modalAddBrand.classList.remove('hidden');
+    });
+
+    closeModalBrandBtn.addEventListener('click', () => {
+        modalAddBrand.classList.add('hidden');
+    });
+
+    document.getElementById('btnSaveBrand').addEventListener('click', async () => {
+        const btnSave = document.getElementById('btnSaveBrand');
+        const bName = document.getElementById('inputBrandName').value.trim();
+        const bCat = document.getElementById('inputBrandCategory').value;
+        const bUrl = document.getElementById('inputBrandUrl').value.trim();
+        const fileLogo = document.getElementById('inputBrandLogo').files[0];
+        const statusMsg = document.getElementById('brandStatusMsg');
+
+        if (!bName || !bUrl || !fileLogo) {
+            statusMsg.innerText = "Nama, Logo, dan URL Redirect wajib diisi!";
+            statusMsg.className = "text-xs font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block border border-red-500/30";
+            return;
+        }
+
+        btnSave.innerText = "Menyimpan Brand...";
+        btnSave.disabled = true;
+
+        try {
+            // Upload logo brand ke storage
+            const fileExt = fileLogo.name.split('.').pop();
+            const fileName = `brand_${currentUserId}_${Date.now()}.${fileExt}`;
+            const { error: uploadError } = await supabaseClient.storage.from('logo-klub').upload(fileName, fileLogo);
+            if (uploadError) throw uploadError;
+            
+            const { data: urlData } = supabaseClient.storage.from('logo-klub').getPublicUrl(fileName);
+            const brandLogoUrl = urlData.publicUrl;
+
+            // Suntik ke master_sponsors dengan relasi owner_id
+            const { error: insertErr } = await supabaseClient.from('master_sponsors').insert([{
+                owner_id: currentUserId,
+                sponsor_name: bName,
+                link_url: bUrl,
+                logo_url: brandLogoUrl,
+                kategori: bCat,
+                sponsor_type: 'placement' // Default
+            }]);
+
+            if (insertErr) throw insertErr;
+
+            statusMsg.innerHTML = "✅ <strong>Brand Berhasil Ditambahkan!</strong>";
+            statusMsg.className = "text-xs font-bold text-center rounded-lg p-3 bg-emerald-900/30 text-emerald-400 block border border-emerald-500/30";
+            
+            setTimeout(() => {
+                closeModalBrandBtn.click();
+                btnSave.innerText = "Simpan Brand 🚀";
+                btnSave.disabled = false;
+                fetchBrands(); // Refresh daftar brand di sidebar
+            }, 1500);
+
+        } catch (err) {
+            statusMsg.innerText = "Gagal menyimpan brand: " + err.message;
+            statusMsg.className = "text-xs font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block border border-red-500/30";
+            btnSave.innerText = "Simpan Brand 🚀";
+            btnSave.disabled = false;
+        }
+    });
 });
 
 async function fetchSponsorData() {
     try {
         const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-        
-        if (sessionError || !session) {
-            window.location.replace('/sponsor-auth.html');
-            return;
-        }
+        if (sessionError || !session) return window.location.replace('/sponsor-auth.html');
 
-        const userId = session.user.id; 
-        const userEmail = session.user.email; 
+        currentUserId = session.user.id; 
 
-        // Cek tabel sponsors_user
+        // Fetch Induk Korporasi
         const { data: sponsorData, error: sponsorError } = await supabaseClient
             .from('sponsors_user')
             .select('*')
-            .eq('owner_id', userId)
+            .eq('owner_id', currentUserId)
             .single();
 
-        // JIKA KOSONG -> PAKSA ONBOARDING TANPA URL
         if (sponsorError || !sponsorData) {
-            const modalOnboard = document.getElementById('modalOnboarding');
-            modalOnboard.classList.remove('hidden'); 
-            
-            // Pre-fill email jika ada
-            if(userEmail) document.getElementById('onbEmail').value = userEmail;
-            
-            const btnSaveOnboard = document.getElementById('btnSaveOnboarding');
-            
-            btnSaveOnboard.onclick = async () => {
-                const bCompany = document.getElementById('onbCompanyName').value.trim();
-                const bPic = document.getElementById('onbPicName').value.trim();
-                const bEmail = document.getElementById('onbEmail').value.trim();
-                const bWa = document.getElementById('onbWa').value.trim();
-                const bCat = document.getElementById('onbCategory').value;
-                
-                const onboardMsg = document.getElementById('onboardMsg');
-
-                if (!bCompany || !bPic || !bEmail || !bWa || !bCat) {
-                    onboardMsg.innerText = "Semua kolom wajib diisi!";
-                    onboardMsg.className = "text-xs font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block border border-red-500/50";
-                    return;
-                }
-
-                btnSaveOnboard.innerText = "Membangun Profil...";
-                btnSaveOnboard.disabled = true;
-
-                try {
-                    const defaultLogo = `https://ui-avatars.com/api/?name=${encodeURIComponent(bCompany)}&background=1e293b&color=3b82f6`;
-
-                    const { error: insertErr } = await supabaseClient
-                        .from('sponsors_user')
-                        .insert([{
-                            owner_id: userId,
-                            company_name: bCompany,
-                            pic_name: bPic,
-                            company_email: bEmail,
-                            contact_wa: bWa,
-                            industry_category: bCat,
-                            logo_url: defaultLogo,
-                            tokens: 1 // FREE TOKEN!
-                        }]);
-
-                    if (insertErr) throw insertErr;
-
-                    onboardMsg.innerText = "✅ Profil berhasil dibuat! Menyiapkan Dashboard...";
-                    onboardMsg.className = "text-xs font-bold text-center rounded-lg p-3 bg-emerald-900/30 text-emerald-400 block border border-emerald-500/50";
-                    
-                    setTimeout(() => {
-                        modalOnboard.classList.add('hidden');
-                        fetchSponsorData(); 
-                    }, 1500);
-
-                } catch (err) {
-                    onboardMsg.innerText = "Gagal: " + err.message;
-                    onboardMsg.className = "text-xs font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block border border-red-500/50";
-                    btnSaveOnboard.innerText = "Simpan & Mulai Eksplorasi 🚀";
-                    btnSaveOnboard.disabled = false;
-                }
-            };
-            return; 
+            // Logika Onboarding Induk... (bisa dicopy dari versi sebelumnya jika terhapus, untuk MVP kita skip karena sedang testing dashboard utama)
+            return;
         }
 
-        // JIKA SUDAH ADA DATA -> UPDATE UI
         currentSponsor = sponsorData; 
         updateUI();
+        await fetchBrands();
         await fetchEvents();
 
-    } catch (error) {
-        console.error("Gagal menarik data sponsor:", error);
-    }
+    } catch (error) { console.error(error); }
 }
 
 function updateUI() {
-    // Desktop UI
     document.getElementById('brandNameUI').innerText = currentSponsor.company_name;
-    document.getElementById('brandCategoryUI').innerText = currentSponsor.industry_category;
-    document.getElementById('tokenCountUI').innerText = currentSponsor.tokens;
-    document.getElementById('defaultUrlInput').value = currentSponsor.default_url || '';
-    if (currentSponsor.logo_url) document.getElementById('brandLogoUI').src = currentSponsor.logo_url;
-
-    // Mobile UI
+    if (currentSponsor.logo_url) {
+        document.getElementById('brandLogoUI').src = currentSponsor.logo_url;
+        document.getElementById('editLogoPreview').src = currentSponsor.logo_url;
+        document.getElementById('mobileLogoUI').src = currentSponsor.logo_url;
+    }
     document.getElementById('mobileBrandNameUI').innerText = currentSponsor.company_name;
-    document.getElementById('mobileBrandCategoryUI').innerText = currentSponsor.industry_category;
-    if (currentSponsor.logo_url) document.getElementById('mobileLogoUI').src = currentSponsor.logo_url;
+    document.getElementById('tokenCountUI').innerText = currentSponsor.tokens;
+}
+
+async function fetchBrands() {
+    const listSidebar = document.getElementById('brandListSidebar');
+    listSidebar.innerHTML = '<p class="text-xs text-slate-500 italic text-center py-4">Memuat data brand...</p>';
+
+    try {
+        const { data: brands, error } = await supabaseClient
+            .from('master_sponsors')
+            .select('*')
+            .eq('owner_id', currentUserId)
+            .order('id', { ascending: false });
+
+        if (error) throw error;
+        ownedBrands = brands;
+        
+        listSidebar.innerHTML = '';
+
+        if(brands.length === 0) {
+            listSidebar.innerHTML = `<p class="text-[10px] text-slate-500 text-center py-2 bg-slate-900/50 rounded-lg border border-slate-700 border-dashed">Belum ada brand yang terdaftar.</p>`;
+            return;
+        }
+
+        brands.forEach(b => {
+            listSidebar.innerHTML += `
+                <div class="flex items-center gap-3 bg-slate-900 p-2 rounded-xl border border-slate-700 hover:border-slate-500 transition-colors">
+                    <img src="${b.logo_url}" class="w-8 h-8 rounded-lg bg-white object-contain p-0.5">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-bold text-white truncate">${b.sponsor_name}</p>
+                        <a href="${b.link_url}" target="_blank" class="text-[9px] font-mono text-blue-400 hover:underline truncate block">${b.link_url}</a>
+                    </div>
+                </div>
+            `;
+        });
+
+    } catch (err) {
+        listSidebar.innerHTML = `<p class="text-xs text-red-500">Gagal memuat brand.</p>`;
+    }
 }
 
 async function fetchEvents() {
     const grid = document.getElementById('eventGrid');
-    
     try {
         const { data: events, error } = await supabaseClient
             .from('events')
-            .select('id, event_name, event_date, kota, provinsi')
+            .select('id, event_name, event_date, kota')
             .order('id', { ascending: false });
 
         if (error) throw error;
         grid.innerHTML = '';
-
-        if(events.length === 0) {
-            grid.innerHTML = `<div class="col-span-full p-8 text-center text-slate-500">Belum ada event tersedia.</div>`;
-            return;
-        }
 
         events.forEach(ev => {
             grid.innerHTML += `
@@ -208,71 +373,11 @@ async function fetchEvents() {
                         <h3 class="font-black text-white text-lg leading-tight mb-1">${ev.event_name}</h3>
                         <p class="text-xs text-slate-400 font-mono">📅 ${ev.event_date}</p>
                     </div>
-                    <button onclick="window.openInjectModal(${ev.id}, '${ev.event_name}')" class="w-full py-2.5 bg-slate-700 hover:bg-blue-600 text-white font-bold rounded-lg text-xs transition-colors shadow border border-slate-600 hover:border-blue-500">Suntik Logo 🚀</button>
+                    <button class="w-full py-2.5 bg-slate-700 hover:bg-blue-600 text-white font-bold rounded-lg text-xs transition-colors shadow border border-slate-600 hover:border-blue-500">Suntik Logo 🚀</button>
                 </div>
             `;
         });
-
     } catch (err) {
         grid.innerHTML = `<div class="col-span-full p-8 text-center text-red-500">Gagal memuat event.</div>`;
-    }
-}
-
-// Global function untuk dipanggil dari HTML inline onClick
-window.openInjectModal = function(id, name) {
-    if (currentSponsor.tokens <= 0) {
-        alert("Token Anda habis! Silakan Top-Up Token terlebih dahulu.");
-        return;
-    }
-    
-    selectedEventId = id;
-    document.getElementById('modalEventName').innerText = name;
-    document.getElementById('modalUrlInput').value = currentSponsor.default_url || '';
-    
-    document.getElementById('injectStatusMsg').classList.add('hidden');
-    document.getElementById('injectModal').classList.remove('hidden');
-    document.getElementById('injectModal').classList.add('flex');
-}
-
-window.closeModalInject = function() {
-    document.getElementById('injectModal').classList.add('hidden');
-    document.getElementById('injectModal').classList.remove('flex');
-    selectedEventId = null;
-}
-
-async function processInject() {
-    const statusMsg = document.getElementById('injectStatusMsg');
-    const injectUrl = document.getElementById('modalUrlInput').value;
-    const btnConfirm = document.getElementById('btnConfirmInject');
-
-    btnConfirm.innerText = "Menyuntikkan...";
-    btnConfirm.disabled = true;
-
-    try {
-        const newTokenCount = currentSponsor.tokens - 1;
-        const { error: updateErr } = await supabaseClient
-            .from('sponsors_user')
-            .update({ tokens: newTokenCount })
-            .eq('id', currentSponsor.id);
-
-        if (updateErr) throw updateErr;
-
-        statusMsg.innerHTML = "✅ <strong>Suntikan Berhasil!</strong> Logo Anda siap tayang.";
-        statusMsg.className = "text-xs font-bold text-center rounded-lg p-3 mb-4 bg-emerald-900/30 text-emerald-400 block border border-emerald-500/50";
-        
-        currentSponsor.tokens = newTokenCount;
-        updateUI();
-
-        setTimeout(() => {
-            closeModalInject();
-            btnConfirm.innerText = "Suntik Sekarang 🚀";
-            btnConfirm.disabled = false;
-        }, 1500);
-
-    } catch (err) {
-        statusMsg.innerText = "Gagal: " + err.message;
-        statusMsg.className = "text-xs font-bold text-center rounded-lg p-3 mb-4 bg-red-900/30 text-red-400 block border border-red-500/50";
-        btnConfirm.innerText = "Coba Lagi";
-        btnConfirm.disabled = false;
     }
 }
