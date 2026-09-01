@@ -32,7 +32,6 @@
         
         <div class="w-full lg:w-7/12 bg-white lg:rounded-[2.5rem] shadow-2xl overflow-hidden relative">
             
-            <!-- HOOK AD-TECH BARU -->
             <div class="w-full bg-slate-900 relative overflow-hidden flex flex-col justify-center px-6 lg:px-10 py-12 lg:py-16 min-h-[220px] lg:min-h-[280px]">
                 <div class="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500 via-slate-900 to-slate-900 pointer-events-none"></div>
                 <div class="relative z-10">
@@ -54,6 +53,7 @@
                 <p class="text-xs font-black text-red-500 tracking-widest uppercase mb-2">Private & Confidential</p>
                 <h1 class="text-3xl lg:text-4xl font-black text-slate-900 leading-tight mb-4">Halo <span id="cpName" class="text-blue-600">Bpk/Ibu</span> 👋</h1>
                 
+                <!-- Teks ini akan di-override JS sepenuhnya untuk Brand -->
                 <p id="approachMessage" class="text-sm lg:text-base text-slate-600 font-medium leading-relaxed mb-8 whitespace-pre-wrap"></p>
 
                 <div class="bg-blue-50 border border-blue-100 rounded-2xl p-6 lg:p-8 mb-8 relative overflow-hidden">
@@ -85,23 +85,7 @@
                     </div>
                     
                     <div class="p-2.5" id="simulationContainer"></div>
-
-                    <!-- 🚀 BLOK PENUTUP: CTA KE HALAMAN SPONSOR RATE -->
-                    <div class="mt-4 border-t border-slate-200 pt-6 text-center pb-8 px-4">
-                        <h4 class="text-sm font-black text-slate-800 uppercase tracking-wider mb-2">🚀 Proyeksi Dampak & Biaya Kampanye</h4>
-                        <p class="text-[11px] text-slate-500 leading-relaxed mb-5 max-w-md mx-auto">
-                            Untuk melihat skema investasi slot iklan, pembagian target demografi audiens (usia/gender), serta kuota impresi penayangan yang tersedia, silakan masuk ke halaman rincian tarif resmi kami.
-                        </p>
-                        <div class="flex flex-col gap-3 max-w-xs mx-auto">
-                            <a href="/sponsor-rate.html" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl text-xs transition-colors shadow-md flex items-center justify-center gap-2 uppercase tracking-wide">
-                                📊 LIHAT SPONSOR RATE
-                            </a>
-                            <button class="btnWaAction w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors border border-slate-300 flex items-center justify-center gap-2 uppercase tracking-wide">
-                                💬 DISKUSI VIA WHATSAPP
-                            </button>
-                        </div>
-                    </div>
-                    <!-- AKHIR BLOK PENUTUP -->
+                    <!-- Blok Penutup CTA sekarang di-inject via JavaScript -->
 
                 </div>
             </div>

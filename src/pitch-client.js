@@ -70,16 +70,64 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (logoEl) logoEl.src = pitchData.corporate_logo || primaryBrand.logo_url || 'https://ui-avatars.com/api/?name=Brand&background=fff&color=000';
             if (syaratEl) syaratEl.innerText = primaryBrand.syarat || "Custom partnership agreement.";
             
-            // 🚀 REVISI COPYWRITING PITCHING BRAND
+            // 1. REVISI TEKS DESKRIPSI DAN PANDUAN SIMULASI (MSG_EL) - BEBAS DARI ERROR DRAF WA
             if (msgEl) {
-                msgEl.innerHTML = pitchData.approach_message || `Berikut adalah simulasi interaktif bagaimana produk dan kampanye visual dari <strong class="text-slate-800">${pitchData.company_name}</strong> diinjeksi langsung ke dalam urat nadi sistem Live-Result digital kami.<br><br>Halaman penyiaran skor ini di-refresh puluhan ribu kali secara real-time oleh atlet, pelatih, dan orang tua sepanjang kompetisi berjalan, memberikan paparan visual tingkat tinggi yang tidak bisa dihindari oleh audiens target Anda.<br><br><div class="bg-amber-50 border border-amber-300 rounded-xl p-3 text-amber-900 text-xs font-medium flex items-start gap-2 shadow-sm animate-pulse"> <span class="text-base leading-none">💡</span> <span class="leading-relaxed"><strong>Panduan Simulasi:</strong> Silakan scroll ke bawah dan <strong>klik pada logo brand Anda</strong> untuk mencoba langsung pengalihan konversi. Setelah itu, Anda dapat meninjau rincian biaya penayangan iklan pada halaman <strong>Sponsor Rate</strong> kami.</span> </div>`;
+                msgEl.innerHTML = `
+                    Berikut adalah simulasi interaktif bagaimana produk dan kampanye visual dari <strong class="text-slate-800">${pitchData.company_name}</strong> diinjeksi langsung ke dalam urat nadi sistem Live-Result digital kami.
+                    <br><br>
+                    Halaman penyiaran skor ini di-refresh puluhan ribu kali secara real-time oleh atlet, pelatih, dan orang tua sepanjang kompetisi berjalan, memberikan paparan visual tingkat tinggi yang tidak bisa dihindari oleh audiens target Anda.
+                    <br><br>
+                    <div class="bg-amber-50 border border-amber-300 rounded-xl p-4 text-amber-900 text-xs font-medium flex items-start gap-2.5 shadow-sm">
+                        <span class="text-base leading-none animate-pulse">💡</span>
+                        <span class="text-left leading-relaxed">
+                            <strong>Panduan Simulasi:</strong> Silakan scroll ke bawah pada tampilan layar HP di bawah ini dan <strong>klik pada logo brand Anda</strong> untuk mencoba pengalihan konversi belanja aktif. Setelah mencoba simulasi, Anda dapat meninjau rincian biaya penayangan iklan pada tombol <strong>Sponsor Rate</strong> di bawah.
+                        </span>
+                    </div>
+                `;
             }
 
+            // 2. RENDER LIVE RESULT MOCKUP
             renderSimulationBrand(allBrandsData);
+
+            // 3. INJEKSI SEKSI PENUTUP DAN TOMBOL SPONSOR-RATE DI BAWAH CONTAINER
+            const container = document.getElementById('simulationContainer');
+            if (container) {
+                const penutupHtml = `
+                    <div class="mt-10 border-t border-slate-200 pt-8 text-center pb-8 px-4 max-w-md mx-auto">
+                        <h4 class="text-sm font-black text-slate-800 uppercase tracking-wider mb-2">🚀 Proyeksi Dampak & Biaya Kampanye</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed mb-6">
+                            Untuk melihat skema investasi slot iklan, pembagian target demografi audiens (usia/gender), serta kuota impresi penayangan yang tersedia, silakan masuk ke halaman rincian tarif resmi kami.
+                        </p>
+                        
+                        <div class="flex flex-col gap-3">
+                            <!-- TOMBOL UTAMA KE HALAMAN SPONSOR RATE -->
+                            <a href="/sponsor-rate.html" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-2 uppercase tracking-wide transform active:scale-95">
+                                📊 LIHAT TARIF SPONSOR (SPONSOR RATE)
+                            </a>
+                            
+                            <!-- TOMBOL SEKUNDER DISKUSI WA -->
+                            <button class="btnWaAction w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-all border border-slate-300 flex items-center justify-center gap-2 uppercase tracking-wide transform active:scale-95">
+                                💬 DISKUSI VIA WHATSAPP
+                            </button>
+                        </div>
+                    </div>
+                `;
+                // Sisipkan tepat setelah simulasi HP selesai di-render
+                container.insertAdjacentHTML('afterend', penutupHtml);
+
+                // Re-bind event listener untuk tombol WA yang baru di-inject
+                const newWaBtns = container.parentElement.querySelectorAll('.btnWaAction');
+                const waText = `Halo tim F1 Swimming, saya ${pitchData.cp_name} dari ${pitchData.company_name}. Saya sudah melihat penawaran di halaman simulasi dan tertarik berdiskusi lebih lanjut.`;
+                newWaBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        window.open(`https://wa.me/6289691219977?text=${encodeURIComponent(waText)}`, '_blank');
+                    });
+                });
+            }
         }
 
-        // FUNGSI GLOBAL UNTUK TOMBOL WA (Mencakup tombol baru di dalam layar HP)
-        const btnWaElements = document.querySelectorAll('.btnWaAction');
+        // FUNGSI GLOBAL UNTUK TOMBOL WA (Tombol statis di HTML)
+        const btnWaElements = document.querySelectorAll('.btnWaAction:not(#simulationContainer ~ div .btnWaAction)');
         if (btnWaElements.length > 0) {
             const waText = `Halo tim F1 Swimming, saya ${pitchData.cp_name} dari ${pitchData.company_name}. Saya sudah melihat penawarannya dan tertarik berdiskusi.`;
             btnWaElements.forEach(btn => {
