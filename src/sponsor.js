@@ -6,7 +6,7 @@ let selectedEventId = null;
 document.addEventListener('DOMContentLoaded', async () => {
     
     // ==========================================
-    // 1. MOBILE MENU TOGGLE[span_2](start_span)[span_2](end_span)
+    // 1. MOBILE MENU TOGGLE
     // ==========================================
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const mobileMenuPanel = document.getElementById('mobileMenuPanel');
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     const contactAdminTopup = () => {
-        const text = `Halo tim F1 Swimming, saya dari ${currentSponsor.sponsor_name}. Saya ingin Top-Up token Injeksi Event.`;
+        const text = `Halo tim F1 Swimming, saya dari ${currentSponsor.company_name}. Saya ingin Top-Up token Injeksi Event.`;
         window.open(`https://wa.me/6289691219977?text=${encodeURIComponent(text)}`, '_blank');
     };
 
@@ -86,6 +86,7 @@ async function fetchSponsorData() {
         }
 
         const userId = session.user.id; 
+        const userEmail = session.user.email; // Fallback jika onbEmail kosong
 
         // Cek tabel sponsors_user
         const { data: sponsorData, error: sponsorError } = await supabaseClient
@@ -94,21 +95,27 @@ async function fetchSponsorData() {
             .eq('owner_id', userId)
             .single();
 
-        // JIKA KOSONG -> PAKSA ONBOARDING SEPERTI DASHBOARD KLUB[span_3](start_span)[span_3](end_span)
+        // JIKA KOSONG -> PAKSA ONBOARDING
         if (sponsorError || !sponsorData) {
             const modalOnboard = document.getElementById('modalOnboarding');
             modalOnboard.classList.remove('hidden'); 
             
+            // Pre-fill email jika ada
+            if(userEmail) document.getElementById('onbEmail').value = userEmail;
+            
             const btnSaveOnboard = document.getElementById('btnSaveOnboarding');
             
             btnSaveOnboard.onclick = async () => {
-                const bName = document.getElementById('onbBrandName').value.trim();
-                const bCat = document.getElementById('onbCategory').value;
+                const bCompany = document.getElementById('onbCompanyName').value.trim();
+                const bPic = document.getElementById('onbPicName').value.trim();
+                const bEmail = document.getElementById('onbEmail').value.trim();
                 const bWa = document.getElementById('onbWa').value.trim();
+                const bCat = document.getElementById('onbCategory').value;
                 const bUrl = document.getElementById('onbUrl').value.trim();
+                
                 const onboardMsg = document.getElementById('onboardMsg');
 
-                if (!bName || !bCat || !bWa || !bUrl) {
+                if (!bCompany || !bPic || !bEmail || !bWa || !bCat || !bUrl) {
                     onboardMsg.innerText = "Semua kolom wajib diisi!";
                     onboardMsg.className = "text-xs font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block border border-red-500/50";
                     return;
@@ -118,18 +125,20 @@ async function fetchSponsorData() {
                 btnSaveOnboard.disabled = true;
 
                 try {
-                    const defaultLogo = `https://ui-avatars.com/api/?name=${encodeURIComponent(bName)}&background=1e293b&color=3b82f6`;
+                    const defaultLogo = `https://ui-avatars.com/api/?name=${encodeURIComponent(bCompany)}&background=1e293b&color=3b82f6`;
 
                     const { error: insertErr } = await supabaseClient
                         .from('sponsors_user')
                         .insert([{
                             owner_id: userId,
-                            sponsor_name: bName,
-                            industry_category: bCat,
+                            company_name: bCompany,
+                            pic_name: bPic,
+                            company_email: bEmail,
                             contact_wa: bWa,
+                            industry_category: bCat,
                             default_url: bUrl,
                             logo_url: defaultLogo,
-                            tokens: 1 // FREE TOKEN!
+                            tokens: 1 // FREE TOKEN
                         }]);
 
                     if (insertErr) throw insertErr;
@@ -145,11 +154,11 @@ async function fetchSponsorData() {
                 } catch (err) {
                     onboardMsg.innerText = "Gagal: " + err.message;
                     onboardMsg.className = "text-xs font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block border border-red-500/50";
-                    btnSaveOnboard.innerText = "Mulai Eksplorasi 🚀";
+                    btnSaveOnboard.innerText = "Simpan & Mulai Eksplorasi 🚀";
                     btnSaveOnboard.disabled = false;
                 }
             };
-            return; // Hentikan eksekusi script ke bawah jika belum onboard
+            return; 
         }
 
         // JIKA SUDAH ADA DATA -> UPDATE UI
@@ -164,14 +173,14 @@ async function fetchSponsorData() {
 
 function updateUI() {
     // Desktop UI
-    document.getElementById('brandNameUI').innerText = currentSponsor.sponsor_name;
+    document.getElementById('brandNameUI').innerText = currentSponsor.company_name;
     document.getElementById('brandCategoryUI').innerText = currentSponsor.industry_category;
     document.getElementById('tokenCountUI').innerText = currentSponsor.tokens;
     document.getElementById('defaultUrlInput').value = currentSponsor.default_url || '';
     if (currentSponsor.logo_url) document.getElementById('brandLogoUI').src = currentSponsor.logo_url;
 
     // Mobile UI
-    document.getElementById('mobileBrandNameUI').innerText = currentSponsor.sponsor_name;
+    document.getElementById('mobileBrandNameUI').innerText = currentSponsor.company_name;
     document.getElementById('mobileBrandCategoryUI').innerText = currentSponsor.industry_category;
     if (currentSponsor.logo_url) document.getElementById('mobileLogoUI').src = currentSponsor.logo_url;
 }
@@ -180,17 +189,12 @@ async function fetchEvents() {
     const grid = document.getElementById('eventGrid');
     
     try {
-        // Ambil data event
         const { data: events, error } = await supabaseClient
             .from('events')
             .select('id, event_name, event_date, kota, provinsi')
             .order('id', { ascending: false });
 
         if (error) throw error;
-
-        // Simulasi logika event_sponsors (Nantinya relasikan dengan tabel event_sponsors sungguhan)
-        // Di sini diasumsikan kita menarik data relasi, untuk MVP kita render button normal
-        
         grid.innerHTML = '';
 
         if(events.length === 0) {
@@ -247,7 +251,6 @@ async function processInject() {
     btnConfirm.disabled = true;
 
     try {
-        // 1. Kurangi Token di tabel sponsors_user
         const newTokenCount = currentSponsor.tokens - 1;
         const { error: updateErr } = await supabaseClient
             .from('sponsors_user')
@@ -255,15 +258,6 @@ async function processInject() {
             .eq('id', currentSponsor.id);
 
         if (updateErr) throw updateErr;
-
-        // 2. Hubungkan ke event_sponsors (Logika Database)
-        // Note: Pastikan kamu punya tabel event_sponsors(event_id, sponsor_user_id) 
-        /*
-        const { error: injectErr } = await supabaseClient.from('event_sponsors').insert([
-            { event_id: selectedEventId, sponsor_id: currentSponsor.id, redirect_url: injectUrl }
-        ]);
-        if (injectErr) throw injectErr;
-        */
 
         statusMsg.innerHTML = "✅ <strong>Suntikan Berhasil!</strong> Logo Anda siap tayang.";
         statusMsg.className = "text-xs font-bold text-center rounded-lg p-3 mb-4 bg-emerald-900/30 text-emerald-400 block border border-emerald-500/50";
