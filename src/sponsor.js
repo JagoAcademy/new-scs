@@ -3,6 +3,7 @@ import { supabaseClient } from './supabase.js';
 let currentSponsor = null;
 let currentUserId = null;
 let ownedBrands = [];
+let unclaimedBrandsCatalog = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
     
@@ -102,7 +103,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         formProfilSponsor.classList.add('hidden');
     });
 
-    // Simpan Profil Induk (Dengan Upload Logo Storage)
+    // Simpan Profil Induk (Upload Logo Storage 'logo-klub')
     document.getElementById('btnSaveProfileInfo').addEventListener('click', async () => {
         const btnSave = document.getElementById('btnSaveProfileInfo');
         const cName = document.getElementById('editCorpName').value.trim();
@@ -123,7 +124,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             let newLogoUrl = currentSponsor.logo_url;
 
-            // Logika upload storage sama dengan club[span_3](start_span)[span_3](end_span)
             if (fileLogo) {
                 const fileExt = fileLogo.name.split('.').pop();
                 const fileName = `corp_${currentSponsor.id}_${Date.now()}.${fileExt}`;
@@ -201,18 +201,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    const contactAdminTopup = () => {
+        const text = `Halo tim F1 Swimming, saya dari ${currentSponsor?.company_name}. Saya ingin Top-Up token Injeksi Event.`;
+        window.open(`https://wa.me/6289691219977?text=${encodeURIComponent(text)}`, '_blank');
+    };
+
+    document.getElementById('btnTopupDesk').addEventListener('click', contactAdminTopup);
+    document.getElementById('btnTopupMobile').addEventListener('click', contactAdminTopup);
+
     // ==========================================
-    // 5. LOGIKA MANAJEMEN BRAND ANAK (master_sponsors)
+    // 5. LOGIKA MANAJEMEN BRAND ANAK (Pilih dari master_sponsors)
     // ==========================================
     const modalAddBrand = document.getElementById('modalAddBrand');
     const closeModalBrandBtn = document.getElementById('closeModalBrandBtn');
+    const selectBank = document.getElementById('selectBankSponsor');
+    const previewLogoKatalog = document.getElementById('previewKatalogLogo');
+    const placeholderLogo = document.getElementById('previewPlaceholder');
     
     document.getElementById('btnOpenAddBrand').addEventListener('click', () => {
-        document.getElementById('inputBrandName').value = '';
         document.getElementById('inputBrandUrl').value = '';
-        document.getElementById('inputBrandLogo').value = '';
         document.getElementById('brandStatusMsg').classList.add('hidden');
+        previewLogoKatalog.src = '';
+        previewLogoKatalog.classList.add('hidden');
+        placeholderLogo.classList.remove('hidden');
         
+        loadUnclaimedBrands();
         modalAddBrand.classList.remove('hidden');
     });
 
@@ -220,72 +233,85 @@ document.addEventListener('DOMContentLoaded', async () => {
         modalAddBrand.classList.add('hidden');
     });
 
+    // Event saat dropdown brand berubah, tampilkan logo
+    selectBank.addEventListener('change', (e) => {
+        const id = e.target.value;
+        if (!id) {
+            previewLogoKatalog.src = '';
+            previewLogoKatalog.classList.add('hidden');
+            placeholderLogo.classList.remove('hidden');
+            return;
+        }
+        const brand = unclaimedBrandsCatalog.find(b => b.id == id);
+        if (brand && brand.logo_url) {
+            previewLogoKatalog.src = brand.logo_url;
+            previewLogoKatalog.classList.remove('hidden');
+            placeholderLogo.classList.add('hidden');
+        } else {
+            previewLogoKatalog.src = '';
+            previewLogoKatalog.classList.add('hidden');
+            placeholderLogo.classList.remove('hidden');
+        }
+    });
+
     document.getElementById('btnSaveBrand').addEventListener('click', async () => {
         const btnSave = document.getElementById('btnSaveBrand');
-        const bName = document.getElementById('inputBrandName').value.trim();
-        const bCat = document.getElementById('inputBrandCategory').value;
+        const selectedId = document.getElementById('selectBankSponsor').value;
         const bUrl = document.getElementById('inputBrandUrl').value.trim();
-        const fileLogo = document.getElementById('inputBrandLogo').files[0];
         const statusMsg = document.getElementById('brandStatusMsg');
 
-        if (!bName || !bUrl || !fileLogo) {
-            statusMsg.innerText = "Nama, Logo, dan URL Redirect wajib diisi!";
+        if (!selectedId || !bUrl) {
+            statusMsg.innerText = "Pilih Brand dan isi URL Promo Anda!";
             statusMsg.className = "text-xs font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block border border-red-500/30";
             return;
         }
 
-        btnSave.innerText = "Menyimpan Brand...";
+        btnSave.innerText = "Mengklaim Brand...";
         btnSave.disabled = true;
 
         try {
-            // Upload logo brand ke storage
-            const fileExt = fileLogo.name.split('.').pop();
-            const fileName = `brand_${currentUserId}_${Date.now()}.${fileExt}`;
-            const { error: uploadError } = await supabaseClient.storage.from('logo-klub').upload(fileName, fileLogo);
-            if (uploadError) throw uploadError;
-            
-            const { data: urlData } = supabaseClient.storage.from('logo-klub').getPublicUrl(fileName);
-            const brandLogoUrl = urlData.publicUrl;
+            // UPDATE: Pasang owner_id ke brand yang dipilih
+            const { error: updateErr } = await supabaseClient
+                .from('master_sponsors')
+                .update({ 
+                    owner_id: currentUserId,
+                    link_url: bUrl 
+                })
+                .eq('id', selectedId);
 
-            // Suntik ke master_sponsors dengan relasi owner_id
-            const { error: insertErr } = await supabaseClient.from('master_sponsors').insert([{
-                owner_id: currentUserId,
-                sponsor_name: bName,
-                link_url: bUrl,
-                logo_url: brandLogoUrl,
-                kategori: bCat,
-                sponsor_type: 'placement' // Default
-            }]);
+            if (updateErr) throw updateErr;
 
-            if (insertErr) throw insertErr;
-
-            statusMsg.innerHTML = "✅ <strong>Brand Berhasil Ditambahkan!</strong>";
+            statusMsg.innerHTML = "✅ <strong>Brand Berhasil Diklaim!</strong>";
             statusMsg.className = "text-xs font-bold text-center rounded-lg p-3 bg-emerald-900/30 text-emerald-400 block border border-emerald-500/30";
             
             setTimeout(() => {
                 closeModalBrandBtn.click();
-                btnSave.innerText = "Simpan Brand 🚀";
+                btnSave.innerText = "Klaim Brand 🚀";
                 btnSave.disabled = false;
-                fetchBrands(); // Refresh daftar brand di sidebar
+                fetchBrands(); // Refresh daftar brand milik korporasi
             }, 1500);
 
         } catch (err) {
-            statusMsg.innerText = "Gagal menyimpan brand: " + err.message;
+            statusMsg.innerText = "Gagal mengklaim brand: " + err.message;
             statusMsg.className = "text-xs font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block border border-red-500/30";
-            btnSave.innerText = "Simpan Brand 🚀";
+            btnSave.innerText = "Klaim Brand 🚀";
             btnSave.disabled = false;
         }
     });
 });
 
+// ==========================================
+// FUNGSI UTAMA FETCH & RENDER
+// ==========================================
 async function fetchSponsorData() {
     try {
         const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
         if (sessionError || !session) return window.location.replace('/sponsor-auth.html');
 
         currentUserId = session.user.id; 
+        const userEmail = session.user.email;
 
-        // Fetch Induk Korporasi
+        // Fetch Profil Korporasi
         const { data: sponsorData, error: sponsorError } = await supabaseClient
             .from('sponsors_user')
             .select('*')
@@ -293,8 +319,63 @@ async function fetchSponsorData() {
             .single();
 
         if (sponsorError || !sponsorData) {
-            // Logika Onboarding Induk... (bisa dicopy dari versi sebelumnya jika terhapus, untuk MVP kita skip karena sedang testing dashboard utama)
-            return;
+            const modalOnboard = document.getElementById('modalOnboarding');
+            modalOnboard.classList.remove('hidden'); 
+            
+            if(userEmail) document.getElementById('onbEmail').value = userEmail;
+            
+            const btnSaveOnboard = document.getElementById('btnSaveOnboarding');
+            btnSaveOnboard.onclick = async () => {
+                const bCompany = document.getElementById('onbCompanyName').value.trim();
+                const bPic = document.getElementById('onbPicName').value.trim();
+                const bEmail = document.getElementById('onbEmail').value.trim();
+                const bWa = document.getElementById('onbWa').value.trim();
+                const bCat = document.getElementById('onbCategory').value;
+                const onboardMsg = document.getElementById('onboardMsg');
+
+                if (!bCompany || !bPic || !bEmail || !bWa || !bCat) {
+                    onboardMsg.innerText = "Semua kolom wajib diisi!";
+                    onboardMsg.className = "text-xs font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block border border-red-500/50";
+                    return;
+                }
+
+                btnSaveOnboard.innerText = "Membangun Profil...";
+                btnSaveOnboard.disabled = true;
+
+                try {
+                    const defaultLogo = `https://ui-avatars.com/api/?name=${encodeURIComponent(bCompany)}&background=1e293b&color=3b82f6`;
+
+                    const { error: insertErr } = await supabaseClient
+                        .from('sponsors_user')
+                        .insert([{
+                            owner_id: currentUserId,
+                            company_name: bCompany,
+                            pic_name: bPic,
+                            company_email: bEmail,
+                            contact_wa: bWa,
+                            industry_category: bCat,
+                            logo_url: defaultLogo,
+                            tokens: 1 // FREE TOKEN!
+                        }]);
+
+                    if (insertErr) throw insertErr;
+
+                    onboardMsg.innerText = "✅ Profil berhasil dibuat! Menyiapkan Dashboard...";
+                    onboardMsg.className = "text-xs font-bold text-center rounded-lg p-3 bg-emerald-900/30 text-emerald-400 block border border-emerald-500/50";
+                    
+                    setTimeout(() => {
+                        modalOnboard.classList.add('hidden');
+                        fetchSponsorData(); 
+                    }, 1500);
+
+                } catch (err) {
+                    onboardMsg.innerText = "Gagal: " + err.message;
+                    onboardMsg.className = "text-xs font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block border border-red-500/50";
+                    btnSaveOnboard.innerText = "Simpan & Mulai Eksplorasi 🚀";
+                    btnSaveOnboard.disabled = false;
+                }
+            };
+            return; 
         }
 
         currentSponsor = sponsorData; 
@@ -302,20 +383,52 @@ async function fetchSponsorData() {
         await fetchBrands();
         await fetchEvents();
 
-    } catch (error) { console.error(error); }
+    } catch (error) { console.error("Error init:", error); }
 }
 
 function updateUI() {
     document.getElementById('brandNameUI').innerText = currentSponsor.company_name;
+    document.getElementById('mobileBrandNameUI').innerText = currentSponsor.company_name;
+    
+    // Fallback UI Category
+    const txtCat = currentSponsor.industry_category || 'General';
+    document.getElementById('brandCategoryUI').innerText = txtCat;
+    document.getElementById('mobileBrandCategoryUI').innerText = txtCat;
+
     if (currentSponsor.logo_url) {
         document.getElementById('brandLogoUI').src = currentSponsor.logo_url;
         document.getElementById('editLogoPreview').src = currentSponsor.logo_url;
         document.getElementById('mobileLogoUI').src = currentSponsor.logo_url;
     }
-    document.getElementById('mobileBrandNameUI').innerText = currentSponsor.company_name;
+    
     document.getElementById('tokenCountUI').innerText = currentSponsor.tokens;
 }
 
+// Menarik katalog brand yang BISA diklaim (owner_id is null)
+async function loadUnclaimedBrands() {
+    const select = document.getElementById('selectBankSponsor');
+    select.innerHTML = '<option value="">Memuat katalog pusat...</option>';
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('master_sponsors')
+            .select('id, sponsor_name, kategori, logo_url')
+            .is('owner_id', null)
+            .order('sponsor_name', { ascending: true });
+
+        if (error) throw error;
+        unclaimedBrandsCatalog = data;
+        
+        select.innerHTML = '<option value="">-- Pilih Brand Anda --</option>';
+        data.forEach(b => {
+            select.innerHTML += `<option value="${b.id}">${b.sponsor_name} (${b.kategori || 'General'})</option>`;
+        });
+    } catch(err) {
+        select.innerHTML = '<option value="">Gagal memuat katalog</option>';
+    }
+}
+
+// Menarik brand anak yang SUDAH diklaim oleh korporasi ini
 async function fetchBrands() {
     const listSidebar = document.getElementById('brandListSidebar');
     listSidebar.innerHTML = '<p class="text-xs text-slate-500 italic text-center py-4">Memuat data brand...</p>';
@@ -333,17 +446,17 @@ async function fetchBrands() {
         listSidebar.innerHTML = '';
 
         if(brands.length === 0) {
-            listSidebar.innerHTML = `<p class="text-[10px] text-slate-500 text-center py-2 bg-slate-900/50 rounded-lg border border-slate-700 border-dashed">Belum ada brand yang terdaftar.</p>`;
+            listSidebar.innerHTML = `<p class="text-[10px] text-slate-500 text-center py-2 bg-slate-900/50 rounded-lg border border-slate-700 border-dashed">Belum ada brand yang diklaim.</p>`;
             return;
         }
 
         brands.forEach(b => {
             listSidebar.innerHTML += `
-                <div class="flex items-center gap-3 bg-slate-900 p-2 rounded-xl border border-slate-700 hover:border-slate-500 transition-colors">
-                    <img src="${b.logo_url}" class="w-8 h-8 rounded-lg bg-white object-contain p-0.5">
+                <div class="flex items-center gap-3 bg-slate-900 p-2.5 rounded-xl border border-slate-700 hover:border-slate-500 transition-colors shadow-sm relative group">
+                    <img src="${b.logo_url}" class="w-10 h-10 rounded-lg bg-white object-contain p-1 border border-slate-600">
                     <div class="flex-1 min-w-0">
-                        <p class="text-xs font-bold text-white truncate">${b.sponsor_name}</p>
-                        <a href="${b.link_url}" target="_blank" class="text-[9px] font-mono text-blue-400 hover:underline truncate block">${b.link_url}</a>
+                        <p class="text-xs font-black text-white truncate">${b.sponsor_name}</p>
+                        <a href="${b.link_url}" target="_blank" class="text-[9px] font-mono text-blue-400 hover:underline truncate block w-[90%]">${b.link_url}</a>
                     </div>
                 </div>
             `;
@@ -373,7 +486,7 @@ async function fetchEvents() {
                         <h3 class="font-black text-white text-lg leading-tight mb-1">${ev.event_name}</h3>
                         <p class="text-xs text-slate-400 font-mono">📅 ${ev.event_date}</p>
                     </div>
-                    <button class="w-full py-2.5 bg-slate-700 hover:bg-blue-600 text-white font-bold rounded-lg text-xs transition-colors shadow border border-slate-600 hover:border-blue-500">Suntik Logo 🚀</button>
+                    <button class="w-full py-2.5 bg-slate-700 hover:bg-blue-600 text-white font-bold rounded-lg text-xs transition-colors shadow border border-slate-600 hover:border-blue-500">Pilih Event ➔</button>
                 </div>
             `;
         });
