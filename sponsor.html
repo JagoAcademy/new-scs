@@ -14,7 +14,6 @@
 
     <!-- TOP NAV RESPOSIVE -->
     <nav class="bg-black shadow-lg p-3 md:px-6 md:py-4 flex justify-between items-center border-b border-slate-800 sticky top-0 z-40">
-        
         <!-- Kiri: Logo & Title -->
         <div class="flex items-center gap-2 md:gap-3">
             <span class="text-lg md:text-xl font-black text-white uppercase tracking-widest">Brand<span class="text-blue-500">Portal</span></span>
@@ -95,12 +94,18 @@
                     <p class="text-[11px] text-slate-400 mt-1">Pilih event yang sesuai dengan target demografi brand Anda.</p>
                 </div>
                 
-                <!-- Filter Regional -->
+                <!-- FILTER REGIONAL & PENCARIAN -->
                 <div class="flex flex-col sm:flex-row gap-3 w-full xl:w-auto shrink-0">
-                    <select id="filterProvinsi" class="bg-slate-900 border border-slate-600 text-slate-300 text-xs font-bold rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3 outline-none w-full sm:w-48 cursor-pointer">
+                    <div class="relative w-full sm:w-56">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <input type="text" id="searchEvent" class="bg-slate-900 border border-slate-600 text-white text-xs font-bold rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full pl-9 p-3 outline-none transition-colors" placeholder="Cari event...">
+                    </div>
+                    <select id="filterProvinsi" class="bg-slate-900 border border-slate-600 text-slate-300 text-xs font-bold rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3 outline-none w-full sm:w-40 cursor-pointer">
                         <option value="">Semua Provinsi</option>
                     </select>
-                    <select id="filterKota" class="bg-slate-900 border border-slate-600 text-slate-300 text-xs font-bold rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3 outline-none w-full sm:w-48 cursor-pointer" disabled>
+                    <select id="filterKota" class="bg-slate-900 border border-slate-600 text-slate-300 text-xs font-bold rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3 outline-none w-full sm:w-40 cursor-pointer" disabled>
                         <option value="">Semua Kota/Kab</option>
                     </select>
                 </div>
@@ -136,7 +141,6 @@
             </div>
             
             <div class="p-6 overflow-y-auto hide-scrollbar flex-1">
-                <!-- TAB PROFIL KORPORASI -->
                 <div id="formProfilSponsor" class="space-y-4">
                     <div class="flex items-center gap-4 bg-slate-900 p-4 rounded-xl border border-slate-700">
                         <img src="/images/logo.png" id="editLogoPreview" class="w-14 h-14 rounded-full border-2 border-slate-600 object-cover bg-white">
@@ -161,7 +165,6 @@
                     <div id="statusProfilMsg" class="hidden text-sm font-bold text-center rounded-lg p-3"></div>
                 </div>
                 
-                <!-- TAB KEAMANAN AKUN -->
                 <div id="formAkunSponsor" class="space-y-4 hidden">
                     <div class="p-3 bg-amber-900/30 border border-amber-500/30 rounded-xl text-amber-400 text-xs leading-relaxed mb-2">
                         <strong>Perhatian:</strong> Jika Anda mengubah Email, sistem akan mengirimkan link verifikasi ke email baru Anda.
@@ -182,49 +185,94 @@
         </div>
     </div>
 
-    <!-- MODAL TAMBAH / EDIT BRAND -->
-    <div id="modalAddBrand" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] hidden flex items-center justify-center p-4 transition-opacity">
-        <div class="bg-slate-800 border border-slate-700 rounded-3xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh]">
-            <div class="p-5 border-b border-slate-700 bg-slate-900 flex justify-between items-center shrink-0">
-                <h3 id="modalBrandTitle" class="font-extrabold text-white text-lg flex items-center gap-2"><span>🏷️</span> Tambah Brand</h3>
-                <button id="closeModalBrandBtn" class="text-slate-400 hover:text-red-500 text-2xl font-bold transition">&times;</button>
+    <!-- MODAL TAMBAH / EDIT BRAND KOMPREHENSIF (SAMA PERSIS DENGAN PREVIEW ADMIN) -->
+    <div id="modalAddBrand" class="fixed inset-0 bg-[#0b1120]/90 z-[90] hidden flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
+        <div class="bg-[#1e293b] rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden my-auto border border-slate-700 mt-10 mb-10">
+            <div class="p-5 border-b border-slate-700 bg-[#1e293b] flex justify-between items-center sticky top-0 z-10">
+                <h3 id="modalBrandTitle" class="font-black text-amber-500 text-sm tracking-widest uppercase flex items-center gap-2">
+                    <span>➕</span> TAMBAH SPONSOR
+                </h3>
+                <button id="closeModalBrandBtn" class="text-slate-400 hover:text-white text-2xl font-bold">&times;</button>
             </div>
             
-            <div class="p-6 space-y-4 overflow-y-auto hide-scrollbar flex-1">
-                <input type="hidden" id="editBrandId"> <!-- Hidden ID untuk mode Edit -->
+            <div class="p-6 space-y-5">
+                <input type="hidden" id="editBrandId">
+                <div id="brandStatusMsg" class="hidden bg-emerald-900/30 text-emerald-400 p-3 rounded-lg text-xs font-bold border border-emerald-800"></div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1">Logo Brand (Rasio 1:1) <span class="text-red-500">*</span></label>
-                    <input type="file" id="inputBrandLogo" accept="image/*" class="w-full text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:font-bold file:bg-emerald-900/50 file:text-emerald-400 hover:file:bg-emerald-800/50 text-slate-400 outline-none bg-slate-900 p-1 border border-slate-600 rounded-xl mb-2">
-                    <div class="h-24 w-24 bg-white rounded-xl border-2 border-dashed border-slate-600 flex items-center justify-center p-1 relative overflow-hidden">
-                        <span id="previewPlaceholder" class="text-[10px] font-bold text-slate-400 z-0 text-center">Preview<br>Logo</span>
-                        <img id="previewKatalogLogo" src="" class="absolute inset-0 w-full h-full object-contain p-1 hidden z-10">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Nama Sponsor</label>
+                        <input type="text" id="inputBrandName" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-amber-500 outline-none" placeholder="Cth: Biskuit Roma">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">URL Promo / Website</label>
+                        <input type="url" id="inputBrandUrl" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-amber-500 outline-none font-mono" placeholder="https://...">
                     </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1">Nama Brand <span class="text-red-500">*</span></label>
-                    <input type="text" id="inputBrandName" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Contoh: Erafone / iBox">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1">Kategori Industri <span class="text-red-500">*</span></label>
-                    <select id="inputBrandCategory" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none appearance-none">
-                        <option value="General">General / Lainnya</option>
-                        <option value="Apparel">Sport Apparel</option>
-                        <option value="FnB">Food & Beverage</option>
-                        <option value="Skincare">Skincare & Beauty</option>
-                        <option value="Tech">Technology / Gadget</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1">Redirect URL (Tujuan Klik Ads)</label>
-                    <input type="url" id="inputBrandUrl" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-blue-400 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-mono" placeholder="https://link-campaign.com">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Status Partner (Kasta)</label>
+                        <select id="inputBrandType" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-amber-500 outline-none">
+                            <option value="corporate">🏢 CORPORATE (Direct Link Promo)</option>
+                            <option value="high_potential">💎 HIGH POTENTIAL TARGET</option>
+                            <option value="unofficial">⚪ REGULAR / DUMMY CATALOG</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Kategori Industri</label>
+                        <input type="text" id="inputBrandCategory" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-amber-500 outline-none" placeholder="Cth: FnB">
+                    </div>
                 </div>
 
-                <div id="brandStatusMsg" class="hidden text-xs font-bold text-center rounded-lg p-3"></div>
+                <!-- DYNAMIC SMART-TARGETING -->
+                <div class="bg-blue-900/20 p-4 rounded-xl border border-blue-500/30">
+                    <label class="block text-[10px] font-black text-blue-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <span>🎯</span> Dynamic Smart-Targeting (Ad-Tech)
+                    </label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Target Gender</label>
+                            <select id="inputTargetGender" class="w-full bg-[#0f172a] border border-slate-600 rounded-lg p-2.5 text-sm text-white focus:border-blue-500 outline-none">
+                                <option value="ALL">Semua Gender</option>
+                                <option value="Putra">Khusus Putra</option>
+                                <option value="Putri">Khusus Putri</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Target Umur</label>
+                            <select id="inputTargetUmur" class="w-full bg-[#0f172a] border border-slate-600 rounded-lg p-2.5 text-sm text-white focus:border-blue-500 outline-none">
+                                <option value="ALL">Semua Umur</option>
+                                <option value="KIDS">Anak-anak (Pemula / Kids)</option>
+                                <option value="ADULT">Dewasa (Open / Senior)</option>
+                            </select>
+                            <p class="text-[8px] text-slate-500 mt-1">*(KIDS akan otomatis tayang jika nama KU mengandung "Pemula". ADULT jika "Open")</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1.5">🎁 Benefit Yang Ditawarkan</label>
+                    <input type="text" id="inputBrandBenefit" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-amber-500 outline-none" placeholder="Contoh: Product Support, Booth, Branding">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1.5">⚠️ Syarat Umum</label>
+                    <textarea id="inputBrandSyarat" rows="3" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-amber-500 outline-none" placeholder="Isi syarat umum..."></textarea>
+                </div>
+
+                <div class="bg-[#0f172a] p-4 rounded-xl border border-slate-700">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Update Logo</label>
+                    <input type="file" id="inputBrandLogo" accept="image/*" class="text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-slate-700 file:text-white hover:file:bg-slate-600 cursor-pointer w-full mb-3 outline-none">
+                    <div class="h-24 w-40 bg-white rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center p-2 relative">
+                        <img id="previewKatalogLogo" src="" class="max-h-full max-w-full object-contain hidden z-10">
+                        <span id="previewPlaceholder" class="text-slate-400 text-xs font-bold absolute z-0">Preview</span>
+                    </div>
+                </div>
             </div>
-            
-            <div class="p-5 bg-slate-900 border-t border-slate-700 shrink-0">
-                <button id="btnSaveBrand" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3.5 rounded-xl transition-colors shadow-[0_0_15px_rgba(16,185,129,0.4)]">Simpan Brand 🚀</button>
+
+            <div class="p-5 bg-[#1e293b] border-t border-slate-700 flex justify-between gap-4 sticky bottom-0 z-10">
+                <button id="btnSaveBrand" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-6 py-3 rounded-xl font-black text-sm transition shadow-lg w-full">💾 SIMPAN SPONSOR</button>
             </div>
         </div>
     </div>

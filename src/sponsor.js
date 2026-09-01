@@ -47,8 +47,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     await fetchSponsorData();
 
     // ==========================================
-    // 4. API EMSIFA (PROVINSI & KOTA) - Filter Event
+    // 4. API EMSIFA & PENCARIAN (Filter Event)
     // ==========================================
+    const searchEvent = document.getElementById('searchEvent');
     const elProvinsi = document.getElementById('filterProvinsi');
     const elKota = document.getElementById('filterKota');
 
@@ -63,6 +64,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     loadProvinsi();
+
+    searchEvent.addEventListener('input', renderEvents); // Trigger saat ketik search
 
     elProvinsi.addEventListener('change', async function() {
         const selectedOption = this.options[this.selectedIndex];
@@ -182,26 +185,66 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (err) { alert(err.message); btnSave.innerText = "Simpan Profil Induk"; btnSave.disabled = false; }
     });
 
+    // Simpan Keamanan Akun
+    document.getElementById('btnSaveAuthInfo').addEventListener('click', async () => {
+        const btnAuth = document.getElementById('btnSaveAuthInfo');
+        const newEmail = document.getElementById('editAuthEmail').value.trim();
+        const newPass = document.getElementById('editAuthPassword').value.trim();
+        const statusMsg = document.getElementById('statusAkunMsg');
+
+        if (!newEmail && !newPass) return;
+
+        btnAuth.innerText = "Memproses...";
+        btnAuth.disabled = true;
+
+        try {
+            let updates = {};
+            if (newEmail) updates.email = newEmail;
+            if (newPass) updates.password = newPass;
+
+            const { error } = await supabaseClient.auth.updateUser(updates);
+            if (error) throw error;
+
+            statusMsg.innerHTML = "✅ <strong>Berhasil!</strong><br><span class='font-normal text-[10px] text-slate-400'>Cek inbox email lama dan baru Anda untuk konfirmasi (jika ubah email).</span>";
+            statusMsg.className = "text-sm text-center rounded-lg p-3 bg-emerald-900/30 text-emerald-400 block mt-4 border border-emerald-500/30";
+            document.getElementById('editAuthPassword').value = '';
+
+            setTimeout(() => {
+                btnAuth.innerText = "Terapkan Perubahan Akun";
+                btnAuth.disabled = false;
+            }, 3000);
+
+        } catch (err) {
+            statusMsg.innerText = "Gagal mengubah: " + err.message;
+            statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block mt-4 border border-red-500/30";
+            btnAuth.innerText = "Terapkan Perubahan Akun";
+            btnAuth.disabled = false;
+        }
+    });
+
     // ==========================================
-    // 6. MANAJEMEN BRAND ANAK (TAMBAH & EDIT)
+    // 6. MANAJEMEN BRAND ANAK KOMPREHENSIF
     // ==========================================
     const modalAddBrand = document.getElementById('modalAddBrand');
     const closeModalBrandBtn = document.getElementById('closeModalBrandBtn');
     
     // Buka Modal Mode TAMBAH
     document.getElementById('btnOpenAddBrand').addEventListener('click', () => {
-        document.getElementById('modalBrandTitle').innerHTML = '<span>🏷️</span> Tambah Brand';
+        document.getElementById('modalBrandTitle').innerHTML = '<span>➕</span> TAMBAH SPONSOR';
         document.getElementById('editBrandId').value = '';
-        document.getElementById('inputBrandName').value = '';
-        document.getElementById('inputBrandUrl').value = '';
-        document.getElementById('inputBrandCategory').value = 'General';
-        document.getElementById('inputBrandLogo').value = '';
+        
+        ['inputBrandName', 'inputBrandUrl', 'inputBrandCategory', 'inputBrandBenefit', 'inputBrandSyarat', 'inputBrandLogo'].forEach(id => document.getElementById(id).value = '');
+        
+        document.getElementById('inputBrandType').value = 'corporate';
+        document.getElementById('inputTargetGender').value = 'ALL';
+        document.getElementById('inputTargetUmur').value = 'ALL';
+        
         document.getElementById('previewKatalogLogo').src = '';
         document.getElementById('previewKatalogLogo').classList.add('hidden');
         document.getElementById('previewPlaceholder').classList.remove('hidden');
         document.getElementById('brandStatusMsg').classList.add('hidden');
-        reusedLogoUrl = null;
         
+        reusedLogoUrl = null;
         modalAddBrand.classList.remove('hidden');
     });
 
@@ -221,65 +264,64 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Simpan Brand (Insert atau Update)
+    // Simpan Brand
     document.getElementById('btnSaveBrand').addEventListener('click', async () => {
         const btnSave = document.getElementById('btnSaveBrand');
         const bId = document.getElementById('editBrandId').value;
         const bName = document.getElementById('inputBrandName').value.trim();
-        const bCat = document.getElementById('inputBrandCategory').value;
-        const bUrl = document.getElementById('inputBrandUrl').value.trim();
-        const fileLogo = document.getElementById('inputBrandLogo').files[0];
         const statusMsg = document.getElementById('brandStatusMsg');
 
         if (!bName) {
-            statusMsg.innerText = "Nama Brand wajib diisi!";
+            statusMsg.innerText = "Nama Sponsor wajib diisi!";
             statusMsg.className = "text-xs font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block border border-red-500/30";
             return;
         }
 
-        btnSave.innerText = "Menyimpan Brand...";
+        btnSave.innerText = "⏳ MENYIMPAN...";
         btnSave.disabled = true;
 
         try {
-            let finalLogoUrl = reusedLogoUrl;
+            let finalLogoUrl = reusedLogoUrl || '';
+            const fileLogo = document.getElementById('inputBrandLogo').files[0];
             
             if (fileLogo) {
-                const fileExt = fileLogo.name.split('.').pop();
-                const fileName = `brand_${currentUserId}_${Date.now()}.${fileExt}`;
-                const { error: uploadError } = await supabaseClient.storage.from('sponsor-ads').upload(fileName, fileLogo);
-                if (uploadError) throw uploadError;
+                const ext = fileLogo.name.split('.').pop();
+                const fileName = `brand_${currentUserId}_${Date.now()}.${ext}`;
+                const { error: upErr } = await supabaseClient.storage.from('sponsor-ads').upload(fileName, fileLogo);
+                if (upErr) throw upErr;
                 const { data: urlData } = supabaseClient.storage.from('sponsor-ads').getPublicUrl(fileName);
                 finalLogoUrl = urlData.publicUrl;
             }
 
-            // Jika Insert, kita butuh fallback logo kalau tidak upload
             if (!bId && !finalLogoUrl) {
-                finalLogoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(bName)}&background=0f172a&color=3b82f6`;
+                finalLogoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(bName)}&background=0f172a&color=f59e0b`;
             }
 
-            const payloadData = {
-                sponsor_name: bName,
-                link_url: bUrl,
-                logo_url: finalLogoUrl,
-                kategori: bCat,
-                sponsor_type: 'corporate'
+            const payloadData = { 
+                sponsor_name: bName, 
+                link_url: document.getElementById('inputBrandUrl').value.trim(), 
+                sponsor_type: document.getElementById('inputBrandType').value,
+                kategori: document.getElementById('inputBrandCategory').value.trim(),
+                jenis_bantuan: document.getElementById('inputBrandBenefit').value.trim(),
+                syarat: document.getElementById('inputBrandSyarat').value.trim(),
+                target_gender: document.getElementById('inputTargetGender').value,
+                target_umur: document.getElementById('inputTargetUmur').value,
+                logo_url: finalLogoUrl
             };
 
             if (bId) {
-                // UPDATE
                 await supabaseClient.from('master_sponsors').update(payloadData).eq('id', bId);
             } else {
-                // INSERT
                 payloadData.owner_id = currentUserId;
                 await supabaseClient.from('master_sponsors').insert([payloadData]);
             }
 
-            statusMsg.innerHTML = "✅ <strong>Brand Berhasil Disimpan!</strong>";
+            statusMsg.innerHTML = "✅ <strong>Berhasil Disimpan!</strong>";
             statusMsg.className = "text-xs font-bold text-center rounded-lg p-3 bg-emerald-900/30 text-emerald-400 block border border-emerald-500/30";
             
             setTimeout(() => {
                 closeModalBrandBtn.click();
-                btnSave.innerText = "Simpan Brand 🚀";
+                btnSave.innerText = "💾 SIMPAN SPONSOR";
                 btnSave.disabled = false;
                 fetchBrands(); 
             }, 1500);
@@ -287,36 +329,41 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (err) {
             statusMsg.innerText = "Gagal: " + err.message;
             statusMsg.className = "text-xs font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block border border-red-500/30";
-            btnSave.innerText = "Simpan Brand 🚀";
+            btnSave.innerText = "💾 SIMPAN SPONSOR";
             btnSave.disabled = false;
         }
     });
 
 });
 
-// Global Function untuk Edit Modal (Dipanggil dari Inline HTML rendering)
+// Global Function Edit Brand (Dipanggil dari HTML onclick)
 window.openEditBrandModal = function(encodedData) {
     const brand = JSON.parse(decodeURIComponent(encodedData));
     
-    document.getElementById('modalBrandTitle').innerHTML = '<span>✏️</span> Edit Brand';
+    document.getElementById('modalBrandTitle').innerHTML = '<span>✏️</span> DETAIL SPONSOR';
     document.getElementById('editBrandId').value = brand.id;
     document.getElementById('inputBrandName').value = brand.sponsor_name || '';
     document.getElementById('inputBrandUrl').value = brand.link_url || '';
-    document.getElementById('inputBrandCategory').value = brand.kategori || 'General';
+    document.getElementById('inputBrandType').value = brand.sponsor_type || 'corporate';
+    document.getElementById('inputBrandCategory').value = brand.kategori || '';
+    document.getElementById('inputTargetGender').value = brand.target_gender || 'ALL';
+    document.getElementById('inputTargetUmur').value = brand.target_umur || 'ALL';
+    document.getElementById('inputBrandBenefit').value = brand.jenis_bantuan || '';
+    document.getElementById('inputBrandSyarat').value = brand.syarat || '';
+    
     document.getElementById('inputBrandLogo').value = '';
     
     reusedLogoUrl = brand.logo_url || null;
-    
-    const previewKatalogLogo = document.getElementById('previewKatalogLogo');
-    const placeholderLogo = document.getElementById('previewPlaceholder');
+    const previewLogo = document.getElementById('previewKatalogLogo');
+    const placeholder = document.getElementById('previewPlaceholder');
 
     if (reusedLogoUrl) {
-        previewKatalogLogo.src = reusedLogoUrl;
-        previewKatalogLogo.classList.remove('hidden');
-        placeholderLogo.classList.add('hidden');
+        previewLogo.src = reusedLogoUrl;
+        previewLogo.classList.remove('hidden');
+        placeholder.classList.add('hidden');
     } else {
-        previewKatalogLogo.classList.add('hidden');
-        placeholderLogo.classList.remove('hidden');
+        previewLogo.classList.add('hidden');
+        placeholder.classList.remove('hidden');
     }
 
     document.getElementById('brandStatusMsg').classList.add('hidden');
@@ -442,11 +489,11 @@ async function fetchBrands() {
         brands.forEach(b => {
             const encoded = encodeURIComponent(JSON.stringify(b));
             grid.innerHTML += `
-                <div class="bg-slate-900 p-5 rounded-2xl border border-slate-700 hover:border-slate-500 transition-colors shadow-sm relative group flex items-center gap-4">
+                <div class="bg-slate-900 p-5 rounded-2xl border border-slate-700 hover:border-amber-500/50 transition-colors shadow-sm relative group flex items-center gap-4">
                     <img src="${b.logo_url}" class="w-14 h-14 rounded-xl bg-white object-contain p-1.5 border border-slate-600">
                     <div class="flex-1 min-w-0">
                         <h3 class="text-sm font-black text-white truncate">${b.sponsor_name}</h3>
-                        <p class="text-[10px] text-slate-400 font-bold mb-1">${b.kategori || 'General'}</p>
+                        <p class="text-[10px] text-amber-500 font-bold mb-1">${b.kategori || 'General'}</p>
                         <a href="${b.link_url}" target="_blank" class="text-[10px] font-mono text-blue-400 hover:underline truncate block w-[95%]">${b.link_url || '-'}</a>
                     </div>
                     <button onclick="window.openEditBrandModal('${encoded}')" class="absolute top-4 right-4 text-slate-400 hover:text-amber-400 bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg transition-colors border border-slate-600" title="Edit Brand">
@@ -478,23 +525,29 @@ async function fetchAllEvents() {
 
 function renderEvents() {
     const grid = document.getElementById('eventGrid');
+    const searchQuery = document.getElementById('searchEvent').value.toLowerCase();
     const provFilter = document.getElementById('filterProvinsi').value;
     const kotaFilter = document.getElementById('filterKota').value;
 
     let filtered = allEvents;
 
+    if (searchQuery) {
+        filtered = filtered.filter(e => 
+            e.event_name.toLowerCase().includes(searchQuery) || 
+            (e.kota && e.kota.toLowerCase().includes(searchQuery))
+        );
+    }
     if (provFilter) filtered = filtered.filter(e => e.provinsi === provFilter);
     if (kotaFilter) filtered = filtered.filter(e => e.kota === kotaFilter);
 
     grid.innerHTML = '';
 
     if(filtered.length === 0) {
-        grid.innerHTML = `<div class="col-span-full p-8 text-center text-slate-500 bg-slate-900/50 rounded-2xl border border-slate-700 border-dashed">Belum ada event tersedia di regional ini.</div>`;
+        grid.innerHTML = `<div class="col-span-full p-8 text-center text-slate-500 bg-slate-900/50 rounded-2xl border border-slate-700 border-dashed">Belum ada event tersedia di pencarian ini.</div>`;
         return;
     }
 
     filtered.forEach(ev => {
-        // Logika pengajuan: membuka WA admin pre-filled
         const waText = encodeURIComponent(`Halo Tim F1 Swimming, saya dari ${currentSponsor.company_name}.\n\nKami tertarik untuk mengajukan penempatan Brand kami di event *${ev.event_name}* (${ev.kota || 'Nasional'}).\nMohon info lebih lanjut terkait rate card dan prosedur injeksi.`);
         const waUrl = `https://wa.me/6289691219977?text=${waText}`;
 
