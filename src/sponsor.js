@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     loadProvinsi();
 
-    searchEvent.addEventListener('input', renderEvents); // Trigger saat ketik search
+    searchEvent.addEventListener('input', renderEvents); 
 
     elProvinsi.addEventListener('change', async function() {
         const selectedOption = this.options[this.selectedIndex];
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!provId) {
             elKota.innerHTML = '<option value="">Semua Kota/Kab</option>';
             elKota.disabled = true;
-            renderEvents(); // Trigger filter
+            renderEvents(); 
             return;
         }
 
@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 elKota.innerHTML += `<option value="${city.name}">${city.name}</option>`;
             });
             elKota.disabled = false;
-            renderEvents(); // Trigger filter
+            renderEvents(); 
         } catch (error) {
             console.error("Gagal load API Kota");
         }
@@ -228,12 +228,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const modalAddBrand = document.getElementById('modalAddBrand');
     const closeModalBrandBtn = document.getElementById('closeModalBrandBtn');
     
-    // Buka Modal Mode TAMBAH
+    // Buka Modal Mode TAMBAH (Sudah dibersihkan dari ID yang dihapus)
     document.getElementById('btnOpenAddBrand').addEventListener('click', () => {
-        document.getElementById('modalBrandTitle').innerHTML = '<span>➕</span> TAMBAH SPONSOR';
+        document.getElementById('modalBrandTitle').innerHTML = '<span>➕</span> TAMBAH BRAND / PRODUK';
         document.getElementById('editBrandId').value = '';
         
-        ['inputBrandName', 'inputBrandUrl', 'inputBrandCategory', 'inputBrandBenefit', 'inputBrandSyarat', 'inputBrandLogo'].forEach(id => document.getElementById(id).value = '');
+        // HANYA MENGKOSONGKAN INPUT YANG BENAR-BENAR ADA DI HTML
+        ['inputBrandName', 'inputBrandUrl', 'inputBrandCategory', 'inputBrandLogo'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.value = '';
+        });
         
         document.getElementById('inputBrandType').value = 'corporate';
         document.getElementById('inputTargetGender').value = 'ALL';
@@ -272,7 +276,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const statusMsg = document.getElementById('brandStatusMsg');
 
         if (!bName) {
-            statusMsg.innerText = "Nama Sponsor wajib diisi!";
+            statusMsg.innerText = "Nama Brand wajib diisi!";
             statusMsg.className = "text-xs font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block border border-red-500/30";
             return;
         }
@@ -294,7 +298,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             if (!bId && !finalLogoUrl) {
-                finalLogoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(bName)}&background=0f172a&color=f59e0b`;
+                finalLogoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(bName)}&background=0f172a&color=3b82f6`;
             }
 
             const payloadData = { 
@@ -302,11 +306,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 link_url: document.getElementById('inputBrandUrl').value.trim(), 
                 sponsor_type: document.getElementById('inputBrandType').value,
                 kategori: document.getElementById('inputBrandCategory').value.trim(),
-                jenis_bantuan: document.getElementById('inputBrandBenefit').value.trim(),
-                syarat: document.getElementById('inputBrandSyarat').value.trim(),
                 target_gender: document.getElementById('inputTargetGender').value,
                 target_umur: document.getElementById('inputTargetUmur').value,
                 logo_url: finalLogoUrl
+                // jenis_bantuan dan syarat dihapus dari payload (biarkan DB pakai nilai default/null)
             };
 
             if (bId) {
@@ -321,7 +324,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             setTimeout(() => {
                 closeModalBrandBtn.click();
-                btnSave.innerText = "💾 SIMPAN SPONSOR";
+                btnSave.innerText = "💾 SIMPAN & AKTIFKAN BRAND";
                 btnSave.disabled = false;
                 fetchBrands(); 
             }, 1500);
@@ -329,7 +332,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (err) {
             statusMsg.innerText = "Gagal: " + err.message;
             statusMsg.className = "text-xs font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block border border-red-500/30";
-            btnSave.innerText = "💾 SIMPAN SPONSOR";
+            btnSave.innerText = "💾 SIMPAN & AKTIFKAN BRAND";
             btnSave.disabled = false;
         }
     });
@@ -340,7 +343,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 window.openEditBrandModal = function(encodedData) {
     const brand = JSON.parse(decodeURIComponent(encodedData));
     
-    document.getElementById('modalBrandTitle').innerHTML = '<span>✏️</span> DETAIL SPONSOR';
+    document.getElementById('modalBrandTitle').innerHTML = '<span>✏️</span> DETAIL BRAND / PRODUK';
     document.getElementById('editBrandId').value = brand.id;
     document.getElementById('inputBrandName').value = brand.sponsor_name || '';
     document.getElementById('inputBrandUrl').value = brand.link_url || '';
@@ -348,8 +351,6 @@ window.openEditBrandModal = function(encodedData) {
     document.getElementById('inputBrandCategory').value = brand.kategori || '';
     document.getElementById('inputTargetGender').value = brand.target_gender || 'ALL';
     document.getElementById('inputTargetUmur').value = brand.target_umur || 'ALL';
-    document.getElementById('inputBrandBenefit').value = brand.jenis_bantuan || '';
-    document.getElementById('inputBrandSyarat').value = brand.syarat || '';
     
     document.getElementById('inputBrandLogo').value = '';
     
@@ -439,7 +440,7 @@ async function fetchSponsorData() {
                 } catch (err) {
                     onboardMsg.innerText = "Gagal: " + err.message;
                     onboardMsg.className = "text-xs font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block border border-red-500/50";
-                    btnSaveOnboard.innerText = "Simpan & Mulai Eksplorasi 🚀";
+                    btnSaveOnboard.innerText = "Simpan & Masuk Dashboard 🚀";
                     btnSaveOnboard.disabled = false;
                 }
             };
@@ -449,7 +450,7 @@ async function fetchSponsorData() {
         currentSponsor = sponsorData; 
         updateUI();
         await fetchBrands();
-        await fetchAllEvents(); // Tarik master event ke memory
+        await fetchAllEvents(); 
 
     } catch (error) { console.error("Error init:", error); }
 }
@@ -489,14 +490,14 @@ async function fetchBrands() {
         brands.forEach(b => {
             const encoded = encodeURIComponent(JSON.stringify(b));
             grid.innerHTML += `
-                <div class="bg-slate-900 p-5 rounded-2xl border border-slate-700 hover:border-amber-500/50 transition-colors shadow-sm relative group flex items-center gap-4">
+                <div class="bg-slate-900 p-5 rounded-2xl border border-slate-700 hover:border-blue-500/50 transition-colors shadow-sm relative group flex items-center gap-4">
                     <img src="${b.logo_url}" class="w-14 h-14 rounded-xl bg-white object-contain p-1.5 border border-slate-600">
                     <div class="flex-1 min-w-0">
                         <h3 class="text-sm font-black text-white truncate">${b.sponsor_name}</h3>
-                        <p class="text-[10px] text-amber-500 font-bold mb-1">${b.kategori || 'General'}</p>
+                        <p class="text-[10px] text-blue-400 font-bold mb-1">${b.kategori || 'General'}</p>
                         <a href="${b.link_url}" target="_blank" class="text-[10px] font-mono text-blue-400 hover:underline truncate block w-[95%]">${b.link_url || '-'}</a>
                     </div>
-                    <button onclick="window.openEditBrandModal('${encoded}')" class="absolute top-4 right-4 text-slate-400 hover:text-amber-400 bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg transition-colors border border-slate-600" title="Edit Brand">
+                    <button onclick="window.openEditBrandModal('${encoded}')" class="absolute top-4 right-4 text-slate-400 hover:text-blue-400 bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg transition-colors border border-slate-600" title="Edit Brand">
                         ✏️
                     </button>
                 </div>
@@ -517,7 +518,7 @@ async function fetchAllEvents() {
 
         if (error) throw error;
         allEvents = events;
-        renderEvents(); // Gambar ke UI
+        renderEvents(); 
     } catch (err) {
         document.getElementById('eventGrid').innerHTML = `<div class="col-span-full p-8 text-center text-red-500">Gagal memuat katalog event.</div>`;
     }
