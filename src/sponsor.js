@@ -8,9 +8,7 @@ let reusedLogoUrl = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     
-    // ==========================================
     // 1. MOBILE MENU TOGGLE
-    // ==========================================
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const mobileMenuPanel = document.getElementById('mobileMenuPanel');
     const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
@@ -30,9 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if(closeMobileMenu) closeMobileMenu.addEventListener('click', toggleMobileMenu);
     if(mobileMenuOverlay) mobileMenuOverlay.addEventListener('click', toggleMobileMenu);
 
-    // ==========================================
     // 2. LOGOUT LOGIC
-    // ==========================================
     const logoutAction = async () => {
         await supabaseClient.auth.signOut();
         window.location.replace('/sponsor-auth.html'); 
@@ -41,14 +37,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('logoutBtnDesk').addEventListener('click', logoutAction);
     document.getElementById('logoutBtnMob').addEventListener('click', logoutAction);
 
-    // ==========================================
     // 3. FETCH DATA & INITIALIZATION
-    // ==========================================
     await fetchSponsorData();
 
-    // ==========================================
-    // 4. API EMSIFA & PENCARIAN (Filter Event)
-    // ==========================================
+    // 4. API EMSIFA & PENCARIAN
     const searchEvent = document.getElementById('searchEvent');
     const elProvinsi = document.getElementById('filterProvinsi');
     const elKota = document.getElementById('filterKota');
@@ -98,9 +90,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     elKota.addEventListener('change', renderEvents);
 
-    // ==========================================
-    // 5. PENGATURAN PROFIL & AKUN KORPORASI
-    // ==========================================
+    // 5. PENGATURAN PROFIL
     const btnEditProfilSponsor = document.getElementById('btnEditProfilSponsor');
     const btnEditProfilMobile = document.getElementById('btnEditProfilMobile');
     const modalEditProfile = document.getElementById('modalEditProfile');
@@ -127,7 +117,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (btnEditProfilMobile) btnEditProfilMobile.addEventListener('click', openProfileModal);
     if (closeModalProfileBtn) closeModalProfileBtn.addEventListener('click', () => modalEditProfile.classList.add('hidden'));
 
-    // Tab Switcher Profil
     const tabProfilSponsorBtn = document.getElementById('tabProfilSponsorBtn');
     const tabAkunSponsorBtn = document.getElementById('tabAkunSponsorBtn');
     const formProfilSponsor = document.getElementById('formProfilSponsor');
@@ -147,7 +136,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         formProfilSponsor.classList.add('hidden');
     });
 
-    // Simpan Profil
     document.getElementById('btnSaveProfileInfo').addEventListener('click', async () => {
         const btnSave = document.getElementById('btnSaveProfileInfo');
         const cName = document.getElementById('editCorpName').value.trim();
@@ -185,7 +173,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (err) { alert(err.message); btnSave.innerText = "Simpan Profil Induk"; btnSave.disabled = false; }
     });
 
-    // Simpan Keamanan Akun
     document.getElementById('btnSaveAuthInfo').addEventListener('click', async () => {
         const btnAuth = document.getElementById('btnSaveAuthInfo');
         const newEmail = document.getElementById('editAuthEmail').value.trim();
@@ -209,31 +196,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             statusMsg.className = "text-sm text-center rounded-lg p-3 bg-emerald-900/30 text-emerald-400 block mt-4 border border-emerald-500/30";
             document.getElementById('editAuthPassword').value = '';
 
-            setTimeout(() => {
-                btnAuth.innerText = "Terapkan Perubahan Akun";
-                btnAuth.disabled = false;
-            }, 3000);
-
+            setTimeout(() => { btnAuth.innerText = "Terapkan Perubahan Akun"; btnAuth.disabled = false; }, 3000);
         } catch (err) {
             statusMsg.innerText = "Gagal mengubah: " + err.message;
             statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block mt-4 border border-red-500/30";
-            btnAuth.innerText = "Terapkan Perubahan Akun";
-            btnAuth.disabled = false;
+            btnAuth.innerText = "Terapkan Perubahan Akun"; btnAuth.disabled = false;
         }
     });
 
-    // ==========================================
-    // 6. MANAJEMEN BRAND ANAK KOMPREHENSIF
-    // ==========================================
+    // 6. MANAJEMEN BRAND KOMPREHENSIF
     const modalAddBrand = document.getElementById('modalAddBrand');
     const closeModalBrandBtn = document.getElementById('closeModalBrandBtn');
     
-    // Buka Modal Mode TAMBAH (Sudah dibersihkan dari ID yang dihapus)
     document.getElementById('btnOpenAddBrand').addEventListener('click', () => {
         document.getElementById('modalBrandTitle').innerHTML = '<span>➕</span> TAMBAH BRAND / PRODUK';
         document.getElementById('editBrandId').value = '';
         
-        // HANYA MENGKOSONGKAN INPUT YANG BENAR-BENAR ADA DI HTML
         ['inputBrandName', 'inputBrandUrl', 'inputBrandCategory', 'inputBrandLogo'].forEach(id => {
             const el = document.getElementById(id);
             if(el) el.value = '';
@@ -254,7 +232,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     closeModalBrandBtn.addEventListener('click', () => modalAddBrand.classList.add('hidden'));
 
-    // Preview File Logo
     document.getElementById('inputBrandLogo').addEventListener('change', function(e) {
         if (e.target.files[0]) {
             const reader = new FileReader();
@@ -268,7 +245,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Simpan Brand
     document.getElementById('btnSaveBrand').addEventListener('click', async () => {
         const btnSave = document.getElementById('btnSaveBrand');
         const bId = document.getElementById('editBrandId').value;
@@ -309,7 +285,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 target_gender: document.getElementById('inputTargetGender').value,
                 target_umur: document.getElementById('inputTargetUmur').value,
                 logo_url: finalLogoUrl
-                // jenis_bantuan dan syarat dihapus dari payload (biarkan DB pakai nilai default/null)
             };
 
             if (bId) {
@@ -339,7 +314,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 });
 
-// Global Function Edit Brand (Dipanggil dari HTML onclick)
 window.openEditBrandModal = function(encodedData) {
     const brand = JSON.parse(decodeURIComponent(encodedData));
     
@@ -371,10 +345,6 @@ window.openEditBrandModal = function(encodedData) {
     document.getElementById('modalAddBrand').classList.remove('hidden');
 };
 
-
-// ==========================================
-// FUNGSI UTAMA FETCH & RENDER
-// ==========================================
 async function fetchSponsorData() {
     try {
         const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
@@ -422,9 +392,9 @@ async function fetchSponsorData() {
                             pic_name: bPic,
                             company_email: bEmail,
                             contact_wa: bWa,
-                            industry_category: 'Corporate', // Default statis
+                            industry_category: 'Corporate', 
                             logo_url: defaultLogo,
-                            tokens: 0 // NO TOKEN SYSTEM
+                            tokens: 0 
                         }]);
 
                     if (insertErr) throw insertErr;
@@ -451,6 +421,9 @@ async function fetchSponsorData() {
         updateUI();
         await fetchBrands();
         await fetchAllEvents(); 
+        
+        // 🚀 PANGGIL FUNGSI ANALYTICS DI SINI
+        await fetchAnalytics();
 
     } catch (error) { console.error("Error init:", error); }
 }
@@ -509,6 +482,51 @@ async function fetchBrands() {
     }
 }
 
+// 🚀 FUNGSI TARIK DATA ANALYTICS (BARU)
+async function fetchAnalytics() {
+    try {
+        // Ambil data analytics khusus untuk brand yang dimiliki oleh sponsor ini
+        const { data, error } = await supabaseClient
+            .from('sponsor_analytics')
+            .select(`
+                impressions_count,
+                clicks_count,
+                event_id,
+                master_sponsors!inner(owner_id)
+            `)
+            .eq('master_sponsors.owner_id', currentUserId);
+
+        if (error) throw error;
+
+        let totalImpressions = 0;
+        let totalClicks = 0;
+        let uniqueEventIds = new Set();
+
+        if (data && data.length > 0) {
+            data.forEach(row => {
+                totalImpressions += (row.impressions_count || 0);
+                totalClicks += (row.clicks_count || 0);
+                uniqueEventIds.add(row.event_id);
+            });
+        }
+
+        // Kalkulasi CTR
+        let ctr = 0;
+        if (totalImpressions > 0) {
+            ctr = (totalClicks / totalImpressions) * 100;
+        }
+
+        // Render ke UI
+        document.getElementById('statImpressions').innerText = totalImpressions.toLocaleString();
+        document.getElementById('statClicks').innerText = totalClicks.toLocaleString();
+        document.getElementById('statCTR').innerText = ctr.toFixed(2) + '%';
+        document.getElementById('statEvents').innerText = uniqueEventIds.size.toLocaleString();
+
+    } catch (err) {
+        console.error("Gagal menarik data analytics:", err);
+    }
+}
+
 async function fetchAllEvents() {
     try {
         const { data: events, error } = await supabaseClient
@@ -553,7 +571,7 @@ function renderEvents() {
         const waUrl = `https://wa.me/6289691219977?text=${waText}`;
 
         grid.innerHTML += `
-            <div class="bg-slate-900 border border-slate-700 p-6 rounded-3xl flex flex-col justify-between hover:border-slate-500 transition-colors group relative overflow-hidden shadow-lg">
+            <div class="bg-slate-900 border border-slate-700 p-6 rounded-3xl flex flex-col justify-between hover:border-blue-500/50 transition-colors group relative overflow-hidden shadow-lg">
                 <div class="absolute top-0 right-0 bg-blue-900/40 text-blue-400 text-[9px] font-black px-3 py-1.5 rounded-bl-xl tracking-widest uppercase border-b border-l border-blue-500/30">
                     Target Event
                 </div>
@@ -562,7 +580,7 @@ function renderEvents() {
                     <h3 class="font-black text-white text-lg leading-snug mb-1 group-hover:text-blue-300 transition-colors">${ev.event_name}</h3>
                     <p class="text-xs text-slate-400 font-mono">📅 ${ev.event_date}</p>
                 </div>
-                <a href="${waUrl}" target="_blank" class="w-full text-center py-3 bg-slate-800 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs transition-colors shadow border border-slate-600 hover:border-emerald-500 flex items-center justify-center gap-2 relative z-10">
+                <a href="${waUrl}" target="_blank" class="w-full text-center py-3 bg-slate-800 hover:bg-blue-600 text-white font-bold rounded-xl text-xs transition-colors shadow border border-slate-600 hover:border-blue-500 flex items-center justify-center gap-2 relative z-10">
                     Ajukan Penempatan 💬
                 </a>
             </div>
