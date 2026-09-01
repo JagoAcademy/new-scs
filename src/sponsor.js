@@ -86,7 +86,7 @@ async function fetchSponsorData() {
         }
 
         const userId = session.user.id; 
-        const userEmail = session.user.email; // Fallback jika onbEmail kosong
+        const userEmail = session.user.email; 
 
         // Cek tabel sponsors_user
         const { data: sponsorData, error: sponsorError } = await supabaseClient
@@ -95,7 +95,7 @@ async function fetchSponsorData() {
             .eq('owner_id', userId)
             .single();
 
-        // JIKA KOSONG -> PAKSA ONBOARDING
+        // JIKA KOSONG -> PAKSA ONBOARDING TANPA URL
         if (sponsorError || !sponsorData) {
             const modalOnboard = document.getElementById('modalOnboarding');
             modalOnboard.classList.remove('hidden'); 
@@ -111,11 +111,10 @@ async function fetchSponsorData() {
                 const bEmail = document.getElementById('onbEmail').value.trim();
                 const bWa = document.getElementById('onbWa').value.trim();
                 const bCat = document.getElementById('onbCategory').value;
-                const bUrl = document.getElementById('onbUrl').value.trim();
                 
                 const onboardMsg = document.getElementById('onboardMsg');
 
-                if (!bCompany || !bPic || !bEmail || !bWa || !bCat || !bUrl) {
+                if (!bCompany || !bPic || !bEmail || !bWa || !bCat) {
                     onboardMsg.innerText = "Semua kolom wajib diisi!";
                     onboardMsg.className = "text-xs font-bold text-center rounded-lg p-3 bg-red-900/30 text-red-400 block border border-red-500/50";
                     return;
@@ -136,9 +135,8 @@ async function fetchSponsorData() {
                             company_email: bEmail,
                             contact_wa: bWa,
                             industry_category: bCat,
-                            default_url: bUrl,
                             logo_url: defaultLogo,
-                            tokens: 1 // FREE TOKEN
+                            tokens: 1 // FREE TOKEN!
                         }]);
 
                     if (insertErr) throw insertErr;
