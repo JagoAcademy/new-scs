@@ -55,7 +55,11 @@ export default defineConfig({
         adminApproval: resolve(__dirname, 'admin-approval.html'), // ACC Sponsor
 
         // --- 6. DASHBOARD BRAND / SPONSOR ---
-        sponsorPortal: resolve(__dirname, 'sponsor.html'), // 🚀 TAMBAHAN: Portal Login Brand untuk Injeksi Token Ad-Tech
+        sponsorPortal: resolve(__dirname, 'sponsor.html'), 
+        sponsorAuth: resolve(__dirname, 'sponsor-auth.html'), // Landing Page Daftar Sponsor & Free Token
+
+        
+        // 🚀 TAMBAHAN: Portal Login Brand untuk Injeksi Token Ad-Tech
       }
     }
   },

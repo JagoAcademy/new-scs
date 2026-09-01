@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sponsor Registration | F1 Swimming Ad-Tech</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glow-blue { box-shadow: 0 0 30px rgba(59, 130, 246, 0.4); }
+    </style>
+</head>
+<body class="bg-slate-900 font-sans text-slate-200 min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
+
+    <!-- Background Ornaments -->
+    <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-amber-500/10 rounded-full blur-3xl"></div>
+
+    <div class="w-full max-w-5xl flex flex-col md:flex-row bg-slate-800/60 backdrop-blur-xl border border-slate-700 rounded-3xl shadow-2xl overflow-hidden z-10">
+        
+        <!-- Kiri: Hook & Value Proposition -->
+        <div class="w-full md:w-5/12 bg-gradient-to-br from-blue-900/80 to-slate-900 p-10 flex flex-col justify-between relative">
+            <div>
+                <span class="bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-6 inline-block">Ad-Tech Sport Pertama di Indonesia</span>
+                <h1 class="text-4xl font-black text-white mb-4 leading-tight">Digitalisasi <br><span class="text-blue-400">Atensi Audiens.</span></h1>
+                <p class="text-slate-300 text-sm leading-relaxed">Jangkau ribuan atlet, pelatih, dan orang tua secara real-time tepat saat mereka sedang melihat Live Result pertandingan.</p>
+            </div>
+            
+            <div class="mt-12 bg-slate-900/50 border border-blue-500/30 p-5 rounded-2xl glow-blue">
+                <p class="text-xs font-bold text-blue-300 uppercase tracking-widest mb-1">🎁 Special Offer</p>
+                <p class="text-lg font-black text-white">Gratis 1 Placement Brand!</p>
+                <p class="text-xs text-slate-400 mt-1">Daftar sekarang dan nikmati 1 Token Injeksi Event secara cuma-cuma untuk mencoba ekosistem kami.</p>
+            </div>
+        </div>
+
+        <!-- Kanan: Form Registrasi -->
+        <div class="w-full md:w-7/12 p-10">
+            <h2 class="text-2xl font-black text-white mb-6">Buat Akun Sponsor</h2>
+            
+            <form id="sponsorRegisterForm" class="space-y-4">
+                <div>
+                    <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">Nama Korporasi / Usaha</label>
+                    <input type="text" id="corpName" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" placeholder="Contoh: PT. Azarine Cosmetic">
+                </div>
+                
+                <div>
+                    <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">Alamat Email (PIC)</label>
+                    <input type="email" id="email" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" placeholder="pic@perusahaan.com">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">Password</label>
+                        <input type="password" id="password" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white outline-none focus:border-blue-500 transition-all" placeholder="Min. 6 karakter">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">Konfirmasi Password</label>
+                        <input type="password" id="confirmPassword" required class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white outline-none focus:border-blue-500 transition-all" placeholder="Ulangi password">
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-3 py-2">
+                    <input type="checkbox" id="tnc" required class="mt-1 w-4 h-4 rounded bg-slate-900 border-slate-700 text-blue-500 focus:ring-blue-500">
+                    <label for="tnc" class="text-xs text-slate-400">Saya menyetujui Syarat & Ketentuan serta Kebijakan Privasi F1 Swimming Ad-Tech untuk penayangan iklan olahraga.</label>
+                </div>
+
+                <div id="errorMsg" class="hidden bg-red-900/30 border border-red-500/50 text-red-400 text-xs p-3 rounded-lg font-bold text-center"></div>
+
+                <button type="submit" id="btnRegister" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-xl shadow-lg transition-transform hover:-translate-y-0.5 mt-2">
+                    Daftar & Klaim Free Token 🚀
+                </button>
+            </form>
+            
+            <p class="text-center text-xs text-slate-500 mt-6 font-medium">Sudah punya akun? <a href="/sponsor.html" class="text-blue-400 hover:text-blue-300 font-bold">Login di sini</a></p>
+        </div>
+    </div>
+
+    <script type="module" src="/src/sponsor-auth.js"></script>
+</body>
+</html>
