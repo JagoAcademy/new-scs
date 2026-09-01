@@ -3,11 +3,62 @@ import { supabaseClient } from './supabase.js';
 let currentEventId = null;
 let allHeats = []; 
 let currentSelectedEventNumber = null;
-let activeSponsors = []; // Wadah penyimpan sponsor
+let activeSponsors = []; 
 
 let refreshInterval = 30; 
 let timeLeft = refreshInterval;
 let timerId = null;
+
+// 1️⃣ FUNGSI PELACAK: Menghitung Impression (Tayangan)
+async function trackImpressions(sponsorIdsArray) {
+    if (!sponsorIdsArray || sponsorIdsArray.length === 0 || !currentEventId) return;
+
+    // Cek LocalStorage untuk Unique Devices per Event
+    const deviceKey = `f1_visited_event_${currentEventId}`;
+    const isNewDevice = !localStorage.getItem(deviceKey);
+    
+    if (isNewDevice) {
+        localStorage.setItem(deviceKey, 'true');
+    }
+
+    try {
+        // Tembak fungsi RPC untuk semua sponsor yang tampil di event ini secara paralel
+        const promises = sponsorIdsArray.map(spId => 
+            supabaseClient.rpc('increment_impression', { 
+                p_sponsor_id: spId, 
+                p_event_id: parseInt(currentEventId), 
+                p_is_new_device: isNewDevice 
+            })
+        );
+        
+        await Promise.all(promises);
+        console.log("Analytics: Impressions berhasil dicatat.");
+    } catch (err) {
+        console.error("Gagal mencatat impression:", err);
+    }
+}
+
+// 2️⃣ FUNGSI PELACAK: Menghitung Click (Klik Banner)
+window.trackSponsorClick = async function(sponsorId, urlDestination) {
+    if (!currentEventId || !sponsorId) return;
+
+    try {
+        // Tembak RPC pencatat klik ke Supabase (Jangan di-await biar user gak nunggu lama)
+        supabaseClient.rpc('increment_click', { 
+            p_sponsor_id: sponsorId, 
+            p_event_id: parseInt(currentEventId) 
+        }).then(({ error }) => {
+            if(error) console.error("Gagal mencatat klik:", error);
+        });
+
+        // Langsung lempar user ke Tokopedia/Website Klien
+        if (urlDestination && urlDestination !== '#') {
+            window.open(urlDestination, '_blank');
+        }
+    } catch (err) {
+        console.error("Error tracker klik:", err);
+    }
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -26,12 +77,22 @@ async function fetchEventName() {
     try {
         const { data, error } = await supabaseClient
             .from('events')
-            .select('event_name')
+            .select('event_name, config')
             .eq('id', currentEventId)
             .single();
             
         if (data) {
             document.getElementById('headerEventName').innerText = data.event_name;
+            
+            const config = data.config || {};
+            const headerImgUrl = config.kop_surat || config.header_image || config.banner;
+            
+            if (headerImgUrl) {
+                const bannerWrapper = document.getElementById('eventBannerWrapper');
+                const bannerImg = document.getElementById('eventBannerImg');
+                bannerImg.src = headerImgUrl;
+                bannerWrapper.classList.remove('hidden');
+            }
         }
     } catch (err) { console.error(err); }
 }
@@ -49,7 +110,6 @@ async function fetchSponsors() {
 
         if (linkErr || !linkData || !linkData.sponsor_ids || linkData.sponsor_ids.length === 0) return;
 
-        // SEKARANG KITA TARIK JUGA DATA TARGETING-NYA
         const { data: sponsors, error: spErr } = await supabaseClient
             .from('master_sponsors')
             .select('*')
@@ -57,7 +117,10 @@ async function fetchSponsors() {
 
         if (spErr || !sponsors || sponsors.length === 0) return;
         
-        activeSponsors = sponsors; // Simpan ke global 
+        activeSponsors = sponsors; 
+
+        // 3️⃣ JALANKAN PELACAK TAYANGAN KETIKA BANNER BERHASIL DI-LOAD
+        trackImpressions(sponsors.map(sp => sp.id));
 
         let html = `
             <div class="w-full mb-6 bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 text-center">
@@ -70,17 +133,19 @@ async function fetchSponsors() {
         sponsors.forEach(sp => {
             const logo = sp.logo_url || '/images/logo.png';
             const link = sp.link_url || '#';
+            
+            // 4️⃣ GANTI tag <a> href biasa DENGAN FUNGSI ONCLICK PELACAK
             html += `
-                <a href="${link}" target="_blank" rel="noopener noreferrer" 
-                   class="bg-white p-2 rounded-xl border border-slate-100 shadow-sm flex items-center justify-center shrink-0 transition-transform hover:scale-105" 
+                <button onclick="trackSponsorClick(${sp.id}, '${link}')" 
+                   class="bg-white p-2 rounded-xl border border-slate-100 shadow-sm flex items-center justify-center shrink-0 transition-transform hover:scale-105 cursor-pointer outline-none focus:outline-none" 
                    style="aspect-ratio: 16/9; width: ${boxWidth}; max-width: 100%;">
                     <img src="${logo}" 
                          alt="${sp.sponsor_name}" 
                          title="${sp.sponsor_name}" 
-                         class="w-full h-full object-contain"
+                         class="w-full h-full object-contain pointer-events-none"
                          loading="lazy"
                          onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'text-[10px] font-black text-slate-400 text-center uppercase\\'>${sp.sponsor_name}</span>';">
-                </a>
+                </button>
             `;
         });
 
@@ -168,7 +233,6 @@ function renderResults(eventNumber) {
     
     let htmlContent = '';
 
-    // MENGUBAH PARAMETER FOREACH DENGAN INDEX
     heatsToShow.forEach((heat, index) => {
         let lanesHtml = '';
 
@@ -213,29 +277,22 @@ function renderResults(eventNumber) {
             lanesHtml += `<p class="text-[10px] text-slate-400 italic text-center py-3">Tidak ada data atlet di Heat ini.</p>`;
         }
 
-        // ==========================================
-        // 🧠 OTAK DYNAMIC SMART-TARGETING (AD-TECH)
-        // ==========================================
         let eventSponsorHeader = '';
         if (activeSponsors.length > 0) {
             
             const heatGender = heat.gender.toUpperCase();
             const heatKU = heat.kelompok_umur.toUpperCase();
 
-            // 1. Filter sponsor yang nyangkut dengan kriteria Heat ini
             let matchedSponsors = activeSponsors.filter(sp => {
                 let matchGender = false;
                 let matchUmur = false;
 
-                // --- LOGIKA GENDER ---
                 if (!sp.target_gender || sp.target_gender === 'ALL') {
                     matchGender = true;
                 } else {
-                    // Kalau target 'Putra', heat-nya harus Putra/Mix
                     matchGender = heatGender.includes(sp.target_gender.toUpperCase());
                 }
 
-                // --- LOGIKA UMUR (Future-Proof, gak pakai tahun!) ---
                 if (!sp.target_umur || sp.target_umur === 'ALL') {
                     matchUmur = true;
                 } else if (sp.target_umur === 'KIDS') {
@@ -249,7 +306,6 @@ function renderResults(eventNumber) {
                 return matchGender && matchUmur;
             });
 
-            // 2. SAFETY FALLBACK (Anti Kolom Kosong)
             if (matchedSponsors.length === 0) {
                 matchedSponsors = activeSponsors.filter(sp => (!sp.target_gender || sp.target_gender === 'ALL') && (!sp.target_umur || sp.target_umur === 'ALL'));
             }
@@ -258,15 +314,15 @@ function renderResults(eventNumber) {
                 matchedSponsors = activeSponsors;
             }
 
-            // 3. FIX: Render banner bergiliran (Round-Robin) DARI ARRAY YANG UDAH DI-FILTER
-            // Menggunakan running 'index' heat yang di-render, BUKAN 'heat.event_number'
             const spIndex = index % matchedSponsors.length;
             const sp = matchedSponsors[spIndex];
             const spLogo = sp.logo_url || '/images/logo.png';
+            const link = sp.link_url || '#';
             
+            // 5️⃣ GANTI JUGA tag <a> DI BANNER EVENT HEAT DENGAN FUNGSI ONCLICK PELACAK
             eventSponsorHeader = `
-                <a href="${sp.link_url || '#'}" target="_blank" class="flex items-center justify-between bg-slate-50 hover:bg-amber-50/80 transition-colors border-b border-slate-200 px-4 py-3 -mx-3 -mt-3 md:-mx-4 md:-mt-4 mb-3 rounded-t-xl group">
-                    <div class="flex flex-col md:flex-row md:items-center gap-0.5 md:gap-2 flex-1 min-w-0 pr-4">
+                <button onclick="trackSponsorClick(${sp.id}, '${link}')" class="w-full outline-none focus:outline-none cursor-pointer flex items-center justify-between bg-slate-50 hover:bg-amber-50/80 transition-colors border-b border-slate-200 px-4 py-3 -mx-3 -mt-3 md:-mx-4 md:-mt-4 mb-3 rounded-t-xl group">
+                    <div class="flex flex-col md:flex-row md:items-center gap-0.5 md:gap-2 flex-1 min-w-0 pr-4 text-left">
                         <span class="text-[9px] md:text-[10px] font-black text-slate-400 group-hover:text-amber-500 uppercase tracking-widest transition-colors shrink-0">
                             Supported By:
                         </span>
@@ -278,14 +334,13 @@ function renderResults(eventNumber) {
                          style="aspect-ratio: 16/9; width: 72px;">
                         <img src="${spLogo}" 
                              alt="${sp.sponsor_name}" 
-                             class="w-full h-full object-contain" 
+                             class="w-full h-full object-contain pointer-events-none" 
                              loading="lazy" 
                              onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'text-[8px] font-bold text-slate-400 text-center leading-tight uppercase\\'>${sp.sponsor_name}</span>';">
                     </div>
-                </a>
+                </button>
             `;
         }
-        // ==========================================
 
         htmlContent += `
         <div class="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-slate-200 mb-4 overflow-hidden relative">

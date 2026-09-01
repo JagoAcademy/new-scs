@@ -312,6 +312,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    // 🚀 EVENT LISTENER FILTER ANALYTICS
+    document.getElementById('filterBrandAnalytics').addEventListener('change', (e) => {
+        fetchAnalytics(e.target.value);
+    });
 });
 
 window.openEditBrandModal = function(encodedData) {
@@ -422,8 +426,8 @@ async function fetchSponsorData() {
         await fetchBrands();
         await fetchAllEvents(); 
         
-        // 🚀 PANGGIL FUNGSI ANALYTICS DI SINI
-        await fetchAnalytics();
+        // Panggil Analytics posisi default ALL
+        await fetchAnalytics('ALL');
 
     } catch (error) { console.error("Error init:", error); }
 }
@@ -442,7 +446,10 @@ function updateUI() {
 
 async function fetchBrands() {
     const grid = document.getElementById('brandGrid');
+    const filterDropdown = document.getElementById('filterBrandAnalytics');
+    
     grid.innerHTML = '<p class="text-sm text-slate-500 italic col-span-full text-center">Memuat daftar brand...</p>';
+    filterDropdown.innerHTML = '<option value="ALL">Semua Brand (Akumulasi)</option>';
 
     try {
         const { data: brands, error } = await supabaseClient
@@ -475,6 +482,9 @@ async function fetchBrands() {
                     </button>
                 </div>
             `;
+            
+            // 🚀 INJEKSI KE DROPDOWN FILTER
+            filterDropdown.innerHTML += `<option value="${b.id}">${b.sponsor_name}</option>`;
         });
 
     } catch (err) {
@@ -482,19 +492,25 @@ async function fetchBrands() {
     }
 }
 
-// 🚀 FUNGSI TARIK DATA ANALYTICS (BARU)
-async function fetchAnalytics() {
+// 🚀 FUNGSI TARIK DATA ANALYTICS DENGAN FILTER
+async function fetchAnalytics(brandId = 'ALL') {
     try {
-        // Ambil data analytics khusus untuk brand yang dimiliki oleh sponsor ini
-        const { data, error } = await supabaseClient
+        let query = supabaseClient
             .from('sponsor_analytics')
             .select(`
                 impressions_count,
                 clicks_count,
                 event_id,
-                master_sponsors!inner(owner_id)
+                master_sponsors!inner(owner_id, id)
             `)
             .eq('master_sponsors.owner_id', currentUserId);
+
+        // Jika Dropdown Filter tidak berada di 'ALL', tambahkan filter spesifik ID
+        if (brandId !== 'ALL') {
+            query = query.eq('master_sponsors.id', brandId);
+        }
+
+        const { data, error } = await query;
 
         if (error) throw error;
 
@@ -510,13 +526,11 @@ async function fetchAnalytics() {
             });
         }
 
-        // Kalkulasi CTR
         let ctr = 0;
         if (totalImpressions > 0) {
             ctr = (totalClicks / totalImpressions) * 100;
         }
 
-        // Render ke UI
         document.getElementById('statImpressions').innerText = totalImpressions.toLocaleString();
         document.getElementById('statClicks').innerText = totalClicks.toLocaleString();
         document.getElementById('statCTR').innerText = ctr.toFixed(2) + '%';

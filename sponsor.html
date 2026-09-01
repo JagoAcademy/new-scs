@@ -65,33 +65,52 @@
         </div>
 
         <!-- 🚀 NEW SECTION: ANALYTICS OVERVIEW -->
-        <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
-            <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 shadow-lg relative overflow-hidden">
-                <div class="absolute -right-4 -bottom-4 text-6xl opacity-10">👁️</div>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Impressions</p>
-                <h3 class="text-3xl font-black text-white" id="statImpressions">0</h3>
-                <p class="text-xs text-blue-400 mt-2 font-medium">Tayangan di layar audiens</p>
-            </div>
+        <div class="bg-slate-800/40 rounded-3xl border border-slate-700 p-6 md:p-8 shadow-lg">
             
-            <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 shadow-lg relative overflow-hidden">
-                <div class="absolute -right-4 -bottom-4 text-6xl opacity-10">🖱️</div>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Clicks</p>
-                <h3 class="text-3xl font-black text-white" id="statClicks">0</h3>
-                <p class="text-xs text-amber-400 mt-2 font-medium">Interaksi klik aktif</p>
+            <!-- FILTER ANALYTICS DROPDOWN -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6 pb-4 border-b border-slate-700">
+                <div>
+                    <h2 class="text-xl font-black text-white flex items-center gap-2"><span>⚡</span> Kinerja Kampanye Iklan</h2>
+                    <p class="text-[11px] text-slate-400 mt-1">Data interaksi audiens secara real-time pada event aktif.</p>
+                </div>
+                <div class="w-full sm:w-auto">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 sm:hidden">Filter Data Per Brand:</label>
+                    <select id="filterBrandAnalytics" class="bg-slate-900 border border-slate-600 text-white text-xs font-bold rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full sm:w-64 p-3 outline-none cursor-pointer shadow-sm transition-colors hover:border-blue-400">
+                        <option value="ALL">Semua Brand (Akumulasi)</option>
+                        <!-- Opsi brand diisi oleh JS -->
+                    </select>
+                </div>
             </div>
 
-            <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 shadow-lg relative overflow-hidden">
-                <div class="absolute -right-4 -bottom-4 text-6xl opacity-10">📊</div>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Avg. CTR (Click Rate)</p>
-                <h3 class="text-3xl font-black text-white" id="statCTR">0.00%</h3>
-                <p class="text-xs text-emerald-400 mt-2 font-medium">Rasio efektivitas iklan</p>
-            </div>
+            <!-- 4 KARTU METRIK -->
+            <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
+                <div class="bg-slate-900/80 border border-slate-700 rounded-2xl p-5 shadow-inner relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 text-6xl opacity-5">👁️</div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Impressions</p>
+                    <h3 class="text-3xl font-black text-white" id="statImpressions">0</h3>
+                    <p class="text-xs text-blue-400 mt-2 font-medium">Tayangan di layar audiens</p>
+                </div>
+                
+                <div class="bg-slate-900/80 border border-slate-700 rounded-2xl p-5 shadow-inner relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 text-6xl opacity-5">🖱️</div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Clicks</p>
+                    <h3 class="text-3xl font-black text-white" id="statClicks">0</h3>
+                    <p class="text-xs text-amber-400 mt-2 font-medium">Interaksi klik aktif</p>
+                </div>
 
-            <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-5 shadow-lg relative overflow-hidden">
-                <div class="absolute -right-4 -bottom-4 text-6xl opacity-10">🎯</div>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Active Events</p>
-                <h3 class="text-3xl font-black text-white" id="statEvents">0</h3>
-                <p class="text-xs text-purple-400 mt-2 font-medium">Kompetisi menayangkan Ads</p>
+                <div class="bg-slate-900/80 border border-slate-700 rounded-2xl p-5 shadow-inner relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 text-6xl opacity-5">📊</div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Avg. CTR (Click Rate)</p>
+                    <h3 class="text-3xl font-black text-white" id="statCTR">0.00%</h3>
+                    <p class="text-xs text-emerald-400 mt-2 font-medium">Rasio efektivitas iklan</p>
+                </div>
+
+                <div class="bg-slate-900/80 border border-slate-700 rounded-2xl p-5 shadow-inner relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 text-6xl opacity-5">🎯</div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Active Events</p>
+                    <h3 class="text-3xl font-black text-white" id="statEvents">0</h3>
+                    <p class="text-xs text-purple-400 mt-2 font-medium">Kompetisi menayangkan Ads</p>
+                </div>
             </div>
         </div>
 
@@ -292,28 +311,28 @@
             <div class="p-6 border-b border-slate-700 bg-slate-900 text-center shrink-0">
                 <span class="text-4xl block mb-2">🏢</span>
                 <h3 class="font-extrabold text-white text-xl">Profil Korporat</h3>
-                <p class="text-xs text-slate-400 mt-2">Lengkapi data korporat Anda untuk mulai mengelola brand.</p>
+                <p class="text-xs text-slate-400 mt-2">Lengkapi data korporat atau perusahaan induk Anda untuk mulai mengelola brand.</p>
             </div>
             
             <div class="p-6 space-y-4 overflow-y-auto hide-scrollbar flex-1">
                 <div>
                     <label class="block text-xs font-bold text-slate-300 mb-1">Nama Perusahaan / Induk <span class="text-red-500">*</span></label>
-                    <input type="text" id="onbCompanyName" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                    <input type="text" id="onbCompanyName" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: PT. Mahaka Radio Integra">
                 </div>
                 <div class="border-t border-slate-700 pt-4 mt-2">
                     <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Kontak Penanggung Jawab</label>
                     <div class="space-y-3">
                         <div>
                             <label class="block text-xs font-bold text-slate-300 mb-1">Nama PIC <span class="text-red-500">*</span></label>
-                            <input type="text" id="onbPicName" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                            <input type="text" id="onbPicName" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: Putri / Angga">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-300 mb-1">Email Korporat / PIC <span class="text-red-500">*</span></label>
-                            <input type="email" id="onbEmail" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                            <input type="email" id="onbEmail" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="pic@mahaka.com">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-300 mb-1">No WhatsApp PIC <span class="text-red-500">*</span></label>
-                            <input type="tel" id="onbWa" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                            <input type="tel" id="onbWa" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: 081234567890">
                         </div>
                     </div>
                 </div>
