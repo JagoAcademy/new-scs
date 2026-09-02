@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (logoEl) logoEl.src = pitchData.corporate_logo || allBrandsData[0].logo_url || 'https://ui-avatars.com';
             if (syaratEl) syaratEl.innerText = allBrandsData[0].syarat || "Custom partnership agreement.";
             
-            // 1. TEKS DESKRIPSI & PANDUAN SIMULASI
+            // TEKS PANDUAN SIMULASI DIUPDATE JADI BAHASA UNIVERSAL
             if (msgEl) {
                 msgEl.innerHTML = `
                     <div class="space-y-4 text-slate-600 text-xs md:text-sm leading-relaxed max-w-xl">
@@ -78,26 +78,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                             Halaman penyiaran skor ini di-refresh puluhan ribu kali secara real-time oleh atlet, pelatih, dan orang tua sepanjang kompetisi berjalan, memberikan paparan visual tingkat tinggi yang tidak bisa dihindari oleh audiens target Anda.
                         </p>
                         
-                        <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4 text-amber-900 text-xs font-medium flex items-start gap-3 shadow-sm mt-4 text-left animate-pulse">
+                        <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4 text-amber-900 text-xs font-semibold flex items-start gap-3 shadow-sm mt-4 text-left animate-pulse">
                             <span class="text-base leading-none">💡</span>
                             <span class="leading-relaxed">
-                                <strong>Panduan Simulasi:</strong> Silakan scroll ke bawah pada tampilan layar HP di samping ini dan <strong>klik pada logo brand Anda</strong> untuk mencoba pengalihan konversi belanja aktif. Setelah mencoba simulasi, Anda dapat meninjau rincian biaya penayangan iklan pada tombol <strong>Sponsor Rate</strong> di bawah.
+                                <strong>Panduan Simulasi:</strong> Silakan scroll pada tampilan layar HP berikut ini dan <strong>klik pada logo brand Anda</strong> untuk mencoba pengalihan konversi belanja aktif. Setelah mencoba simulasi, Anda dapat meninjau rincian biaya penayangan iklan pada tombol <strong>Sponsor Rate</strong> di bawah.
                             </span>
                         </div>
                     </div>
                 `;
             }
 
-            // 2. RENDER LIVE RESULT MOCKUP
             renderSimulationBrand(allBrandsData);
 
-            // 3. SEKSI PENUTUP (DIKELUARKAN DARI DALAM HP MOCKUP!)
             const mainContent = document.getElementById('mainContent');
             if (mainContent) {
                 const oldPenutup = document.getElementById('f1-penutup-ads');
                 if (oldPenutup) oldPenutup.remove();
 
-                // Desain diperlebar dan dibikin megah seperti Pricing Box Premium
                 const penutupHtml = `
                     <div id="f1-penutup-ads" class="w-full mt-4 lg:mt-12 pt-8 lg:pt-12 border-t border-slate-300 px-4">
                         <div class="bg-white rounded-[2rem] shadow-xl p-8 lg:p-12 text-center max-w-4xl mx-auto border border-slate-100 relative overflow-hidden">
@@ -121,7 +118,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                 `;
                 
-                // INJEKSI DI LUAR KOTAK KONTEN UTAMA (DI BAWAH HP DAN TEKS)
                 mainContent.insertAdjacentHTML('afterend', penutupHtml);
 
                 const newWaBtns = document.querySelectorAll('#f1-penutup-ads .btnWaAction');
