@@ -33,9 +33,11 @@ const formatDate = (dateString) => {
 window.switchTab = function(tabId) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
     document.querySelectorAll('.tab-btn').forEach(b => {
-        b.classList.remove('bg-slate-900', 'text-white', 'bg-blue-100', 'bg-red-100');
+        b.classList.remove('bg-slate-900', 'text-white', 'bg-blue-100', 'bg-red-100', 'bg-green-600');
         b.classList.add('text-slate-600', 'bg-transparent');
     });
+    
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('block'));
     document.getElementById(tabId).classList.remove('hidden');
     document.getElementById(tabId).classList.add('block');
     
@@ -43,13 +45,109 @@ window.switchTab = function(tabId) {
     if(tabId === 'tab-tpi') activeBtn.classList.add('bg-slate-900', 'text-white');
     if(tabId === 'tab-jr') activeBtn.classList.add('bg-blue-600', 'text-white');
     if(tabId === 'tab-f1') activeBtn.classList.add('bg-red-600', 'text-white');
+    if(tabId === 'tab-excel') activeBtn.classList.add('bg-green-600', 'text-white'); // State untuk tab baru
 };
+
 
 window.closeReport = function() {
     document.getElementById('page-report').classList.add('hidden');
     document.getElementById('page-dashboard').classList.remove('hidden');
     document.getElementById('page-dashboard').classList.add('block');
 };
+
+function renderLaporanExcel() {
+    // Gabungkan node data JR dan F1
+    const allTx = [...jrTransactions, ...f1Transactions];
+    const posAkun = {};
+    
+    // Logika agregasi SUMIF untuk Buku Besar
+    allTx.forEach(t => {
+        const akun = t.jenis || 'Lain-lain';
+        const nominal = Number(t.jumlah) || 0;
+        const jenisStr = String(akun).toLowerCase();
+        
+        // Aturan akuntansi standar: Pemasukan masuk ke Kredit (Penambahan Kas), selainnya Debet (Beban operasional)
+        const isMasuk = jenisStr.includes('masuk') || jenisStr.includes('pendapatan') || jenisStr === 'spp' || jenisStr.includes('sponsor') || jenisStr.includes('fee');
+        
+        if (!posAkun[akun]) posAkun[akun] = { debet: 0, kredit: 0 };
+        
+        if (isMasuk) posAkun[akun].kredit += nominal; 
+        else posAkun[akun].debet += nominal;
+    });
+
+    // A. Render POS (Buku Besar)
+    const tbodyPos = document.getElementById('tabel-pos-excel');
+    if (tbodyPos) {
+        tbodyPos.innerHTML = '';
+        for (const [akun, mutasi] of Object.entries(posAkun)) {
+            const net = mutasi.kredit - mutasi.debet;
+            tbodyPos.innerHTML += `
+                <tr class="border-b border-slate-200 hover:bg-slate-50 text-sm">
+                    <td class="p-3 font-medium text-slate-800">${akun}</td>
+                    <td class="p-3 text-right font-bold text-red-500">${mutasi.debet > 0 ? formatRp(mutasi.debet) : '-'}</td>
+                    <td class="p-3 text-right font-bold text-emerald-500">${mutasi.kredit > 0 ? formatRp(mutasi.kredit) : '-'}</td>
+                    <td class="p-3 text-right font-black ${net >= 0 ? 'text-emerald-700' : 'text-red-700'}">${formatRp(Math.abs(net))}</td>
+                </tr>`;
+        }
+    }
+
+    // B. Render Laba Rugi (LR)
+    const containerLR = document.getElementById('laporan-lr-excel');
+    if (containerLR) {
+        let pendapatan = 0, beban = 0;
+        let htmlLR = '<div class="text-xs font-bold text-slate-500 uppercase border-b pb-2 mb-2">Pemasukan</div>';
+        
+        for (const [akun, mutasi] of Object.entries(posAkun)) {
+            if (mutasi.kredit > 0) {
+                pendapatan += mutasi.kredit;
+                htmlLR += `<div class="flex justify-between py-1"><span class="text-slate-600 pl-4">▸ ${akun}</span> <span class="font-medium">${formatRp(mutasi.kredit)}</span></div>`;
+            }
+        }
+        htmlLR += `<div class="flex justify-between py-2 border-b mb-4"><span class="font-bold text-slate-800">Total Pemasukan</span> <span class="font-bold text-emerald-600">${formatRp(pendapatan)}</span></div>`;
+        
+        htmlLR += '<div class="text-xs font-bold text-slate-500 uppercase border-b pb-2 mb-2">Beban Operasional</div>';
+        for (const [akun, mutasi] of Object.entries(posAkun)) {
+            if (mutasi.debet > 0) {
+                beban += mutasi.debet;
+                htmlLR += `<div class="flex justify-between py-1"><span class="text-slate-600 pl-4">▸ ${akun}</span> <span class="font-medium">${formatRp(mutasi.debet)}</span></div>`;
+            }
+        }
+        htmlLR += `<div class="flex justify-between py-2 border-b mb-4"><span class="font-bold text-slate-800">Total Pengeluaran</span> <span class="font-bold text-red-600">${formatRp(beban)}</span></div>`;
+        
+        const labaBersih = pendapatan - beban;
+        htmlLR += `
+            <div class="flex justify-between py-3 mt-2 bg-slate-100 px-3 rounded-lg border border-slate-200">
+                <span class="font-black text-slate-800">Laba Bersih Konsolidasi</span>
+                <span class="font-black text-lg ${labaBersih >= 0 ? 'text-emerald-600' : 'text-red-600'}">${formatRp(labaBersih)}</span>
+            </div>`;
+        containerLR.innerHTML = htmlLR;
+    }
+
+    // C. Render Arus Kas (Metode Langsung)
+    const containerAK = document.getElementById('laporan-aruskas-excel');
+    if (containerAK) {
+        let kasMasuk = 0, kasKeluar = 0;
+        for (const [akun, mutasi] of Object.entries(posAkun)) {
+            if (mutasi.kredit > 0) kasMasuk += mutasi.kredit;
+            if (mutasi.debet > 0) kasKeluar += mutasi.debet;
+        }
+        const mutasiKas = kasMasuk - kasKeluar;
+        
+        containerAK.innerHTML = `
+            <div class="space-y-3">
+                <div class="flex justify-between"><span class="text-slate-600">Arus Kas Masuk Operasi</span> <span class="font-medium text-emerald-600">${formatRp(kasMasuk)}</span></div>
+                <div class="flex justify-between"><span class="text-slate-600">Arus Kas Keluar Operasi</span> <span class="font-medium text-red-600">(${formatRp(kasKeluar)})</span></div>
+                <div class="border-t my-2 pt-2 flex justify-between font-bold text-slate-800">
+                    <span>Kenaikan (Penurunan) Kas</span> 
+                    <span>${formatRp(mutasiKas)}</span>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-xl mt-4 text-center border border-blue-100">
+                    <p class="text-xs text-blue-600 font-bold uppercase tracking-wider mb-1">Saldo Kas Akhir</p>
+                    <p class="text-2xl font-black text-blue-900">${formatRp(mutasiKas)}</p>
+                </div>
+            </div>`;
+    }
+}
 
 // --- FUNGSI RENDER DASHBOARD ---
 function renderUI() {
@@ -117,6 +215,9 @@ function renderUI() {
     const selectCoach = document.getElementById('tutup-coach');
     selectCoach.innerHTML = '<option value="semua">-- Semua Pegawai --</option>';
     uniquePegawai.forEach(p => { selectCoach.innerHTML += `<option value="${p}">${p}</option>`; });
+
+    // [TAMBAHKAN INI] Eksekusi injeksi Excel tiap kali UI dirender
+    renderLaporanExcel();
 }
 
 // --- FETCH SEMUA DATA DARI DB ---

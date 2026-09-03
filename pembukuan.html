@@ -34,6 +34,8 @@
             <button onclick="switchTab('tab-tpi')" id="btn-tpi" class="tab-btn whitespace-nowrap py-2 px-6 rounded-lg font-bold text-sm bg-slate-900 text-white transition-all">📊 Summary PT TPI</button>
             <button onclick="switchTab('tab-jr')" id="btn-jr" class="tab-btn whitespace-nowrap py-2 px-6 rounded-lg font-bold text-sm text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-all">🏊‍♂️ Arus Kas Jago Renang</button>
             <button onclick="switchTab('tab-f1')" id="btn-f1" class="tab-btn whitespace-nowrap py-2 px-6 rounded-lg font-bold text-sm text-slate-600 hover:bg-red-50 hover:text-red-700 transition-all">🏆 Arus Kas F1 Swimming</button>
+            <!-- SUNTIKAN TOMBOL EXCEL -->
+            <button onclick="switchTab('tab-excel')" id="btn-excel" class="tab-btn whitespace-nowrap py-2 px-6 rounded-lg font-bold text-sm text-slate-600 hover:bg-green-50 hover:text-green-700 transition-all">📗 Laporan Akuntansi (Excel)</button>
         </nav>
 
         <!-- TAB 1: SUMMARY PT TPI -->
@@ -211,6 +213,43 @@
                         </thead>
                         <tbody id="tabel-kas-f1" class="text-sm"></tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB 4: LAPORAN AKUNTANSI (EXCEL INJECTION) -->
+        <div id="tab-excel" class="tab-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- BUKU BESAR (POS) -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-green-100 border-t-4 border-t-green-600 overflow-x-auto h-fit">
+                    <h3 class="font-black text-green-900 mb-4 flex items-center gap-2"><span>📗</span> POS Akun (Buku Besar)</h3>
+                    <table class="w-full text-left border-collapse min-w-[400px]">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-200">
+                                <th class="p-3 w-1/2">Pos (Jenis Akun)</th>
+                                <th class="p-3 text-right text-red-500">Debet</th>
+                                <th class="p-3 text-right text-emerald-500">Kredit</th>
+                                <th class="p-3 text-right text-slate-800">Net / Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-pos-excel" class="text-sm">
+                            <tr><td colspan="4" class="p-4 text-center text-slate-400 italic">Mengkalkulasi mutasi...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- LAPORAN LR & ARUS KAS -->
+                <div class="flex flex-col gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100 border-t-4 border-t-emerald-600">
+                        <h3 class="font-black text-emerald-900 mb-4 flex items-center gap-2"><span>📈</span> Laporan Laba/Rugi (LR)</h3>
+                        <div id="laporan-lr-excel" class="text-sm space-y-2"></div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-blue-100 border-t-4 border-t-blue-600">
+                        <h3 class="font-black text-blue-900 mb-4 flex items-center gap-2"><span>💸</span> Laporan Arus Kas</h3>
+                        <div id="laporan-aruskas-excel" class="text-sm space-y-2"></div>
+                    </div>
                 </div>
             </div>
         </div>
