@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCS Career & Recruitment | F1 Swimming</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/src/style.css">
+</head>
+<body class="bg-slate-900 font-sans text-slate-200 min-h-screen flex items-center justify-center p-4">
+
+    <!-- Efek Latar Belakang -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-blue-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-20"></div>
+        <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-emerald-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-20"></div>
+    </div>
+
+    <!-- MAIN CARD -->
+    <div class="w-full max-w-lg bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-[2rem] p-8 md:p-10 shadow-2xl relative z-10 overflow-hidden">
+        
+        <!-- Header Kecil -->
+        <div class="text-center mb-8 border-b border-slate-700 pb-4">
+            <img src="/images/logo.png" alt="SCS Logo" class="h-8 mx-auto mb-3 opacity-80 grayscale brightness-200">
+            <p class="text-[10px] font-black tracking-widest text-blue-400 uppercase">Interactive Career Portal</p>
+        </div>
+
+        <!-- ======================================= -->
+        <!-- SLIDE 1: VALIDASI CV -->
+        <!-- ======================================= -->
+        <div id="slide1" class="slide-item transition-all duration-300 transform translate-x-0 opacity-100 block">
+            <h2 class="text-2xl font-black text-white mb-2">Halo Calon Tim SCS! 👋</h2>
+            <p class="text-sm text-slate-400 leading-relaxed mb-8">Sebelum memulai pemetaan divisi, apakah Anda sudah mengirimkan CV dan Portofolio terbaru Anda ke email resmi manajemen kami?</p>
+            
+            <div class="flex flex-col gap-3">
+                <button onclick="window.nextSlide('slide1', 'slide2')" class="w-full py-4 px-6 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-2xl text-sm transition-all shadow-lg shadow-emerald-900/30 flex items-center gap-3 transform active:scale-95 text-left">
+                    <span class="text-xl">✅</span> Sudah, CV sudah dikirim
+                </button>
+                <button onclick="window.nextSlide('slide1', 'slide1a')" class="w-full py-4 px-6 bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold rounded-2xl text-sm transition-all border border-slate-600 flex items-center gap-3 transform active:scale-95 text-left">
+                    <span class="text-xl">⚠️</span> Belum mengirimkan CV
+                </button>
+            </div>
+        </div>
+
+        <!-- ======================================= -->
+        <!-- SLIDE 1A: INTERSEP CV -->
+        <!-- ======================================= -->
+        <div id="slide1a" class="slide-item transition-all duration-300 transform translate-x-10 opacity-0 hidden">
+            <h2 class="text-2xl font-black text-amber-400 mb-2">Aksi Diperlukan 🛑</h2>
+            <p class="text-sm text-slate-300 leading-relaxed mb-4">Sistem seleksi SCS mewajibkan kandidat untuk menyertakan CV terlebih dahulu.</p>
+            
+            <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl mb-8">
+                <p class="text-xs text-slate-400 mb-2">Kirim CV & Portofolio Anda ke:</p>
+                <p class="text-lg font-mono font-bold text-blue-400 mb-2 select-all">support@f1swimming.com</p>
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest">Subjek: [JOBSEEKER] - Nama Anda</p>
+            </div>
+
+            <button onclick="window.nextSlide('slide1a', 'slide2')" class="w-full py-4 px-6 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl text-sm transition-all shadow-lg flex items-center justify-center gap-2 transform active:scale-95">
+                Saya Sudah Kirim, Lanjutkan 🚀
+            </button>
+            <button onclick="window.nextSlide('slide1a', 'slide1')" class="w-full py-3 mt-3 text-slate-400 hover:text-white font-bold text-xs transition-colors">
+                &laquo; Kembali
+            </button>
+        </div>
+
+        <!-- ======================================= -->
+        <!-- SLIDE 2: PILIH DIVISI -->
+        <!-- ======================================= -->
+        <div id="slide2" class="slide-item transition-all duration-300 transform translate-x-10 opacity-0 hidden">
+            <h2 class="text-2xl font-black text-white mb-2">💼 Pilih Divisi</h2>
+            <p class="text-sm text-slate-400 leading-relaxed mb-8">Pilih bidang keahlian utama yang ingin Anda lamar di ekosistem F1 Swimming:</p>
+            
+            <div class="flex flex-col gap-3">
+                <button onclick="window.pilihDivisi('dev', 'slide2', 'slide3')" class="w-full py-3.5 px-5 bg-slate-700 hover:bg-blue-600 hover:border-blue-500 text-slate-200 hover:text-white font-bold rounded-2xl text-sm transition-all border border-slate-600 flex items-center gap-3 transform active:scale-95 text-left">
+                    <span class="text-xl">💻</span> Web / Game Developer
+                </button>
+                <button onclick="window.pilihDivisi('admin-ads', 'slide2', 'slide4')" class="w-full py-3.5 px-5 bg-slate-700 hover:bg-blue-600 hover:border-blue-500 text-slate-200 hover:text-white font-bold rounded-2xl text-sm transition-all border border-slate-600 flex items-center gap-3 transform active:scale-95 text-left">
+                    <span class="text-xl">📊</span> Admin Ads & Media Buying
+                </button>
+                <button onclick="window.pilihDivisi('marketing-ads', 'slide2', 'slide4')" class="w-full py-3.5 px-5 bg-slate-700 hover:bg-blue-600 hover:border-blue-500 text-slate-200 hover:text-white font-bold rounded-2xl text-sm transition-all border border-slate-600 flex items-center gap-3 transform active:scale-95 text-left">
+                    <span class="text-xl">📣</span> Marketing & Growth Ads
+                </button>
+                <button onclick="window.pilihDivisi('akunting', 'slide2', 'slideHasil')" class="w-full py-3.5 px-5 bg-slate-700 hover:bg-blue-600 hover:border-blue-500 text-slate-200 hover:text-white font-bold rounded-2xl text-sm transition-all border border-slate-600 flex items-center gap-3 transform active:scale-95 text-left relative overflow-hidden group">
+                    <span class="text-xl relative z-10">💰</span> 
+                    <span class="relative z-10 flex-1">Akunting & Keuangan</span>
+                    <span class="text-[9px] font-black bg-slate-900 text-amber-400 px-2 py-1 rounded uppercase tracking-widest relative z-10">In-House</span>
+                </button>
+            </div>
+            <button onclick="window.nextSlide('slide2', 'slide1')" class="w-full py-3 mt-4 text-slate-500 hover:text-white font-bold text-xs transition-colors">
+                &laquo; Kembali
+            </button>
+        </div>
+
+        <!-- ======================================= -->
+        <!-- SLIDE 3: TECH STACK KHUSUS DEV -->
+        <!-- ======================================= -->
+        <div id="slide3" class="slide-item transition-all duration-300 transform translate-x-10 opacity-0 hidden">
+            <h2 class="text-2xl font-black text-white mb-2">⚙️ Tech Stack</h2>
+            <p class="text-sm text-slate-400 leading-relaxed mb-8">Teknologi apa yang paling Anda kuasai dalam siklus pengembangan kami?</p>
+            
+            <div class="flex flex-col gap-3">
+                <button onclick="window.pilihTech('frontend', 'slide3', 'slide4')" class="w-full py-3.5 px-5 bg-slate-700 hover:bg-emerald-600 hover:border-emerald-500 text-slate-200 font-bold rounded-2xl text-sm transition-all border border-slate-600 flex items-center gap-3 transform active:scale-95 text-left">
+                    <span class="text-xl">🎨</span> HTML, CSS, JS Vanilla
+                </button>
+                <button onclick="window.pilihTech('fullstack', 'slide3', 'slide4')" class="w-full py-3.5 px-5 bg-slate-700 hover:bg-emerald-600 hover:border-emerald-500 text-slate-200 font-bold rounded-2xl text-sm transition-all border border-slate-600 flex items-center gap-3 transform active:scale-95 text-left">
+                    <span class="text-xl">⚡</span> Vite, Tailwind, Supabase
+                </button>
+                <button onclick="window.pilihTech('game', 'slide3', 'slide4')" class="w-full py-3.5 px-5 bg-slate-700 hover:bg-emerald-600 hover:border-emerald-500 text-slate-200 font-bold rounded-2xl text-sm transition-all border border-slate-600 flex items-center gap-3 transform active:scale-95 text-left">
+                    <span class="text-xl">🎮</span> Roblox Studio / Lua Script
+                </button>
+            </div>
+            <button onclick="window.nextSlide('slide3', 'slide2')" class="w-full py-3 mt-4 text-slate-500 hover:text-white font-bold text-xs transition-colors">
+                &laquo; Kembali
+            </button>
+        </div>
+
+        <!-- ======================================= -->
+        <!-- SLIDE 4: MOBILITAS & DOMISILI -->
+        <!-- ======================================= -->
+        <div id="slide4" class="slide-item transition-all duration-300 transform translate-x-10 opacity-0 hidden">
+            <h2 class="text-2xl font-black text-white mb-2">📍 Mobilitas Waktu</h2>
+            <p class="text-sm text-slate-400 leading-relaxed mb-8">Bagaimana ketersediaan waktu kerja dan domisili fisik Anda saat ini?</p>
+            
+            <div class="flex flex-col gap-3">
+                <button onclick="window.hitungHasil('remote', 'slide4')" class="w-full py-4 px-5 bg-slate-700 hover:bg-purple-600 hover:border-purple-500 text-slate-200 font-bold rounded-2xl text-sm transition-all border border-slate-600 flex items-center gap-3 transform active:scale-95 text-left">
+                    <span class="text-xl">🏠</span> 
+                    <div>
+                        <p>Kerja Remote (WFH)</p>
+                        <p class="text-[10px] text-slate-400 font-normal mt-0.5">Sangat fleksibel, bebas dari mana saja.</p>
+                    </div>
+                </button>
+                <button onclick="window.hitungHasil('onsite', 'slide4')" class="w-full py-4 px-5 bg-slate-700 hover:bg-purple-600 hover:border-purple-500 text-slate-200 font-bold rounded-2xl text-sm transition-all border border-slate-600 flex items-center gap-3 transform active:scale-95 text-left">
+                    <span class="text-xl">🏢</span> 
+                    <div>
+                        <p>Siap On-Site (WFO)</p>
+                        <p class="text-[10px] text-slate-400 font-normal mt-0.5">Berdomisili di Surabaya & siap ke kantor/event.</p>
+                    </div>
+                </button>
+            </div>
+            <button onclick="window.nextSlide('slide4', 'slide2')" class="w-full py-3 mt-4 text-slate-500 hover:text-white font-bold text-xs transition-colors">
+                &laquo; Kembali ke Menu Awal
+            </button>
+        </div>
+
+        <!-- ======================================= -->
+        <!-- SLIDE 5: HASIL EVALUASI -->
+        <!-- ======================================= -->
+        <div id="slideHasil" class="slide-item transition-all duration-300 transform translate-x-10 opacity-0 hidden">
+            <h2 class="text-2xl font-black text-white mb-2 text-center">🏁 Hasil Evaluasi Karir</h2>
+            <p class="text-sm text-slate-400 leading-relaxed mb-6 text-center">Berikut adalah proyeksi penempatan posisi Anda di ekosistem SCS.</p>
+            
+            <!-- Tempat injeksi hasil oleh Javascript -->
+            <div id="textHasil" class="mb-8"></div>
+
+            <div class="flex flex-col gap-3">
+                <button id="btnLaporWA" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl text-xs transition-all shadow-lg flex items-center justify-center gap-2 uppercase tracking-wide transform active:scale-95">
+                    💬 Laporkan Hasil via WhatsApp
+                </button>
+                <button onclick="window.resetQuiz()" class="w-full py-3 bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white font-bold rounded-xl text-xs transition-all border border-slate-600 uppercase tracking-wide">
+                    🔄 Ulangi Simulasi
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script Terpisah -->
+    <script type="module" src="/src/jobs.js"></script>
+</body>
+</html>

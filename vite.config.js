@@ -8,6 +8,7 @@ export default defineConfig({
         // --- 1. MAIN & PUBLIC PAGES (Akses Tanpa Login) ---
         main: resolve(__dirname, 'index.html'), // Homepage
         about: resolve(__dirname, 'about.html'), // Halaman Tentang Kami (Pilar SEO)
+        jobs: resolve(__dirname, 'jobs.html'), // 🚀 TAMBAHAN: Portal Karir & Rekrutmen SCS
         openinvest: resolve(__dirname, 'openinvest.html'), // Pitch Deck Pendanaan F1Swimming
         auth: resolve(__dirname, 'auth.html'), // Login & Register System
         register: resolve(__dirname, 'register.html'), // Form Registrasi
@@ -25,7 +26,7 @@ export default defineConfig({
         pitch: resolve(__dirname, 'pitch.html'), // Web-Based Pitch Deck Nestle 
         pitchClient: resolve(__dirname, 'pitch-client.html'), // Halaman Front-End Pitching Klien (B2B)
         media: resolve(__dirname, 'media.html'), // SCS Media & Ads Portal 
-        sponsorRate: resolve(__dirname, 'sponsor-rate.html'), // 🚀 TAMBAHAN: Halaman Rate Card / Paket Pricing Sponsor
+        sponsorRate: resolve(__dirname, 'sponsor-rate.html'), // Halaman Rate Card / Paket Pricing Sponsor
 
         // --- 2. DASHBOARD KLUB / PELATIH ---
         dashboard: resolve(__dirname, 'dashboard.html'), // Command Center Manajemen Klub
@@ -57,9 +58,6 @@ export default defineConfig({
         // --- 6. DASHBOARD BRAND / SPONSOR ---
         sponsorPortal: resolve(__dirname, 'sponsor.html'), 
         sponsorAuth: resolve(__dirname, 'sponsor-auth.html'), // Landing Page Daftar Sponsor & Free Token
-
-        
-        // 🚀 TAMBAHAN: Portal Login Brand untuk Injeksi Token Ad-Tech
       }
     }
   },
