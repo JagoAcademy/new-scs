@@ -9,14 +9,19 @@ document.addEventListener('DOMContentLoaded', () => {
         kondisi: '' 
     };
 
-    // FUNGSI ANIMASI TRANSISI SLIDE
+    // ==========================================
+    // FUNGSI ANIMASI TRANSISI SLIDE (FIXED CSS CONFLICT)
+    // ==========================================
     window.nextSlide = function(currentId, nextId) {
         const currentSlide = document.getElementById(currentId);
         const nextSlide = document.getElementById(nextId);
 
-        // Animate out current
-        currentSlide.classList.remove('translate-x-0', 'opacity-100');
+        // 1. Bersihkan sisa class yang nyangkut di slide saat ini
+        currentSlide.classList.remove('translate-x-0', 'translate-x-10', '-translate-x-10');
+        
+        // Animate out ke kiri (-10)
         currentSlide.classList.add('-translate-x-10', 'opacity-0');
+        currentSlide.classList.remove('opacity-100');
 
         setTimeout(() => {
             currentSlide.classList.add('hidden');
@@ -25,16 +30,24 @@ document.addEventListener('DOMContentLoaded', () => {
             nextSlide.classList.remove('hidden');
             nextSlide.classList.add('block');
             
-            // Trigger reflow biar animasinya jalan
+            // 2. BERSIIHAN SAPU JAGAT: Hapus SEMUA class kordinat X yang nyangkut di nextSlide
+            nextSlide.classList.remove('translate-x-0', 'translate-x-10', '-translate-x-10', 'opacity-100', 'opacity-0');
+            
+            // Taruh di kanan dulu sebelum masuk (10)
+            nextSlide.classList.add('translate-x-10', 'opacity-0');
+            
+            // Trigger reflow biar browser memproses posisi kanan dulu
             void nextSlide.offsetWidth;
 
-            // Animate in next
+            // Animate in ke tengah (0)
             nextSlide.classList.remove('translate-x-10', 'opacity-0');
             nextSlide.classList.add('translate-x-0', 'opacity-100');
         }, 300);
     };
 
+    // ==========================================
     // FUNGSI VALIDASI & SIMPAN DATA DIRI
+    // ==========================================
     window.simpanDataDiri = function(currentId, nextId) {
         const nl = document.getElementById('inputNamaLengkap').value.trim();
         const np = document.getElementById('inputNamaPanggilan').value.trim();
@@ -175,8 +188,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentSlide = document.getElementById('slideHasil');
         const nextSlide = document.getElementById('slide1');
 
-        currentSlide.classList.remove('translate-x-0', 'opacity-100');
-        currentSlide.classList.add('translate-x-10', 'opacity-0');
+        currentSlide.classList.remove('translate-x-0', 'translate-x-10', '-translate-x-10');
+        currentSlide.classList.add('-translate-x-10', 'opacity-0');
+        currentSlide.classList.remove('opacity-100');
 
         setTimeout(() => {
             currentSlide.classList.add('hidden');
@@ -185,12 +199,13 @@ document.addEventListener('DOMContentLoaded', () => {
             nextSlide.classList.remove('hidden');
             nextSlide.classList.add('block');
             
-            nextSlide.classList.remove('-translate-x-10', 'translate-x-10');
-            nextSlide.classList.add('-translate-x-10');
+            // Bersihkan sisa transisi di slide awal
+            nextSlide.classList.remove('translate-x-0', 'translate-x-10', '-translate-x-10', 'opacity-100', 'opacity-0');
+            nextSlide.classList.add('translate-x-10', 'opacity-0');
             
             void nextSlide.offsetWidth;
 
-            nextSlide.classList.remove('-translate-x-10', 'opacity-0');
+            nextSlide.classList.remove('translate-x-10', 'opacity-0');
             nextSlide.classList.add('translate-x-0', 'opacity-100');
         }, 300);
     };
