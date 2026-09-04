@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SCS Career & Recruitment | F1 Swimming</title>
+    <title>Career & Recruitment | F1 Swimming</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/src/style.css">
 </head>
@@ -20,7 +20,7 @@
         
         <!-- Header Kecil -->
         <div class="text-center mb-8 border-b border-slate-700 pb-4">
-            <img src="/images/logo.png" alt="SCS Logo" class="h-8 mx-auto mb-3 opacity-80 grayscale brightness-200">
+            <img src="/images/logo.png" alt="F1 Swimming Logo" class="h-8 mx-auto mb-3 opacity-80 grayscale brightness-200">
             <p class="text-[10px] font-black tracking-widest text-blue-400 uppercase">Interactive Career Portal</p>
         </div>
 
@@ -28,11 +28,11 @@
         <!-- SLIDE 1: VALIDASI CV -->
         <!-- ======================================= -->
         <div id="slide1" class="slide-item transition-all duration-300 transform translate-x-0 opacity-100 block">
-            <h2 class="text-2xl font-black text-white mb-2">Halo Calon Tim SCS! 👋</h2>
+            <h2 class="text-2xl font-black text-white mb-2">Halo Calon Tim F1 Swimming! 👋</h2>
             <p class="text-sm text-slate-400 leading-relaxed mb-8">Sebelum memulai pemetaan divisi, apakah Anda sudah mengirimkan CV dan Portofolio terbaru Anda ke email resmi manajemen kami?</p>
             
             <div class="flex flex-col gap-3">
-                <button onclick="window.nextSlide('slide1', 'slide2')" class="w-full py-4 px-6 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-2xl text-sm transition-all shadow-lg shadow-emerald-900/30 flex items-center gap-3 transform active:scale-95 text-left">
+                <button onclick="window.nextSlide('slide1', 'slideDataDiri')" class="w-full py-4 px-6 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-2xl text-sm transition-all shadow-lg shadow-emerald-900/30 flex items-center gap-3 transform active:scale-95 text-left">
                     <span class="text-xl">✅</span> Sudah, CV sudah dikirim
                 </button>
                 <button onclick="window.nextSlide('slide1', 'slide1a')" class="w-full py-4 px-6 bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold rounded-2xl text-sm transition-all border border-slate-600 flex items-center gap-3 transform active:scale-95 text-left">
@@ -46,7 +46,7 @@
         <!-- ======================================= -->
         <div id="slide1a" class="slide-item transition-all duration-300 transform translate-x-10 opacity-0 hidden">
             <h2 class="text-2xl font-black text-amber-400 mb-2">Aksi Diperlukan 🛑</h2>
-            <p class="text-sm text-slate-300 leading-relaxed mb-4">Sistem seleksi SCS mewajibkan kandidat untuk menyertakan CV terlebih dahulu.</p>
+            <p class="text-sm text-slate-300 leading-relaxed mb-4">Sistem seleksi F1 Swimming mewajibkan kandidat untuk menyertakan CV terlebih dahulu.</p>
             
             <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl mb-8">
                 <p class="text-xs text-slate-400 mb-2">Kirim CV & Portofolio Anda ke:</p>
@@ -54,10 +54,44 @@
                 <p class="text-[10px] text-slate-500 uppercase tracking-widest">Subjek: [JOBSEEKER] - Nama Anda</p>
             </div>
 
-            <button onclick="window.nextSlide('slide1a', 'slide2')" class="w-full py-4 px-6 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl text-sm transition-all shadow-lg flex items-center justify-center gap-2 transform active:scale-95">
+            <button onclick="window.nextSlide('slide1a', 'slideDataDiri')" class="w-full py-4 px-6 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl text-sm transition-all shadow-lg flex items-center justify-center gap-2 transform active:scale-95">
                 Saya Sudah Kirim, Lanjutkan 🚀
             </button>
             <button onclick="window.nextSlide('slide1a', 'slide1')" class="w-full py-3 mt-3 text-slate-400 hover:text-white font-bold text-xs transition-colors">
+                &laquo; Kembali
+            </button>
+        </div>
+
+        <!-- ======================================= -->
+        <!-- SLIDE DATA DIRI: INPUT PROFIL (NEW) -->
+        <!-- ======================================= -->
+        <div id="slideDataDiri" class="slide-item transition-all duration-300 transform translate-x-10 opacity-0 hidden">
+            <h2 class="text-2xl font-black text-white mb-2">📝 Profil Kandidat</h2>
+            <p class="text-sm text-slate-400 leading-relaxed mb-6">Silakan lengkapi data diri singkat Anda sebelum memilih divisi penempatan.</p>
+            
+            <div class="space-y-4 mb-8">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Nama Lengkap</label>
+                    <input type="text" id="inputNamaLengkap" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-blue-500 outline-none transition-colors shadow-inner" placeholder="Cth: Budi Santoso">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Nama Panggilan</label>
+                    <input type="text" id="inputNamaPanggilan" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-blue-500 outline-none transition-colors shadow-inner" placeholder="Cth: Budi">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Alamat Email Aktif</label>
+                    <input type="email" id="inputEmail" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-blue-500 outline-none transition-colors shadow-inner" placeholder="Cth: budi@gmail.com">
+                </div>
+                
+                <div id="errorDataDiri" class="hidden bg-red-950/50 border border-red-500/30 text-red-400 p-3 rounded-xl text-xs font-bold flex items-center gap-2">
+                    <span>⚠️</span> Semua kolom wajib diisi dengan benar!
+                </div>
+            </div>
+
+            <button onclick="window.simpanDataDiri('slideDataDiri', 'slide2')" class="w-full py-4 px-6 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl text-sm transition-all shadow-lg flex items-center justify-center gap-2 transform active:scale-95">
+                Lanjut Pilih Divisi &raquo;
+            </button>
+            <button onclick="window.nextSlide('slideDataDiri', 'slide1')" class="w-full py-3 mt-3 text-slate-500 hover:text-white font-bold text-xs transition-colors">
                 &laquo; Kembali
             </button>
         </div>
@@ -85,7 +119,7 @@
                     <span class="text-[9px] font-black bg-slate-900 text-amber-400 px-2 py-1 rounded uppercase tracking-widest relative z-10">In-House</span>
                 </button>
             </div>
-            <button onclick="window.nextSlide('slide2', 'slide1')" class="w-full py-3 mt-4 text-slate-500 hover:text-white font-bold text-xs transition-colors">
+            <button onclick="window.nextSlide('slide2', 'slideDataDiri')" class="w-full py-3 mt-4 text-slate-500 hover:text-white font-bold text-xs transition-colors">
                 &laquo; Kembali
             </button>
         </div>
@@ -137,7 +171,7 @@
                 </button>
             </div>
             <button onclick="window.nextSlide('slide4', 'slide2')" class="w-full py-3 mt-4 text-slate-500 hover:text-white font-bold text-xs transition-colors">
-                &laquo; Kembali ke Menu Awal
+                &laquo; Kembali
             </button>
         </div>
 
@@ -146,14 +180,14 @@
         <!-- ======================================= -->
         <div id="slideHasil" class="slide-item transition-all duration-300 transform translate-x-10 opacity-0 hidden">
             <h2 class="text-2xl font-black text-white mb-2 text-center">🏁 Hasil Evaluasi Karir</h2>
-            <p class="text-sm text-slate-400 leading-relaxed mb-6 text-center">Berikut adalah proyeksi penempatan posisi Anda di ekosistem SCS.</p>
+            <p class="text-sm text-slate-400 leading-relaxed mb-6 text-center">Berikut adalah proyeksi penempatan posisi Anda di ekosistem F1 Swimming.</p>
             
             <!-- Tempat injeksi hasil oleh Javascript -->
             <div id="textHasil" class="mb-8"></div>
 
             <div class="flex flex-col gap-3">
                 <button id="btnLaporWA" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl text-xs transition-all shadow-lg flex items-center justify-center gap-2 uppercase tracking-wide transform active:scale-95">
-                    💬 Laporkan Hasil via WhatsApp
+                    💬 Laporkan Profil & Hasil ke HR
                 </button>
                 <button onclick="window.resetQuiz()" class="w-full py-3 bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white font-bold rounded-xl text-xs transition-all border border-slate-600 uppercase tracking-wide">
                     🔄 Ulangi Simulasi
@@ -163,7 +197,6 @@
 
     </div>
 
-    <!-- Script Terpisah -->
     <script type="module" src="/src/jobs.js"></script>
 </body>
 </html>
