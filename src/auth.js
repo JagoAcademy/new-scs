@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // ==========================================
-    // LOGIKA REGISTER EMAIL (DENGAN VERIFIKASI)
+    // LOGIKA REGISTER EMAIL (TANPA VERIFIKASI - LANGSUNG REDIRECT)
     // ==========================================
     formRegister.addEventListener('submit', async () => {
         const email = document.getElementById('regEmail').value;
@@ -193,19 +193,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 throw new Error("Email ini sudah terdaftar. Silakan kembali ke menu Masuk.");
             }
 
-            alertMsg.innerHTML = "✅ <strong>Pendaftaran Berhasil!</strong><br>Silakan periksa <strong>Kotak Masuk / Spam</strong> email Anda untuk mengklik tautan verifikasi sebelum masuk.";
-            alertMsg.className = "bg-emerald-50 text-emerald-700 text-xs font-bold p-3 rounded-lg border border-emerald-200 text-center leading-relaxed block";
-            
-            document.getElementById('regEmail').value = '';
-            document.getElementById('regPassword').value = '';
-            document.getElementById('regConfirmPassword').value = '';
+            // KARENA AUTH EMAIL OFF, LANGSUNG LEMPAR KE DASHBOARD 🚀
+            window.location.replace('/dashboard.html');
 
         } catch (err) {
             console.error("Register Error:", err);
             alertMsg.innerText = "❌ " + translateAuthError(err);
             alertMsg.className = "bg-red-50 text-red-600 text-xs font-bold p-3 rounded-lg border border-red-100 text-center block";
             alertMsg.classList.remove('hidden');
-        } finally {
+            
             btnRegister.innerHTML = `Daftarkan Via Email`;
             btnRegister.disabled = false;
         }
