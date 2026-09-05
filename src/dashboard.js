@@ -229,7 +229,9 @@ Terima kasih.`);
         });
     }
 
-    // 🚀 LOGIKA BARU: INSERT KE TABEL MANUAL_RESULTS
+    // ==============================================================
+    // 🚀 INI BLOK YANG NEMBAK KE MANUAL_RESULTS SECARA AMAN
+    // ==============================================================
     const btnSaveManualTime = document.getElementById('btnSaveManualTime');
     if (btnSaveManualTime) {
         btnSaveManualTime.addEventListener('click', async () => {
@@ -426,6 +428,7 @@ async function fetchDashboardData() {
 
         if (myEvents) {
             myEvents.forEach(ev => {
+                if (ev.subdomain && ev.subdomain.startsWith('unofficial-')) return; 
                 allEventsToDisplay.push({ ...ev, isCollab: false });
             });
         }
@@ -433,6 +436,7 @@ async function fetchDashboardData() {
         if (collabData) {
             collabData.forEach(c => {
                 if (c.events) {
+                    if (c.events.subdomain && c.events.subdomain.startsWith('unofficial-')) return;
                     allEventsToDisplay.push({ ...c.events, isCollab: true, collabRole: c.role });
                 }
             });
