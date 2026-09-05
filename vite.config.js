@@ -8,7 +8,7 @@ export default defineConfig({
         // --- 1. MAIN & PUBLIC PAGES (Akses Tanpa Login) ---
         main: resolve(__dirname, 'index.html'), // Homepage
         about: resolve(__dirname, 'about.html'), // Halaman Tentang Kami (Pilar SEO)
-        jobs: resolve(__dirname, 'jobs.html'), // 🚀 TAMBAHAN: Portal Karir & Rekrutmen SCS
+        jobs: resolve(__dirname, 'jobs.html'), // Portal Karir & Rekrutmen SCS
         openinvest: resolve(__dirname, 'openinvest.html'), // Pitch Deck Pendanaan F1Swimming
         auth: resolve(__dirname, 'auth.html'), // Login & Register System
         register: resolve(__dirname, 'register.html'), // Form Registrasi
@@ -54,6 +54,7 @@ export default defineConfig({
         adminAds: resolve(__dirname, 'admin-ads.html'),
         sponsorPreview: resolve(__dirname, 'sponsor-preview.html'),
         adminApproval: resolve(__dirname, 'admin-approval.html'), // ACC Sponsor
+        work: resolve(__dirname, 'work.html'), // 🚀 TAMBAHAN: WFH Admin Task Tracker
 
         // --- 6. DASHBOARD BRAND / SPONSOR ---
         sponsorPortal: resolve(__dirname, 'sponsor.html'), 
