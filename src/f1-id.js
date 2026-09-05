@@ -2,10 +2,9 @@ import { supabaseClient } from './supabase.js';
 
 let targetF1Id = null;
 let currentAthleteName = "";
-let currentUserId = null; // Menyimpan ID user yang login
+let currentUserId = null; 
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Cek User Login (Bapaknya atau Orang Luar)
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) {
         currentUserId = session.user.id;
@@ -102,34 +101,25 @@ function renderProfile(atlet) {
         f1IdEl.className = "font-mono text-sm md:text-lg font-black text-blue-200 tracking-wider";
     }
 
-    // ===============================================
-    // JURUS PRIVASI FOTO (MENYESUAIKAN SIZE MOBILE)
-    // ===============================================
     const fotoEl = document.getElementById('atletFoto');
     let useDefaultLogo = false;
 
-    // Cek apakah bapaknya (pemilik klub) yang lagi buka
     const isOwner = atlet.clubs && (atlet.clubs.owner_id === currentUserId);
 
-    // KONDISI 1: Kalau nggak ada foto sama sekali
     if (!atlet.foto_url) {
         useDefaultLogo = true;
     } 
-    // KONDISI 2: Kalau ada foto TAPI privasi nyala DAN yang buka BUKAN bapaknya
     else if (atlet.hide_foto && !isOwner) {
         useDefaultLogo = true;
     }
 
     if (useDefaultLogo) {
         fotoEl.src = '/images/f1logo.png';
-        // Kasih background putih, padding, object-contain biar logo F1 rapi di tengah box
         fotoEl.className = "w-24 h-24 md:w-36 md:h-36 rounded-2xl object-contain p-3 md:p-4 border-2 md:border-4 border-white/10 shadow-xl bg-white";
     } else {
         fotoEl.src = atlet.foto_url;
-        // Cover foto atlet biasa
         fotoEl.className = "w-24 h-24 md:w-36 md:h-36 rounded-2xl object-cover border-2 md:border-4 border-white/10 shadow-xl bg-slate-800";
     }
-    // ===============================================
 
     if (atlet.dob) {
         const dob = new Date(atlet.dob);
@@ -223,35 +213,73 @@ async function fetchMedals() {
     }
 }
 
+// 🚀 FUNGSI BARU: TARIK DARI DUA TABEL (OFFICIAL & UNOFFICIAL)
 async function fetchBestTimes() {
     const listEl = document.getElementById('bestTimeList');
     try {
-        const { data, error } = await supabaseClient
+        // 1. Tarik waktu Resmi (Official) dari race_results
+        const { data: officialData, error: offErr } = await supabaseClient
             .from('race_results')
-            .select(`
-                *,
-                events (event_name)
-            `)
+            .select(`*, events (event_name)`)
             .eq('athlete_f1_id', targetF1Id)
             .neq('waktu_string', 'DQ')
             .neq('waktu_string', 'DNS')
-            .neq('waktu_string', 'NT')
-            .order('time_seconds', { ascending: true }); 
+            .neq('waktu_string', 'NT');
 
-        if (error) throw error;
+        if (offErr) throw offErr;
 
-        if (!data || data.length === 0) {
+        // 2. Tarik waktu Manual (Unofficial) dari manual_results
+        const { data: manualData, error: manErr } = await supabaseClient
+            .from('manual_results')
+            .select('*')
+            .eq('f1_id', targetF1Id);
+
+        if (manErr) throw manErr;
+
+        const allTimes = [];
+        
+        // Gabungkan Official
+        if (officialData) {
+            officialData.forEach(r => {
+                allTimes.push({
+                    nomor_lomba: r.nomor_lomba,
+                    event_name: r.events?.event_name || 'Event Resmi SCS',
+                    waktu_string: r.waktu_string,
+                    time_seconds: parseFloat(r.time_seconds),
+                    is_official: true
+                });
+            });
+        }
+
+        // Gabungkan Unofficial
+        if (manualData) {
+            manualData.forEach(r => {
+                allTimes.push({
+                    nomor_lomba: r.nomor_lomba,
+                    event_name: r.event_name,
+                    waktu_string: r.waktu_string,
+                    time_seconds: parseFloat(r.time_seconds),
+                    is_official: false
+                });
+            });
+        }
+
+        if (allTimes.length === 0) {
             listEl.innerHTML = `
                 <div class="text-center py-10">
                     <span class="text-5xl block mb-3 grayscale opacity-30">⏱️</span>
-                    <p class="text-sm font-bold text-slate-500">Belum ada catatan waktu resmi.</p>
+                    <p class="text-sm font-bold text-slate-500">Belum ada catatan waktu.</p>
                 </div>
             `;
             return;
         }
 
+        // Urutkan semua waktu dari yang TERCEPAT
+        allTimes.sort((a, b) => a.time_seconds - b.time_seconds);
+
+        // Ambil waktu terbaik per nomor_lomba (karena sudah diurutkan, yang pertama masuk Map = waktu terbaik)
         const bestTimesMap = new Map();
-        data.forEach(race => {
+        allTimes.forEach(race => {
             const key = race.nomor_lomba;
             if (!bestTimesMap.has(key)) {
                 bestTimesMap.set(key, race); 
@@ -260,11 +288,19 @@ async function fetchBestTimes() {
 
         let html = '';
         bestTimesMap.forEach((best, nomor_lomba) => {
+            // Tentukan label badge (Biru untuk resmi, Abu-abu untuk manual)
+            const badge = best.is_official 
+                ? `<span class="bg-blue-100 text-blue-700 border border-blue-200 text-[8px] font-black px-1.5 py-0.5 rounded tracking-widest uppercase">Official</span>`
+                : `<span class="bg-slate-100 text-slate-500 border border-slate-200 text-[8px] font-black px-1.5 py-0.5 rounded tracking-widest uppercase">Unofficial</span>`;
+                
             html += `
                 <div class="p-4 md:p-5 flex items-center justify-between hover:bg-slate-50 transition-colors group gap-2">
                     <div class="min-w-0 flex-1">
-                        <h4 class="font-black text-slate-800 text-xs md:text-sm uppercase truncate">${nomor_lomba}</h4>
-                        <p class="text-[9px] md:text-[10px] text-slate-500 font-bold mt-1 truncate">Di: <span class="text-slate-700">${best.events?.event_name || 'Event SCS'}</span></p>
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-black text-slate-800 text-xs md:text-sm uppercase truncate">${nomor_lomba}</h4>
+                            ${badge}
+                        </div>
+                        <p class="text-[9px] md:text-[10px] text-slate-500 font-bold mt-1 truncate">Di: <span class="text-slate-700">${best.event_name}</span></p>
                     </div>
                     <div class="text-right shrink-0">
                         <span class="block text-base md:text-lg font-black text-blue-600 font-mono tracking-wider drop-shadow-sm group-hover:scale-105 transition-transform origin-right">

@@ -220,7 +220,6 @@ Terima kasih.`);
         });
     }
 
-    // 🚀 NEW: INITIALIZE MANUAL TIME MODAL
     const closeModalManualTimeBtn = document.getElementById('closeModalManualTimeBtn');
     if (closeModalManualTimeBtn) {
         closeModalManualTimeBtn.addEventListener('click', () => {
@@ -230,6 +229,7 @@ Terima kasih.`);
         });
     }
 
+    // 🚀 LOGIKA BARU: INSERT KE TABEL MANUAL_RESULTS
     const btnSaveManualTime = document.getElementById('btnSaveManualTime');
     if (btnSaveManualTime) {
         btnSaveManualTime.addEventListener('click', async () => {
@@ -249,7 +249,6 @@ Terima kasih.`);
                 return;
             }
 
-            // Validasi format waktu dan konversi ke detik (wajib buat sorting best time F1 ID)
             let timeSeconds = 0;
             if (waktu.includes(':')) {
                 const parts = waktu.split(':');
@@ -269,40 +268,21 @@ Terima kasih.`);
             btnSaveManualTime.classList.add('opacity-70');
 
             try {
-                // 1. Suntik Unofficial Event (Dummy Event rahasia)
-                const dummySubdomain = `unofficial-${Date.now()}`;
-                const finalEventName = `${eventName} (Unofficial SCS)`;
-
-                const { data: eventData, error: eventError } = await supabaseClient
-                    .from('events')
-                    .insert([{
-                        event_name: finalEventName,
-                        subdomain: dummySubdomain,
-                        event_date: eventDate,
-                        end_date: eventDate,
-                        provinsi: prov,
-                        kota: kota,
-                        club_id: currentClubId
-                    }])
-                    .select()
-                    .single();
-
-                if (eventError) throw eventError;
-
-                // 2. Suntik Waktu ke tabel race_results yang berafiliasi dengan event dummy tersebut
                 const nomorLomba = `${jarak} Gaya ${gaya}`;
-                const { error: raceError } = await supabaseClient
-                    .from('race_results')
+                
+                // Langsung simpan ke tabel manual_results dengan aman!
+                const { error: manualError } = await supabaseClient
+                    .from('manual_results')
                     .insert([{
-                        athlete_f1_id: f1Id,
-                        event_id: eventData.id,
+                        f1_id: f1Id,
+                        event_name: eventName,
+                        event_date: eventDate,
                         nomor_lomba: nomorLomba,
                         waktu_string: waktu,
-                        time_seconds: timeSeconds,
-                        created_at: new Date().toISOString()
+                        time_seconds: timeSeconds
                     }]);
 
-                if (raceError) throw raceError;
+                if (manualError) throw manualError;
 
                 statusMsg.innerHTML = "✅ <strong>Berhasil!</strong><br><span class='text-xs font-normal'>Catatan waktu manual berhasil disuntikkan ke F1 ID atlet.</span>";
                 statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-green-100 text-green-700 block mt-2";
@@ -446,8 +426,6 @@ async function fetchDashboardData() {
 
         if (myEvents) {
             myEvents.forEach(ev => {
-                // 🚀 FILTER UNTUK MENYEMBUNYIKAN EVENT WAKTU MANUAL (UNOFFICIAL)
-                if (ev.subdomain && ev.subdomain.startsWith('unofficial-')) return; 
                 allEventsToDisplay.push({ ...ev, isCollab: false });
             });
         }
@@ -455,7 +433,6 @@ async function fetchDashboardData() {
         if (collabData) {
             collabData.forEach(c => {
                 if (c.events) {
-                    if (c.events.subdomain && c.events.subdomain.startsWith('unofficial-')) return;
                     allEventsToDisplay.push({ ...c.events, isCollab: true, collabRole: c.role });
                 }
             });
@@ -598,7 +575,6 @@ function renderAthleteTable() {
             ? "font-mono font-black text-amber-500 hover:text-amber-400 transition-colors cursor-pointer drop-shadow-[0_0_2px_rgba(245,158,11,0.3)]"
             : "font-mono font-bold text-gray-700 hover:text-blue-600 transition-colors cursor-pointer";
 
-        // 🚀 DITAMBAHKAN TOMBOL "WAKTU" UNTUK MEMANGGIL MODAL MANUAL TIME
         const safeName = atlet.full_name.replace(/'/g, "\\'");
         const row = `
             <tr class="hover:bg-blue-50/50 transition-colors group border-b border-gray-50">
@@ -664,7 +640,6 @@ if (btnQuickVerify) {
     });
 }
 
-// 🚀 FUNGSI BUKA MODAL MANUAL TIME
 window.openManualTime = function(f1Id, name) {
     document.getElementById('mtF1Id').value = f1Id;
     document.getElementById('mtName').value = name;
