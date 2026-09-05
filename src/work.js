@@ -121,7 +121,7 @@ async function fetchDailyData() {
 }
 
 // ==========================================
-// RENDER TABEL 20 BARIS (DENGAN LOCK LOGIC)
+// RENDER TABEL 20 BARIS (POSISI AKSI DIGESER)
 // ==========================================
 function renderTable() {
     const tbody = document.getElementById('tableBody');
@@ -131,13 +131,12 @@ function renderTable() {
         const rowNum = i + 1;
         const row = rowData[i] || {};
 
-        const isSaved = !!row.nama; // Mengecek apakah data sudah tersimpan di database
+        const isSaved = !!row.nama; 
         const isBonus = rowNum > 15;
         
         const rowBg = isBonus ? 'bg-slate-800/30' : 'bg-transparent';
         const numColor = isBonus ? 'text-amber-500' : 'text-slate-500';
 
-        // Styling kondisi Terkunci (Disabled) vs Terbuka
         const lockClass = isSaved ? 'bg-slate-800 text-slate-400 border-slate-700 cursor-not-allowed opacity-70' : 'bg-slate-900 text-white border-slate-600 focus:border-blue-500';
 
         // Logika Pergantian Tombol Simpan -> Share -> Edit
@@ -145,7 +144,7 @@ function renderTable() {
         if (isSaved) {
             actionHtml = `
                 <div class="flex gap-1" id="actionWrap_${rowNum}">
-                    <button onclick="window.shareRow(${rowNum})" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-2 rounded-lg text-xs transition shadow w-full flex items-center justify-center gap-1" title="Hubungi Target Langsung">
+                    <button onclick="window.shareRow(${rowNum})" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-2 rounded-lg text-xs transition shadow w-full flex items-center justify-center gap-1" title="Kirim Pesan">
                         📲 Share
                     </button>
                     <button onclick="window.unlockRow(${rowNum})" class="bg-slate-700 hover:bg-slate-600 text-slate-300 py-1.5 px-2 rounded-lg text-xs transition shadow" title="Edit Data">
@@ -180,17 +179,18 @@ function renderTable() {
             <td class="p-3">
                 <input type="text" id="intro_${rowNum}" value="${row.intro_action || ''}" ${isSaved ? 'disabled' : ''} placeholder="Pesan dikirim" class="w-full rounded-lg p-2 text-xs outline-none border transition-colors ${lockClass}">
             </td>
+            <td class="p-3 text-center" id="actionCol_${rowNum}">
+                ${actionHtml}
+            </td>
             <td class="p-3">
                 <select id="status_${rowNum}" ${isSaved ? 'disabled' : ''} class="w-full rounded-lg p-2 text-xs outline-none cursor-pointer transition-colors ${lockClass}">
                     <option value="" ${!row.status ? 'selected' : ''}>- Pilih Status -</option>
+                    <option value="Segera Kirim Intro" ${row.status === 'Segera Kirim Intro' ? 'selected' : ''}>Segera Kirim Intro 🚀</option>
                     <option value="Terkirim" ${row.status === 'Terkirim' ? 'selected' : ''}>Terkirim 🕒</option>
                     <option value="Tertarik" ${row.status === 'Tertarik' ? 'selected' : ''}>Tertarik 🔥</option>
                     <option value="Menolak" ${row.status === 'Menolak' ? 'selected' : ''}>Menolak ❌</option>
                     <option value="Deal" ${row.status === 'Deal' ? 'selected' : ''}>Deal / Closing 💰</option>
                 </select>
-            </td>
-            <td class="p-3 text-center" id="actionCol_${rowNum}">
-                ${actionHtml}
             </td>
         `;
         tbody.appendChild(tr);
@@ -206,11 +206,16 @@ window.saveRow = async function(rowNum) {
     const noWa = document.getElementById(`wa_${rowNum}`).value.trim();
     const club = document.getElementById(`club_${rowNum}`).value.trim();
     const intro = document.getElementById(`intro_${rowNum}`).value.trim();
-    const status = document.getElementById(`status_${rowNum}`).value;
+    let status = document.getElementById(`status_${rowNum}`).value;
 
     if (!nama && !noWa) {
         alert("Isi minimal Nama atau Kontak WA/Sosmed terlebih dahulu!");
         return;
+    }
+
+    // LOGIKA BARU: Jika status masih kosong saat disimpan, tembak otomatis jadi "Segera Kirim Intro"
+    if (!status || status === "") {
+        status = "Segera Kirim Intro";
     }
 
     btn.innerHTML = `<span class="animate-spin">↻</span>`;
@@ -239,7 +244,7 @@ window.saveRow = async function(rowNum) {
         
         showToast();
         updateProgress();
-        renderTable(); // Re-render tabel agar kolomnya digembok dan tombol jadi "Share"
+        renderTable(); // Re-render tabel agar kolomnya digembok, tombol jadi "Share", status ter-update
 
     } catch (err) {
         alert("Gagal menyimpan data: " + err.message);
@@ -259,7 +264,6 @@ window.shareRow = function(rowNum) {
 
     let introMsg = encodeURIComponent(intro);
 
-    // Filter Pintar: Jika pakai "@" -> lempar ke Instagram, Jika angka -> lempar ke WA Web/App
     if (noWa.startsWith('@')) {
         const cleanUsername = noWa.replace('@', '');
         window.open(`https://instagram.com/${cleanUsername}`, '_blank');
@@ -268,7 +272,7 @@ window.shareRow = function(rowNum) {
         if (waNum.startsWith('0')) {
             waNum = '62' + waNum.substring(1);
         }
-        waNum = waNum.replace(/[^0-9]/g, ''); // Pastikan cuma ada angka
+        waNum = waNum.replace(/[^0-9]/g, ''); 
         
         if (waNum) {
             window.open(`https://wa.me/${waNum}?text=${introMsg}`, '_blank');
