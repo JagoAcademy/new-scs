@@ -102,10 +102,8 @@ async function fetchDailyData() {
 
         if (error) throw error;
 
-        // Kosongkan array lokal
         rowData = new Array(20).fill(null);
         
-        // Masukkan data dari DB ke array lokal berdasarkan row_number (1-20)
         if (data && data.length > 0) {
             data.forEach(item => {
                 if(item.row_number >= 1 && item.row_number <= 20) {
@@ -123,7 +121,7 @@ async function fetchDailyData() {
 }
 
 // ==========================================
-// RENDER TABEL 20 BARIS
+// RENDER TABEL 20 BARIS (DENGAN LOCK LOGIC)
 // ==========================================
 function renderTable() {
     const tbody = document.getElementById('tableBody');
@@ -131,11 +129,39 @@ function renderTable() {
 
     for (let i = 0; i < 20; i++) {
         const rowNum = i + 1;
-        const row = rowData[i] || {}; // Pakai data DB jika ada, jika tidak kosong
+        const row = rowData[i] || {};
 
+        const isSaved = !!row.nama; // Mengecek apakah data sudah tersimpan di database
         const isBonus = rowNum > 15;
+        
         const rowBg = isBonus ? 'bg-slate-800/30' : 'bg-transparent';
         const numColor = isBonus ? 'text-amber-500' : 'text-slate-500';
+
+        // Styling kondisi Terkunci (Disabled) vs Terbuka
+        const lockClass = isSaved ? 'bg-slate-800 text-slate-400 border-slate-700 cursor-not-allowed opacity-70' : 'bg-slate-900 text-white border-slate-600 focus:border-blue-500';
+
+        // Logika Pergantian Tombol Simpan -> Share -> Edit
+        let actionHtml = '';
+        if (isSaved) {
+            actionHtml = `
+                <div class="flex gap-1" id="actionWrap_${rowNum}">
+                    <button onclick="window.shareRow(${rowNum})" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-2 rounded-lg text-xs transition shadow w-full flex items-center justify-center gap-1" title="Hubungi Target Langsung">
+                        📲 Share
+                    </button>
+                    <button onclick="window.unlockRow(${rowNum})" class="bg-slate-700 hover:bg-slate-600 text-slate-300 py-1.5 px-2 rounded-lg text-xs transition shadow" title="Edit Data">
+                        ✏️
+                    </button>
+                </div>
+            `;
+        } else {
+            actionHtml = `
+                <div id="actionWrap_${rowNum}">
+                    <button onclick="window.saveRow(${rowNum})" id="btnSave_${rowNum}" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition shadow w-full flex items-center justify-center gap-1">
+                        💾 Simpan
+                    </button>
+                </div>
+            `;
+        }
 
         const tr = document.createElement('tr');
         tr.className = `border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors ${rowBg}`;
@@ -143,19 +169,19 @@ function renderTable() {
         tr.innerHTML = `
             <td class="p-3 text-center font-black ${numColor}">${rowNum}</td>
             <td class="p-3">
-                <input type="text" id="nama_${rowNum}" value="${row.nama || ''}" placeholder="Nama target" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:border-blue-500 outline-none">
+                <input type="text" id="nama_${rowNum}" value="${row.nama || ''}" ${isSaved ? 'disabled' : ''} placeholder="Nama/IG/Tiktok" class="w-full rounded-lg p-2 text-xs outline-none border transition-colors ${lockClass}">
             </td>
             <td class="p-3">
-                <input type="text" id="wa_${rowNum}" value="${row.no_wa || ''}" placeholder="08..." class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:border-blue-500 outline-none font-mono">
+                <input type="text" id="wa_${rowNum}" value="${row.no_wa || ''}" ${isSaved ? 'disabled' : ''} placeholder="08.../@tiktok" class="w-full rounded-lg p-2 text-xs outline-none font-mono border transition-colors ${lockClass}">
             </td>
             <td class="p-3">
-                <input type="text" id="club_${rowNum}" value="${row.club_eo || ''}" placeholder="Klub / Wilayah" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:border-blue-500 outline-none">
+                <input type="text" id="club_${rowNum}" value="${row.club_eo || ''}" ${isSaved ? 'disabled' : ''} placeholder="Klub / Wilayah" class="w-full rounded-lg p-2 text-xs outline-none border transition-colors ${lockClass}">
             </td>
             <td class="p-3">
-                <input type="text" id="intro_${rowNum}" value="${row.intro_action || ''}" placeholder="Pesan dikirim" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:border-blue-500 outline-none">
+                <input type="text" id="intro_${rowNum}" value="${row.intro_action || ''}" ${isSaved ? 'disabled' : ''} placeholder="Pesan dikirim" class="w-full rounded-lg p-2 text-xs outline-none border transition-colors ${lockClass}">
             </td>
             <td class="p-3">
-                <select id="status_${rowNum}" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:border-blue-500 outline-none cursor-pointer">
+                <select id="status_${rowNum}" ${isSaved ? 'disabled' : ''} class="w-full rounded-lg p-2 text-xs outline-none cursor-pointer transition-colors ${lockClass}">
                     <option value="" ${!row.status ? 'selected' : ''}>- Pilih Status -</option>
                     <option value="Terkirim" ${row.status === 'Terkirim' ? 'selected' : ''}>Terkirim 🕒</option>
                     <option value="Tertarik" ${row.status === 'Tertarik' ? 'selected' : ''}>Tertarik 🔥</option>
@@ -163,10 +189,8 @@ function renderTable() {
                     <option value="Deal" ${row.status === 'Deal' ? 'selected' : ''}>Deal / Closing 💰</option>
                 </select>
             </td>
-            <td class="p-3 text-center">
-                <button onclick="window.saveRow(${rowNum})" id="btnSave_${rowNum}" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition shadow w-full flex items-center justify-center gap-1">
-                    💾 Simpan
-                </button>
+            <td class="p-3 text-center" id="actionCol_${rowNum}">
+                ${actionHtml}
             </td>
         `;
         tbody.appendChild(tr);
@@ -184,8 +208,8 @@ window.saveRow = async function(rowNum) {
     const intro = document.getElementById(`intro_${rowNum}`).value.trim();
     const status = document.getElementById(`status_${rowNum}`).value;
 
-    if (!nama && !noWa && !club) {
-        alert("Isi minimal Nama atau No WA terlebih dahulu!");
+    if (!nama && !noWa) {
+        alert("Isi minimal Nama atau Kontak WA/Sosmed terlebih dahulu!");
         return;
     }
 
@@ -193,7 +217,6 @@ window.saveRow = async function(rowNum) {
     btn.disabled = true;
 
     try {
-        // Logika UPSERT (Jika admin_id + tanggal + row_number sama, maka UPDATE. Jika belum ada, INSERT).
         const { error } = await supabaseClient
             .from('wfh_scraping')
             .upsert({
@@ -211,22 +234,12 @@ window.saveRow = async function(rowNum) {
 
         if (error) throw error;
 
-        // Perbarui array lokal & visual
+        // Perbarui array lokal & visual tabel agar Terkunci otomatis
         rowData[rowNum - 1] = { nama, no_wa: noWa, club_eo: club, intro_action: intro, status };
-        
-        btn.innerHTML = `✅ OK`;
-        btn.classList.replace('bg-blue-600', 'bg-emerald-600');
-        btn.classList.replace('hover:bg-blue-500', 'hover:bg-emerald-500');
         
         showToast();
         updateProgress();
-
-        setTimeout(() => {
-            btn.innerHTML = `💾 Simpan`;
-            btn.classList.replace('bg-emerald-600', 'bg-blue-600');
-            btn.classList.replace('hover:bg-emerald-500', 'hover:bg-blue-500');
-            btn.disabled = false;
-        }, 2000);
+        renderTable(); // Re-render tabel agar kolomnya digembok dan tombol jadi "Share"
 
     } catch (err) {
         alert("Gagal menyimpan data: " + err.message);
@@ -236,10 +249,61 @@ window.saveRow = async function(rowNum) {
 };
 
 // ==========================================
+// OTAK "SMART-SHARE": WHATSAPP & IG GENERATOR
+// ==========================================
+window.shareRow = function(rowNum) {
+    const noWa = document.getElementById(`wa_${rowNum}`).value.trim();
+    const intro = document.getElementById(`intro_${rowNum}`).value.trim();
+
+    if (!noWa) return alert("Nomor WA / Username Kosong!");
+
+    let introMsg = encodeURIComponent(intro);
+
+    // Filter Pintar: Jika pakai "@" -> lempar ke Instagram, Jika angka -> lempar ke WA Web/App
+    if (noWa.startsWith('@')) {
+        const cleanUsername = noWa.replace('@', '');
+        window.open(`https://instagram.com/${cleanUsername}`, '_blank');
+    } else {
+        let waNum = noWa;
+        if (waNum.startsWith('0')) {
+            waNum = '62' + waNum.substring(1);
+        }
+        waNum = waNum.replace(/[^0-9]/g, ''); // Pastikan cuma ada angka
+        
+        if (waNum) {
+            window.open(`https://wa.me/${waNum}?text=${introMsg}`, '_blank');
+        } else {
+            alert("Format kontak tidak valid. Gunakan 08xxx atau @username");
+        }
+    }
+};
+
+// ==========================================
+// UNLOCK ROW UNTUK MODE EDIT
+// ==========================================
+window.unlockRow = function(rowNum) {
+    const inputs = ['nama', 'wa', 'club', 'intro', 'status'];
+    
+    // Buka Gembok Field
+    inputs.forEach(id => {
+        const el = document.getElementById(`${id}_${rowNum}`);
+        el.disabled = false;
+        el.classList.remove('bg-slate-800', 'text-slate-400', 'border-slate-700', 'cursor-not-allowed', 'opacity-70');
+        el.classList.add('bg-slate-900', 'text-white', 'border-slate-600', 'focus:border-blue-500');
+    });
+
+    // Ubah Tombol Share jadi Update
+    document.getElementById(`actionWrap_${rowNum}`).innerHTML = `
+        <button onclick="window.saveRow(${rowNum})" id="btnSave_${rowNum}" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition shadow w-full flex items-center justify-center gap-1">
+            💾 Update
+        </button>
+    `;
+};
+
+// ==========================================
 // UPDATE METRIK TARGET (15 ROW)
 // ==========================================
 function updateProgress() {
-    // Hitung berapa baris yang sudah terisi namanya (valid)
     const filledCount = rowData.filter(r => r !== null && r.nama !== null && r.nama !== "").length;
     
     document.getElementById('uiProgressCount').innerText = filledCount;
@@ -259,9 +323,6 @@ function updateProgress() {
     }
 }
 
-// ==========================================
-// UTILITAS TOAST NOTIFICATION
-// ==========================================
 function showToast() {
     const toast = document.getElementById('toast');
     toast.classList.remove('translate-y-20', 'opacity-0');
