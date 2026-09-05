@@ -1,205 +1,272 @@
-// ==========================================
-// 🔑 SUNTIKAN KONFIGURASI SUPABASE & LOGIN
-// ==========================================
-const CONFIG = {
-    // Informasi Login WFH (Hardcoded Auth)
-    auth: {
-        username: "adminscs01",
-        accessCode: "f1wfh2026"
-    },
-    // Kredensial Akses REST API Supabase Proyek F1 Swimming kamu
-    // PENTING: Ganti nilai url dan anonKey dengan proyek Supabase F1 Swimming asli
-    supabase: {
-        url: "https://YOUR_PROJECT_ID.supabase.co", 
-        anonKey: "YOUR_SUPABASE_PUBLIC_ANON_KEY" 
-    }
-};
+import { supabaseClient } from './supabase.js';
 
-// State Penyimpanan Sesi Kerja Lokal (Untuk Generator Laporan WA)
-let currentAdmin = "";
-let localScrapingData = [];
-let localOutreachData = [];
+let currentUser = null;
+let currentDate = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
+let rowData = new Array(20).fill(null); 
 
-// 1. Sistem Validasi Login Sederhana
-window.handleLogin = function() {
-    const userIn = document.getElementById('username').value.trim();
-    const codeIn = document.getElementById('access-code').value.trim();
-    const errorMsg = document.getElementById('login-error');
-
-    if(userIn === CONFIG.auth.username && codeIn === CONFIG.auth.accessCode) {
-        currentAdmin = userIn;
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('main-app').classList.remove('hidden');
-        document.getElementById('admin-badge').innerText = `Admin: ${currentAdmin}`;
-        window.updateReport();
-    } else {
-        errorMsg.classList.remove('hidden');
-    }
-};
-
-// 2. Fungsi Kirim Data ke Supabase via REST API
-window.postToSupabase = async function(endpoint, payload) {
-    // Cegah error jika user belum mengonfigurasi URL asli
-    if (CONFIG.supabase.url.includes("YOUR_PROJECT_ID")) {
-        console.warn("Supabase URL belum diisi. Menyimpan data lokal saja.");
-        return true; 
+document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Cek Sesi Tersimpan
+    const savedUser = sessionStorage.getItem('wfh_user');
+    if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        initApp();
     }
 
-    try {
-        const response = await fetch(`${CONFIG.supabase.url}/rest/v1/${endpoint}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'apikey': CONFIG.supabase.anonKey,
-                'Authorization': `Bearer ${CONFIG.supabase.anonKey}`,
-                'Prefer': 'return=minimal'
-            },
-            body: JSON.stringify(payload)
-        });
+    // 2. Login Logic
+    document.getElementById('btnLogin').addEventListener('click', async () => {
+        const id = document.getElementById('loginId').value.trim();
+        const pass = document.getElementById('loginPass').value.trim();
+        const errEl = document.getElementById('loginError');
+        const btn = document.getElementById('btnLogin');
 
-        if (!response.ok) {
-            throw new Error(`HTTP Error Status: ${response.status}`);
+        if (!id || !pass) {
+            errEl.innerText = "Isi ID dan Password!";
+            errEl.classList.remove('hidden');
+            return;
         }
-        return true;
-    } catch (error) {
-        console.error("Gagal sinkronisasi ke Supabase:", error);
-        alert("⚠️ Gagal mengirim data ke cloud database! Cek koneksi atau setelan Supabase.");
-        return false;
-    }
-};
 
-// 3. Aksi submit form data Scraping
-window.submitScraping = async function(event) {
-    event.preventDefault();
-    
-    const name = document.getElementById('scrap-name').value.trim();
-    const location = document.getElementById('scrap-location').value.trim();
-    const contact = document.getElementById('scrap-contact').value.trim();
+        btn.innerText = "Memeriksa...";
+        btn.disabled = true;
 
-    const dbPayload = {
-        admin_id: currentAdmin,
-        club_name: name,
-        location: location,
-        contact_info: contact,
-        created_at: new Date().toISOString()
-    };
+        try {
+            const { data, error } = await supabaseClient
+                .from('wfh_users')
+                .select('*')
+                .eq('admin_id', id)
+                .eq('password', pass)
+                .single();
 
-    const submitBtn = document.querySelector('#form-scraping button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = "<span>⏳</span> Mengirim...";
-    submitBtn.disabled = true;
+            if (error || !data) throw new Error("Kredensial tidak valid!");
 
-    // Kirim langsung ke tabel public.scraping di Supabase Cloud
-    const success = await window.postToSupabase('scraping', dbPayload);
+            currentUser = data;
+            sessionStorage.setItem('wfh_user', JSON.stringify(data));
+            initApp();
 
-    if (success) {
-        // Simpan di memori lokal halaman untuk kompilasi laporan teks WA
-        localScrapingData.push({ name, location, contact });
-        document.getElementById('form-scraping').reset();
-        window.updateMetrics();
-        window.updateReport();
-    }
-    
-    submitBtn.innerHTML = originalText;
-    submitBtn.disabled = false;
-};
-
-// 4. Aksi submit log data Outreach
-window.submitOutreach = async function(event) {
-    event.preventDefault();
-
-    const target = document.getElementById('out-target').value.trim();
-    const status = document.getElementById('out-status').value;
-    const notes = document.getElementById('out-notes').value.trim() || "-";
-
-    const dbPayload = {
-        admin_id: currentAdmin,
-        target_contact: target,
-        status_response: status,
-        notes: notes,
-        created_at: new Date().toISOString()
-    };
-
-    const submitBtn = document.querySelector('#form-outreach button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = "<span>⏳</span> Mengirim...";
-    submitBtn.disabled = true;
-
-    // Kirim langsung ke tabel public.outreach_logs di Supabase Cloud
-    const success = await window.postToSupabase('outreach_logs', dbPayload);
-
-    if (success) {
-        localOutreachData.push({ target, status, notes });
-        document.getElementById('form-outreach').reset();
-        window.updateMetrics();
-        window.updateReport();
-    }
-    
-    submitBtn.innerHTML = originalText;
-    submitBtn.disabled = false;
-};
-
-// 5. Hitung Metrik Kelayakan Gaji
-window.updateMetrics = function() {
-    const scCount = localScrapingData.length;
-    const outCount = localOutreachData.length;
-
-    document.getElementById('count-scraping').innerText = scCount;
-    document.getElementById('count-outreach').innerText = outCount;
-
-    const statusBox = document.getElementById('salary-status');
-    
-    // Evaluasi target harian dari PKS (Min 15 Scraping dan Min 10 Outreach)
-    if (scCount >= 15 && outCount >= 10) {
-        statusBox.innerText = "✅ Target Terpenuhi (Valid Rp20.000 / Hari)";
-        statusBox.className = "text-xs font-bold text-emerald-600 bg-emerald-50 p-2 rounded border border-emerald-100 text-center";
-    } else {
-        statusBox.innerText = "❌ Target Harian Belum Terpenuhi";
-        statusBox.className = "text-xs font-bold text-red-500 bg-red-50 p-2 rounded border border-red-100 text-center";
-    }
-};
-
-// 6. Kompilasi Sinkronisasi Teks Laporan untuk WhatsApp Owner
-window.updateReport = function() {
-    const dateStr = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    const isQualified = (localScrapingData.length >= 15 && localOutreachData.length >= 10) ? "TERPENUHI (Valid Rp20.000)" : "BELUM TERPENUHI";
-    
-    let text = `LAPORAN HARIAN ADMIN WFH - F1 SWIMMING (SCS)\n`;
-    text += `Tanggal: ${dateStr}\n`;
-    text += `ID Admin: ${currentAdmin}\n`;
-    text += `Status Gaji Hari Ini: [ ${isQualified} ]\n`;
-    text += `=========================================\n\n`;
-
-    text += `📊 RINGKASAN DATA (SUDAH MASUK DATABASE):\n`;
-    text += `- Total Scraping: ${localScrapingData.length} klub\n`;
-    text += `- Total Outreach: ${localOutreachData.length} kontak\n\n`;
-
-    text += `🔍 LIST SCRAPING BARU (public.scraping):\n`;
-    if(localScrapingData.length === 0) text += `- Belum ada data\n`;
-    localScrapingData.forEach((item, idx) => {
-        text += `${idx + 1}. ${item.name} (${item.location}) -> ${item.contact}\n`;
+        } catch (err) {
+            errEl.innerText = "⚠️ Akses Ditolak: " + err.message;
+            errEl.classList.remove('hidden');
+        } finally {
+            btn.innerText = "Masuk Panel 🚀";
+            btn.disabled = false;
+        }
     });
 
-    text += `\n💬 LOG COLD OUTREACH HARI INI:\n`;
-    if(localOutreachData.length === 0) text += `- Belum ada data\n`;
-    localOutreachData.forEach((item, idx) => {
-        text += `${idx + 1}. ${item.target} | Respon: ${item.status} | Keterangan: ${item.notes}\n`;
+    // 3. Logout
+    document.getElementById('btnLogout').addEventListener('click', () => {
+        sessionStorage.removeItem('wfh_user');
+        window.location.reload();
     });
 
-    document.getElementById('whatsapp-report-box').value = text;
-};
+    // 4. Deteksi Perubahan Tanggal
+    const dateInput = document.getElementById('uiTanggal');
+    dateInput.addEventListener('change', (e) => {
+        currentDate = e.target.value;
+        updateDateHeader();
+        fetchDailyData();
+    });
+});
 
-// 7. Utilitas Salin Clipboard Sekali Klik
-window.copyToClipboard = function() {
-    const reportBox = document.getElementById('whatsapp-report-box');
-    reportBox.select();
-    reportBox.setSelectionRange(0, 99999);
+// ==========================================
+// INISIALISASI APLIKASI
+// ==========================================
+function initApp() {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('mainApp').classList.remove('hidden');
     
+    document.getElementById('uiFullName').innerText = currentUser.full_name;
+    document.getElementById('uiTanggal').value = currentDate;
+    
+    updateDateHeader();
+    fetchDailyData();
+}
+
+function updateDateHeader() {
+    const d = new Date(currentDate);
+    const textBulanTahun = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+    document.getElementById('uiBulanTahun').innerText = textBulanTahun;
+}
+
+// ==========================================
+// AMBIL DATA 20 BARIS DARI SUPABASE
+// ==========================================
+async function fetchDailyData() {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500 animate-pulse font-bold">Menarik Data ${currentDate}... ⏳</td></tr>`;
+
     try {
-        document.execCommand('copy');
-        alert("📋 Laporan kerja harian berhasil disalin! Silakan langsung paste ke WhatsApp Owner.");
+        const { data, error } = await supabaseClient
+            .from('wfh_scraping')
+            .select('*')
+            .eq('admin_id', currentUser.admin_id)
+            .eq('tanggal', currentDate);
+
+        if (error) throw error;
+
+        // Kosongkan array lokal
+        rowData = new Array(20).fill(null);
+        
+        // Masukkan data dari DB ke array lokal berdasarkan row_number (1-20)
+        if (data && data.length > 0) {
+            data.forEach(item => {
+                if(item.row_number >= 1 && item.row_number <= 20) {
+                    rowData[item.row_number - 1] = item;
+                }
+            });
+        }
+
+        renderTable();
+        updateProgress();
+
     } catch (err) {
-        console.error("Gagal menyalin teks", err);
-        alert("Gagal menyalin otomatis, silakan copy manual di dalam kotak laporan.");
+        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-bold">Gagal memuat: ${err.message}</td></tr>`;
+    }
+}
+
+// ==========================================
+// RENDER TABEL 20 BARIS
+// ==========================================
+function renderTable() {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+
+    for (let i = 0; i < 20; i++) {
+        const rowNum = i + 1;
+        const row = rowData[i] || {}; // Pakai data DB jika ada, jika tidak kosong
+
+        const isBonus = rowNum > 15;
+        const rowBg = isBonus ? 'bg-slate-800/30' : 'bg-transparent';
+        const numColor = isBonus ? 'text-amber-500' : 'text-slate-500';
+
+        const tr = document.createElement('tr');
+        tr.className = `border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors ${rowBg}`;
+        
+        tr.innerHTML = `
+            <td class="p-3 text-center font-black ${numColor}">${rowNum}</td>
+            <td class="p-3">
+                <input type="text" id="nama_${rowNum}" value="${row.nama || ''}" placeholder="Nama target" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:border-blue-500 outline-none">
+            </td>
+            <td class="p-3">
+                <input type="text" id="wa_${rowNum}" value="${row.no_wa || ''}" placeholder="08..." class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:border-blue-500 outline-none font-mono">
+            </td>
+            <td class="p-3">
+                <input type="text" id="club_${rowNum}" value="${row.club_eo || ''}" placeholder="Klub / Wilayah" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:border-blue-500 outline-none">
+            </td>
+            <td class="p-3">
+                <input type="text" id="intro_${rowNum}" value="${row.intro_action || ''}" placeholder="Pesan dikirim" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:border-blue-500 outline-none">
+            </td>
+            <td class="p-3">
+                <select id="status_${rowNum}" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-xs text-white focus:border-blue-500 outline-none cursor-pointer">
+                    <option value="" ${!row.status ? 'selected' : ''}>- Pilih Status -</option>
+                    <option value="Terkirim" ${row.status === 'Terkirim' ? 'selected' : ''}>Terkirim 🕒</option>
+                    <option value="Tertarik" ${row.status === 'Tertarik' ? 'selected' : ''}>Tertarik 🔥</option>
+                    <option value="Menolak" ${row.status === 'Menolak' ? 'selected' : ''}>Menolak ❌</option>
+                    <option value="Deal" ${row.status === 'Deal' ? 'selected' : ''}>Deal / Closing 💰</option>
+                </select>
+            </td>
+            <td class="p-3 text-center">
+                <button onclick="window.saveRow(${rowNum})" id="btnSave_${rowNum}" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition shadow w-full flex items-center justify-center gap-1">
+                    💾 Simpan
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    }
+}
+
+// ==========================================
+// SIMPAN / UPDATE 1 BARIS KE SUPABASE
+// ==========================================
+window.saveRow = async function(rowNum) {
+    const btn = document.getElementById(`btnSave_${rowNum}`);
+    const nama = document.getElementById(`nama_${rowNum}`).value.trim();
+    const noWa = document.getElementById(`wa_${rowNum}`).value.trim();
+    const club = document.getElementById(`club_${rowNum}`).value.trim();
+    const intro = document.getElementById(`intro_${rowNum}`).value.trim();
+    const status = document.getElementById(`status_${rowNum}`).value;
+
+    if (!nama && !noWa && !club) {
+        alert("Isi minimal Nama atau No WA terlebih dahulu!");
+        return;
+    }
+
+    btn.innerHTML = `<span class="animate-spin">↻</span>`;
+    btn.disabled = true;
+
+    try {
+        // Logika UPSERT (Jika admin_id + tanggal + row_number sama, maka UPDATE. Jika belum ada, INSERT).
+        const { error } = await supabaseClient
+            .from('wfh_scraping')
+            .upsert({
+                admin_id: currentUser.admin_id,
+                tanggal: currentDate,
+                row_number: rowNum,
+                nama: nama,
+                no_wa: noWa,
+                club_eo: club,
+                intro_action: intro,
+                status: status
+            }, { 
+                onConflict: 'admin_id, tanggal, row_number' 
+            });
+
+        if (error) throw error;
+
+        // Perbarui array lokal & visual
+        rowData[rowNum - 1] = { nama, no_wa: noWa, club_eo: club, intro_action: intro, status };
+        
+        btn.innerHTML = `✅ OK`;
+        btn.classList.replace('bg-blue-600', 'bg-emerald-600');
+        btn.classList.replace('hover:bg-blue-500', 'hover:bg-emerald-500');
+        
+        showToast();
+        updateProgress();
+
+        setTimeout(() => {
+            btn.innerHTML = `💾 Simpan`;
+            btn.classList.replace('bg-emerald-600', 'bg-blue-600');
+            btn.classList.replace('hover:bg-emerald-500', 'hover:bg-blue-500');
+            btn.disabled = false;
+        }, 2000);
+
+    } catch (err) {
+        alert("Gagal menyimpan data: " + err.message);
+        btn.innerHTML = `💾 Simpan`;
+        btn.disabled = false;
     }
 };
+
+// ==========================================
+// UPDATE METRIK TARGET (15 ROW)
+// ==========================================
+function updateProgress() {
+    // Hitung berapa baris yang sudah terisi namanya (valid)
+    const filledCount = rowData.filter(r => r !== null && r.nama !== null && r.nama !== "").length;
+    
+    document.getElementById('uiProgressCount').innerText = filledCount;
+    
+    const progressPercent = Math.min((filledCount / 20) * 100, 100);
+    document.getElementById('uiProgressBar').style.width = `${progressPercent}%`;
+
+    const uiStatus = document.getElementById('uiStatusTarget');
+    if (filledCount >= 15) {
+        uiStatus.innerText = "✅ TARGET TERPENUHI!";
+        uiStatus.className = "text-xs text-emerald-400 font-bold mt-1 tracking-widest uppercase";
+        document.getElementById('uiProgressBar').classList.replace('bg-blue-500', 'bg-emerald-500');
+    } else {
+        uiStatus.innerText = `⏳ KURANG ${15 - filledCount} DATA LAGI`;
+        uiStatus.className = "text-xs text-amber-400 font-bold mt-1 tracking-widest uppercase";
+        document.getElementById('uiProgressBar').classList.replace('bg-emerald-500', 'bg-blue-500');
+    }
+}
+
+// ==========================================
+// UTILITAS TOAST NOTIFICATION
+// ==========================================
+function showToast() {
+    const toast = document.getElementById('toast');
+    toast.classList.remove('translate-y-20', 'opacity-0');
+    
+    setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+    }, 2500);
+}
