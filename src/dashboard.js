@@ -299,7 +299,7 @@ Terima kasih.`);
                         nomor_lomba: nomorLomba,
                         waktu_string: waktu,
                         time_seconds: timeSeconds,
-                        published_at: new Date().toISOString()
+                        created_at: new Date().toISOString()
                     }]);
 
                 if (raceError) throw raceError;
