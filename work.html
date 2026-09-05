@@ -11,7 +11,7 @@
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-slate-900 font-sans text-slate-200 min-h-screen">
+<body class="bg-slate-900 font-sans text-slate-200 min-h-screen relative">
 
     <!-- LOGIN OVERLAY -->
     <div id="loginScreen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
@@ -90,13 +90,31 @@
                         </tr>
                     </thead>
                     <tbody id="tableBody">
-                        <!-- 20 baris di-generate via JS -->
                         <tr><td colspan="7" class="p-8 text-center text-slate-500 animate-pulse font-bold">Menarik Data dari Database... ⏳</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
+    </div>
+
+    <!-- MODAL PILIH SOSMED (BARU) -->
+    <div id="sosmedChoiceModal" class="fixed inset-0 bg-black/80 z-[110] hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden flex flex-col transform scale-100">
+            <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+                <h3 class="font-black text-white text-sm tracking-wide">Pilih Target Sosmed</h3>
+                <button id="btnCloseSosmed" class="text-slate-400 hover:text-white text-2xl font-bold transition">&times;</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <p class="text-xs text-slate-400 text-center mb-4 leading-relaxed">Pilih platform untuk menghubungi:<br><strong id="sosmedTargetName" class="text-amber-400 mt-1 block text-lg tracking-widest"></strong></p>
+                <button id="btnGoIG" class="w-full py-3.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-black rounded-xl text-xs transition-colors flex items-center justify-center gap-2 shadow-lg">
+                    📸 Direct Message (Instagram)
+                </button>
+                <button id="btnGoTikTok" class="w-full py-3.5 bg-black hover:bg-slate-950 border border-slate-700 text-white font-black rounded-xl text-xs transition-colors flex items-center justify-center gap-2 shadow-lg">
+                    🎵 Buka Profil (TikTok)
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- TOAST NOTIFICATION -->

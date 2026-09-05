@@ -3,6 +3,7 @@ import { supabaseClient } from './supabase.js';
 let currentUser = null;
 let currentDate = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
 let rowData = new Array(20).fill(null); 
+let currentShareUser = ""; // Menyimpan username target yang sedang di-klik Share
 
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. Cek Sesi Tersimpan
@@ -63,6 +64,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentDate = e.target.value;
         updateDateHeader();
         fetchDailyData();
+    });
+
+    // 5. Setup Pop-up Sosmed Modal
+    const sosmedModal = document.getElementById('sosmedChoiceModal');
+    
+    document.getElementById('btnCloseSosmed').addEventListener('click', () => {
+        sosmedModal.classList.add('hidden');
+        sosmedModal.classList.remove('flex');
+    });
+
+    sosmedModal.addEventListener('click', (e) => {
+        if (e.target === sosmedModal) {
+            document.getElementById('btnCloseSosmed').click();
+        }
+    });
+
+    document.getElementById('btnGoIG').addEventListener('click', () => {
+        window.open(`https://ig.me/m/${currentShareUser}`, '_blank');
+        document.getElementById('btnCloseSosmed').click();
+    });
+
+    document.getElementById('btnGoTikTok').addEventListener('click', () => {
+        window.open(`https://www.tiktok.com/@${currentShareUser}`, '_blank');
+        document.getElementById('btnCloseSosmed').click();
     });
 });
 
@@ -137,21 +162,21 @@ function renderTable() {
         const rowBg = isBonus ? 'bg-slate-800/30' : 'bg-transparent';
         const numColor = isBonus ? 'text-amber-500' : 'text-slate-500';
 
-        // Hanya kolom input teks yang berubah-ubah lock-nya
+        // Hanya kolom input teks yang terkunci. 
         const lockClassGeneral = isSaved ? 'bg-slate-800 text-slate-400 border-slate-700 cursor-not-allowed opacity-70' : 'bg-slate-900 text-white border-slate-600 focus:border-blue-500';
         
-        // Kolom status SELALU terkunci saat pertama kali di-render, akan kebuka cuma kalau tombol Edit dipencet
-        const lockClassStatus = 'bg-slate-800 text-slate-400 border-slate-700 cursor-not-allowed opacity-70';
+        // Kolom Status SELALU BUKA (Tidak pernah di-disabled)
+        const lockClassStatus = 'bg-slate-900 text-white border-slate-600 focus:border-blue-500 cursor-pointer hover:border-blue-400';
 
         // Logika Pergantian Tombol Simpan -> Share -> Edit
         let actionHtml = '';
         if (isSaved) {
             actionHtml = `
                 <div class="flex gap-1" id="actionWrap_${rowNum}">
-                    <button onclick="window.shareRow(${rowNum})" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-2 rounded-lg text-xs transition shadow w-full flex items-center justify-center gap-1" title="Kirim Pesan (Otomatis deteksi IG/WA)">
+                    <button onclick="window.shareRow(${rowNum})" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-2 rounded-lg text-xs transition shadow w-full flex items-center justify-center gap-1" title="Hubungi Sosmed/WA">
                         📲 Share
                     </button>
-                    <button onclick="window.unlockRow(${rowNum})" class="bg-slate-700 hover:bg-slate-600 text-slate-300 py-1.5 px-2 rounded-lg text-xs transition shadow" title="Update Status">
+                    <button onclick="window.unlockRow(${rowNum})" class="bg-slate-700 hover:bg-slate-600 text-slate-300 py-1.5 px-2 rounded-lg text-xs transition shadow" title="Edit Data Teks">
                         ✏️
                     </button>
                 </div>
@@ -169,6 +194,7 @@ function renderTable() {
         const tr = document.createElement('tr');
         tr.className = `border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors ${rowBg}`;
         
+        // Perhatikan fungsi onchange="window.triggerSaveStatus()" di dropdown status
         tr.innerHTML = `
             <td class="p-3 text-center font-black ${numColor}">${rowNum}</td>
             <td class="p-3">
@@ -187,7 +213,7 @@ function renderTable() {
                 ${actionHtml}
             </td>
             <td class="p-3">
-                <select id="status_${rowNum}" disabled class="w-full rounded-lg p-2 text-xs outline-none transition-colors ${lockClassStatus}">
+                <select id="status_${rowNum}" onchange="window.triggerSaveStatus(${rowNum})" class="w-full rounded-lg p-2 text-xs outline-none transition-colors ${lockClassStatus}">
                     <option value="" ${!row.status ? 'selected' : ''}>- Pilih Status -</option>
                     <option value="Segera Kirim Intro" ${row.status === 'Segera Kirim Intro' ? 'selected' : ''}>Segera Kirim Intro 🚀</option>
                     <option value="Terkirim" ${row.status === 'Terkirim' ? 'selected' : ''}>Terkirim 🕒</option>
@@ -204,7 +230,7 @@ function renderTable() {
 // ==========================================
 // SIMPAN / UPDATE 1 BARIS KE SUPABASE
 // ==========================================
-window.saveRow = async function(rowNum) {
+window.saveRow = async function(rowNum, isSilent = false) {
     const btn = document.getElementById(`btnSave_${rowNum}`);
     const nama = document.getElementById(`nama_${rowNum}`).value.trim();
     const noWa = document.getElementById(`wa_${rowNum}`).value.trim();
@@ -213,17 +239,19 @@ window.saveRow = async function(rowNum) {
     let status = document.getElementById(`status_${rowNum}`).value;
 
     if (!nama && !noWa) {
-        alert("Isi minimal Nama atau Kontak WA/Sosmed terlebih dahulu!");
+        if (!isSilent) alert("Isi minimal Nama atau Kontak WA/Sosmed terlebih dahulu!");
         return;
     }
 
-    // LOGIKA BARU: Jika status kosong saat disimpan (pertama kali), otomatis ubah jadi "Segera Kirim Intro"
+    // Jika kosong saat pertama kali disimpan, otomatis set "Segera Kirim Intro"
     if (!status || status === "") {
         status = "Segera Kirim Intro";
     }
 
-    btn.innerHTML = `<span class="animate-spin">↻</span>`;
-    btn.disabled = true;
+    if (btn && !isSilent) {
+        btn.innerHTML = `<span class="animate-spin">↻</span>`;
+        btn.disabled = true;
+    }
 
     try {
         const { error } = await supabaseClient
@@ -243,22 +271,36 @@ window.saveRow = async function(rowNum) {
 
         if (error) throw error;
 
-        // Perbarui array lokal & visual tabel agar Terkunci otomatis
+        // Perbarui array lokal
         rowData[rowNum - 1] = { nama, no_wa: noWa, club_eo: club, intro_action: intro, status };
         
         showToast();
         updateProgress();
-        renderTable(); // Re-render tabel agar kolomnya digembok, tombol jadi "Share", status ter-update
+        if (!isSilent) renderTable(); // Render ulang jika klik Simpan manual
 
     } catch (err) {
-        alert("Gagal menyimpan data: " + err.message);
-        btn.innerHTML = `💾 Simpan`;
-        btn.disabled = false;
+        if (!isSilent) alert("Gagal menyimpan data: " + err.message);
+        if (btn && !isSilent) {
+            btn.innerHTML = `💾 Simpan`;
+            btn.disabled = false;
+        }
     }
 };
 
 // ==========================================
-// OTAK "SMART-SHARE": WHATSAPP & IG DM GENERATOR
+// AUTO-SAVE SAAT STATUS DIUBAH ADMIN
+// ==========================================
+window.triggerSaveStatus = function(rowNum) {
+    const row = rowData[rowNum - 1];
+    // Pastikan baris ini sudah disave sebelumnya (nama sudah ada)
+    // Jika belum disave, biarkan user klik "Simpan" secara manual
+    if (row && row.nama) {
+        window.saveRow(rowNum, true); // Panggil saveRow secara "Silent" (tanpa loading berisik)
+    }
+};
+
+// ==========================================
+// OTAK "SMART-SHARE": WHATSAPP, IG & TIKTOK
 // ==========================================
 window.shareRow = function(rowNum) {
     const noWa = document.getElementById(`wa_${rowNum}`).value.trim();
@@ -268,13 +310,15 @@ window.shareRow = function(rowNum) {
 
     let introMsg = encodeURIComponent(intro);
 
-    // Filter Pintar: Jika pakai "@" -> Buka DM Instagram (ig.me)
+    // Filter Pintar: Jika pakai "@" -> Buka Popup Pilihan Sosmed (IG / TikTok)
     if (noWa.startsWith('@')) {
-        const cleanUsername = noWa.replace('@', '');
-        // Menggunakan official direct message link Instagram
-        window.open(`https://ig.me/m/${cleanUsername}`, '_blank');
+        currentShareUser = noWa.replace('@', ''); // Simpan state nama akun
+        document.getElementById('sosmedTargetName').innerText = "@" + currentShareUser;
+        const modal = document.getElementById('sosmedChoiceModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
     } else {
-        // Jika pakai angka -> Buka WhatsApp
+        // Jika pakai angka -> Otomatis tembak ke WhatsApp
         let waNum = noWa;
         if (waNum.startsWith('0')) {
             waNum = '62' + waNum.substring(1);
@@ -290,12 +334,13 @@ window.shareRow = function(rowNum) {
 };
 
 // ==========================================
-// UNLOCK ROW UNTUK MODE EDIT (Termasuk Status)
+// UNLOCK ROW UNTUK MODE EDIT TEKS (Status sdh always open)
 // ==========================================
 window.unlockRow = function(rowNum) {
-    const inputs = ['nama', 'wa', 'club', 'intro', 'status'];
+    // Array ini TIDAK menyertakan status karena status selalu open
+    const inputs = ['nama', 'wa', 'club', 'intro'];
     
-    // Buka Gembok Semua Field (Termasuk Dropdown Status)
+    // Buka Gembok Field Text
     inputs.forEach(id => {
         const el = document.getElementById(`${id}_${rowNum}`);
         el.disabled = false;
