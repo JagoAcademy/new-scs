@@ -121,7 +121,7 @@ async function fetchDailyData() {
 }
 
 // ==========================================
-// RENDER TABEL 20 BARIS (POSISI AKSI DIGESER)
+// RENDER TABEL 20 BARIS
 // ==========================================
 function renderTable() {
     const tbody = document.getElementById('tableBody');
@@ -137,17 +137,21 @@ function renderTable() {
         const rowBg = isBonus ? 'bg-slate-800/30' : 'bg-transparent';
         const numColor = isBonus ? 'text-amber-500' : 'text-slate-500';
 
-        const lockClass = isSaved ? 'bg-slate-800 text-slate-400 border-slate-700 cursor-not-allowed opacity-70' : 'bg-slate-900 text-white border-slate-600 focus:border-blue-500';
+        // Hanya kolom input teks yang berubah-ubah lock-nya
+        const lockClassGeneral = isSaved ? 'bg-slate-800 text-slate-400 border-slate-700 cursor-not-allowed opacity-70' : 'bg-slate-900 text-white border-slate-600 focus:border-blue-500';
+        
+        // Kolom status SELALU terkunci saat pertama kali di-render, akan kebuka cuma kalau tombol Edit dipencet
+        const lockClassStatus = 'bg-slate-800 text-slate-400 border-slate-700 cursor-not-allowed opacity-70';
 
         // Logika Pergantian Tombol Simpan -> Share -> Edit
         let actionHtml = '';
         if (isSaved) {
             actionHtml = `
                 <div class="flex gap-1" id="actionWrap_${rowNum}">
-                    <button onclick="window.shareRow(${rowNum})" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-2 rounded-lg text-xs transition shadow w-full flex items-center justify-center gap-1" title="Kirim Pesan">
+                    <button onclick="window.shareRow(${rowNum})" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-2 rounded-lg text-xs transition shadow w-full flex items-center justify-center gap-1" title="Kirim Pesan (Otomatis deteksi IG/WA)">
                         📲 Share
                     </button>
-                    <button onclick="window.unlockRow(${rowNum})" class="bg-slate-700 hover:bg-slate-600 text-slate-300 py-1.5 px-2 rounded-lg text-xs transition shadow" title="Edit Data">
+                    <button onclick="window.unlockRow(${rowNum})" class="bg-slate-700 hover:bg-slate-600 text-slate-300 py-1.5 px-2 rounded-lg text-xs transition shadow" title="Update Status">
                         ✏️
                     </button>
                 </div>
@@ -168,22 +172,22 @@ function renderTable() {
         tr.innerHTML = `
             <td class="p-3 text-center font-black ${numColor}">${rowNum}</td>
             <td class="p-3">
-                <input type="text" id="nama_${rowNum}" value="${row.nama || ''}" ${isSaved ? 'disabled' : ''} placeholder="Nama/IG/Tiktok" class="w-full rounded-lg p-2 text-xs outline-none border transition-colors ${lockClass}">
+                <input type="text" id="nama_${rowNum}" value="${row.nama || ''}" ${isSaved ? 'disabled' : ''} placeholder="Nama/IG/Tiktok" class="w-full rounded-lg p-2 text-xs outline-none border transition-colors ${lockClassGeneral}">
             </td>
             <td class="p-3">
-                <input type="text" id="wa_${rowNum}" value="${row.no_wa || ''}" ${isSaved ? 'disabled' : ''} placeholder="08.../@tiktok" class="w-full rounded-lg p-2 text-xs outline-none font-mono border transition-colors ${lockClass}">
+                <input type="text" id="wa_${rowNum}" value="${row.no_wa || ''}" ${isSaved ? 'disabled' : ''} placeholder="08.../@tiktok" class="w-full rounded-lg p-2 text-xs outline-none font-mono border transition-colors ${lockClassGeneral}">
             </td>
             <td class="p-3">
-                <input type="text" id="club_${rowNum}" value="${row.club_eo || ''}" ${isSaved ? 'disabled' : ''} placeholder="Klub / Wilayah" class="w-full rounded-lg p-2 text-xs outline-none border transition-colors ${lockClass}">
+                <input type="text" id="club_${rowNum}" value="${row.club_eo || ''}" ${isSaved ? 'disabled' : ''} placeholder="Klub / Wilayah" class="w-full rounded-lg p-2 text-xs outline-none border transition-colors ${lockClassGeneral}">
             </td>
             <td class="p-3">
-                <input type="text" id="intro_${rowNum}" value="${row.intro_action || ''}" ${isSaved ? 'disabled' : ''} placeholder="Pesan dikirim" class="w-full rounded-lg p-2 text-xs outline-none border transition-colors ${lockClass}">
+                <input type="text" id="intro_${rowNum}" value="${row.intro_action || ''}" ${isSaved ? 'disabled' : ''} placeholder="Pesan dikirim" class="w-full rounded-lg p-2 text-xs outline-none border transition-colors ${lockClassGeneral}">
             </td>
             <td class="p-3 text-center" id="actionCol_${rowNum}">
                 ${actionHtml}
             </td>
             <td class="p-3">
-                <select id="status_${rowNum}" ${isSaved ? 'disabled' : ''} class="w-full rounded-lg p-2 text-xs outline-none cursor-pointer transition-colors ${lockClass}">
+                <select id="status_${rowNum}" disabled class="w-full rounded-lg p-2 text-xs outline-none transition-colors ${lockClassStatus}">
                     <option value="" ${!row.status ? 'selected' : ''}>- Pilih Status -</option>
                     <option value="Segera Kirim Intro" ${row.status === 'Segera Kirim Intro' ? 'selected' : ''}>Segera Kirim Intro 🚀</option>
                     <option value="Terkirim" ${row.status === 'Terkirim' ? 'selected' : ''}>Terkirim 🕒</option>
@@ -213,7 +217,7 @@ window.saveRow = async function(rowNum) {
         return;
     }
 
-    // LOGIKA BARU: Jika status masih kosong saat disimpan, tembak otomatis jadi "Segera Kirim Intro"
+    // LOGIKA BARU: Jika status kosong saat disimpan (pertama kali), otomatis ubah jadi "Segera Kirim Intro"
     if (!status || status === "") {
         status = "Segera Kirim Intro";
     }
@@ -254,7 +258,7 @@ window.saveRow = async function(rowNum) {
 };
 
 // ==========================================
-// OTAK "SMART-SHARE": WHATSAPP & IG GENERATOR
+// OTAK "SMART-SHARE": WHATSAPP & IG DM GENERATOR
 // ==========================================
 window.shareRow = function(rowNum) {
     const noWa = document.getElementById(`wa_${rowNum}`).value.trim();
@@ -264,10 +268,13 @@ window.shareRow = function(rowNum) {
 
     let introMsg = encodeURIComponent(intro);
 
+    // Filter Pintar: Jika pakai "@" -> Buka DM Instagram (ig.me)
     if (noWa.startsWith('@')) {
         const cleanUsername = noWa.replace('@', '');
-        window.open(`https://instagram.com/${cleanUsername}`, '_blank');
+        // Menggunakan official direct message link Instagram
+        window.open(`https://ig.me/m/${cleanUsername}`, '_blank');
     } else {
+        // Jika pakai angka -> Buka WhatsApp
         let waNum = noWa;
         if (waNum.startsWith('0')) {
             waNum = '62' + waNum.substring(1);
@@ -283,12 +290,12 @@ window.shareRow = function(rowNum) {
 };
 
 // ==========================================
-// UNLOCK ROW UNTUK MODE EDIT
+// UNLOCK ROW UNTUK MODE EDIT (Termasuk Status)
 // ==========================================
 window.unlockRow = function(rowNum) {
     const inputs = ['nama', 'wa', 'club', 'intro', 'status'];
     
-    // Buka Gembok Field
+    // Buka Gembok Semua Field (Termasuk Dropdown Status)
     inputs.forEach(id => {
         const el = document.getElementById(`${id}_${rowNum}`);
         el.disabled = false;
