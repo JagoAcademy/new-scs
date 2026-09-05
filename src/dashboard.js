@@ -21,20 +21,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const iconDesktopMobile = document.getElementById('iconDesktopMobile');
     const iconMobileMobile = document.getElementById('iconMobileMobile');
 
-    // Cek di localStorage apakah user pernah ngeset mode desktop
     let isDesktopMode = localStorage.getItem('scs_desktop_mode') === 'true';
 
     function applyViewportMode() {
         if (isDesktopMode) {
             viewportMeta.setAttribute('content', 'width=1280');
-            // Ganti icon jadi Mobile (buat tombol balik)
             if(iconDesktop) iconDesktop.classList.add('hidden');
             if(iconMobile) iconMobile.classList.remove('hidden');
             if(iconDesktopMobile) iconDesktopMobile.classList.add('hidden');
             if(iconMobileMobile) iconMobileMobile.classList.remove('hidden');
         } else {
             viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0');
-            // Ganti icon jadi Desktop (buat tombol ngubah)
             if(iconDesktop) iconDesktop.classList.remove('hidden');
             if(iconMobile) iconMobile.classList.add('hidden');
             if(iconDesktopMobile) iconDesktopMobile.classList.remove('hidden');
@@ -42,7 +39,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Apply saat pertama kali load
     applyViewportMode();
 
     function toggleViewMode() {
@@ -121,7 +117,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- AUTO EMAIL TEMPLATE UNTUK UPGRADE PRO ---
     const upgradeAction = () => {
         if (!currentClubData) return;
         const subject = encodeURIComponent(`Pengajuan Upgrade SCS PRO - ${currentClubData.club_name}`);
@@ -221,6 +216,111 @@ Terima kasih.`);
                 statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block mt-2";
                 btnKirimTestimoni.innerText = "Kirim Testimoni 🚀";
                 btnKirimTestimoni.disabled = false;
+            }
+        });
+    }
+
+    // 🚀 NEW: INITIALIZE MANUAL TIME MODAL
+    const closeModalManualTimeBtn = document.getElementById('closeModalManualTimeBtn');
+    if (closeModalManualTimeBtn) {
+        closeModalManualTimeBtn.addEventListener('click', () => {
+            const modal = document.getElementById('modalManualTime');
+            modal.firstElementChild.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 200);
+        });
+    }
+
+    const btnSaveManualTime = document.getElementById('btnSaveManualTime');
+    if (btnSaveManualTime) {
+        btnSaveManualTime.addEventListener('click', async () => {
+            const f1Id = document.getElementById('mtF1Id').value;
+            const eventName = document.getElementById('mtEventName').value.trim();
+            const eventDate = document.getElementById('mtEventDate').value;
+            const prov = document.getElementById('mtProvinsi').value;
+            const kota = document.getElementById('mtKota').value;
+            const gaya = document.getElementById('mtGaya').value;
+            const jarak = document.getElementById('mtJarak').value;
+            const waktu = document.getElementById('mtWaktu').value.trim();
+            const statusMsg = document.getElementById('mtStatusMsg');
+
+            if (!eventName || !eventDate || !prov || !kota || !gaya || !jarak || !waktu) {
+                statusMsg.innerText = "Semua kolom wajib diisi!";
+                statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block mt-2";
+                return;
+            }
+
+            // Validasi format waktu dan konversi ke detik (wajib buat sorting best time F1 ID)
+            let timeSeconds = 0;
+            if (waktu.includes(':')) {
+                const parts = waktu.split(':');
+                timeSeconds = (parseInt(parts[0]) || 0) * 60 + parseFloat(parts[1] || 0);
+            } else {
+                timeSeconds = parseFloat(waktu);
+            }
+
+            if (isNaN(timeSeconds) || timeSeconds <= 0) {
+                statusMsg.innerText = "Format waktu tidak valid! Gunakan format MM:SS.ms (contoh: 01:23.45)";
+                statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block mt-2";
+                return;
+            }
+
+            btnSaveManualTime.innerText = "Menyimpan Data...";
+            btnSaveManualTime.disabled = true;
+            btnSaveManualTime.classList.add('opacity-70');
+
+            try {
+                // 1. Suntik Unofficial Event (Dummy Event rahasia)
+                const dummySubdomain = `unofficial-${Date.now()}`;
+                const finalEventName = `${eventName} (Unofficial SCS)`;
+
+                const { data: eventData, error: eventError } = await supabaseClient
+                    .from('events')
+                    .insert([{
+                        event_name: finalEventName,
+                        subdomain: dummySubdomain,
+                        event_date: eventDate,
+                        end_date: eventDate,
+                        provinsi: prov,
+                        kota: kota,
+                        club_id: currentClubId
+                    }])
+                    .select()
+                    .single();
+
+                if (eventError) throw eventError;
+
+                // 2. Suntik Waktu ke tabel race_results yang berafiliasi dengan event dummy tersebut
+                const nomorLomba = `${jarak} Gaya ${gaya}`;
+                const { error: raceError } = await supabaseClient
+                    .from('race_results')
+                    .insert([{
+                        athlete_f1_id: f1Id,
+                        event_id: eventData.id,
+                        nomor_lomba: nomorLomba,
+                        waktu_string: waktu,
+                        time_seconds: timeSeconds,
+                        published_at: new Date().toISOString()
+                    }]);
+
+                if (raceError) throw raceError;
+
+                statusMsg.innerHTML = "✅ <strong>Berhasil!</strong><br><span class='text-xs font-normal'>Catatan waktu manual berhasil disuntikkan ke F1 ID atlet.</span>";
+                statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-green-100 text-green-700 block mt-2";
+
+                setTimeout(() => {
+                    document.getElementById('closeModalManualTimeBtn').click();
+                    btnSaveManualTime.innerText = "Simpan Catatan Waktu";
+                    btnSaveManualTime.disabled = false;
+                    btnSaveManualTime.classList.remove('opacity-70');
+                    statusMsg.classList.add('hidden');
+                }, 2000);
+
+            } catch (err) {
+                statusMsg.innerText = "Gagal menyimpan: " + err.message;
+                statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block mt-2";
+                btnSaveManualTime.innerText = "Simpan Catatan Waktu";
+                btnSaveManualTime.disabled = false;
+                btnSaveManualTime.classList.remove('opacity-70');
             }
         });
     }
@@ -346,6 +446,8 @@ async function fetchDashboardData() {
 
         if (myEvents) {
             myEvents.forEach(ev => {
+                // 🚀 FILTER UNTUK MENYEMBUNYIKAN EVENT WAKTU MANUAL (UNOFFICIAL)
+                if (ev.subdomain && ev.subdomain.startsWith('unofficial-')) return; 
                 allEventsToDisplay.push({ ...ev, isCollab: false });
             });
         }
@@ -353,6 +455,7 @@ async function fetchDashboardData() {
         if (collabData) {
             collabData.forEach(c => {
                 if (c.events) {
+                    if (c.events.subdomain && c.events.subdomain.startsWith('unofficial-')) return;
                     allEventsToDisplay.push({ ...c.events, isCollab: true, collabRole: c.role });
                 }
             });
@@ -474,7 +577,6 @@ function renderAthleteTable() {
         const actualIndex = startIndex + idx + 1; 
         const genderIcon = atlet.gender === 'Putra' ? '👦 Putra' : '👧 Putri';
         
-        // Cek privasi foto di tabel (walaupun admin tetap bisa lihat fotonya)
         let avatarUrl = atlet.foto_url ? atlet.foto_url : `https://ui-avatars.com/api/?name=${encodeURIComponent(atlet.full_name)}&background=f3f4f6&color=374151`;
         if(atlet.hide_foto && !atlet.foto_url) avatarUrl = '/images/f1logo.png';
         
@@ -496,6 +598,8 @@ function renderAthleteTable() {
             ? "font-mono font-black text-amber-500 hover:text-amber-400 transition-colors cursor-pointer drop-shadow-[0_0_2px_rgba(245,158,11,0.3)]"
             : "font-mono font-bold text-gray-700 hover:text-blue-600 transition-colors cursor-pointer";
 
+        // 🚀 DITAMBAHKAN TOMBOL "WAKTU" UNTUK MEMANGGIL MODAL MANUAL TIME
+        const safeName = atlet.full_name.replace(/'/g, "\\'");
         const row = `
             <tr class="hover:bg-blue-50/50 transition-colors group border-b border-gray-50">
                 <td class="p-4 text-center font-bold text-gray-400">${actualIndex}</td>
@@ -526,9 +630,12 @@ function renderAthleteTable() {
                     <p class="font-bold text-gray-700">${atlet.dob}</p>
                 </td>
                 <td class="p-4 text-center">
-                    <div class="flex items-center justify-center gap-4">
-                        <button onclick="window.openEditVerify('${atlet.f1_id}')" class="text-blue-600 font-bold text-xs hover:underline flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200">
-                            ✏️ Edit / Verif
+                    <div class="flex items-center justify-center gap-2">
+                        <button onclick="window.openEditVerify('${atlet.f1_id}')" class="text-blue-600 font-bold text-xs hover:bg-blue-100 flex items-center gap-1 bg-blue-50 px-2 py-1.5 rounded-lg border border-blue-200 transition-colors" title="Edit / Verif">
+                            ✏️ Edit
+                        </button>
+                        <button onclick="window.openManualTime('${atlet.f1_id}', '${safeName}')" class="text-emerald-600 font-bold text-xs hover:bg-emerald-100 flex items-center gap-1 bg-emerald-50 px-2 py-1.5 rounded-lg border border-emerald-200 transition-colors" title="Input Waktu Manual">
+                            ⏱️ Waktu
                         </button>
                     </div>
                 </td>
@@ -557,6 +664,21 @@ if (btnQuickVerify) {
     });
 }
 
+// 🚀 FUNGSI BUKA MODAL MANUAL TIME
+window.openManualTime = function(f1Id, name) {
+    document.getElementById('mtF1Id').value = f1Id;
+    document.getElementById('mtName').value = name;
+    
+    document.getElementById('mtEventName').value = '';
+    document.getElementById('mtEventDate').value = '';
+    document.getElementById('mtWaktu').value = '';
+    document.getElementById('mtStatusMsg').classList.add('hidden');
+
+    const modal = document.getElementById('modalManualTime');
+    modal.classList.remove('hidden');
+    setTimeout(() => modal.firstElementChild.classList.remove('scale-95'), 10);
+};
+
 window.openEditVerify = function(f1_id) {
     const atlet = allAthletes.find(a => a.f1_id === f1_id);
     if (!atlet) return;
@@ -566,7 +688,6 @@ window.openEditVerify = function(f1_id) {
     document.getElementById('evDOB').value = atlet.dob;
     document.getElementById('evGender').value = atlet.gender;
     
-    // Set status checkbox privasi (default false jika null)
     document.getElementById('evHideFoto').checked = atlet.hide_foto || false;
     
     document.getElementById('evFoto').value = '';
@@ -594,7 +715,7 @@ if(btnSaveEditVerify) {
         
         const fotoFile = document.getElementById('evFoto').files[0];
         const aktaFile = document.getElementById('evAkta').files[0];
-        const isHideFoto = document.getElementById('evHideFoto').checked; // Ambil nilai privasi
+        const isHideFoto = document.getElementById('evHideFoto').checked;
         
         const statusMsg = document.getElementById('evStatusMsg');
         const atlet = allAthletes.find(a => a.f1_id === f1Id);
@@ -625,7 +746,6 @@ if(btnSaveEditVerify) {
             let finalFotoUrl = atlet.foto_url;
             let finalAktaUrl = atlet.akta_url;
             
-            // Flag untuk ngecek apakah ada file baru yang diupload (buat ngereset verifikasi)
             let isUploadBaru = false;
 
             if (fotoFile) {
@@ -648,20 +768,17 @@ if(btnSaveEditVerify) {
                 isUploadBaru = true;
             }
 
-            // Siapkan payload data yang pasti diupdate (foto, akta, privasi)
             let updatePayload = {
                 foto_url: finalFotoUrl,
                 akta_url: finalAktaUrl,
                 hide_foto: isHideFoto
             };
             
-            // Reset status verifikasi HANYA JIKA ada upload file baru
             if (isUploadBaru) {
                 updatePayload.is_verified = false;
             }
 
             if (dataBerubah) {
-                // 1. Simpan usulan perubahan nama/dob/gender ke Maker-Checker
                 const { error: editErr } = await supabaseClient
                     .from('f1_edit_requests')
                     .insert({
@@ -676,13 +793,11 @@ if(btnSaveEditVerify) {
 
                 if (editErr) throw editErr;
                 
-                // 2. Tetap update foto & privasinya secara instan di tabel asli
                 await supabaseClient.from('athletes').update(updatePayload).eq('f1_id', f1Id);
 
                 statusMsg.innerHTML = "✅ <strong>Usulan Edit Terkirim!</strong><br><span class='text-xs font-normal'>Status Privasi dan File Foto berhasil disimpan, tapi Nama/DOB menunggu persetujuan Admin Pusat.</span>";
                 statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-amber-100 text-amber-700 block mt-2";
             } else {
-                // Update langsung ke tabel atlet (karena cuma update file atau ubah toggle privasi)
                 const { error: updateError } = await supabaseClient
                     .from('athletes')
                     .update(updatePayload)
@@ -735,6 +850,8 @@ const eventProvinsi = document.getElementById('inputEventProvinsi');
 const eventKota = document.getElementById('inputEventKota');
 const onboardProvinsi = document.getElementById('onboardProvinsi'); 
 const onboardKota = document.getElementById('onboardKota'); 
+const mtProvinsi = document.getElementById('mtProvinsi'); 
+const mtKota = document.getElementById('mtKota'); 
 
 async function loadProvinsi() {
     try {
@@ -745,17 +862,20 @@ async function loadProvinsi() {
         if (elProvinsi) elProvinsi.innerHTML = defaultOption;
         if (eventProvinsi) eventProvinsi.innerHTML = defaultOption;
         if (onboardProvinsi) onboardProvinsi.innerHTML = defaultOption; 
+        if (mtProvinsi) mtProvinsi.innerHTML = defaultOption;
 
         provinces.forEach(prov => {
             const opt = `<option value="${prov.name}" data-id="${prov.id}">${prov.name}</option>`;
             if (elProvinsi) elProvinsi.innerHTML += opt;
             if (eventProvinsi) eventProvinsi.innerHTML += opt;
             if (onboardProvinsi) onboardProvinsi.innerHTML += opt; 
+            if (mtProvinsi) mtProvinsi.innerHTML += opt;
         });
     } catch (error) {
         if (elProvinsi) elProvinsi.innerHTML = '<option value="">Gagal memuat API</option>';
         if (eventProvinsi) eventProvinsi.innerHTML = '<option value="">Gagal memuat API</option>';
         if (onboardProvinsi) onboardProvinsi.innerHTML = '<option value="">Gagal memuat API</option>'; 
+        if (mtProvinsi) mtProvinsi.innerHTML = '<option value="">Gagal memuat API</option>';
     }
 }
 loadProvinsi(); 
@@ -775,6 +895,12 @@ if (eventProvinsi) {
 if (onboardProvinsi) {
     onboardProvinsi.addEventListener('change', async function() {
         handleProvinsiChange(this, onboardKota);
+    });
+}
+
+if (mtProvinsi) {
+    mtProvinsi.addEventListener('change', async function() {
+        handleProvinsiChange(this, mtKota);
     });
 }
 
