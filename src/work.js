@@ -162,10 +162,7 @@ function renderTable() {
         const rowBg = isBonus ? 'bg-slate-800/30' : 'bg-transparent';
         const numColor = isBonus ? 'text-amber-500' : 'text-slate-500';
 
-        // Hanya kolom input teks yang terkunci. 
         const lockClassGeneral = isSaved ? 'bg-slate-800 text-slate-400 border-slate-700 cursor-not-allowed opacity-70' : 'bg-slate-900 text-white border-slate-600 focus:border-blue-500';
-        
-        // Kolom Status SELALU BUKA (Tidak pernah di-disabled)
         const lockClassStatus = 'bg-slate-900 text-white border-slate-600 focus:border-blue-500 cursor-pointer hover:border-blue-400';
 
         // Logika Pergantian Tombol Simpan -> Share -> Edit
@@ -173,7 +170,7 @@ function renderTable() {
         if (isSaved) {
             actionHtml = `
                 <div class="flex gap-1" id="actionWrap_${rowNum}">
-                    <button onclick="window.shareRow(${rowNum})" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-2 rounded-lg text-xs transition shadow w-full flex items-center justify-center gap-1" title="Hubungi Sosmed/WA">
+                    <button onclick="window.shareRow(${rowNum})" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 px-2 rounded-lg text-xs transition shadow w-full flex items-center justify-center gap-1" title="Kirim Pesan (Otomatis deteksi IG/WA)">
                         📲 Share
                     </button>
                     <button onclick="window.unlockRow(${rowNum})" class="bg-slate-700 hover:bg-slate-600 text-slate-300 py-1.5 px-2 rounded-lg text-xs transition shadow" title="Edit Data Teks">
@@ -194,17 +191,17 @@ function renderTable() {
         const tr = document.createElement('tr');
         tr.className = `border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors ${rowBg}`;
         
-        // Perhatikan fungsi onchange="window.triggerSaveStatus()" di dropdown status
+        // 🚀 INFO: Perhatikan trigger oninput="window.handleInputTemplate(rowNum)"
         tr.innerHTML = `
             <td class="p-3 text-center font-black ${numColor}">${rowNum}</td>
             <td class="p-3">
-                <input type="text" id="nama_${rowNum}" value="${row.nama || ''}" ${isSaved ? 'disabled' : ''} placeholder="Nama/IG/Tiktok" class="w-full rounded-lg p-2 text-xs outline-none border transition-colors ${lockClassGeneral}">
+                <input type="text" id="nama_${rowNum}" value="${row.nama || ''}" ${isSaved ? 'disabled' : ''} oninput="window.handleInputTemplate(${rowNum})" placeholder="Nama/IG/Tiktok" class="w-full rounded-lg p-2 text-xs outline-none border transition-colors ${lockClassGeneral}">
             </td>
             <td class="p-3">
                 <input type="text" id="wa_${rowNum}" value="${row.no_wa || ''}" ${isSaved ? 'disabled' : ''} placeholder="08.../@tiktok" class="w-full rounded-lg p-2 text-xs outline-none font-mono border transition-colors ${lockClassGeneral}">
             </td>
             <td class="p-3">
-                <input type="text" id="club_${rowNum}" value="${row.club_eo || ''}" ${isSaved ? 'disabled' : ''} placeholder="Klub / Wilayah" class="w-full rounded-lg p-2 text-xs outline-none border transition-colors ${lockClassGeneral}">
+                <input type="text" id="club_${rowNum}" value="${row.club_eo || ''}" ${isSaved ? 'disabled' : ''} oninput="window.handleInputTemplate(${rowNum})" placeholder="Klub / Wilayah" class="w-full rounded-lg p-2 text-xs outline-none border transition-colors ${lockClassGeneral}">
             </td>
             <td class="p-3">
                 <input type="text" id="intro_${rowNum}" value="${row.intro_action || ''}" ${isSaved ? 'disabled' : ''} placeholder="Pesan dikirim" class="w-full rounded-lg p-2 text-xs outline-none border transition-colors ${lockClassGeneral}">
@@ -228,6 +225,54 @@ function renderTable() {
 }
 
 // ==========================================
+// 🚀 MESIN AUTO-GENERATION COPYWRITING DINAMIS
+// ==========================================
+window.handleInputTemplate = function(rowNum) {
+    const namaInput = document.getElementById(`nama_${rowNum}`);
+    
+    // Jangan generate otomatis kalau fieldnya lagi digembok (sudah disave)
+    if (namaInput.disabled) return; 
+
+    window.generateDynamicIntro(rowNum);
+};
+
+window.generateDynamicIntro = function(rowNum) {
+    const nama = document.getElementById(`nama_${rowNum}`).value.trim();
+    const clubInput = document.getElementById(`club_${rowNum}`).value.trim();
+    const introField = document.getElementById(`intro_${rowNum}`);
+
+    // Fallback jika club belum diisi, kita sapa pakai "Klub Kakak"
+    const club = clubInput || "Klub Kakak";
+
+    // Kosongkan pesan jika nama dihapus/kosong
+    if (!nama) {
+        introField.value = "";
+        return;
+    }
+
+    // Deteksi Rumpun Gaya Renang agar variatif dan terkesan personal
+    const listGaya = ["freestyle", "breaststroke", "butterfly", "gaya bebas", "gaya dada"];
+    const randomGaya = listGaya[Math.floor(Math.random() * listGaya.length)];
+    
+    // Buat URL Slug cerdas dari input nama (misal: "Dolphin Swim" jadi "dolphin-swim")
+    const slug = nama.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+
+    let templatePesan = "";
+
+    // ROTASI ANTI-SPAM META: Baris Ganjil pakai Opsi A, Baris Genap pakai Opsi B
+    if (rowNum % 2 !== 0) {
+        // OPSI A: Pendekatan Apresiasi Teknik Atlet
+        templatePesan = `Halo Coach/Min! Salam kenal dari F1 Swimming 👋. Keren banget tadi lewat di explore kami video berenang anak-anak ${club}, teknik ${randomGaya}-nya rapi-rapi banget asli.\n\nOiya Coach, biar catatan waktu latihan atau best time anak-anak kemarin ngga hilang di buku atau lembaran kertas, kami baru saja buatkan slot database digital gratis khusus untuk ${club}. Pelatih bisa input sendiri secara mandiri di sini biar orang tua bisa langsung pantau grafik progres anaknya via HP.\n\nProfil digital klubnya sudah kami siapkan di sini ya Coach, silakan diklaim:\n🔗 https://f1swimming.com/${slug}`;
+    } else {
+        // OPSI B: Umpan Fitur F1 ID / Personal Best
+        templatePesan = `Halo Coach! Izin kenalan dari tim F1 Swimming ya 🙏. Kami sering lihat postingan progres renang atlet ${club} di sosmed, progresnya luar biasa!\n\nUntuk support klub-klub akar rumput seperti ${club}, kami ngasih akses gratis buat masukin data Personal Best Time anak-anak ke pangkalan data nasional (F1 ID). Jadi nanti tiap anak punya link profil masing-masing buat dipamerin ke orang tua mereka.\n\nSlot database untuk ${club} udah kami aktifin, Coach bisa langsung cek dan klaim di sini ya:\n🔗 https://f1swimming.com/${slug}`;
+    }
+
+    // Tembak langsung ke input text
+    introField.value = templatePesan;
+};
+
+// ==========================================
 // SIMPAN / UPDATE 1 BARIS KE SUPABASE
 // ==========================================
 window.saveRow = async function(rowNum, isSilent = false) {
@@ -243,7 +288,6 @@ window.saveRow = async function(rowNum, isSilent = false) {
         return;
     }
 
-    // Jika kosong saat pertama kali disimpan, otomatis set "Segera Kirim Intro"
     if (!status || status === "") {
         status = "Segera Kirim Intro";
     }
@@ -271,12 +315,11 @@ window.saveRow = async function(rowNum, isSilent = false) {
 
         if (error) throw error;
 
-        // Perbarui array lokal
         rowData[rowNum - 1] = { nama, no_wa: noWa, club_eo: club, intro_action: intro, status };
         
         showToast();
         updateProgress();
-        if (!isSilent) renderTable(); // Render ulang jika klik Simpan manual
+        if (!isSilent) renderTable(); 
 
     } catch (err) {
         if (!isSilent) alert("Gagal menyimpan data: " + err.message);
@@ -292,15 +335,13 @@ window.saveRow = async function(rowNum, isSilent = false) {
 // ==========================================
 window.triggerSaveStatus = function(rowNum) {
     const row = rowData[rowNum - 1];
-    // Pastikan baris ini sudah disave sebelumnya (nama sudah ada)
-    // Jika belum disave, biarkan user klik "Simpan" secara manual
     if (row && row.nama) {
-        window.saveRow(rowNum, true); // Panggil saveRow secara "Silent" (tanpa loading berisik)
+        window.saveRow(rowNum, true); 
     }
 };
 
 // ==========================================
-// OTAK "SMART-SHARE": WHATSAPP, IG & TIKTOK
+// OTAK "SMART-SHARE": WHATSAPP, IG DM & TIKTOK
 // ==========================================
 window.shareRow = function(rowNum) {
     const noWa = document.getElementById(`wa_${rowNum}`).value.trim();
@@ -310,15 +351,13 @@ window.shareRow = function(rowNum) {
 
     let introMsg = encodeURIComponent(intro);
 
-    // Filter Pintar: Jika pakai "@" -> Buka Popup Pilihan Sosmed (IG / TikTok)
     if (noWa.startsWith('@')) {
-        currentShareUser = noWa.replace('@', ''); // Simpan state nama akun
+        currentShareUser = noWa.replace('@', ''); 
         document.getElementById('sosmedTargetName').innerText = "@" + currentShareUser;
         const modal = document.getElementById('sosmedChoiceModal');
         modal.classList.remove('hidden');
         modal.classList.add('flex');
     } else {
-        // Jika pakai angka -> Otomatis tembak ke WhatsApp
         let waNum = noWa;
         if (waNum.startsWith('0')) {
             waNum = '62' + waNum.substring(1);
@@ -334,13 +373,11 @@ window.shareRow = function(rowNum) {
 };
 
 // ==========================================
-// UNLOCK ROW UNTUK MODE EDIT TEKS (Status sdh always open)
+// UNLOCK ROW UNTUK MODE EDIT TEKS
 // ==========================================
 window.unlockRow = function(rowNum) {
-    // Array ini TIDAK menyertakan status karena status selalu open
     const inputs = ['nama', 'wa', 'club', 'intro'];
     
-    // Buka Gembok Field Text
     inputs.forEach(id => {
         const el = document.getElementById(`${id}_${rowNum}`);
         el.disabled = false;
@@ -348,7 +385,6 @@ window.unlockRow = function(rowNum) {
         el.classList.add('bg-slate-900', 'text-white', 'border-slate-600', 'focus:border-blue-500');
     });
 
-    // Ubah Tombol Share jadi Update
     document.getElementById(`actionWrap_${rowNum}`).innerHTML = `
         <button onclick="window.saveRow(${rowNum})" id="btnSave_${rowNum}" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition shadow w-full flex items-center justify-center gap-1">
             💾 Update
@@ -357,7 +393,7 @@ window.unlockRow = function(rowNum) {
 };
 
 // ==========================================
-// UPDATE METRIK TARGET (15 ROW)
+// UPDATE METRIK PROGRESS (15 ROW TARGET)
 // ==========================================
 function updateProgress() {
     const filledCount = rowData.filter(r => r !== null && r.nama !== null && r.nama !== "").length;
