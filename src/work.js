@@ -190,7 +190,6 @@ function renderTable() {
         const tr = document.createElement('tr');
         tr.className = `border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors ${rowBg}`;
         
-        // 🚀 FIX: Ubah input jadi TEXTAREA biar support Multiline (Enter)
         tr.innerHTML = `
             <td class="p-3 text-center font-black ${numColor}">${rowNum}</td>
             <td class="p-3">
@@ -203,7 +202,8 @@ function renderTable() {
                 <input type="text" id="club_${rowNum}" value="${row.club_eo || ''}" ${isSaved ? 'disabled' : ''} oninput="window.handleInputTemplate(${rowNum})" placeholder="Klub / Wilayah" class="w-full rounded-lg p-2 text-xs outline-none border transition-colors ${lockClassGeneral}">
             </td>
             <td class="p-3">
-                <textarea id="intro_${rowNum}" rows="3" ${isSaved ? 'disabled' : ''} placeholder="Pesan dikirim" class="w-full rounded-lg p-2 text-xs outline-none border transition-colors resize-none hide-scrollbar leading-relaxed ${lockClassGeneral}">${row.intro_action || ''}</textarea>
+                <!-- Data intro kita decode dulu pas mau ditampilin di Textarea biar persenannya (%0A) jadi enter lagi -->
+                <textarea id="intro_${rowNum}" rows="3" ${isSaved ? 'disabled' : ''} placeholder="Pesan dikirim" class="w-full rounded-lg p-2 text-xs outline-none border transition-colors resize-none hide-scrollbar leading-relaxed ${lockClassGeneral}">${row.intro_action ? decodeURIComponent(row.intro_action) : ''}</textarea>
             </td>
             <td class="p-3 text-center" id="actionCol_${rowNum}">
                 ${actionHtml}
@@ -238,7 +238,6 @@ window.generateDynamicIntro = function(rowNum) {
     const clubInput = document.getElementById(`club_${rowNum}`).value.trim();
     const introField = document.getElementById(`intro_${rowNum}`);
 
-    // Fallback jika club belum diisi
     const club = clubInput || "klub Coach";
 
     if (!nama) {
@@ -248,16 +247,25 @@ window.generateDynamicIntro = function(rowNum) {
 
     let templatePesan = "";
 
-    // MENGGUNAKAN \n untuk line break di dalam TEXTAREA
+    // 🚀 FIX: Pakai %0A untuk enter WhatsApp sejati. 
+    // Data ini akan kesimpan ke database beserta %0A-nya biar pas share langsung mateng
     if (rowNum % 2 !== 0) {
         // OPSI A
-        templatePesan = `Halo Coach!\nSalam kenal dari F1 Swimming 🤝\n\nPrestasi atlet muda di ${club} benar-benar membanggakan!\n\nSupaya setiap pencapaian mereka tercatat abadi dan bisa dibanggakan, F1 Swimming menyediakan F1 ID Card.\n\nKartu digital ini menyimpan seluruh record lomba atlet secara real-time. Coach bisa coba bikin sekarang gratis lewat link ini:\n🔗 www.f1swimming.com/register\n\nSemoga bermanfaat untuk kemajuan ${club}! 🏊‍♂️`;
+        templatePesan = `Halo Coach!%0ASalam kenal dari F1 Swimming 🤝%0A%0APrestasi atlet muda di ${club} benar-benar membanggakan!%0A%0ASupaya setiap pencapaian mereka tercatat abadi dan bisa dibanggakan, F1 Swimming menyediakan F1 ID Card.%0A%0AKartu digital ini menyimpan seluruh record lomba atlet secara real-time. Coach bisa coba bikin sekarang gratis lewat link ini:%0A🔗 www.f1swimming.com/register%0A%0ASemoga bermanfaat untuk kemajuan ${club}! 🏊‍♂️`;
     } else {
         // OPSI B
-        templatePesan = `Halo Coach!\nIzin menyapa dari tim F1 Swimming 🙏.\n\nKami melihat atlet-atlet ${club} punya progres yang luar biasa!\n\nBiar setiap catatan waktu dan best time mereka ngga hilang, kami menyediakan fasilitas F1 ID Card.\n\nIni adalah rapor digital gratis yang menyimpan rekam jejak atlet secara otomatis dan real-time. Coach bisa langsung buatkan untuk anak-anak ${club} via link ini ya:\n🔗 www.f1swimming.com/register\n\nSukses terus untuk para juara dari ${club}! 🏆`;
+        templatePesan = `Halo Coach!%0AIzin menyapa dari tim F1 Swimming 🙏.%0A%0AKami melihat atlet-atlet ${club} punya progres yang luar biasa!%0A%0ABiar setiap catatan waktu dan best time mereka ngga hilang, kami menyediakan fasilitas F1 ID Card.%0A%0AIni adalah rapor digital gratis yang menyimpan rekam jejak atlet secara otomatis dan real-time. Coach bisa langsung buatkan untuk anak-anak ${club} via link ini ya:%0A🔗 www.f1swimming.com/register%0A%0ASukses terus untuk para juara dari ${club}! 🏆`;
     }
 
+    // Tembak langsung ke input text (masih dalam bentuk ter-encode)
     introField.value = templatePesan;
+    
+    // Refresh value textarea agar di layar kelihatan wajar (decode), tapi nyimpennya tetep encode
+    const decodedValue = decodeURIComponent(templatePesan);
+    introField.value = decodedValue; 
+    
+    // Trik rahasia: Kita simpan versi "encode" nya ke dalam custom data attribute
+    introField.setAttribute('data-encoded', templatePesan);
 };
 
 // ==========================================
@@ -268,7 +276,7 @@ window.saveRow = async function(rowNum, isSilent = false) {
     const nama = document.getElementById(`nama_${rowNum}`).value.trim();
     const noWa = document.getElementById(`wa_${rowNum}`).value.trim();
     const club = document.getElementById(`club_${rowNum}`).value.trim();
-    const intro = document.getElementById(`intro_${rowNum}`).value.trim();
+    const introField = document.getElementById(`intro_${rowNum}`);
     let status = document.getElementById(`status_${rowNum}`).value;
 
     if (!nama && !noWa) {
@@ -285,6 +293,13 @@ window.saveRow = async function(rowNum, isSilent = false) {
         btn.disabled = true;
     }
 
+    // 🚀 FIX: Ambil versi encode dari custom attribute jika ada, jika tidak (diketik manual sama user), encode ulang
+    let introToSave = introField.getAttribute('data-encoded');
+    if (!introToSave) {
+         // Re-encode spasi biasa menjadi %0A agar aman
+         introToSave = encodeURIComponent(introField.value.trim());
+    }
+
     try {
         const { error } = await supabaseClient
             .from('wfh_scraping')
@@ -295,7 +310,7 @@ window.saveRow = async function(rowNum, isSilent = false) {
                 nama: nama,
                 no_wa: noWa,
                 club_eo: club,
-                intro_action: intro,
+                intro_action: introToSave, // Simpan versi encode!
                 status: status
             }, { 
                 onConflict: 'admin_id, tanggal, row_number' 
@@ -303,7 +318,7 @@ window.saveRow = async function(rowNum, isSilent = false) {
 
         if (error) throw error;
 
-        rowData[rowNum - 1] = { nama, no_wa: noWa, club_eo: club, intro_action: intro, status };
+        rowData[rowNum - 1] = { nama, no_wa: noWa, club_eo: club, intro_action: introToSave, status };
         
         showToast();
         updateProgress();
@@ -333,12 +348,12 @@ window.triggerSaveStatus = function(rowNum) {
 // ==========================================
 window.shareRow = function(rowNum) {
     const noWa = document.getElementById(`wa_${rowNum}`).value.trim();
-    const intro = document.getElementById(`intro_${rowNum}`).value.trim();
+    const row = rowData[rowNum - 1];
 
     if (!noWa) return alert("Nomor WA / Username Kosong!");
 
-    // Encode enter ke format URL WA
-    let introMsg = encodeURIComponent(intro);
+    // 🚀 FIX: Ambil dari rowData yang sudah dipastikan aman dan berformat URL Component
+    let introMsg = row.intro_action || "";
 
     if (noWa.startsWith('@')) {
         currentShareUser = noWa.replace('@', ''); 
@@ -372,6 +387,11 @@ window.unlockRow = function(rowNum) {
         el.disabled = false;
         el.classList.remove('bg-slate-800', 'text-slate-400', 'border-slate-700', 'cursor-not-allowed', 'opacity-70');
         el.classList.add('bg-slate-900', 'text-white', 'border-slate-600', 'focus:border-blue-500');
+        
+        // Hapus data-encoded agar kalau diubah manual, akan di-encode ulang
+        if(id === 'intro') {
+             el.removeAttribute('data-encoded');
+        }
     });
 
     document.getElementById(`actionWrap_${rowNum}`).innerHTML = `
