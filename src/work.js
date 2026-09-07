@@ -190,6 +190,7 @@ function renderTable() {
         const tr = document.createElement('tr');
         tr.className = `border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors ${rowBg}`;
         
+        // 🚀 FIX: Ubah input jadi TEXTAREA biar support Multiline (Enter)
         tr.innerHTML = `
             <td class="p-3 text-center font-black ${numColor}">${rowNum}</td>
             <td class="p-3">
@@ -202,7 +203,7 @@ function renderTable() {
                 <input type="text" id="club_${rowNum}" value="${row.club_eo || ''}" ${isSaved ? 'disabled' : ''} oninput="window.handleInputTemplate(${rowNum})" placeholder="Klub / Wilayah" class="w-full rounded-lg p-2 text-xs outline-none border transition-colors ${lockClassGeneral}">
             </td>
             <td class="p-3">
-                <input type="text" id="intro_${rowNum}" value="${row.intro_action || ''}" ${isSaved ? 'disabled' : ''} placeholder="Pesan dikirim" class="w-full rounded-lg p-2 text-xs outline-none border transition-colors ${lockClassGeneral}">
+                <textarea id="intro_${rowNum}" rows="3" ${isSaved ? 'disabled' : ''} placeholder="Pesan dikirim" class="w-full rounded-lg p-2 text-xs outline-none border transition-colors resize-none hide-scrollbar leading-relaxed ${lockClassGeneral}">${row.intro_action || ''}</textarea>
             </td>
             <td class="p-3 text-center" id="actionCol_${rowNum}">
                 ${actionHtml}
@@ -247,8 +248,7 @@ window.generateDynamicIntro = function(rowNum) {
 
     let templatePesan = "";
 
-    // 🚀 INFO: Format enter di sini pakai \n khusus untuk tampilan di dalam input text tabel.
-    // Nanti saat dilempar ke WhatsApp di fungsi shareRow(), baris baru (\n) akan dikonversi dengan benar.
+    // MENGGUNAKAN \n untuk line break di dalam TEXTAREA
     if (rowNum % 2 !== 0) {
         // OPSI A
         templatePesan = `Halo Coach!\nSalam kenal dari F1 Swimming 🤝\n\nPrestasi atlet muda di ${club} benar-benar membanggakan!\n\nSupaya setiap pencapaian mereka tercatat abadi dan bisa dibanggakan, F1 Swimming menyediakan F1 ID Card.\n\nKartu digital ini menyimpan seluruh record lomba atlet secara real-time. Coach bisa coba bikin sekarang gratis lewat link ini:\n🔗 www.f1swimming.com/register\n\nSemoga bermanfaat untuk kemajuan ${club}! 🏊‍♂️`;
@@ -337,7 +337,7 @@ window.shareRow = function(rowNum) {
 
     if (!noWa) return alert("Nomor WA / Username Kosong!");
 
-    // 🚀 INFO: encodeURIComponent udah otomatis mengubah \n menjadi %0A yang dibaca WhatsApp sebagai ENTER/Spasi Baru!
+    // Encode enter ke format URL WA
     let introMsg = encodeURIComponent(intro);
 
     if (noWa.startsWith('@')) {
