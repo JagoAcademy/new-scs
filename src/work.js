@@ -191,7 +191,6 @@ function renderTable() {
         const tr = document.createElement('tr');
         tr.className = `border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors ${rowBg}`;
         
-        // 🚀 INFO: Perhatikan trigger oninput="window.handleInputTemplate(rowNum)"
         tr.innerHTML = `
             <td class="p-3 text-center font-black ${numColor}">${rowNum}</td>
             <td class="p-3">
@@ -241,7 +240,7 @@ window.generateDynamicIntro = function(rowNum) {
     const clubInput = document.getElementById(`club_${rowNum}`).value.trim();
     const introField = document.getElementById(`intro_${rowNum}`);
 
-    // Fallback jika club belum diisi, kita sapa pakai "Klub Kakak"
+    // Fallback jika club belum diisi
     const club = clubInput || "Klub Kakak";
 
     // Kosongkan pesan jika nama dihapus/kosong
@@ -253,19 +252,16 @@ window.generateDynamicIntro = function(rowNum) {
     // Deteksi Rumpun Gaya Renang agar variatif dan terkesan personal
     const listGaya = ["freestyle", "breaststroke", "butterfly", "gaya bebas", "gaya dada"];
     const randomGaya = listGaya[Math.floor(Math.random() * listGaya.length)];
-    
-    // Buat URL Slug cerdas dari input nama (misal: "Dolphin Swim" jadi "dolphin-swim")
-    const slug = nama.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
 
     let templatePesan = "";
 
-    // ROTASI ANTI-SPAM META: Baris Ganjil pakai Opsi A, Baris Genap pakai Opsi B
+    // ROTASI ANTI-SPAM & PENDEKATAN KONVERSI
     if (rowNum % 2 !== 0) {
-        // OPSI A: Pendekatan Apresiasi Teknik Atlet
-        templatePesan = `Halo Coach/Min! Salam kenal dari F1 Swimming 👋. Keren banget tadi lewat di explore kami video berenang anak-anak ${club}, teknik ${randomGaya}-nya rapi-rapi banget asli.\n\nOiya Coach, biar catatan waktu latihan atau best time anak-anak kemarin ngga hilang di buku atau lembaran kertas, kami baru saja buatkan slot database digital gratis khusus untuk ${club}. Pelatih bisa input sendiri secara mandiri di sini biar orang tua bisa langsung pantau grafik progres anaknya via HP.\n\nProfil digital klubnya sudah kami siapkan di sini ya Coach, silakan diklaim:\n🔗 https://f1swimming.com/${slug}`;
+        // OPSI A: Pendekatan Apresiasi Teknik -> Fitur Rapor Digital F1 ID
+        templatePesan = `Halo Coach/Min! Salam kenal dari F1 Swimming 👋. Keren banget tadi lewat di explore kami video berenang anak-anak ${club}, teknik ${randomGaya}-nya rapi-rapi banget asli.\n\nOiya Coach, biar catatan waktu latihan atau best time anak-anak ngga hilang di kertas, kami ngundang ${club} buat gabung ke ekosistem digital F1 Swimming. Coach bisa bikin database profil atlet (F1 ID) secara gratis, jadi orang tua bisa langsung pantau grafik progres anaknya via HP.\n\nYuk Coach, modernisasi klubnya dan daftar gratis sekarang di:\n🔗 https://f1swimming.com/register`;
     } else {
-        // OPSI B: Umpan Fitur F1 ID / Personal Best
-        templatePesan = `Halo Coach! Izin kenalan dari tim F1 Swimming ya 🙏. Kami sering lihat postingan progres renang atlet ${club} di sosmed, progresnya luar biasa!\n\nUntuk support klub-klub akar rumput seperti ${club}, kami ngasih akses gratis buat masukin data Personal Best Time anak-anak ke pangkalan data nasional (F1 ID). Jadi nanti tiap anak punya link profil masing-masing buat dipamerin ke orang tua mereka.\n\nSlot database untuk ${club} udah kami aktifin, Coach bisa langsung cek dan klaim di sini ya:\n🔗 https://f1swimming.com/${slug}`;
+        // OPSI B: Pendekatan Potensi Atlet -> Fitur Command Center (Manajemen Klub)
+        templatePesan = `Halo Coach! Izin kenalan dari tim F1 Swimming ya 🙏. Kami sering lihat postingan latihan atlet ${club} di sosmed, progresnya luar biasa dan potensial banget!\n\nUntuk support klub-klub seperti ${club}, kami ngasih akses gratis Command Center buat nyatet Personal Best Time anak-anak ke pangkalan data nasional (F1 ID). Nanti tiap anak punya link profil rapor digital masing-masing buat dipamerin ke orang tua dan sekolah mereka.\n\nKlaim slot database gratis untuk ${club} di sini ya Coach:\n🔗 https://f1swimming.com/register`;
     }
 
     // Tembak langsung ke input text
