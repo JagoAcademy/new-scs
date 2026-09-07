@@ -165,7 +165,6 @@ function renderTable() {
         const lockClassGeneral = isSaved ? 'bg-slate-800 text-slate-400 border-slate-700 cursor-not-allowed opacity-70' : 'bg-slate-900 text-white border-slate-600 focus:border-blue-500';
         const lockClassStatus = 'bg-slate-900 text-white border-slate-600 focus:border-blue-500 cursor-pointer hover:border-blue-400';
 
-        // Logika Pergantian Tombol Simpan -> Share -> Edit
         let actionHtml = '';
         if (isSaved) {
             actionHtml = `
@@ -228,8 +227,6 @@ function renderTable() {
 // ==========================================
 window.handleInputTemplate = function(rowNum) {
     const namaInput = document.getElementById(`nama_${rowNum}`);
-    
-    // Jangan generate otomatis kalau fieldnya lagi digembok (sudah disave)
     if (namaInput.disabled) return; 
 
     window.generateDynamicIntro(rowNum);
@@ -241,30 +238,24 @@ window.generateDynamicIntro = function(rowNum) {
     const introField = document.getElementById(`intro_${rowNum}`);
 
     // Fallback jika club belum diisi
-    const club = clubInput || "Klub Kakak";
+    const club = clubInput || "klub Coach";
 
-    // Kosongkan pesan jika nama dihapus/kosong
     if (!nama) {
         introField.value = "";
         return;
     }
 
-    // Deteksi Rumpun Gaya Renang agar variatif dan terkesan personal
-    const listGaya = ["freestyle", "breaststroke", "butterfly", "gaya bebas", "gaya dada"];
-    const randomGaya = listGaya[Math.floor(Math.random() * listGaya.length)];
-
     let templatePesan = "";
 
-    // ROTASI ANTI-SPAM & PENDEKATAN KONVERSI
+    // ROTASI ANTI-SPAM & PENDEKATAN KONVERSI (DRAFT BARU DARI SUHU)
     if (rowNum % 2 !== 0) {
-        // OPSI A: Pendekatan Apresiasi Teknik -> Fitur Rapor Digital F1 ID
-        templatePesan = `Halo Coach/Min! Salam kenal dari F1 Swimming 👋. Keren banget tadi lewat di explore kami video berenang anak-anak ${club}, teknik ${randomGaya}-nya rapi-rapi banget asli.\n\nOiya Coach, biar catatan waktu latihan atau best time anak-anak ngga hilang di kertas, kami ngundang ${club} buat gabung ke ekosistem digital F1 Swimming. Coach bisa bikin database profil atlet (F1 ID) secara gratis, jadi orang tua bisa langsung pantau grafik progres anaknya via HP.\n\nYuk Coach, modernisasi klubnya dan daftar gratis sekarang di:\n🔗 https://f1swimming.com/register`;
+        // OPSI A: Draft persis seperti arahan
+        templatePesan = `Halo Coach! Salam kenal dari F1 Swimming 🤝\n\nPrestasi atlet muda di ${club} benar-benar membanggakan! Supaya setiap pencapaian mereka tercatat abadi dan bisa dibanggakan, F1 Swimming menyediakan F1 ID Card.\n\nKartu digital ini menyimpan seluruh record lomba atlet secara real-time. Coach bisa coba bikin sekarang gratis lewat link ini:\n🔗 www.f1swimming.com/register\n\nSemoga bermanfaat untuk kemajuan ${club}! 🏊‍♂️`;
     } else {
-        // OPSI B: Pendekatan Potensi Atlet -> Fitur Command Center (Manajemen Klub)
-        templatePesan = `Halo Coach! Izin kenalan dari tim F1 Swimming ya 🙏. Kami sering lihat postingan latihan atlet ${club} di sosmed, progresnya luar biasa dan potensial banget!\n\nUntuk support klub-klub seperti ${club}, kami ngasih akses gratis Command Center buat nyatet Personal Best Time anak-anak ke pangkalan data nasional (F1 ID). Nanti tiap anak punya link profil rapor digital masing-masing buat dipamerin ke orang tua dan sekolah mereka.\n\nKlaim slot database gratis untuk ${club} di sini ya Coach:\n🔗 https://f1swimming.com/register`;
+        // OPSI B: Variasi susunan kata agar tidak terdeteksi SPAM oleh Meta
+        templatePesan = `Halo Coach! Izin menyapa dari tim F1 Swimming 🙏.\n\nKami melihat atlet-atlet ${club} punya progres yang luar biasa! Biar setiap catatan waktu dan best time mereka ngga hilang, kami menyediakan fasilitas F1 ID Card.\n\nIni adalah rapor digital gratis yang menyimpan rekam jejak atlet secara otomatis dan real-time. Coach bisa langsung buatkan untuk anak-anak ${club} via link ini ya:\n🔗 www.f1swimming.com/register\n\nSukses terus untuk para juara dari ${club}! 🏆`;
     }
 
-    // Tembak langsung ke input text
     introField.value = templatePesan;
 };
 
