@@ -247,13 +247,14 @@ window.generateDynamicIntro = function(rowNum) {
 
     let templatePesan = "";
 
-    // ROTASI ANTI-SPAM & PENDEKATAN KONVERSI (DRAFT BARU DARI SUHU)
+    // 🚀 INFO: Format enter di sini pakai \n khusus untuk tampilan di dalam input text tabel.
+    // Nanti saat dilempar ke WhatsApp di fungsi shareRow(), baris baru (\n) akan dikonversi dengan benar.
     if (rowNum % 2 !== 0) {
-        // OPSI A: Draft persis seperti arahan
-        templatePesan = `Halo Coach! Salam kenal dari F1 Swimming 🤝\n\nPrestasi atlet muda di ${club} benar-benar membanggakan! Supaya setiap pencapaian mereka tercatat abadi dan bisa dibanggakan, F1 Swimming menyediakan F1 ID Card.\n\nKartu digital ini menyimpan seluruh record lomba atlet secara real-time. Coach bisa coba bikin sekarang gratis lewat link ini:\n🔗 www.f1swimming.com/register\n\nSemoga bermanfaat untuk kemajuan ${club}! 🏊‍♂️`;
+        // OPSI A
+        templatePesan = `Halo Coach!\nSalam kenal dari F1 Swimming 🤝\n\nPrestasi atlet muda di ${club} benar-benar membanggakan!\n\nSupaya setiap pencapaian mereka tercatat abadi dan bisa dibanggakan, F1 Swimming menyediakan F1 ID Card.\n\nKartu digital ini menyimpan seluruh record lomba atlet secara real-time. Coach bisa coba bikin sekarang gratis lewat link ini:\n🔗 www.f1swimming.com/register\n\nSemoga bermanfaat untuk kemajuan ${club}! 🏊‍♂️`;
     } else {
-        // OPSI B: Variasi susunan kata agar tidak terdeteksi SPAM oleh Meta
-        templatePesan = `Halo Coach! Izin menyapa dari tim F1 Swimming 🙏.\n\nKami melihat atlet-atlet ${club} punya progres yang luar biasa! Biar setiap catatan waktu dan best time mereka ngga hilang, kami menyediakan fasilitas F1 ID Card.\n\nIni adalah rapor digital gratis yang menyimpan rekam jejak atlet secara otomatis dan real-time. Coach bisa langsung buatkan untuk anak-anak ${club} via link ini ya:\n🔗 www.f1swimming.com/register\n\nSukses terus untuk para juara dari ${club}! 🏆`;
+        // OPSI B
+        templatePesan = `Halo Coach!\nIzin menyapa dari tim F1 Swimming 🙏.\n\nKami melihat atlet-atlet ${club} punya progres yang luar biasa!\n\nBiar setiap catatan waktu dan best time mereka ngga hilang, kami menyediakan fasilitas F1 ID Card.\n\nIni adalah rapor digital gratis yang menyimpan rekam jejak atlet secara otomatis dan real-time. Coach bisa langsung buatkan untuk anak-anak ${club} via link ini ya:\n🔗 www.f1swimming.com/register\n\nSukses terus untuk para juara dari ${club}! 🏆`;
     }
 
     introField.value = templatePesan;
@@ -336,6 +337,7 @@ window.shareRow = function(rowNum) {
 
     if (!noWa) return alert("Nomor WA / Username Kosong!");
 
+    // 🚀 INFO: encodeURIComponent udah otomatis mengubah \n menjadi %0A yang dibaca WhatsApp sebagai ENTER/Spasi Baru!
     let introMsg = encodeURIComponent(intro);
 
     if (noWa.startsWith('@')) {
