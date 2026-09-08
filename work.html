@@ -9,6 +9,24 @@
     <style>
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Pengaturan Cetak A4 Khusus untuk PKS */
+        @media print {
+            body * { visibility: hidden; }
+            #printablePKS, #printablePKS * { visibility: visible; }
+            #printablePKS { 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 100%; 
+                background: white; 
+                color: black; 
+                padding: 2cm; 
+                font-family: "Times New Roman", Times, serif;
+            }
+            /* Sembunyikan elemen UI di dalam area print */
+            #printablePKS .no-print { display: none !important; }
+        }
     </style>
 </head>
 <body class="bg-slate-900 font-sans text-slate-200 min-h-screen relative">
@@ -33,16 +51,15 @@
                 <div id="loginError" class="hidden text-xs font-bold text-red-400 bg-red-900/30 p-3 rounded-lg border border-red-500/30 text-center"></div>
                 <button id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-xl shadow-lg transition-transform active:scale-95 mt-2">Masuk Panel 🚀</button>
                 
-                <!-- MENU BAWAH: ALUR KERJA & DOWNLOAD PKS -->
+                <!-- MENU BAWAH: ALUR KERJA & BUKA MODAL PKS -->
                 <div class="flex justify-between items-center mt-5 pt-4 border-t border-slate-700/50">
-                    <!-- Sisi Kiri (Garis Merah): BUKA MODAL POP-UP -->
                     <button type="button" onclick="document.getElementById('modalAlurKerja').classList.remove('hidden')" class="text-[11px] font-bold text-rose-400 hover:text-rose-300 transition-colors flex items-center gap-1.5 hover:underline underline-offset-4 bg-transparent border-none p-0 cursor-pointer">
                         📖 Alur Kerja
                     </button>
-                    <!-- Sisi Kanan (Garis Hijau) -->
-                    <a href="/Perjanjian_Kerja_Sama_Admin_SCS.pdf" target="_blank" download class="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1.5 hover:underline underline-offset-4">
-                        📥 Download PKS
-                    </a>
+                    <!-- 🚀 FIX: Ubah dari download jadi Buka Modal PKS -->
+                    <button type="button" onclick="document.getElementById('modalPKS').classList.remove('hidden')" class="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1.5 hover:underline underline-offset-4 bg-transparent border-none p-0 cursor-pointer">
+                        📄 Buka PKS
+                    </button>
                 </div>
             </div>
         </div>
@@ -72,7 +89,7 @@
                     <p class="text-sm font-medium text-slate-300 leading-relaxed"><strong class="text-white font-black">1. Pilar Administratif (Pasti):</strong> Kompensasi pasti sebesar <strong class="text-emerald-400">Rp20.000 per hari kerja</strong>. Fee ini murni bersifat task-based dan diakumulasikan jika target scraping harian berhasil diselesaikan penuh.</p>
                     
                     <p class="text-sm font-medium text-slate-300 leading-relaxed"><strong class="text-white font-black">2. Pilar Akselerasi (Unlimited Earning):</strong> Jalur berbasis persentase kesuksesan membawa sponsor masuk (success fee).
-                        <ul class="list-disc pl-5 mt-2 space-y-1">
+                        <ul class="list-disc pl-5 mt-2 space-y-1 text-slate-300 text-sm">
                             <li>Bonus tunai <strong class="text-emerald-400">Rp100.000</strong> untuk setiap closing kerja sama sponsor berbentuk Produk.</li>
                             <li>Komisi <strong class="text-emerald-400">5%</strong> jika berhasil closing kesepakatan untuk kategori Sponsor Placement atau Sponsor Eksklusif.</li>
                         </ul>
@@ -82,7 +99,121 @@
             </div>
         </div>
     </div>
-    <!-- END MODAL -->
+
+    <!-- 🚀 MODAL SURAT PERJANJIAN KERJA SAMA (PKS) -->
+    <div id="modalPKS" class="fixed inset-0 z-[160] bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4 md:p-8 transition-opacity">
+        <div class="bg-white text-slate-900 rounded-sm w-full max-w-4xl shadow-2xl relative overflow-hidden flex flex-col max-h-full font-serif border border-slate-300">
+            <!-- Header Modal (Sembunyi saat Print) -->
+            <div class="bg-slate-100 p-4 border-b border-slate-300 flex justify-between items-center no-print shrink-0">
+                <h2 class="font-bold text-slate-800 font-sans flex items-center gap-2"><span>📄</span> Draf Perjanjian Kerja Sama (PKS)</h2>
+                <div class="flex items-center gap-3">
+                    <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white font-sans font-bold px-4 py-2 rounded-md text-xs shadow-sm flex items-center gap-1.5 transition-colors">
+                        🖨️ Cetak / PDF
+                    </button>
+                    <button onclick="document.getElementById('modalPKS').classList.add('hidden')" class="text-slate-500 hover:text-red-500 font-black text-2xl transition-colors w-8 h-8 flex items-center justify-center font-sans">&times;</button>
+                </div>
+            </div>
+
+            <!-- Area yang di-Print (A4 Style) -->
+            <div id="printablePKS" class="p-8 md:p-16 overflow-y-auto bg-white text-black text-sm md:text-base leading-relaxed text-justify relative flex-1 hide-scrollbar">
+                
+                <!-- Watermark Background Print -->
+                <div class="absolute inset-0 z-0 opacity-[0.03] pointer-events-none flex items-center justify-center">
+                    <img src="/images/f1logo.png" class="w-2/3 grayscale">
+                </div>
+
+                <div class="relative z-10">
+                    <h1 class="text-center font-bold text-lg md:text-xl uppercase mb-1">PERJANJIAN KERJA SAMA (PKS)</h1>
+                    <h2 class="text-center font-bold text-base md:text-lg uppercase mb-1">LAYANAN ADMINISTRASI REMOTE & OUTREACH</h2>
+                    <p class="text-center text-sm mb-8 font-medium">Nomor: 001/PKS-SCS/F1S/IX/2026</p>
+
+                    <p class="mb-4">Pada hari ini, ...................., tanggal ...................., bulan ...................., tahun ...................., bertempat di ...................., yang bertandatangan di bawah ini:</p>
+
+                    <!-- Pihak Pertama -->
+                    <div class="mb-4">
+                        <table class="w-full">
+                            <tr><td class="w-6 align-top"><strong>1.</strong></td><td class="w-48 align-top">Nama Perusahaan / Induk</td><td class="w-4 align-top">:</td><td class="align-top font-bold">PT Teknologi Prestasi Indonesia (F1 Swimming)</td></tr>
+                            <tr><td></td><td class="align-top">Perwakilan / Jabatan</td><td class="align-top">:</td><td class="align-top"></td></tr>
+                            <tr><td></td><td class="align-top">Alamat</td><td class="align-top">:</td><td class="align-top"></td></tr>
+                        </table>
+                        <p class="ml-6 mt-1">Selanjutnya disebut sebagai <strong>PIHAK PERTAMA</strong> (Pemberi Kerja).</p>
+                    </div>
+
+                    <!-- Pihak Kedua -->
+                    <div class="mb-6">
+                        <table class="w-full">
+                            <tr><td class="w-6 align-top"><strong>2.</strong></td><td class="w-48 align-top">Nama Lengkap</td><td class="w-4 align-top">:</td><td class="align-top border-b border-dotted border-black"></td></tr>
+                            <tr><td></td><td class="align-top">No. KTP/Identitas</td><td class="align-top">:</td><td class="align-top border-b border-dotted border-black"></td></tr>
+                            <tr><td></td><td class="align-top">Alamat Domisili</td><td class="align-top">:</td><td class="align-top border-b border-dotted border-black"></td></tr>
+                        </table>
+                        <p class="ml-6 mt-1">Selanjutnya disebut sebagai <strong>PIHAK KEDUA</strong> (Pekerja Remote).</p>
+                    </div>
+
+                    <p class="mb-6"><strong>PIHAK PERTAMA</strong> dan <strong>PIHAK KEDUA</strong> secara bersama-sama disebut sebagai PARA PIHAK. PARA PIHAK sepakat untuk mengikatkan diri dalam Perjanjian Kerja Sama Berbasis Proyek dengan ketentuan sebagai berikut:</p>
+
+                    <h3 class="font-bold text-center mb-2">PASAL 1<br>RUANG LINGKUP PEKERJAAN</h3>
+                    <p class="mb-4">PIHAK KEDUA bersedia menerima penugasan dari PIHAK PERTAMA untuk melaksanakan pekerjaan secara remote (WFH) yang meliputi:</p>
+                    <ol class="list-decimal pl-6 mb-6 space-y-1">
+                        <li><strong>Data Scraping:</strong> Mencari, memvalidasi, dan mengumpulkan data kontak (Instagram, TikTok, Facebook, atau WhatsApp) dari Klub Renang Grassroot (Non-Afiliasi), sekolah, atau EO lomba di wilayah target.</li>
+                        <li><strong>Cold Outreach:</strong> Melakukan pengenalan (intro) platform F1 Swimming SCS kepada data kontak yang telah dikumpulkan melalui Direct Message (DM) atau WhatsApp resmi.</li>
+                        <li><strong>Pelaporan:</strong> Memasukkan seluruh data hasil kerja ke dalam sistem WFH Tracker yang telah disediakan PIHAK PERTAMA secara harian.</li>
+                    </ol>
+
+                    <h3 class="font-bold text-center mb-2">PASAL 2<br>TARGET HARIAN & SISTEM KERJA</h3>
+                    <ol class="list-decimal pl-6 mb-6 space-y-1">
+                        <li>Perjanjian ini berbasis proyek harian yang fleksibel dengan target kuantitas yang wajib dipenuhi oleh PIHAK KEDUA sebagai berikut:
+                            <ul class="list-[lower-alpha] pl-5 mt-1">
+                                <li>Melakukan scraping/validasi data minimal 15-20 akun/kontak baru per hari.</li>
+                                <li>Mengirimkan pesan intro/outreach minimal 10-15 kontak baru per hari.</li>
+                            </ul>
+                        </li>
+                        <li>PIHAK KEDUA mengatur waktu kerjanya secara mandiri (remote) dengan estimasi waktu 2 hingga 3 jam per hari, asalkan target harian terpenuhi dan laporan diserahkan sebelum pukul 21.00 WIB setiap harinya.</li>
+                    </ol>
+
+                    <h3 class="font-bold text-center mb-2">PASAL 3<br>HONORARIUM & SISTEM PEMBAYARAN</h3>
+                    <ol class="list-decimal pl-6 mb-6 space-y-1">
+                        <li>PIHAK PERTAMA akan memberikan kompensasi kepada PIHAK KEDUA sebesar Rp20.000,- (Dua Puluh Ribu Rupiah) per hari kerja yang berhasil diselesaikan sesuai target Pasal 2.</li>
+                        <li>Pembayaran honorarium akan diakumulasikan dan dibayarkan secara berkala melalui transfer bank ke rekening PIHAK KEDUA yang sah.</li>
+                        <li>Jika PIHAK KEDUA tidak memenuhi target harian atau tidak menyerahkan laporan tanpa alasan yang sah, PIHAK PERTAMA berhak memotong honorarium hari tersebut secara proporsional.</li>
+                    </ol>
+
+                    <h3 class="font-bold text-center mb-2">PASAL 4<br>KEAMANAN DATA & KERAHASIAAN</h3>
+                    <ol class="list-decimal pl-6 mb-6 space-y-1">
+                        <li>PIHAK KEDUA wajib menjaga kerahasiaan seluruh data atlet, data klub, strategi internal, dan informasi akses sistem F1 Swimming yang diperoleh selama bekerja.</li>
+                        <li>Sesuai dengan regulasi perlindungan data yang berlaku (UU PDP), PIHAK KEDUA dilarang keras menyebarluaskan, memperbanyak, atau menyalahgunakan data kontak yang didapatkan untuk kepentingan di luar proyek F1 Swimming.</li>
+                    </ol>
+
+                    <h3 class="font-bold text-center mb-2">PASAL 5<br>MASA BERLAKU & PEMUTUSAN HUBUNGAN KERJA</h3>
+                    <ol class="list-decimal pl-6 mb-6 space-y-1">
+                        <li>Perjanjian ini berlaku sejak tanggal ditandatangani sampai dengan proyek ini dinyatakan selesai oleh PIHAK PERTAMA.</li>
+                        <li>PIHAK PERTAMA berhak memutuskan kerja sama ini secara sepihak dan seketika jika PIHAK KEDUA terbukti melakukan tindakan kecurangan (manipulasi laporan data), melanggar kerahasiaan data, atau tidak mencapai target minimal selama 3 (tiga) hari berturut-turut.</li>
+                    </ol>
+
+                    <p class="mb-10">Demikian Perjanjian Kerja Sama ini dibuat dalam rangkap 2 (dua) bermaterai cukup, memiliki kekuatan hukum yang sama, dan ditandatangani oleh PARA PIHAK tanpa paksaan dari pihak manapun.</p>
+
+                    <!-- Tanda Tangan TTD -->
+                    <div class="flex justify-between items-start mt-8">
+                        <div class="text-center w-48">
+                            <p class="mb-20"><strong>PIHAK PERTAMA,</strong><br>PT Teknologi Prestasi Indonesia</p>
+                            <div class="border-b border-black mb-1"></div>
+                            <p class="text-xs">Manajemen F1 Swimming</p>
+                        </div>
+                        
+                        <div class="text-center w-48">
+                            <p class="mb-20"><strong>PIHAK KEDUA,</strong><br>Pekerja Remote</p>
+                            <div class="border-b border-black mb-1"></div>
+                            <p class="text-xs">Nama Terang & Tanda Tangan</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-12 text-[10px] text-slate-400 italic no-print font-sans">
+                        Dokumen ini dihasilkan secara otomatis sebagai draf hukum operasional F1 Swimming 2026.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END MODAL PKS -->
 
     <!-- MAIN APP -->
     <div id="mainApp" class="hidden max-w-7xl mx-auto p-4 md:p-6 pb-20">
