@@ -15,7 +15,7 @@
 
     <!-- LOGIN OVERLAY -->
     <div id="loginScreen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-800 border border-slate-700 p-8 rounded-3xl w-full max-w-sm shadow-2xl">
+        <div class="bg-slate-800 border border-slate-700 p-8 rounded-3xl w-full max-w-sm shadow-2xl relative z-10">
             <div class="text-center mb-6">
                 <span class="text-4xl">🏊‍♂️</span>
                 <h2 class="text-2xl font-black text-white mt-2">Login WFH</h2>
@@ -35,10 +35,10 @@
                 
                 <!-- MENU BAWAH: ALUR KERJA & DOWNLOAD PKS -->
                 <div class="flex justify-between items-center mt-5 pt-4 border-t border-slate-700/50">
-                    <!-- Sisi Kiri (Garis Merah) -->
-                    <a href="#alur" onclick="alert('1. Scraping Data (15-20/hari)\\n2. Input ke Sistem\\n3. Kirim Intro (DM/WA)\\n4. Update Status')" class="text-[11px] font-bold text-rose-400 hover:text-rose-300 transition-colors flex items-center gap-1.5 hover:underline underline-offset-4">
+                    <!-- Sisi Kiri (Garis Merah): BUKA MODAL POP-UP -->
+                    <button type="button" onclick="document.getElementById('modalAlurKerja').classList.remove('hidden')" class="text-[11px] font-bold text-rose-400 hover:text-rose-300 transition-colors flex items-center gap-1.5 hover:underline underline-offset-4 bg-transparent border-none p-0 cursor-pointer">
                         📖 Alur Kerja
-                    </a>
+                    </button>
                     <!-- Sisi Kanan (Garis Hijau) -->
                     <a href="/Perjanjian_Kerja_Sama_Admin_SCS.pdf" target="_blank" download class="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1.5 hover:underline underline-offset-4">
                         📥 Download PKS
@@ -47,6 +47,42 @@
             </div>
         </div>
     </div>
+
+    <!-- 🚀 MODAL ALUR KERJA WFH -->
+    <div id="modalAlurKerja" class="fixed inset-0 z-[150] bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-2xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
+            <button onclick="document.getElementById('modalAlurKerja').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 font-bold text-3xl transition-colors z-30 bg-slate-800 rounded-full w-10 h-10 flex items-center justify-center leading-none shadow-sm border border-slate-700">&times;</button>
+            <div class="p-6 md:p-10 overflow-y-auto hide-scrollbar relative z-10 w-full text-center">
+                <h2 class="text-2xl md:text-3xl font-black text-white mb-6 md:mb-8 tracking-tight">Pedoman Kerja <span class="text-blue-500">WFH</span></h2>
+                
+                <div class="text-left mb-6 bg-blue-900/20 p-5 md:p-6 rounded-2xl border border-blue-500/30 shadow-sm">
+                    <h3 class="font-extrabold text-lg text-blue-400 mb-4 border-b border-blue-500/30 pb-3 flex items-center gap-2"><span>🔄</span> Alur Kerja (Data Scraping & Outreach)</h3>
+                    <div class="space-y-3">
+                        <p class="text-sm font-medium text-slate-300 leading-relaxed"><strong class="text-white font-black">1. Pencarian Data (Scraping):</strong> Pekerja secara mandiri mencari 15-20 data kontak baru per hari, dengan target sasaran spesifik: Klub Renang Grassroot, Event Organizer (EO) lomba, dan Orang Tua Atlet.</p>
+                        <p class="text-sm font-medium text-slate-300 leading-relaxed"><strong class="text-white font-black">2. Input & Otomatisasi:</strong> Data kontak wajib dimasukkan ke dalam portal WFH Tracker. Sistem kami dilengkapi mesin auto-generation yang merakit copywriting pesan perkenalan secara dinamis.</p>
+                        <p class="text-sm font-medium text-slate-300 leading-relaxed"><strong class="text-white font-black">3. Eksekusi Pesan:</strong> Pekerja menekan tombol "Share" di dalam sistem yang akan langsung diarahkan menuju DM Instagram, TikTok, atau WhatsApp target.</p>
+                        <p class="text-sm font-medium text-slate-300 leading-relaxed"><strong class="text-white font-black">4. Fleksibilitas & Pelaporan:</strong> Estimasi pengerjaan 2-3 jam/hari. Target data dan pembaruan status wajib diselesaikan sebelum pukul 21.00 WIB setiap harinya.</p>
+                    </div>
+                </div>
+
+                <div class="text-left space-y-4 bg-emerald-900/20 p-5 md:p-6 rounded-2xl border border-emerald-500/30 shadow-sm">
+                    <h3 class="font-extrabold text-lg text-emerald-400 mb-3 border-b border-emerald-500/30 pb-3 flex items-center gap-2"><span>💰</span> Skema Benefit & Kompensasi</h3>
+                    <p class="text-sm font-medium text-slate-300 leading-relaxed mb-4">Kompensasi dirancang ke dalam dua pilar utama:</p>
+                    
+                    <p class="text-sm font-medium text-slate-300 leading-relaxed"><strong class="text-white font-black">1. Pilar Administratif (Pasti):</strong> Kompensasi pasti sebesar <strong class="text-emerald-400">Rp20.000 per hari kerja</strong>. Fee ini murni bersifat task-based dan diakumulasikan jika target scraping harian berhasil diselesaikan penuh.</p>
+                    
+                    <p class="text-sm font-medium text-slate-300 leading-relaxed"><strong class="text-white font-black">2. Pilar Akselerasi (Unlimited Earning):</strong> Jalur berbasis persentase kesuksesan membawa sponsor masuk (success fee).
+                        <ul class="list-disc pl-5 mt-2 space-y-1">
+                            <li>Bonus tunai <strong class="text-emerald-400">Rp100.000</strong> untuk setiap closing kerja sama sponsor berbentuk Produk.</li>
+                            <li>Komisi <strong class="text-emerald-400">5%</strong> jika berhasil closing kesepakatan untuk kategori Sponsor Placement atau Sponsor Eksklusif.</li>
+                        </ul>
+                    </p>
+                    <p class="text-xs font-medium text-slate-400 leading-relaxed mt-4 italic bg-slate-800 p-3 rounded-xl border border-slate-700">*Gunakan tautan <span class="text-blue-400">f1swimming.com/sponsor-rate</span> sebagai amunisi utama dalam melakukan pitching.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END MODAL -->
 
     <!-- MAIN APP -->
     <div id="mainApp" class="hidden max-w-7xl mx-auto p-4 md:p-6 pb-20">
