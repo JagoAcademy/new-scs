@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 1. CEK SESSION (DUAL-AUTH SYSTEM)
     // ==========================================
     // Cek dulu apakah ada session WFH User di localStorage/sessionStorage
-    const savedWfhUser = sessionStorage.getItem('wfh_user');
+    const savedWfhUser = localStorage.getItem('wfh_user') || sessionStorage.getItem('wfh_user');
     
     // Cek juga session Supabase resmi (untuk Super Admin/Klub)
     const { data: { session } } = await supabaseClient.auth.getSession();
@@ -246,6 +246,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 created_by: currentUser.id 
             };
 
+            // Jika ada logo baru, masukkan. Jika tidak, pertahankan logo lama (jangan dioverwrite jadi null)
             if (uploadedLogoUrl) {
                 payload.corporate_logo = uploadedLogoUrl;
             } else {
@@ -255,6 +256,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
+            // PERINTAH UPSERT AJAIB
             const { error: upsertErr } = await supabaseClient
                 .from('sponsor_pitches')
                 .upsert(payload, { onConflict: 'pitch_slug' });

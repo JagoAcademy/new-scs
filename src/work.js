@@ -6,8 +6,8 @@ let rowData = new Array(20).fill(null);
 let currentShareUser = ""; // Menyimpan username target yang sedang di-klik Share
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Cek Sesi Tersimpan
-    const savedUser = sessionStorage.getItem('wfh_user');
+    // 1. Cek Sesi Tersimpan (Fix pakai localStorage agar lintas tab)
+    const savedUser = localStorage.getItem('wfh_user');
     if (savedUser) {
         currentUser = JSON.parse(savedUser);
         initApp();
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (error || !data) throw new Error("Kredensial tidak valid!");
 
             currentUser = data;
-            sessionStorage.setItem('wfh_user', JSON.stringify(data));
+            localStorage.setItem('wfh_user', JSON.stringify(data));
             initApp();
 
         } catch (err) {
@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 3. Logout
     document.getElementById('btnLogout').addEventListener('click', () => {
-        sessionStorage.removeItem('wfh_user');
+        localStorage.removeItem('wfh_user');
         window.location.reload();
     });
 
