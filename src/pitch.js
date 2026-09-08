@@ -3,29 +3,22 @@ import { supabaseClient } from './supabase.js';
 let allSponsors = [];
 let selectedBrands = []; 
 let historyData = []; 
-let currentUser = null; // Menyimpan data user yang login (Bisa Super Admin atau WFH User)
+let currentUser = null; 
 
 document.addEventListener('DOMContentLoaded', async () => {
     
     // ==========================================
     // 1. CEK SESSION (DUAL-AUTH SYSTEM)
     // ==========================================
-    // Cek dulu apakah ada session WFH User di localStorage/sessionStorage
     const savedWfhUser = localStorage.getItem('wfh_user') || sessionStorage.getItem('wfh_user');
-    
-    // Cek juga session Supabase resmi (untuk Super Admin/Klub)
     const { data: { session } } = await supabaseClient.auth.getSession();
 
     if (savedWfhUser) {
-        // Jika login sebagai WFH User
         currentUser = JSON.parse(savedWfhUser);
-        // Kita set ID buatan agar sistem database tetap tau siapa yang bikin pitch
         currentUser.id = currentUser.admin_id; 
     } else if (session) {
-        // Jika login sebagai Super Admin/Klub
         currentUser = session.user;
     } else {
-        // Jika tidak ada keduanya, tendang ke halaman login
         alert("Akses ditolak. Wajib Login!");
         window.location.href = '/auth.html';
         return;
@@ -50,7 +43,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const statusMsg = document.getElementById('statusMsg');
     const actionButtons = document.getElementById('actionButtons');
 
-    // Jika yang login adalah WFH Admin, otomatis isi nama marketingnya
     if (savedWfhUser && currentUser.full_name) {
         inputMarketingName.value = currentUser.full_name;
     }
@@ -81,17 +73,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             selectSponsor.innerHTML += `<option value="${sp.id}">${sp.sponsor_name} (${sp.kategori})</option>`;
         });
 
-        // 🚀 INFO: History Pitch sekarang difilter berdasarkan siapa yang buat
-        // Biar tabelnya ga berat dan anak WFH cuma liat kerjaan dia sendiri (kecuali dia Super Admin)
+        // 🚀 FIX HISTORI KOSONG: Filter dihapus agar WFH bisa buka semua Master Template buatan lu!
         let pitchQuery = supabaseClient
             .from('sponsor_pitches')
             .select('*')
             .order('created_at', { ascending: false });
-
-        // Jika bukan Super Admin (yaitu WFH User), cuma boleh tarik data dia sendiri
-        if (savedWfhUser) {
-            pitchQuery = pitchQuery.eq('created_by', currentUser.id);
-        }
 
         const { data: pitches } = await pitchQuery;
 
@@ -109,7 +95,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error(err);
     }
 
-    // LOAD HISTORY & PERTAHANKAN SLUG LAMA (Untuk Update)
     selectHistoryCompany.addEventListener('change', (e) => {
         const pitchId = e.target.value;
         if (!pitchId) return;
@@ -122,7 +107,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('inputCPEmail').value = selected.cp_email || '';
             inputMessage.value = selected.approach_message || '';
             
-            // JANGAN generate slug baru, gunakan slug histori yang sudah ada
             inputSlug.value = selected.pitch_slug || ''; 
             
             if (selected.target_type) {
@@ -199,7 +183,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderSimulation(selectedBrands); 
     });
 
-    // SISTEM UPSERT (INSERT JIKA BARU, UPDATE JIKA SLUG SUDAH ADA)
     const btnGenerate = document.getElementById('btnGeneratePitch');
     btnGenerate.addEventListener('click', async () => {
         const type = document.querySelector('input[name="targetType"]:checked').value;
@@ -232,7 +215,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const brandIds = type === 'brand' ? selectedBrands.map(b => b.id) : [];
             
-            // Siapkan Data Payload
             let payload = {
                 target_type: type,
                 company_name: companyName,
@@ -242,11 +224,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 cp_email: cpEmail,
                 pitch_slug: slug, 
                 approach_message: appMessage,
-                // Gunakan ID user yang sedang login (Bisa ID dari tabel profiles atau wfh_users)
                 created_by: currentUser.id 
             };
 
-            // Jika ada logo baru, masukkan. Jika tidak, pertahankan logo lama (jangan dioverwrite jadi null)
             if (uploadedLogoUrl) {
                 payload.corporate_logo = uploadedLogoUrl;
             } else {
@@ -256,7 +236,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            // PERINTAH UPSERT AJAIB
             const { error: upsertErr } = await supabaseClient
                 .from('sponsor_pitches')
                 .upsert(payload, { onConflict: 'pitch_slug' });
