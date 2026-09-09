@@ -10,47 +10,68 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* 🚀 FIX: Trik "Print Section Mirroring" + Konfigurasi Halaman A4 */
+        /* 🚀 FIX: Trik "Print Section Mirroring" + CSS Diet Whitespace (2 Halaman Pas) */
         @media screen {
             #printSection { display: none !important; }
         }
         
         @media print {
-            /* 1. Pengaturan Ukuran Kertas A4 Standar */
             @page {
-                size: A4;
-                margin: 15mm 20mm 15mm 20mm;
+                size: A4; /* Tetap deklarasikan A4 standar */
+                margin: 10mm 15mm 10mm 15mm; /* Perkecil margin kertas (Atas/Bawah jadi 10mm) */
             }
 
-            body { background: white !important; }
+            body { 
+                background: white !important; 
+                font-size: 9.5pt !important; 
+                line-height: 1.25 !important;
+                color: #000 !important;
+            }
+            
             body > *:not(#printSection) { display: none !important; }
             
             #printSection { 
                 display: block !important; 
                 visibility: visible !important; 
                 width: 100%;
-                color: black !important;
-                padding: 1cm;
                 font-family: "Times New Roman", Times, serif !important;
-                /* Sedikit memperkecil font agar lebih muat di A4 */
-                font-size: 11pt; 
-                line-height: 1.4;
             }
             
             #printSection * { visibility: visible !important; }
 
-            /* 2. Cegah judul terpisah dari paragrafnya saat berganti halaman PDF */
-            h1, h2, h3, h4, .pasal-title { page-break-after: avoid; }
-            p, li, table { page-break-inside: auto; }
-
-            /* 3. Paksa elemen pembatas untuk selalu mulai di halaman 2 */
-            .halaman-dua {
-                page-break-before: always;
+            /* Pangkas habis margin/padding bawaan browser pada paragraf dan daftar */
+            #printSection p, #printSection li, #printSection div {
+                margin-top: 2px !important;
+                margin-bottom: 2px !important;
+                padding-top: 0 !important;
+                padding-bottom: 0 !important;
             }
 
-            /* 4. Amankan bagian Tanda Tangan agar tidak melorot dan terpotong */
+            /* Khusus untuk teks titik-titik nama/alamat agar tidak terlalu renggang */
+            #printSection table, #printSection .form-group, #printSection .row {
+                margin-bottom: 4px !important;
+            }
+
+            /* Perkecil spasi antar Judul Pasal */
+            #printSection h1, #printSection h2, #printSection h3, #printSection h4, #printSection .pasal-title {
+                margin-top: 6px !important;
+                margin-bottom: 4px !important;
+                font-size: 10.5pt !important;
+                text-align: center;
+                page-break-after: avoid;
+            }
+
+            #printSection p, #printSection li, #printSection table { page-break-inside: auto; }
+
+            /* Hapus pemaksa halaman otomatis agar alur teks mengalir alami */
+            .halaman-dua {
+                page-break-before: auto !important; 
+            }
+
+            /* Amankan bagian penutup dan tanda tangan agar wajib bersatu di akhir dokumen */
             .area-tanda-tangan {
-                page-break-inside: avoid;
+                page-break-inside: avoid !important;
+                margin-top: 15px !important;
             }
         }
     </style>
@@ -141,7 +162,7 @@
                 </div>
             </div>
 
-            <!-- Konten PKS -->
+            <!-- Konten PKS yang akan di-clone oleh JS -->
             <div id="printablePKS" class="p-8 md:p-16 overflow-y-auto bg-white text-black text-sm md:text-base leading-relaxed text-justify relative flex-1 hide-scrollbar">
                 
                 <div class="absolute inset-0 z-0 opacity-[0.03] pointer-events-none flex items-center justify-center no-print">
@@ -196,7 +217,6 @@
                         <li>PIHAK KEDUA mengatur waktu kerjanya secara mandiri (remote) dengan estimasi waktu 2 hingga 3 jam per hari, asalkan target harian terpenuhi dan laporan diserahkan sebelum pukul 21.00 WIB setiap harinya.</li>
                     </ol>
 
-                    <!-- 🚀 FIX: Elemen ini dipaksa pindah ke halaman 2 saat dicetak -->
                     <div class="halaman-dua mt-8 md:mt-0">
                         <h3 class="pasal-title font-bold text-center mb-2">PASAL 3<br>HONORARIUM & SISTEM PEMBAYARAN</h3>
                         <ol class="list-decimal pl-6 mb-6 space-y-1">
@@ -217,9 +237,8 @@
                             <li>PIHAK PERTAMA berhak memutuskan kerja sama ini secara sepihak dan seketika jika PIHAK KEDUA terbukti melakukan tindakan kecurangan (manipulasi laporan data), melanggar kerahasiaan data, atau tidak mencapai target minimal selama 3 (tiga) hari berturut-turut.</li>
                         </ol>
 
-                        <!-- 🚀 FIX: Kontainer tanda tangan dibungkus dengan page-break-inside avoid -->
                         <div class="area-tanda-tangan">
-                            <p class="mb-10">Demikian Perjanjian Kerja Sama ini dibuat dalam rangkap 2 (dua) bermaterai cukup, memiliki kekuatan hukum yang sama, dan ditandatangani oleh PARA PIHAK tanpa paksaan dari pihak manapun.</p>
+                            <p class="mb-10 mt-6">Demikian Perjanjian Kerja Sama ini dibuat dalam rangkap 2 (dua) bermaterai cukup, memiliki kekuatan hukum yang sama, dan ditandatangani oleh PARA PIHAK tanpa paksaan dari pihak manapun.</p>
 
                             <div class="flex justify-between items-start mt-8">
                                 <div class="text-center w-48">
