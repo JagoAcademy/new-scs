@@ -10,37 +10,31 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* 🚀 FIX: Pengaturan Cetak A4 Khusus untuk PKS (Anti Blank) */
+        /* 🚀 FIX: Trik "Print Section Mirroring" Paling Aman */
+        @media screen {
+            #printSection { display: none !important; }
+        }
+        
         @media print {
             body { background: white !important; }
-            body * { visibility: hidden; }
             
-            /* Sembunyikan semua elemen modal agar tidak memblokir render print */
-            #loginScreen, #mainApp, #modalAlurKerja, .no-print { display: none !important; }
+            /* Sembunyikan SEMUA elemen root selain area cetak */
+            body > *:not(#printSection) { display: none !important; }
             
-            #modalPKS { 
-                position: absolute; 
-                left: 0; 
-                top: 0; 
+            #printSection { 
+                display: block !important; 
+                visibility: visible !important; 
                 width: 100%;
-                background: white !important;
+                color: black !important;
+                padding: 1cm;
+                font-family: "Times New Roman", Times, serif !important;
             }
             
-            /* Bebaskan batasan tinggi dan scroll saat dicetak */
-            #printablePKS { 
-                visibility: visible; 
-                position: absolute; 
-                left: 0; 
-                top: 0; 
-                width: 100%; 
-                height: auto !important;
-                overflow: visible !important;
-                background: white !important; 
-                color: black !important; 
-                padding: 1cm; 
-                font-family: "Times New Roman", Times, serif;
-            }
-            #printablePKS * { visibility: visible; }
+            #printSection * { visibility: visible !important; }
+
+            /* Cegah judul terpisah dari paragrafnya saat berganti halaman PDF */
+            h1, h2, h3, .pasal-title { page-break-after: avoid; }
+            p, li, table { page-break-inside: auto; }
         }
     </style>
 </head>
@@ -119,22 +113,22 @@
     <!-- 🚀 MODAL SURAT PERJANJIAN KERJA SAMA (PKS) -->
     <div id="modalPKS" class="fixed inset-0 z-[160] bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4 md:p-8 transition-opacity">
         <div class="bg-white text-slate-900 rounded-sm w-full max-w-4xl shadow-2xl relative overflow-hidden flex flex-col max-h-full font-serif border border-slate-300">
-            <!-- Header Modal (Sembunyi saat Print) -->
-            <div class="bg-slate-100 p-4 border-b border-slate-300 flex justify-between items-center no-print shrink-0">
+            <!-- Header Modal -->
+            <div class="bg-slate-100 p-4 border-b border-slate-300 flex justify-between items-center shrink-0">
                 <h2 class="font-bold text-slate-800 font-sans flex items-center gap-2"><span>📄</span> Draf Perjanjian Kerja Sama (PKS)</h2>
                 <div class="flex items-center gap-3">
-                    <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white font-sans font-bold px-4 py-2 rounded-md text-xs shadow-sm flex items-center gap-1.5 transition-colors">
+                    <!-- 🚀 FIX: Ubah jadi jalankan JS fungsi printDraftPKS() -->
+                    <button onclick="printDraftPKS()" class="bg-blue-600 hover:bg-blue-700 text-white font-sans font-bold px-4 py-2 rounded-md text-xs shadow-sm flex items-center gap-1.5 transition-colors">
                         🖨️ Cetak / PDF
                     </button>
                     <button onclick="document.getElementById('modalPKS').classList.add('hidden')" class="text-slate-500 hover:text-red-500 font-black text-2xl transition-colors w-8 h-8 flex items-center justify-center font-sans">&times;</button>
                 </div>
             </div>
 
-            <!-- Area yang di-Print (A4 Style) -->
+            <!-- Konten PKS yang akan di-clone oleh JS -->
             <div id="printablePKS" class="p-8 md:p-16 overflow-y-auto bg-white text-black text-sm md:text-base leading-relaxed text-justify relative flex-1 hide-scrollbar">
                 
-                <!-- Watermark Background Print -->
-                <div class="absolute inset-0 z-0 opacity-[0.03] pointer-events-none flex items-center justify-center no-print">
+                <div class="absolute inset-0 z-0 opacity-[0.03] pointer-events-none flex items-center justify-center">
                     <img src="/images/f1logo.png" class="w-2/3 grayscale">
                 </div>
 
@@ -145,7 +139,6 @@
 
                     <p class="mb-4">Pada hari ini, ...................., tanggal ...................., bulan ...................., tahun ...................., bertempat di ...................., yang bertandatangan di bawah ini:</p>
 
-                    <!-- Pihak Pertama -->
                     <div class="mb-4 flex">
                         <div class="w-6 shrink-0"><strong>1.</strong></div>
                         <div class="flex-1">
@@ -156,7 +149,6 @@
                         </div>
                     </div>
 
-                    <!-- Pihak Kedua -->
                     <div class="mb-6 flex">
                         <div class="w-6 shrink-0"><strong>2.</strong></div>
                         <div class="flex-1">
@@ -169,7 +161,7 @@
 
                     <p class="mb-6"><strong>PIHAK PERTAMA</strong> dan <strong>PIHAK KEDUA</strong> secara bersama-sama disebut sebagai PARA PIHAK. PARA PIHAK sepakat untuk mengikatkan diri dalam Perjanjian Kerja Sama Berbasis Proyek dengan ketentuan sebagai berikut:</p>
 
-                    <h3 class="font-bold text-center mb-2">PASAL 1<br>RUANG LINGKUP PEKERJAAN</h3>
+                    <h3 class="pasal-title font-bold text-center mb-2 mt-4">PASAL 1<br>RUANG LINGKUP PEKERJAAN</h3>
                     <p class="mb-4">PIHAK KEDUA bersedia menerima penugasan dari PIHAK PERTAMA untuk melaksanakan pekerjaan secara remote (WFH) yang meliputi:</p>
                     <ol class="list-decimal pl-6 mb-6 space-y-1">
                         <li><strong>Data Scraping:</strong> Mencari, memvalidasi, dan mengumpulkan data kontak (Instagram, TikTok, Facebook, atau WhatsApp) dari Klub Renang Grassroot (Non-Afiliasi), sekolah, atau EO lomba di wilayah target.</li>
@@ -177,7 +169,7 @@
                         <li><strong>Pelaporan:</strong> Memasukkan seluruh data hasil kerja ke dalam sistem WFH Tracker yang telah disediakan PIHAK PERTAMA secara harian.</li>
                     </ol>
 
-                    <h3 class="font-bold text-center mb-2">PASAL 2<br>TARGET HARIAN & SISTEM KERJA</h3>
+                    <h3 class="pasal-title font-bold text-center mb-2 mt-4">PASAL 2<br>TARGET HARIAN & SISTEM KERJA</h3>
                     <ol class="list-decimal pl-6 mb-6 space-y-1">
                         <li>Perjanjian ini berbasis proyek harian yang fleksibel dengan target kuantitas yang wajib dipenuhi oleh PIHAK KEDUA sebagai berikut:
                             <ul class="list-[lower-alpha] pl-5 mt-1">
@@ -188,20 +180,20 @@
                         <li>PIHAK KEDUA mengatur waktu kerjanya secara mandiri (remote) dengan estimasi waktu 2 hingga 3 jam per hari, asalkan target harian terpenuhi dan laporan diserahkan sebelum pukul 21.00 WIB setiap harinya.</li>
                     </ol>
 
-                    <h3 class="font-bold text-center mb-2">PASAL 3<br>HONORARIUM & SISTEM PEMBAYARAN</h3>
+                    <h3 class="pasal-title font-bold text-center mb-2 mt-4">PASAL 3<br>HONORARIUM & SISTEM PEMBAYARAN</h3>
                     <ol class="list-decimal pl-6 mb-6 space-y-1">
                         <li>PIHAK PERTAMA akan memberikan kompensasi kepada PIHAK KEDUA sebesar Rp20.000,- (Dua Puluh Ribu Rupiah) per hari kerja yang berhasil diselesaikan sesuai target Pasal 2.</li>
                         <li>Pembayaran honorarium akan diakumulasikan dan dibayarkan secara berkala melalui transfer bank ke rekening PIHAK KEDUA yang sah.</li>
                         <li>Jika PIHAK KEDUA tidak memenuhi target harian atau tidak menyerahkan laporan tanpa alasan yang sah, PIHAK PERTAMA berhak memotong honorarium hari tersebut secara proporsional.</li>
                     </ol>
 
-                    <h3 class="font-bold text-center mb-2">PASAL 4<br>KEAMANAN DATA & KERAHASIAAN</h3>
+                    <h3 class="pasal-title font-bold text-center mb-2 mt-4">PASAL 4<br>KEAMANAN DATA & KERAHASIAAN</h3>
                     <ol class="list-decimal pl-6 mb-6 space-y-1">
                         <li>PIHAK KEDUA wajib menjaga kerahasiaan seluruh data atlet, data klub, strategi internal, dan informasi akses sistem F1 Swimming yang diperoleh selama bekerja.</li>
                         <li>Sesuai dengan regulasi perlindungan data yang berlaku (UU PDP), PIHAK KEDUA dilarang keras menyebarluaskan, memperbanyak, atau menyalahgunakan data kontak yang didapatkan untuk kepentingan di luar proyek F1 Swimming.</li>
                     </ol>
 
-                    <h3 class="font-bold text-center mb-2">PASAL 5<br>MASA BERLAKU & PEMUTUSAN HUBUNGAN KERJA</h3>
+                    <h3 class="pasal-title font-bold text-center mb-2 mt-4">PASAL 5<br>MASA BERLAKU & PEMUTUSAN HUBUNGAN KERJA</h3>
                     <ol class="list-decimal pl-6 mb-6 space-y-1">
                         <li>Perjanjian ini berlaku sejak tanggal ditandatangani sampai dengan proyek ini dinyatakan selesai oleh PIHAK PERTAMA.</li>
                         <li>PIHAK PERTAMA berhak memutuskan kerja sama ini secara sepihak dan seketika jika PIHAK KEDUA terbukti melakukan tindakan kecurangan (manipulasi laporan data), melanggar kerahasiaan data, atau tidak mencapai target minimal selama 3 (tiga) hari berturut-turut.</li>
@@ -209,7 +201,6 @@
 
                     <p class="mb-10">Demikian Perjanjian Kerja Sama ini dibuat dalam rangkap 2 (dua) bermaterai cukup, memiliki kekuatan hukum yang sama, dan ditandatangani oleh PARA PIHAK tanpa paksaan dari pihak manapun.</p>
 
-                    <!-- Tanda Tangan TTD -->
                     <div class="flex justify-between items-start mt-8">
                         <div class="text-center w-48">
                             <p class="mb-20"><strong>PIHAK PERTAMA,</strong><br>PT Teknologi Prestasi Indonesia</p>
@@ -224,7 +215,7 @@
                         </div>
                     </div>
                     
-                    <div class="text-center mt-12 text-[10px] text-slate-400 italic no-print font-sans">
+                    <div class="text-center mt-12 text-[10px] text-slate-400 italic font-sans">
                         Dokumen ini dihasilkan secara otomatis sebagai draf hukum operasional F1 Swimming 2026.
                     </div>
                 </div>
@@ -322,6 +313,24 @@
     <div id="toast" class="fixed bottom-5 right-5 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-2xl font-bold text-sm transform translate-y-20 opacity-0 transition-all duration-300 z-50">
         ✅ Data berhasil disimpan!
     </div>
+
+    <!-- 🚀 FIX: Kontainer Kosong Khusus untuk Mencetak (Print Mirroring) -->
+    <div id="printSection"></div>
+
+    <!-- 🚀 FIX: JavaScript Pemicu Trik Print Mirroring -->
+    <script>
+        function printDraftPKS() {
+            const pksContent = document.getElementById('printablePKS').innerHTML;
+            const printSection = document.getElementById('printSection');
+            
+            printSection.innerHTML = pksContent;
+            window.print();
+            
+            setTimeout(() => {
+                printSection.innerHTML = "";
+            }, 1000);
+        }
+    </script>
 
     <script type="module" src="/src/work.js"></script>
 </body>
