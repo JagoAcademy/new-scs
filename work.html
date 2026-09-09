@@ -10,22 +10,37 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Pengaturan Cetak A4 Khusus untuk PKS */
+        /* 🚀 FIX: Pengaturan Cetak A4 Khusus untuk PKS (Anti Blank) */
         @media print {
+            body { background: white !important; }
             body * { visibility: hidden; }
-            #printablePKS, #printablePKS * { visibility: visible; }
+            
+            /* Sembunyikan semua elemen modal agar tidak memblokir render print */
+            #loginScreen, #mainApp, #modalAlurKerja, .no-print { display: none !important; }
+            
+            #modalPKS { 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 100%;
+                background: white !important;
+            }
+            
+            /* Bebaskan batasan tinggi dan scroll saat dicetak */
             #printablePKS { 
+                visibility: visible; 
                 position: absolute; 
                 left: 0; 
                 top: 0; 
                 width: 100%; 
-                background: white; 
-                color: black; 
-                padding: 2cm; 
+                height: auto !important;
+                overflow: visible !important;
+                background: white !important; 
+                color: black !important; 
+                padding: 1cm; 
                 font-family: "Times New Roman", Times, serif;
             }
-            /* Sembunyikan elemen UI di dalam area print */
-            #printablePKS .no-print { display: none !important; }
+            #printablePKS * { visibility: visible; }
         }
     </style>
 </head>
@@ -56,7 +71,7 @@
                     <button type="button" onclick="document.getElementById('modalAlurKerja').classList.remove('hidden')" class="text-[11px] font-bold text-rose-400 hover:text-rose-300 transition-colors flex items-center gap-1.5 hover:underline underline-offset-4 bg-transparent border-none p-0 cursor-pointer">
                         📖 Alur Kerja
                     </button>
-                    <!-- 🚀 FIX: Ubah dari download jadi Buka Modal PKS -->
+                    <!-- Buka Modal PKS -->
                     <button type="button" onclick="document.getElementById('modalPKS').classList.remove('hidden')" class="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1.5 hover:underline underline-offset-4 bg-transparent border-none p-0 cursor-pointer">
                         📄 Buka PKS
                     </button>
@@ -99,6 +114,7 @@
             </div>
         </div>
     </div>
+    <!-- END MODAL -->
 
     <!-- 🚀 MODAL SURAT PERJANJIAN KERJA SAMA (PKS) -->
     <div id="modalPKS" class="fixed inset-0 z-[160] bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4 md:p-8 transition-opacity">
@@ -118,7 +134,7 @@
             <div id="printablePKS" class="p-8 md:p-16 overflow-y-auto bg-white text-black text-sm md:text-base leading-relaxed text-justify relative flex-1 hide-scrollbar">
                 
                 <!-- Watermark Background Print -->
-                <div class="absolute inset-0 z-0 opacity-[0.03] pointer-events-none flex items-center justify-center">
+                <div class="absolute inset-0 z-0 opacity-[0.03] pointer-events-none flex items-center justify-center no-print">
                     <img src="/images/f1logo.png" class="w-2/3 grayscale">
                 </div>
 
@@ -130,23 +146,25 @@
                     <p class="mb-4">Pada hari ini, ...................., tanggal ...................., bulan ...................., tahun ...................., bertempat di ...................., yang bertandatangan di bawah ini:</p>
 
                     <!-- Pihak Pertama -->
-                    <div class="mb-4">
-                        <table class="w-full">
-                            <tr><td class="w-6 align-top"><strong>1.</strong></td><td class="w-48 align-top">Nama Perusahaan / Induk</td><td class="w-4 align-top">:</td><td class="align-top font-bold">PT Teknologi Prestasi Indonesia (F1 Swimming)</td></tr>
-                            <tr><td></td><td class="align-top">Perwakilan / Jabatan</td><td class="align-top">:</td><td class="align-top"></td></tr>
-                            <tr><td></td><td class="align-top">Alamat</td><td class="align-top">:</td><td class="align-top"></td></tr>
-                        </table>
-                        <p class="ml-6 mt-1">Selanjutnya disebut sebagai <strong>PIHAK PERTAMA</strong> (Pemberi Kerja).</p>
+                    <div class="mb-4 flex">
+                        <div class="w-6 shrink-0"><strong>1.</strong></div>
+                        <div class="flex-1">
+                            <div class="flex mb-1"><div class="w-48 shrink-0">Nama Perusahaan / Induk</div><div class="w-4 shrink-0">:</div><div class="font-bold">PT Teknologi Prestasi Indonesia (F1 Swimming)</div></div>
+                            <div class="flex mb-1"><div class="w-48 shrink-0">Perwakilan / Jabatan</div><div class="w-4 shrink-0">:</div><div></div></div>
+                            <div class="flex mb-1"><div class="w-48 shrink-0">Alamat</div><div class="w-4 shrink-0">:</div><div></div></div>
+                            <p class="mt-2">Selanjutnya disebut sebagai <strong>PIHAK PERTAMA</strong> (Pemberi Kerja).</p>
+                        </div>
                     </div>
 
                     <!-- Pihak Kedua -->
-                    <div class="mb-6">
-                        <table class="w-full">
-                            <tr><td class="w-6 align-top"><strong>2.</strong></td><td class="w-48 align-top">Nama Lengkap</td><td class="w-4 align-top">:</td><td class="align-top border-b border-dotted border-black"></td></tr>
-                            <tr><td></td><td class="align-top">No. KTP/Identitas</td><td class="align-top">:</td><td class="align-top border-b border-dotted border-black"></td></tr>
-                            <tr><td></td><td class="align-top">Alamat Domisili</td><td class="align-top">:</td><td class="align-top border-b border-dotted border-black"></td></tr>
-                        </table>
-                        <p class="ml-6 mt-1">Selanjutnya disebut sebagai <strong>PIHAK KEDUA</strong> (Pekerja Remote).</p>
+                    <div class="mb-6 flex">
+                        <div class="w-6 shrink-0"><strong>2.</strong></div>
+                        <div class="flex-1">
+                            <div class="flex mb-1"><div class="w-48 shrink-0">Nama Lengkap</div><div class="w-4 shrink-0">:</div><div class="flex-1 border-b border-dotted border-black"></div></div>
+                            <div class="flex mb-1"><div class="w-48 shrink-0">No. KTP/Identitas</div><div class="w-4 shrink-0">:</div><div class="flex-1 border-b border-dotted border-black"></div></div>
+                            <div class="flex mb-1"><div class="w-48 shrink-0">Alamat Domisili</div><div class="w-4 shrink-0">:</div><div class="flex-1 border-b border-dotted border-black"></div></div>
+                            <p class="mt-2">Selanjutnya disebut sebagai <strong>PIHAK KEDUA</strong> (Pekerja Remote).</p>
+                        </div>
                     </div>
 
                     <p class="mb-6"><strong>PIHAK PERTAMA</strong> dan <strong>PIHAK KEDUA</strong> secara bersama-sama disebut sebagai PARA PIHAK. PARA PIHAK sepakat untuk mengikatkan diri dalam Perjanjian Kerja Sama Berbasis Proyek dengan ketentuan sebagai berikut:</p>
