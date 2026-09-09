@@ -10,15 +10,19 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* 🚀 FIX: Trik "Print Section Mirroring" Paling Aman */
+        /* 🚀 FIX: Trik "Print Section Mirroring" + Konfigurasi Halaman A4 */
         @media screen {
             #printSection { display: none !important; }
         }
         
         @media print {
+            /* 1. Pengaturan Ukuran Kertas A4 Standar */
+            @page {
+                size: A4;
+                margin: 15mm 20mm 15mm 20mm;
+            }
+
             body { background: white !important; }
-            
-            /* Sembunyikan SEMUA elemen root selain area cetak */
             body > *:not(#printSection) { display: none !important; }
             
             #printSection { 
@@ -28,13 +32,26 @@
                 color: black !important;
                 padding: 1cm;
                 font-family: "Times New Roman", Times, serif !important;
+                /* Sedikit memperkecil font agar lebih muat di A4 */
+                font-size: 11pt; 
+                line-height: 1.4;
             }
             
             #printSection * { visibility: visible !important; }
 
-            /* Cegah judul terpisah dari paragrafnya saat berganti halaman PDF */
-            h1, h2, h3, .pasal-title { page-break-after: avoid; }
+            /* 2. Cegah judul terpisah dari paragrafnya saat berganti halaman PDF */
+            h1, h2, h3, h4, .pasal-title { page-break-after: avoid; }
             p, li, table { page-break-inside: auto; }
+
+            /* 3. Paksa elemen pembatas untuk selalu mulai di halaman 2 */
+            .halaman-dua {
+                page-break-before: always;
+            }
+
+            /* 4. Amankan bagian Tanda Tangan agar tidak melorot dan terpotong */
+            .area-tanda-tangan {
+                page-break-inside: avoid;
+            }
         }
     </style>
 </head>
@@ -117,7 +134,6 @@
             <div class="bg-slate-100 p-4 border-b border-slate-300 flex justify-between items-center shrink-0">
                 <h2 class="font-bold text-slate-800 font-sans flex items-center gap-2"><span>📄</span> Draf Perjanjian Kerja Sama (PKS)</h2>
                 <div class="flex items-center gap-3">
-                    <!-- 🚀 FIX: Ubah jadi jalankan JS fungsi printDraftPKS() -->
                     <button onclick="printDraftPKS()" class="bg-blue-600 hover:bg-blue-700 text-white font-sans font-bold px-4 py-2 rounded-md text-xs shadow-sm flex items-center gap-1.5 transition-colors">
                         🖨️ Cetak / PDF
                     </button>
@@ -125,10 +141,10 @@
                 </div>
             </div>
 
-            <!-- Konten PKS yang akan di-clone oleh JS -->
+            <!-- Konten PKS -->
             <div id="printablePKS" class="p-8 md:p-16 overflow-y-auto bg-white text-black text-sm md:text-base leading-relaxed text-justify relative flex-1 hide-scrollbar">
                 
-                <div class="absolute inset-0 z-0 opacity-[0.03] pointer-events-none flex items-center justify-center">
+                <div class="absolute inset-0 z-0 opacity-[0.03] pointer-events-none flex items-center justify-center no-print">
                     <img src="/images/f1logo.png" class="w-2/3 grayscale">
                 </div>
 
@@ -180,44 +196,51 @@
                         <li>PIHAK KEDUA mengatur waktu kerjanya secara mandiri (remote) dengan estimasi waktu 2 hingga 3 jam per hari, asalkan target harian terpenuhi dan laporan diserahkan sebelum pukul 21.00 WIB setiap harinya.</li>
                     </ol>
 
-                    <h3 class="pasal-title font-bold text-center mb-2 mt-4">PASAL 3<br>HONORARIUM & SISTEM PEMBAYARAN</h3>
-                    <ol class="list-decimal pl-6 mb-6 space-y-1">
-                        <li>PIHAK PERTAMA akan memberikan kompensasi kepada PIHAK KEDUA sebesar Rp20.000,- (Dua Puluh Ribu Rupiah) per hari kerja yang berhasil diselesaikan sesuai target Pasal 2.</li>
-                        <li>Pembayaran honorarium akan diakumulasikan dan dibayarkan secara berkala melalui transfer bank ke rekening PIHAK KEDUA yang sah.</li>
-                        <li>Jika PIHAK KEDUA tidak memenuhi target harian atau tidak menyerahkan laporan tanpa alasan yang sah, PIHAK PERTAMA berhak memotong honorarium hari tersebut secara proporsional.</li>
-                    </ol>
+                    <!-- 🚀 FIX: Elemen ini dipaksa pindah ke halaman 2 saat dicetak -->
+                    <div class="halaman-dua mt-8 md:mt-0">
+                        <h3 class="pasal-title font-bold text-center mb-2">PASAL 3<br>HONORARIUM & SISTEM PEMBAYARAN</h3>
+                        <ol class="list-decimal pl-6 mb-6 space-y-1">
+                            <li>PIHAK PERTAMA akan memberikan kompensasi kepada PIHAK KEDUA sebesar Rp20.000,- (Dua Puluh Ribu Rupiah) per hari kerja yang berhasil diselesaikan sesuai target Pasal 2.</li>
+                            <li>Pembayaran honorarium akan diakumulasikan dan dibayarkan secara berkala melalui transfer bank ke rekening PIHAK KEDUA yang sah.</li>
+                            <li>Jika PIHAK KEDUA tidak memenuhi target harian atau tidak menyerahkan laporan tanpa alasan yang sah, PIHAK PERTAMA berhak memotong honorarium hari tersebut secara proporsional.</li>
+                        </ol>
 
-                    <h3 class="pasal-title font-bold text-center mb-2 mt-4">PASAL 4<br>KEAMANAN DATA & KERAHASIAAN</h3>
-                    <ol class="list-decimal pl-6 mb-6 space-y-1">
-                        <li>PIHAK KEDUA wajib menjaga kerahasiaan seluruh data atlet, data klub, strategi internal, dan informasi akses sistem F1 Swimming yang diperoleh selama bekerja.</li>
-                        <li>Sesuai dengan regulasi perlindungan data yang berlaku (UU PDP), PIHAK KEDUA dilarang keras menyebarluaskan, memperbanyak, atau menyalahgunakan data kontak yang didapatkan untuk kepentingan di luar proyek F1 Swimming.</li>
-                    </ol>
+                        <h3 class="pasal-title font-bold text-center mb-2 mt-4">PASAL 4<br>KEAMANAN DATA & KERAHASIAAN</h3>
+                        <ol class="list-decimal pl-6 mb-6 space-y-1">
+                            <li>PIHAK KEDUA wajib menjaga kerahasiaan seluruh data atlet, data klub, strategi internal, dan informasi akses sistem F1 Swimming yang diperoleh selama bekerja.</li>
+                            <li>Sesuai dengan regulasi perlindungan data yang berlaku (UU PDP), PIHAK KEDUA dilarang keras menyebarluaskan, memperbanyak, atau menyalahgunakan data kontak yang didapatkan untuk kepentingan di luar proyek F1 Swimming.</li>
+                        </ol>
 
-                    <h3 class="pasal-title font-bold text-center mb-2 mt-4">PASAL 5<br>MASA BERLAKU & PEMUTUSAN HUBUNGAN KERJA</h3>
-                    <ol class="list-decimal pl-6 mb-6 space-y-1">
-                        <li>Perjanjian ini berlaku sejak tanggal ditandatangani sampai dengan proyek ini dinyatakan selesai oleh PIHAK PERTAMA.</li>
-                        <li>PIHAK PERTAMA berhak memutuskan kerja sama ini secara sepihak dan seketika jika PIHAK KEDUA terbukti melakukan tindakan kecurangan (manipulasi laporan data), melanggar kerahasiaan data, atau tidak mencapai target minimal selama 3 (tiga) hari berturut-turut.</li>
-                    </ol>
+                        <h3 class="pasal-title font-bold text-center mb-2 mt-4">PASAL 5<br>MASA BERLAKU & PEMUTUSAN HUBUNGAN KERJA</h3>
+                        <ol class="list-decimal pl-6 mb-6 space-y-1">
+                            <li>Perjanjian ini berlaku sejak tanggal ditandatangani sampai dengan proyek ini dinyatakan selesai oleh PIHAK PERTAMA.</li>
+                            <li>PIHAK PERTAMA berhak memutuskan kerja sama ini secara sepihak dan seketika jika PIHAK KEDUA terbukti melakukan tindakan kecurangan (manipulasi laporan data), melanggar kerahasiaan data, atau tidak mencapai target minimal selama 3 (tiga) hari berturut-turut.</li>
+                        </ol>
 
-                    <p class="mb-10">Demikian Perjanjian Kerja Sama ini dibuat dalam rangkap 2 (dua) bermaterai cukup, memiliki kekuatan hukum yang sama, dan ditandatangani oleh PARA PIHAK tanpa paksaan dari pihak manapun.</p>
+                        <!-- 🚀 FIX: Kontainer tanda tangan dibungkus dengan page-break-inside avoid -->
+                        <div class="area-tanda-tangan">
+                            <p class="mb-10">Demikian Perjanjian Kerja Sama ini dibuat dalam rangkap 2 (dua) bermaterai cukup, memiliki kekuatan hukum yang sama, dan ditandatangani oleh PARA PIHAK tanpa paksaan dari pihak manapun.</p>
 
-                    <div class="flex justify-between items-start mt-8">
-                        <div class="text-center w-48">
-                            <p class="mb-20"><strong>PIHAK PERTAMA,</strong><br>PT Teknologi Prestasi Indonesia</p>
-                            <div class="border-b border-black mb-1"></div>
-                            <p class="text-xs">Manajemen F1 Swimming</p>
-                        </div>
-                        
-                        <div class="text-center w-48">
-                            <p class="mb-20"><strong>PIHAK KEDUA,</strong><br>Pekerja Remote</p>
-                            <div class="border-b border-black mb-1"></div>
-                            <p class="text-xs">Nama Terang & Tanda Tangan</p>
+                            <div class="flex justify-between items-start mt-8">
+                                <div class="text-center w-48">
+                                    <p class="mb-20"><strong>PIHAK PERTAMA,</strong><br>PT Teknologi Prestasi Indonesia</p>
+                                    <div class="border-b border-black mb-1"></div>
+                                    <p class="text-xs">Manajemen F1 Swimming</p>
+                                </div>
+                                
+                                <div class="text-center w-48">
+                                    <p class="mb-20"><strong>PIHAK KEDUA,</strong><br>Pekerja Remote</p>
+                                    <div class="border-b border-black mb-1"></div>
+                                    <p class="text-xs">Nama Terang & Tanda Tangan</p>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-12 text-[10px] text-slate-400 italic font-sans no-print">
+                                Dokumen ini dihasilkan secara otomatis sebagai draf hukum operasional F1 Swimming 2026.
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="text-center mt-12 text-[10px] text-slate-400 italic font-sans">
-                        Dokumen ini dihasilkan secara otomatis sebagai draf hukum operasional F1 Swimming 2026.
-                    </div>
+
                 </div>
             </div>
         </div>
