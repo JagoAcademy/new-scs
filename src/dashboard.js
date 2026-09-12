@@ -1358,6 +1358,7 @@ if (btnSaveEvent) {
         }
     });
 }
+medali: document.getElementById('mtMedali').value || null
 
 document.addEventListener('DOMContentLoaded', () => {
     let clickCount = 0;

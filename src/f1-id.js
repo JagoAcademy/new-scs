@@ -84,7 +84,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function renderProfile(atlet) {
     document.getElementById('atletName').innerText = atlet.full_name;
-    document.getElementById('atletKlub').innerText = atlet.clubs?.club_name || 'Independen / Sekolah';
+    
+    // 🚀 FIX: Trik Growth Hack! Kalau klubnya NULL, tampilkan tulisan ini biar orang tua protes ke pelatih.
+    document.getElementById('atletKlub').innerHTML = atlet.clubs?.club_name 
+        ? `${atlet.clubs.club_name}` 
+        : '<span class="text-red-300">❌ Independen (Unattached)</span>';
 
     const f1IdEl = document.getElementById('atletF1Id');
     f1IdEl.innerText = atlet.f1_id;
@@ -103,15 +107,10 @@ function renderProfile(atlet) {
 
     const fotoEl = document.getElementById('atletFoto');
     let useDefaultLogo = false;
-
     const isOwner = atlet.clubs && (atlet.clubs.owner_id === currentUserId);
 
-    if (!atlet.foto_url) {
-        useDefaultLogo = true;
-    } 
-    else if (atlet.hide_foto && !isOwner) {
-        useDefaultLogo = true;
-    }
+    if (!atlet.foto_url) useDefaultLogo = true;
+    else if (atlet.hide_foto && !isOwner) useDefaultLogo = true;
 
     if (useDefaultLogo) {
         fotoEl.src = '/images/f1logo.png';
@@ -156,24 +155,62 @@ function renderProfile(atlet) {
     }
 }
 
+// 🚀 FIX: TARIK MEDALI OFFICIAL & UNOFFICIAL
 async function fetchMedals() {
     const listEl = document.getElementById('medaliList');
     try {
-        const { data, error } = await supabaseClient
+        // 1. Tarik dari event_leaderboard (Resmi)
+        const { data: offData, error: offErr } = await supabaseClient
             .from('event_leaderboard')
-            .select(`
-                *,
-                events (event_name)
-            `)
+            .select(`*, events (event_name)`)
             .ilike('nama_peserta', `%${currentAthleteName}%`)
-            .lte('peringkat', 3) 
-            .order('published_at', { ascending: false });
+            .lte('peringkat', 3);
 
-        if (error) throw error;
+        // 2. Tarik dari manual_results (Unofficial) yang isi kolom medalinya Emas/Perak/Perunggu
+        const { data: manData, error: manErr } = await supabaseClient
+            .from('manual_results')
+            .select('*')
+            .eq('f1_id', targetF1Id)
+            .not('medali', 'is', null)
+            .neq('medali', 'Peserta');
 
-        document.getElementById('totalMedali').innerText = `${data.length} Medali`;
+        const allMedals = [];
 
-        if (data.length === 0) {
+        if (offData) {
+            offData.forEach(m => {
+                allMedals.push({
+                    event_name: m.events?.event_name || 'Kejuaraan SCS',
+                    nomor_lomba: m.nomor_lomba,
+                    catatan_waktu: m.catatan_waktu,
+                    peringkat: m.peringkat,
+                    is_official: true,
+                    date: m.published_at || new Date().toISOString()
+                });
+            });
+        }
+
+        if (manData) {
+            manData.forEach(m => {
+                let rank = 3;
+                if (m.medali === 'Emas') rank = 1;
+                if (m.medali === 'Perak') rank = 2;
+
+                allMedals.push({
+                    event_name: m.event_name,
+                    nomor_lomba: m.nomor_lomba,
+                    catatan_waktu: m.waktu_string,
+                    peringkat: rank,
+                    is_official: false,
+                    date: m.event_date || new Date().toISOString()
+                });
+            });
+        }
+
+        allMedals.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        document.getElementById('totalMedali').innerText = `${allMedals.length} Medali`;
+
+        if (allMedals.length === 0) {
             listEl.innerHTML = `
                 <div class="text-center py-10">
                     <span class="text-5xl block mb-3 grayscale opacity-30">🎖️</span>
@@ -184,10 +221,14 @@ async function fetchMedals() {
         }
 
         let html = '';
-        data.forEach(medali => {
+        allMedals.forEach(medali => {
             let icon = '🥉'; let warna = 'text-orange-700 bg-orange-50 border-orange-200';
             if (medali.peringkat === 1) { icon = '🥇'; warna = 'text-amber-600 bg-amber-50 border-amber-200'; }
             if (medali.peringkat === 2) { icon = '🥈'; warna = 'text-slate-500 bg-slate-50 border-slate-200'; }
+
+            const badgeLomba = medali.is_official 
+                ? `<span class="text-[9px] bg-blue-100 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded font-black tracking-widest uppercase shadow-sm">Official</span>`
+                : `<span class="text-[9px] bg-slate-100 text-slate-500 border border-slate-200 px-1.5 py-0.5 rounded font-black tracking-widest uppercase shadow-sm">Unofficial</span>`;
 
             html += `
                 <div class="p-4 md:p-5 flex items-center gap-4 hover:bg-slate-50 transition-colors">
@@ -195,11 +236,13 @@ async function fetchMedals() {
                         ${icon}
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h4 class="font-black text-slate-800 text-xs md:text-sm uppercase truncate">${medali.nomor_lomba}</h4>
-                        <p class="text-[10px] md:text-xs text-slate-500 font-bold mb-1 truncate">🏆 ${medali.events?.event_name || 'Kejuaraan SCS'}</p>
+                        <div class="flex items-center gap-2 mb-0.5">
+                            <h4 class="font-black text-slate-800 text-xs md:text-sm uppercase truncate">${medali.nomor_lomba}</h4>
+                            ${badgeLomba}
+                        </div>
+                        <p class="text-[10px] md:text-xs text-slate-500 font-bold mb-1 truncate">🏆 ${medali.event_name}</p>
                         <div class="flex items-center gap-2">
                             <span class="text-[9px] md:text-[10px] bg-sky-100 text-sky-800 px-2 py-0.5 rounded font-black tracking-wider shrink-0">⏱️ ${medali.catatan_waktu}</span>
-                            <span class="text-[9px] md:text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-bold shrink-0">${medali.kelompok_umur}</span>
                         </div>
                     </div>
                 </div>
@@ -213,11 +256,10 @@ async function fetchMedals() {
     }
 }
 
-// 🚀 FUNGSI BARU: TARIK DARI DUA TABEL (OFFICIAL & UNOFFICIAL)
+// 🚀 FIX: TARIK BEST TIME OFFICIAL & UNOFFICIAL
 async function fetchBestTimes() {
     const listEl = document.getElementById('bestTimeList');
     try {
-        // 1. Tarik waktu Resmi (Official) dari race_results
         const { data: officialData, error: offErr } = await supabaseClient
             .from('race_results')
             .select(`*, events (event_name)`)
@@ -226,19 +268,13 @@ async function fetchBestTimes() {
             .neq('waktu_string', 'DNS')
             .neq('waktu_string', 'NT');
 
-        if (offErr) throw offErr;
-
-        // 2. Tarik waktu Manual (Unofficial) dari manual_results
         const { data: manualData, error: manErr } = await supabaseClient
             .from('manual_results')
             .select('*')
             .eq('f1_id', targetF1Id);
 
-        if (manErr) throw manErr;
-
         const allTimes = [];
         
-        // Gabungkan Official
         if (officialData) {
             officialData.forEach(r => {
                 allTimes.push({
@@ -251,7 +287,6 @@ async function fetchBestTimes() {
             });
         }
 
-        // Gabungkan Unofficial
         if (manualData) {
             manualData.forEach(r => {
                 allTimes.push({
@@ -274,10 +309,8 @@ async function fetchBestTimes() {
             return;
         }
 
-        // Urutkan semua waktu dari yang TERCEPAT
         allTimes.sort((a, b) => a.time_seconds - b.time_seconds);
 
-        // Ambil waktu terbaik per nomor_lomba (karena sudah diurutkan, yang pertama masuk Map = waktu terbaik)
         const bestTimesMap = new Map();
         allTimes.forEach(race => {
             const key = race.nomor_lomba;
@@ -288,7 +321,6 @@ async function fetchBestTimes() {
 
         let html = '';
         bestTimesMap.forEach((best, nomor_lomba) => {
-            // Tentukan label badge (Biru untuk resmi, Abu-abu untuk manual)
             const badge = best.is_official 
                 ? `<span class="bg-blue-100 text-blue-700 border border-blue-200 text-[8px] font-black px-1.5 py-0.5 rounded tracking-widest uppercase">Official</span>`
                 : `<span class="bg-slate-100 text-slate-500 border border-slate-200 text-[8px] font-black px-1.5 py-0.5 rounded tracking-widest uppercase">Unofficial</span>`;
