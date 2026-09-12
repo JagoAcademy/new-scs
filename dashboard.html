@@ -13,7 +13,6 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* nion */
         @keyframes neon-merah-putih {
             0% {
                 box-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(239, 68, 68, 0.2);
@@ -38,7 +37,6 @@
     <!-- TOP NAV -->
     <nav class="bg-white shadow-sm p-3 md:p-4 flex justify-between items-center border-b sticky top-0 z-50">
         
-        <!-- KIRI: Logo Klub | SCS COMMAND CENTER | Toggle Desktop -->
         <div class="flex items-center gap-2 md:gap-3 overflow-hidden">
             <a href="#" class="shrink-0">
                 <img src="" id="clubLogoDisplay" alt="Club Logo" class="w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-200 shadow-sm object-cover bg-white">
@@ -49,7 +47,6 @@
                     SCS COMMAND CENTER
                 </h1>
                 
-                <!-- TOMBOL TOGGLE VIEW -->
                 <button id="btnToggleView" class="hidden md:flex items-center justify-center p-1.5 ml-1 bg-slate-100 hover:bg-blue-50 text-slate-500 hover:text-blue-600 rounded-md border border-slate-200 transition-colors shadow-sm" title="Toggle Desktop / Mobile View">
                     <svg id="iconDesktop" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                     <svg id="iconMobile" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
@@ -59,6 +56,12 @@
         
         <!-- KANAN: Desktop Menu -->
         <div class="hidden md:flex items-center gap-4">
+            <!-- 🚀 INBOX DESKTOP -->
+            <button id="btnOpenInboxDesktop" class="relative p-2 text-gray-400 hover:text-blue-900 transition-colors focus:outline-none" title="Kotak Masuk">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                <span id="inboxBadgeDesktop" class="absolute top-0 right-0 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
+            </button>
+
             <div class="relative group cursor-pointer">
                 <div class="flex items-center gap-2 bg-white hover:bg-gray-50 p-2 px-4 rounded-xl border border-gray-100 transition-colors shadow-sm">
                     <div class="text-right">
@@ -103,6 +106,11 @@
             <button id="closeMobileMenu" class="text-gray-400 hover:text-red-500 text-3xl font-bold">&times;</button>
         </div>
         <div class="flex flex-col flex-grow overflow-y-auto p-4 space-y-2">
+            <!-- 🚀 INBOX MOBILE -->
+            <button id="btnOpenInboxMobile" class="w-full text-left p-4 rounded-xl text-sm text-gray-700 hover:bg-blue-50 font-bold border border-gray-100 shadow-sm flex items-center justify-between">
+                <div class="flex items-center gap-3"><span>✉️</span> Kotak Masuk</div>
+                <span id="inboxBadgeMobile" class="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full hidden">0</span>
+            </button>
             <button id="mobileBtnEditProfil" class="w-full text-left p-4 rounded-xl text-sm text-gray-700 hover:bg-blue-50 font-bold border border-gray-100 shadow-sm flex items-center gap-3"><span>⚙️</span> Pengaturan Klub</button>
             <button class="w-full text-left p-4 rounded-xl text-sm text-gray-700 hover:bg-blue-50 font-bold border border-gray-100 shadow-sm flex items-center gap-3"><span>🏆</span> Rank Atlet</button>
             <button id="mobileBtnUpgradeTier" class="w-full text-left p-4 rounded-xl text-sm text-scsGold bg-blue-900 hover:bg-blue-800 font-bold shadow-md flex items-center gap-3"><span>🚀</span> Upgrade SCS Pro</button>
@@ -114,7 +122,6 @@
 
     <!-- CONTENT -->
     <div class="p-4 md:p-6 max-w-7xl mx-auto mt-2">
-        
         <!-- QUICK STATS BAR -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
             <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-blue-300 transition">
@@ -139,7 +146,6 @@
                 <div class="w-10 h-10 bg-yellow-50 rounded-full flex items-center justify-center text-xl group-hover:scale-110 transition">⚠️</div>
             </div>
             
-            <!-- GAMIFICATION POIN KLUB -->
             <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-purple-300 transition">
                 <div>
                     <div class="flex items-center gap-1 mb-1">
@@ -161,7 +167,6 @@
             </div>
         </div>
 
-        <!-- Aksi Cepat -->
         <h2 class="text-lg md:text-xl font-extrabold text-blue-900 mb-3 md:mb-4">Aksi Cepat Klub</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
             <button id="btnAddAthlete" class="bg-blue-900 text-white p-5 rounded-2xl text-left shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden group">
@@ -459,7 +464,6 @@
                     <label class="block text-sm font-bold text-gray-700 mb-1">Pas Foto Atlet (Opsional jika sudah ada)</label>
                     <input type="file" id="evFoto" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm file:bg-blue-100 file:text-blue-700 file:border-0 file:rounded file:px-2 file:py-1 file:font-bold hover:file:bg-blue-200">
                     
-                    <!-- FITUR PRIVASI -->
                     <label class="flex items-center gap-2 mt-3 cursor-pointer p-2.5 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors">
                         <input type="checkbox" id="evHideFoto" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
                         <span class="text-xs font-bold text-slate-700">🔒 Sembunyikan foto di profil publik (Privasi Anak)</span>
@@ -478,7 +482,7 @@
         </div>
     </div>
 
-    <!-- 🚀 NEW: MODAL CATATAN WAKTU MANUAL -->
+    <!-- 🚀 NEW: MODAL CATATAN WAKTU MANUAL (DENGAN MEDALI) -->
     <div id="modalManualTime" class="fixed inset-0 bg-black/60 z-[75] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 max-h-[95vh] flex flex-col">
             <div class="p-5 border-b border-gray-100 bg-emerald-50 flex justify-between items-center shrink-0">
@@ -553,6 +557,17 @@
                     <label class="block text-sm font-bold text-gray-700 mb-1">Catatan Waktu <span class="text-red-500">*</span></label>
                     <input type="text" id="mtWaktu" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-mono text-lg tracking-wider" placeholder="01:23.45">
                     <p class="text-[10px] text-gray-500 mt-1">Format: MM:SS.ms (Menit:Detik.Milidetik) atau SS.ms</p>
+                </div>
+
+                <!-- 🚀 FIX: DROPDOWN MEDALI DI MANUAL TIME (PELATIH) -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Medali (Opsional)</label>
+                    <select id="mtMedali" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm">
+                        <option value="">-- Hanya Catatan Waktu --</option>
+                        <option value="Emas">🥇 Emas (Juara 1)</option>
+                        <option value="Perak">🥈 Perak (Juara 2)</option>
+                        <option value="Perunggu">🥉 Perunggu (Juara 3)</option>
+                    </select>
                 </div>
 
                 <div id="mtStatusMsg" class="hidden text-sm font-bold text-center rounded-lg p-3"></div>
@@ -646,6 +661,22 @@
             
             <div class="p-5 bg-gray-50 border-t border-gray-100">
                 <button id="btnKirimTestimoni" class="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl hover:bg-indigo-700 transition shadow-lg">Kirim Testimoni 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🚀 NEW: MODAL KOTAK MASUK (INBOX KLUB) -->
+    <div id="modalInbox" class="fixed inset-0 bg-black/60 z-[95] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 max-h-[90vh] flex flex-col">
+            <div class="p-5 border-b border-gray-100 bg-blue-50 flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">✉️</span>
+                    <h3 class="font-extrabold text-blue-900 text-lg">Kotak Masuk Klub</h3>
+                </div>
+                <button id="closeModalInboxBtn" class="text-gray-400 hover:text-red-500 text-2xl font-bold transition">&times;</button>
+            </div>
+            <div class="p-0 overflow-y-auto hide-scrollbar flex-1 bg-slate-50" id="inboxList">
+                <div class="p-8 text-center text-gray-500 text-sm font-bold">Memuat pesan...</div>
             </div>
         </div>
     </div>

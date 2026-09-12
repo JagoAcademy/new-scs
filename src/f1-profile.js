@@ -132,21 +132,22 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const { data: clubs, error } = await supabaseClient
                 .from('clubs')
-                .select('id, club_name, logo_url, kota_asal')
+                .select('id, club_name, kota_asal')
                 .order('club_name', { ascending: true });
 
             if (error) throw error;
             registeredClubs = clubs || [];
 
+            // 🚀 FIX: Independen Naik Tahta & Ikon Klub Dihapus
             regClubSelect.innerHTML = `<option value="">-- Pilih Klub Renang Asal --</option>`;
+            regClubSelect.innerHTML += `<option value="UNATTACHED">❌ Independen (Klub Belum Terdaftar)</option>`;
+            
             registeredClubs.forEach(c => {
-                regClubSelect.innerHTML += `<option value="${c.id}">🏊‍♂️ ${c.club_name} (${c.kota_asal || 'Klub'})</option>`;
+                regClubSelect.innerHTML += `<option value="${c.id}">${c.club_name} (${c.kota_asal || 'Klub'})</option>`;
             });
-            // Opsi pemicu viral
-            regClubSelect.innerHTML += `<option value="UNATTACHED">❌ Klub Saya Belum Terdaftar di SCS (Independen)</option>`;
 
         } catch (err) {
-            regClubSelect.innerHTML = `<option value="UNATTACHED">❌ Klub Saya Belum Terdaftar (Independen)</option>`;
+            regClubSelect.innerHTML = `<option value="UNATTACHED">❌ Independen (Klub Belum Terdaftar)</option>`;
         }
     }
 
@@ -209,8 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            const targetClubId = clubVal === 'UNATTACHED' ? null : parseInt(clubVal);
-
+            // 🚀 FIX: SELALU PAKSA club_id = NULL & owner_id = NULL buat cegah bot tembus langsung
             const { error: insertErr } = await supabaseClient
                 .from('athletes')
                 .insert([{
@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     full_name: name,
                     dob: dob,
                     gender: gender,
-                    club_id: targetClubId,
+                    club_id: null, 
                     foto_url: uploadedFotoUrl,
                     history_lomba: historyArray,
                     is_verified: false,
@@ -232,6 +232,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw insertErr;
             }
 
+            // 🚀 JARING INBOX: Kalau pilih klub riil, tembak ke Inbox Klub-nya!
+            if (clubVal !== 'UNATTACHED') {
+                await supabaseClient.from('club_inbox').insert([{
+                    club_id: parseInt(clubVal),
+                    sender_name: name,
+                    message_type: 'KLAIM_ATLET',
+                    content: `Atlet baru atas nama ${name} (${generatedF1Id}) didaftarkan secara mandiri dan meminta untuk ditautkan ke klub Anda.`,
+                    related_f1_id: generatedF1Id
+                }]);
+            }
+
             if (eventName && waktu) {
                 let timeSeconds = 0;
                 if (waktu.includes(':')) {
@@ -241,7 +252,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     timeSeconds = parseFloat(waktu);
                 }
 
-                // 🚀 FIX: Masukkan juga kolom "medali" ke database!
                 await supabaseClient.from('manual_results').insert([{
                     f1_id: generatedF1Id,
                     event_name: eventName,
@@ -249,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     nomor_lomba: nomorLomba || "Gaya Bebas 50m",
                     waktu_string: waktu,
                     time_seconds: isNaN(timeSeconds) ? 0 : timeSeconds,
-                    medali: medali !== 'Peserta' ? medali : null // Kalau bukan juara, simpan sebagai null
+                    medali: medali !== 'Peserta' ? medali : null 
                 }]);
             }
 

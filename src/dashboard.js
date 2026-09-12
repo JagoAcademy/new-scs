@@ -244,6 +244,9 @@ Terima kasih.`);
             const jarak = document.getElementById('mtJarak').value;
             const waktu = document.getElementById('mtWaktu').value.trim();
             const statusMsg = document.getElementById('mtStatusMsg');
+            
+            // 🚀 FIX: Ditaruh aman di dalem fungsi click!
+            const medaliVal = document.getElementById('mtMedali').value; 
 
             if (!eventName || !eventDate || !prov || !kota || !gaya || !jarak || !waktu) {
                 statusMsg.innerText = "Semua kolom wajib diisi!";
@@ -281,7 +284,8 @@ Terima kasih.`);
                         event_date: eventDate,
                         nomor_lomba: nomorLomba,
                         waktu_string: waktu,
-                        time_seconds: timeSeconds
+                        time_seconds: timeSeconds,
+                        medali: medaliVal ? medaliVal : null
                     }]);
 
                 if (manualError) throw manualError;
@@ -307,8 +311,168 @@ Terima kasih.`);
         });
     }
 
+    // 🚀 EVENT LISTENER INBOX
+    const btnOpenInboxDesktop = document.getElementById('btnOpenInboxDesktop');
+    const btnOpenInboxMobile = document.getElementById('btnOpenInboxMobile');
+    const modalInbox = document.getElementById('modalInbox');
+    const closeModalInboxBtn = document.getElementById('closeModalInboxBtn');
+    
+    const openInboxHandler = () => {
+        if(modalInbox) {
+            modalInbox.classList.remove('hidden');
+            setTimeout(() => modalInbox.firstElementChild.classList.remove('scale-95'), 10);
+            fetchInbox(); // Tarik data pas diklik
+            
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+            if(mobileMenuOverlay && !mobileMenuOverlay.classList.contains('hidden')) {
+                document.getElementById('mobileMenuToggle').click(); 
+            }
+        }
+    };
+
+    if(btnOpenInboxDesktop) btnOpenInboxDesktop.addEventListener('click', openInboxHandler);
+    if(btnOpenInboxMobile) btnOpenInboxMobile.addEventListener('click', openInboxHandler);
+    
+    if(closeModalInboxBtn) {
+        closeModalInboxBtn.addEventListener('click', () => {
+            modalInbox.firstElementChild.classList.add('scale-95');
+            setTimeout(() => modalInbox.classList.add('hidden'), 200);
+        });
+    }
+
+    let clickCount = 0;
+    let clickTimer;
+
+    const secretBtn = document.getElementById('secretAdminTrigger');
+    
+    if(secretBtn) {
+        secretBtn.addEventListener('click', () => {
+            clickCount++;
+            clearTimeout(clickTimer);
+            
+            if (clickCount === 1) {
+                secretBtn.style.color = "#3b82f6"; 
+                secretBtn.style.transform = "scale(1.05)";
+            } 
+            else if (clickCount === 2) {
+                secretBtn.style.color = "#f59e0b"; 
+                secretBtn.style.transform = "scale(1.1)";
+            } 
+            else if (clickCount === 3) {
+                secretBtn.style.color = "#ef4444"; 
+                secretBtn.style.textShadow = "0 0 15px rgba(239,68,68,0.8)";
+                secretBtn.style.transform = "scale(1.2)";
+                
+                sessionStorage.setItem('aztec_key', 'buka_sesame');
+
+                setTimeout(() => {
+                    window.location.href = '/admin.html';
+                }, 500);
+                
+                clickCount = 0;
+                return;
+            }
+
+            clickTimer = setTimeout(() => {
+                clickCount = 0;
+                secretBtn.style.color = ""; 
+                secretBtn.style.transform = "scale(1)";
+                secretBtn.style.textShadow = "none";
+            }, 2000);
+        });
+    }
+
     fetchDashboardData();
 });
+
+// ==============================================================
+// 🚀 SISTEM KOTAK MASUK (INBOX) KLUB & PELATIH
+// ==============================================================
+async function fetchInbox() {
+    if (!currentClubId) return;
+    const { data, error } = await supabaseClient
+        .from('club_inbox')
+        .select('*')
+        .eq('club_id', currentClubId)
+        .order('created_at', { ascending: false });
+        
+    if (!error && data) {
+        const unread = data.filter(d => !d.is_read && !d.is_actioned).length;
+        const badgeD = document.getElementById('inboxBadgeDesktop');
+        const badgeM = document.getElementById('inboxBadgeMobile');
+        
+        if (unread > 0) {
+            const displayCount = unread > 99 ? '99+' : unread;
+            if (badgeD) { badgeD.innerText = displayCount; badgeD.classList.remove('hidden'); }
+            if (badgeM) { badgeM.innerText = displayCount; badgeM.classList.remove('hidden'); }
+        } else {
+            if (badgeD) badgeD.classList.add('hidden');
+            if (badgeM) badgeM.classList.add('hidden');
+        }
+        renderInbox(data);
+    }
+}
+
+function renderInbox(data) {
+    const container = document.getElementById('inboxList');
+    if (!container) return;
+    if (!data || data.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-gray-400 text-sm font-bold">Tidak ada pesan masuk.</div>`;
+        return;
+    }
+    
+    let html = '';
+    data.forEach(item => {
+        const dateStr = new Date(item.created_at).toLocaleDateString('id-ID');
+        let actionHtml = '';
+        
+        if (item.message_type === 'KLAIM_ATLET' && !item.is_actioned) {
+            actionHtml = `
+                <div class="flex gap-2 mt-3" id="actionInbox_${item.id}">
+                    <button onclick="window.approveAtlet('${item.id}', '${item.related_f1_id}')" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition">Terima & Tautkan</button>
+                    <button onclick="window.rejectAtlet('${item.id}')" class="bg-red-50 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-100 transition">Tolak</button>
+                </div>
+            `;
+        } else if (item.is_actioned) {
+            actionHtml = `<p class="mt-2 text-[10px] font-bold text-gray-400 uppercase">✅ Sudah diproses</p>`;
+        }
+        
+        html += `
+            <div class="p-4 border-b border-gray-100 bg-white hover:bg-slate-50 transition-colors ${!item.is_read && !item.is_actioned ? 'border-l-4 border-l-blue-500' : ''}">
+                <div class="flex justify-between items-start mb-1">
+                    <span class="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded uppercase tracking-wider">${item.message_type.replace('_', ' ')}</span>
+                    <span class="text-[10px] text-gray-400 font-bold">${dateStr}</span>
+                </div>
+                <p class="text-sm text-gray-700 font-medium leading-relaxed">${item.content}</p>
+                ${actionHtml}
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+}
+
+window.approveAtlet = async function(inboxId, f1Id) {
+    document.getElementById(`actionInbox_${inboxId}`).innerHTML = '<span class="text-xs text-blue-500 font-bold">Memproses...</span>';
+    
+    // 1. Kasih Hak Paten Atlet ke Klub dan Pelatih
+    const { data: userData } = await supabaseClient.auth.getUser();
+    const currentUserIdGlobal = userData?.user?.id;
+
+    const { error: err1 } = await supabaseClient.from('athletes').update({ club_id: currentClubId, owner_id: currentUserIdGlobal }).eq('f1_id', f1Id);
+    
+    // 2. Matikan notifikasi inbox
+    if (!err1) {
+        await supabaseClient.from('club_inbox').update({ is_actioned: true, is_read: true }).eq('id', inboxId);
+        fetchDashboardData(); 
+        fetchInbox();
+    }
+};
+
+window.rejectAtlet = async function(inboxId) {
+    document.getElementById(`actionInbox_${inboxId}`).innerHTML = '<span class="text-xs text-red-500 font-bold">Ditolak...</span>';
+    await supabaseClient.from('club_inbox').update({ is_actioned: true, is_read: true }).eq('id', inboxId);
+    fetchInbox();
+};
 
 async function fetchDashboardData() {
     try {
@@ -386,6 +550,9 @@ async function fetchDashboardData() {
 
         currentClubId = clubData.id; 
         currentClubData = clubData; 
+
+        // 🚀 TRIGGER INBOX FETCHER DISINI!
+        await fetchInbox();
 
         const displayName = clubData.short_name || clubData.club_name;
         
@@ -1358,7 +1525,6 @@ if (btnSaveEvent) {
         }
     });
 }
-medali: document.getElementById('mtMedali').value || null
 
 document.addEventListener('DOMContentLoaded', () => {
     let clickCount = 0;
