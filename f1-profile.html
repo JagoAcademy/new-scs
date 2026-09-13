@@ -72,7 +72,53 @@
         </div>
     </section>
 
-    <!-- 🚀 UI KILLER: MODAL MANDIRI BUAT F1-ID BARU OLEH ORANG TUA / ATLET -->
+    <!-- 🚀 FIX: BENEFIT SECTION YANG HILANG SUDAH DIKEMBALIKAN UTUH! -->
+    <section class="pb-16 md:pb-20 pt-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-extrabold text-slate-800">Kenapa F1 ID Sangat Penting?</h2>
+            <p class="mt-4 text-slate-500">Sistem yang dirancang untuk melindungi atlet dan memudahkan panitia.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
+            <!-- Benefit 1 -->
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex gap-6 hover:shadow-md hover:-translate-y-1 transition-all">
+                <div class="w-16 h-16 shrink-0 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-3xl">🛡️</div>
+                <div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Perlindungan Mutasi Klub</h3>
+                    <p class="text-slate-500 leading-relaxed text-sm">F1 ID secara resmi melekat pada klub asal atlet. Ini mencegah terjadinya pencurian atlet atau pendaftaran ilegal yang mengatasnamakan klub lain tanpa izin pelatih resmi.</p>
+                </div>
+            </div>
+
+            <!-- Benefit 2 -->
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex gap-6 hover:shadow-md hover:-translate-y-1 transition-all">
+                <div class="w-16 h-16 shrink-0 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl">📈</div>
+                <div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Histori Waktu (Best Time)</h3>
+                    <p class="text-slate-500 leading-relaxed text-sm">Tidak perlu lagi mencatat manual di buku. Setiap atlet bertanding di event SCS, catatan waktu terbaiknya otomatis tersimpan dan membentuk grafik progres yang bisa dipantau.</p>
+                </div>
+            </div>
+
+            <!-- Benefit 3 -->
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex gap-6 hover:shadow-md hover:-translate-y-1 transition-all">
+                <div class="w-16 h-16 shrink-0 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center text-3xl">🪪</div>
+                <div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Bebas Salah Input Data</h3>
+                    <p class="text-slate-500 leading-relaxed text-sm">Panitia tidak perlu lagi memverifikasi ulang akta kelahiran atau salah memasukkan nama di piagam. Saat mendaftar lomba, cukup masukkan F1 ID, biodata otomatis terisi.</p>
+                </div>
+            </div>
+
+            <!-- Benefit 4 -->
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex gap-6 hover:shadow-md hover:-translate-y-1 transition-all">
+                <div class="w-16 h-16 shrink-0 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-3xl">📜</div>
+                <div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Gudang E-Certificate</h3>
+                    <p class="text-slate-500 leading-relaxed text-sm">Sertifikat lomba tidak akan hilang atau rusak. Seluruh sertifikat keikutsertaan maupun piagam juara akan tersimpan rapi secara digital di dalam profil F1 ID atlet.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL MANDIRI BUAT F1-ID BARU OLEH ORANG TUA / ATLET -->
     <div id="modalCreateF1Id" class="fixed inset-0 bg-black/70 z-[100] hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 max-h-[92vh] flex flex-col">
             
@@ -122,7 +168,7 @@
                     </div>
                 </div>
 
-                <!-- 🚀 FIX: FORM LOMBA "SIMPAN & TAMBAH" ALA DASHBOARD -->
+                <!-- FORM LOMBA "SIMPAN & TAMBAH" -->
                 <div class="border-t border-slate-100 pt-3">
                     <div class="flex items-center justify-between mb-2">
                         <label class="text-xs font-black text-slate-600 uppercase tracking-wider">Histori Lomba (Opsional)</label>
@@ -147,15 +193,8 @@
                                 <option value="Kupu-Kupu">Gaya Kupu-Kupu</option>
                                 <option value="Ganti">Gaya Ganti</option>
                             </select>
-                            <select id="regJarak" class="w-full px-3 py-2.5 border border-blue-200 rounded-lg text-sm outline-none bg-white font-bold text-slate-700 shadow-sm">
-                                <option value="25m">Jarak 25m</option>
-                                <option value="50m">Jarak 50m</option>
-                                <option value="100m">Jarak 100m</option>
-                                <option value="200m">Jarak 200m</option>
-                                <option value="400m">Jarak 400m</option>
-                                <option value="800m">Jarak 800m</option>
-                                <option value="1500m">Jarak 1500m</option>
-                            </select>
+                            <!-- 🚀 FIX: Jarak Lomba Sekarang Jadi Free Fill Text -->
+                            <input type="text" id="regJarak" class="w-full px-3 py-2.5 border border-blue-200 rounded-lg text-sm outline-none bg-white font-bold text-slate-700 shadow-sm" placeholder="Jarak (misal: 33m, 50m)">
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <input type="text" id="regWaktu" class="w-full px-3 py-2.5 border border-blue-200 rounded-lg text-sm outline-none bg-white font-mono tracking-wider font-black text-blue-700 shadow-sm" placeholder="Waktu 00:32.17">

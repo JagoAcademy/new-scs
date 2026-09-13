@@ -56,7 +56,7 @@
         
         <!-- KANAN: Desktop Menu -->
         <div class="hidden md:flex items-center gap-4">
-            <!-- 🚀 INBOX DESKTOP -->
+            <!-- INBOX DESKTOP -->
             <button id="btnOpenInboxDesktop" class="relative p-2 text-gray-400 hover:text-blue-900 transition-colors focus:outline-none" title="Kotak Masuk">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                 <span id="inboxBadgeDesktop" class="absolute top-0 right-0 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
@@ -106,7 +106,7 @@
             <button id="closeMobileMenu" class="text-gray-400 hover:text-red-500 text-3xl font-bold">&times;</button>
         </div>
         <div class="flex flex-col flex-grow overflow-y-auto p-4 space-y-2">
-            <!-- 🚀 INBOX MOBILE -->
+            <!-- INBOX MOBILE -->
             <button id="btnOpenInboxMobile" class="w-full text-left p-4 rounded-xl text-sm text-gray-700 hover:bg-blue-50 font-bold border border-gray-100 shadow-sm flex items-center justify-between">
                 <div class="flex items-center gap-3"><span>✉️</span> Kotak Masuk</div>
                 <span id="inboxBadgeMobile" class="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full hidden">0</span>
@@ -122,7 +122,6 @@
 
     <!-- CONTENT -->
     <div class="p-4 md:p-6 max-w-7xl mx-auto mt-2">
-        <!-- QUICK STATS BAR -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
             <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-blue-300 transition">
                 <div>
@@ -203,7 +202,6 @@
             </button>
         </div>
 
-        <!-- CONTAINER DAFTAR EVENT -->
         <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden mb-10">
             <div class="p-5 md:p-6 border-b border-gray-100 bg-emerald-50/50 flex items-center gap-3">
                 <span class="text-2xl">🏆</span>
@@ -217,7 +215,6 @@
             </div>
         </div>
 
-        <!-- TABEL DATABASE ATLET -->
         <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden mb-10">
             <div class="p-5 md:p-6 border-b border-gray-100 bg-gray-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
@@ -482,7 +479,7 @@
         </div>
     </div>
 
-    <!-- 🚀 NEW: MODAL CATATAN WAKTU MANUAL (DENGAN MEDALI) -->
+    <!-- MODAL CATATAN WAKTU MANUAL (DENGAN MEDALI) -->
     <div id="modalManualTime" class="fixed inset-0 bg-black/60 z-[75] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 max-h-[95vh] flex flex-col">
             <div class="p-5 border-b border-gray-100 bg-emerald-50 flex justify-between items-center shrink-0">
@@ -541,15 +538,8 @@
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">Jarak <span class="text-red-500">*</span></label>
-                        <select id="mtJarak" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm">
-                            <option value="25m">25m</option>
-                            <option value="50m">50m</option>
-                            <option value="100m">100m</option>
-                            <option value="200m">200m</option>
-                            <option value="400m">400m</option>
-                            <option value="800m">800m</option>
-                            <option value="1500m">1500m</option>
-                        </select>
+                        <!-- 🚀 FIX: Jarak Free Fill di Dashboard Pelatih -->
+                        <input type="text" id="mtJarak" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm" placeholder="Contoh: 33m, 50m">
                     </div>
                 </div>
 
@@ -559,7 +549,6 @@
                     <p class="text-[10px] text-gray-500 mt-1">Format: MM:SS.ms (Menit:Detik.Milidetik) atau SS.ms</p>
                 </div>
 
-                <!-- 🚀 FIX: DROPDOWN MEDALI DI MANUAL TIME (PELATIH) -->
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-1">Medali (Opsional)</label>
                     <select id="mtMedali" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm">
@@ -665,7 +654,7 @@
         </div>
     </div>
 
-    <!-- 🚀 NEW: MODAL KOTAK MASUK (INBOX KLUB) -->
+    <!-- MODAL KOTAK MASUK (INBOX KLUB) -->
     <div id="modalInbox" class="fixed inset-0 bg-black/60 z-[95] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 max-h-[90vh] flex flex-col">
             <div class="p-5 border-b border-gray-100 bg-blue-50 flex justify-between items-center shrink-0">
