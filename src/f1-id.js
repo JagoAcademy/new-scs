@@ -80,15 +80,68 @@ document.addEventListener('DOMContentLoaded', async () => {
         contentBestTime.classList.remove('hidden');
         contentPencapaian.classList.add('hidden');
     });
+
+    // 🚀 FIX: FUNGSI DOWNLOAD CARD
+    const btnDownload = document.getElementById('btnDownloadCard');
+    if (btnDownload) {
+        btnDownload.addEventListener('click', async () => {
+            const card = document.getElementById('digitalIdCardWrapper'); 
+            if (!card) return;
+            
+            try {
+                btnDownload.innerHTML = `<span class="animate-spin text-sm">🔄</span> <span class="text-sm">Memproses...</span>`;
+                
+                // Gunakan html2canvas untuk menjepret elemen
+                const canvas = await html2canvas(card, {
+                    scale: 2, 
+                    useCORS: true,
+                    backgroundColor: null 
+                });
+                
+                const link = document.createElement('a');
+                link.download = `F1-ID_${targetF1Id}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } catch (err) {
+                alert('Gagal mendownload ID Card. Silakan coba lagi.');
+                console.error(err);
+            } finally {
+                btnDownload.innerHTML = `<img src="104685.ico" class="w-5 h-5 object-contain"><span class="text-sm">Download</span>`;
+            }
+        });
+    }
+
+    // 🚀 FIX: FUNGSI SHARE PROFILE
+    const btnShare = document.getElementById('btnShareProfile');
+    if (btnShare) {
+        btnShare.addEventListener('click', async () => {
+            const shareData = {
+                title: `F1 ID - ${currentAthleteName}`,
+                text: `Cek profil, sertifikat, dan catatan rekor F1 ID renang ${currentAthleteName}!`,
+                url: window.location.href
+            };
+            
+            try {
+                if (navigator.share) {
+                    await navigator.share(shareData);
+                } else {
+                    await navigator.clipboard.writeText(window.location.href);
+                    alert('Link F1 ID berhasil disalin ke clipboard! Silakan paste (tempel) untuk membagikannya.');
+                }
+            } catch (err) {
+                console.log('User cancelled share or error:', err);
+            }
+        });
+    }
 });
 
 function renderProfile(atlet) {
     document.getElementById('atletName').innerText = atlet.full_name;
     
-    // 🚀 FIX: Trik Growth Hack! Kalau klubnya NULL, tampilkan tulisan ini biar orang tua protes ke pelatih.
+    // 🚀 FIX: Unattached Club Text
     document.getElementById('atletKlub').innerHTML = atlet.clubs?.club_name 
         ? `${atlet.clubs.club_name}` 
-        : '<span class="text-red-300">❌ Independen (Unattached)</span>';
+        : '<span class="text-red-300">❌ Unattached Club</span>';
 
     const f1IdEl = document.getElementById('atletF1Id');
     f1IdEl.innerText = atlet.f1_id;
@@ -155,18 +208,15 @@ function renderProfile(atlet) {
     }
 }
 
-// 🚀 FIX: TARIK MEDALI OFFICIAL & UNOFFICIAL
 async function fetchMedals() {
     const listEl = document.getElementById('medaliList');
     try {
-        // 1. Tarik dari event_leaderboard (Resmi)
         const { data: offData, error: offErr } = await supabaseClient
             .from('event_leaderboard')
             .select(`*, events (event_name)`)
             .ilike('nama_peserta', `%${currentAthleteName}%`)
             .lte('peringkat', 3);
 
-        // 2. Tarik dari manual_results (Unofficial) yang isi kolom medalinya Emas/Perak/Perunggu
         const { data: manData, error: manErr } = await supabaseClient
             .from('manual_results')
             .select('*')
@@ -256,7 +306,6 @@ async function fetchMedals() {
     }
 }
 
-// 🚀 FIX: TARIK BEST TIME OFFICIAL & UNOFFICIAL
 async function fetchBestTimes() {
     const listEl = document.getElementById('bestTimeList');
     try {

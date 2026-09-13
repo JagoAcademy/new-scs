@@ -8,6 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil F1 ID | SCS</title>
     <link rel="stylesheet" href="/src/style.css">
+    
+    <!-- 🚀 FIX: Library untuk Download Card jadi Gambar -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <style>
         .bg-pattern {
             background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
@@ -16,7 +20,6 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Animasi Sponsor */
         @keyframes sponsorGlow {
             0% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.2); }
             50% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.6); }
@@ -67,8 +70,9 @@
                 </div>
             </div>
 
+            <!-- 🚀 FIX: Diberi ID untuk target tangkapan layar Download -->
             <!-- DIGITAL ID CARD -->
-            <div class="relative bg-gradient-to-br from-slate-900 via-blue-950 to-blue-900 rounded-3xl shadow-2xl overflow-hidden border-2 border-blue-800/50">
+            <div id="digitalIdCardWrapper" class="relative bg-gradient-to-br from-slate-900 via-blue-950 to-blue-900 rounded-3xl shadow-2xl overflow-hidden border-2 border-blue-800/50">
                 <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2"></div>
                 <div class="absolute bottom-0 left-0 w-64 h-64 bg-amber-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 translate-y-1/2 -translate-x-1/4"></div>
                 
@@ -78,9 +82,7 @@
                         <img src="/images/f1logo.png" class="h-4 md:h-6 opacity-80 filter brightness-0 invert mb-1">
                         <p class="hidden md:block text-[9px] text-blue-200 tracking-widest font-bold uppercase mt-0.5">Official Athlete Identity</p>
                     </div>
-                    <div id="badgeVerifikasi">
-                        <!-- Disuntik JS -->
-                    </div>
+                    <div id="badgeVerifikasi"></div>
                 </div>
 
                 <!-- Card Body -->
@@ -102,7 +104,8 @@
                         <div class="grid grid-cols-2 gap-2 md:gap-3 text-left bg-black/20 p-2.5 md:p-3 rounded-xl border border-white/5">
                             <div class="min-w-0">
                                 <p class="text-[8px] md:text-[10px] text-blue-300 font-bold uppercase tracking-wider mb-0.5 truncate">Klub Asal</p>
-                                <p id="atletKlub" class="text-xs md:text-sm font-bold text-slate-100 truncate">...</p>
+                                <!-- 🚀 FIX: truncate dihapus, ganti leading-tight -->
+                                <p id="atletKlub" class="text-xs md:text-sm font-bold text-slate-100 leading-tight">...</p>
                             </div>
                             <div class="min-w-0 pl-2 border-l border-white/10">
                                 <p class="text-[8px] md:text-[10px] text-blue-300 font-bold uppercase tracking-wider mb-0.5 truncate">Usia</p>
@@ -113,6 +116,18 @@
                 </div>
             </div>
 
+            <!-- 🚀 FIX: TOMBOL SHARE & DOWNLOAD -->
+            <div class="flex gap-3 mt-4 mb-2 relative z-20">
+                <button id="btnDownloadCard" class="flex-1 bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 rounded-xl border border-slate-200 shadow-sm flex items-center justify-center gap-2 transition-colors">
+                    <img src="104685.ico" alt="Download" class="w-5 h-5 object-contain">
+                    <span class="text-sm">Download</span>
+                </button>
+                <button id="btnShareProfile" class="flex-1 bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 rounded-xl border border-slate-200 shadow-sm flex items-center justify-center gap-2 transition-colors">
+                    <img src="104686.jpg" alt="Share" class="w-5 h-5 object-cover rounded-full">
+                    <span class="text-sm">Share</span>
+                </button>
+            </div>
+
             <!-- TAB MENU -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 flex gap-2">
                 <button id="tabPencapaian" class="flex-1 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-bold text-sm transition-colors">🏅 Pencapaian</button>
@@ -121,7 +136,6 @@
 
             <!-- TAB CONTENT: PENCAPAIAN (MEDALI) & SCS ENERGY -->
             <div id="contentPencapaian" class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                <!-- SCS ENERGY HEADER (TEAL) -->
                 <div class="bg-teal-600 px-5 py-3 flex justify-between items-center border-b-4 border-teal-800">
                     <p class="text-white text-xs font-bold italic tracking-wide">Fuel Your Champion!</p>
                     <span class="font-black text-white text-xl tracking-tighter italic drop-shadow-md">SCS ENERGY</span>
@@ -141,7 +155,6 @@
 
             <!-- TAB CONTENT: BEST TIME & SCS SPEED -->
             <div id="contentBestTime" class="hidden bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                <!-- SCS SPEED HEADER (CRIMSON RED) -->
                 <div class="bg-rose-600 px-5 py-3 flex justify-between items-center border-b-4 border-rose-800">
                     <p class="text-white text-xs font-bold italic tracking-wide">Break Your Limit!</p>
                     <span class="font-black text-white text-xl tracking-tighter italic drop-shadow-md">SCS SPEED</span>
