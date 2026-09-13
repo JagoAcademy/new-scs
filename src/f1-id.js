@@ -21,7 +21,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const loadingState = document.getElementById('loadingState');
     const errorState = document.getElementById('errorState');
-    const profileData = document.getElementById('profileData');
+    const fullCaptureArea = document.getElementById('fullProfileCapture');
+    const actionButtonsArea = document.getElementById('actionButtonsArea');
 
     if (!f1IdParams) {
         loadingState.classList.add('hidden');
@@ -35,13 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const { data: atlet, error } = await supabaseClient
             .from('athletes')
-            .select(`
-                *,
-                clubs (
-                    club_name,
-                    owner_id
-                )
-            `)
+            .select(`*, clubs (club_name, owner_id)`)
             .eq('f1_id', f1IdParams)
             .single();
 
@@ -51,7 +46,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderProfile(atlet);
 
         loadingState.classList.add('hidden');
-        profileData.classList.remove('hidden');
+        
+        // 🚀 SHOW PROFILE DAN TOMBOL
+        fullCaptureArea.classList.remove('hidden');
+        fullCaptureArea.classList.add('block');
+        actionButtonsArea.classList.remove('hidden');
+        actionButtonsArea.classList.add('grid');
 
         fetchMedals();
         fetchBestTimes();
@@ -81,21 +81,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         contentPencapaian.classList.add('hidden');
     });
 
-    // 🚀 FIX: FUNGSI DOWNLOAD CARD
+    // 🚀 FIX: FUNGSI DOWNLOAD CARD JADI FULL PAGE (DIJEPRET SEMUA)
     const btnDownload = document.getElementById('btnDownloadCard');
     if (btnDownload) {
         btnDownload.addEventListener('click', async () => {
-            const card = document.getElementById('digitalIdCardWrapper'); 
-            if (!card) return;
+            const captureArea = document.getElementById('fullProfileCapture'); 
+            if (!captureArea) return;
             
             try {
+                // Biar warnanya nyatu sama background pas dijepret
+                captureArea.classList.replace('bg-transparent', 'bg-slate-50');
+
                 btnDownload.innerHTML = `<span class="animate-spin text-sm">🔄</span> <span class="text-sm">Memproses...</span>`;
                 
-                // Gunakan html2canvas untuk menjepret elemen
-                const canvas = await html2canvas(card, {
+                const canvas = await html2canvas(captureArea, {
                     scale: 2, 
                     useCORS: true,
-                    backgroundColor: null 
+                    backgroundColor: '#f8fafc' 
                 });
                 
                 const link = document.createElement('a');
@@ -106,12 +108,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 alert('Gagal mendownload ID Card. Silakan coba lagi.');
                 console.error(err);
             } finally {
-                btnDownload.innerHTML = `<img src="104685.ico" class="w-5 h-5 object-contain"><span class="text-sm">Download</span>`;
+                captureArea.classList.replace('bg-slate-50', 'bg-transparent');
+                btnDownload.innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    <span class="text-sm">Unduh Profil</span>
+                `;
             }
         });
     }
 
-    // 🚀 FIX: FUNGSI SHARE PROFILE
+    // 🚀 FIX: FUNGSI SHARE PROFILE PAKAI NATIVE SHARE
     const btnShare = document.getElementById('btnShareProfile');
     if (btnShare) {
         btnShare.addEventListener('click', async () => {
@@ -141,7 +147,7 @@ function renderProfile(atlet) {
     // 🚀 FIX: Unattached Club Text
     document.getElementById('atletKlub').innerHTML = atlet.clubs?.club_name 
         ? `${atlet.clubs.club_name}` 
-        : '<span class="text-red-300">❌ Unattached Club</span>';
+        : '<span class="text-red-400">❌ Unattached Club</span>';
 
     const f1IdEl = document.getElementById('atletF1Id');
     f1IdEl.innerText = atlet.f1_id;
