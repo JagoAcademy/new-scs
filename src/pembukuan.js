@@ -15,10 +15,8 @@ const dataPegawaiMap = {
     'AFFIX': { nama: 'AFFIX NUR RIZZA', nik: '3515182012010006' }
 };
 
-// --- DAFTAR "DEWA" YANG BOLEH MASUK ---
 const AUTHORIZED_ADMINS = ['FAJAR', 'INDRA', 'AY'];
 
-// --- HELPER FORMATTING ---
 const formatRp = (angka) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0);
 };
@@ -33,7 +31,7 @@ const formatDate = (dateString) => {
 window.switchTab = function(tabId) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
     document.querySelectorAll('.tab-btn').forEach(b => {
-        b.classList.remove('bg-slate-900', 'text-white', 'bg-blue-100', 'bg-red-100', 'bg-green-600');
+        b.classList.remove('bg-slate-900', 'text-white', 'bg-blue-600', 'bg-red-600', 'bg-green-600', 'bg-purple-600');
         b.classList.add('text-slate-600', 'bg-transparent');
     });
     
@@ -46,13 +44,21 @@ window.switchTab = function(tabId) {
     if(tabId === 'tab-jr') activeBtn.classList.add('bg-blue-600', 'text-white');
     if(tabId === 'tab-f1') activeBtn.classList.add('bg-red-600', 'text-white');
     if(tabId === 'tab-excel') activeBtn.classList.add('bg-green-600', 'text-white');
+    if(tabId === 'tab-invoice') activeBtn.classList.add('bg-purple-600', 'text-white');
 };
-
 
 window.closeReport = function() {
     document.getElementById('page-report').classList.add('hidden');
     document.getElementById('page-dashboard').classList.remove('hidden');
     document.getElementById('page-dashboard').classList.add('block');
+};
+
+window.closeInvoicePrint = function() {
+    document.getElementById('page-invoice-print').classList.add('hidden');
+    document.getElementById('page-invoice-print').classList.remove('block');
+    document.getElementById('page-dashboard').classList.remove('hidden');
+    document.getElementById('page-dashboard').classList.add('block');
+    if (typeof fetchSemuaData === "function") fetchSemuaData();
 };
 
 function renderLaporanExcel() {
@@ -63,7 +69,6 @@ function renderLaporanExcel() {
         const akun = t.jenis || 'Lain-lain';
         const nominal = Number(t.jumlah) || 0;
         const jenisStr = String(akun).toLowerCase();
-        
         const isMasuk = jenisStr.includes('masuk') || jenisStr.includes('pendapatan') || jenisStr === 'spp' || jenisStr.includes('sponsor') || jenisStr.includes('fee');
         
         if (!posAkun[akun]) posAkun[akun] = { debet: 0, kredit: 0 };
@@ -143,12 +148,10 @@ function renderLaporanExcel() {
     }
 }
 
-// --- FUNGSI RENDER DASHBOARD ---
 function renderUI() {
     let jrMasuk = 0, jrKeluar = 0, jrPajak = 0;
     let f1Masuk = 0, f1Keluar = 0, f1Pajak = 0;
 
-    // Render Tabel JR
     const tBodyJR = document.getElementById('tabel-kas-jr'); 
     tBodyJR.innerHTML = '';
     jrTransactions.forEach(t => {
@@ -158,7 +161,6 @@ function renderUI() {
         let pajak = 0;
         if(isMasuk) { jrMasuk += nominal; pajak = nominal * 0.005; jrPajak += pajak; } else { jrKeluar += nominal; }
 
-        // Fitur klik link dokumen bukti
         const linkBukti = t.dokumen_url ? `<a href="${t.dokumen_url}" target="_blank" class="inline-block mt-1 text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold hover:bg-blue-200">📄 Lihat Bukti</a>` : '';
 
         tBodyJR.innerHTML += `
@@ -171,7 +173,6 @@ function renderUI() {
             </tr>`;
     });
 
-    // Render Tabel F1
     const tBodyF1 = document.getElementById('tabel-kas-f1'); 
     tBodyF1.innerHTML = '';
     f1Transactions.forEach(t => {
@@ -191,7 +192,6 @@ function renderUI() {
             </tr>`;
     });
 
-    // Kalkulasi Dashboard
     document.getElementById('ui-masuk-jr').innerText = formatRp(jrMasuk);
     document.getElementById('ui-keluar-jr').innerText = formatRp(jrKeluar);
     document.getElementById('ui-pajak-jr').innerText = formatRp(jrPajak);
@@ -204,7 +204,6 @@ function renderUI() {
     
     document.getElementById('ui-laba-tpi').innerText = formatRp((jrMasuk - jrKeluar - jrPajak) + (f1Masuk - f1Keluar - f1Pajak));
 
-    // Populate Dropdown Pegawai Unik
     const listCoach = dbFeeCoach.map(c => c.nama_coach);
     const listAdmin = dbFeeMarketing.map(m => m.admin_id);
     const uniquePegawai = [...new Set([...listCoach, ...listAdmin])].filter(Boolean).sort();
@@ -216,7 +215,6 @@ function renderUI() {
     renderLaporanExcel();
 }
 
-// --- FETCH SEMUA DATA DARI DB ---
 async function fetchSemuaData() {
     try {
         const { data: dataJR } = await supaJR.from('akunting').select('*').order('tanggal', { ascending: false });
@@ -240,7 +238,6 @@ async function fetchSemuaData() {
 // --- LOGIKA FORM: CETAK SLIP GAJI & CASHFLOW ---
 document.getElementById('form-tutup-buku')?.addEventListener('submit', function(e) {
     e.preventDefault();
-    
     const cfStart = document.getElementById('tutup-cf-start').value;
     const cfEnd = document.getElementById('tutup-cf-end').value;
     const coachStart = document.getElementById('tutup-coach-start').value;
@@ -370,7 +367,6 @@ document.getElementById('form-jr-kas')?.addEventListener('submit', async functio
     const keterangan = document.getElementById('jr-ket').value;
     const jumlah = parseFloat(document.getElementById('jr-nominal').value);
 
-    // Proses Logika Upload
     const fileInput = document.getElementById('jr-dokumen');
     let dokumen_url = null;
 
@@ -379,7 +375,6 @@ document.getElementById('form-jr-kas')?.addEventListener('submit', async functio
         const fileExt = file.name.split('.').pop();
         const fileName = `berkas_${Date.now()}.${fileExt}`;
         
-        // Upload file ke storage 'berkas_akunting'
         const { error: uploadError } = await supaJR.storage
             .from('berkas_akunting')
             .upload(fileName, file, { cacheControl: '3600', upsert: false });
@@ -391,7 +386,6 @@ document.getElementById('form-jr-kas')?.addEventListener('submit', async functio
             return;
         }
         
-        // Ambil URL publik dari file yang sudah diupload
         const { data: publicUrlData } = supaJR.storage.from('berkas_akunting').getPublicUrl(fileName);
         dokumen_url = publicUrlData.publicUrl;
     }
@@ -401,7 +395,7 @@ document.getElementById('form-jr-kas')?.addEventListener('submit', async functio
         jenis, 
         keterangan, 
         jumlah,
-        dokumen_url // Tambahan masuk database
+        dokumen_url 
     }]);
     
     if (error) alert("Gagal Simpan JR: " + error.message);
@@ -430,6 +424,76 @@ document.getElementById('form-f1-kas')?.addEventListener('submit', async functio
 
     btnSubmit.innerText = "Simpan Transaksi";
     btnSubmit.disabled = false;
+});
+
+// --- LOGIKA FORM: CETAK INVOICE MANUAL (PDF) ---
+document.getElementById('form-invoice-manual')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-submit-inv');
+    btn.innerText = "Mengamankan Data..."; btn.disabled = true;
+
+    const kepada = document.getElementById('inv-kepada').value;
+    const deskripsi = document.getElementById('inv-deskripsi').value;
+    const nominal = parseFloat(document.getElementById('inv-nominal').value);
+    const wa = document.getElementById('inv-wa').value;
+
+    const now = new Date();
+    const bulan = String(now.getMonth() + 1).padStart(2, '0');
+    const tahun = now.getFullYear();
+    
+    let noInv = `INV-0001-${bulan}-${tahun}`;
+
+    try {
+        const { data, error } = await supaJR.from('invoices')
+            .select('no_invoice')
+            .like('no_invoice', `INV-%-${bulan}-${tahun}`)
+            .order('id', { ascending: false })
+            .limit(1);
+
+        if (data && data.length > 0 && data[0].no_invoice) {
+            const parts = data[0].no_invoice.split('-');
+            if (parts.length === 4) {
+                const urut = parseInt(parts[1]) + 1;
+                noInv = `INV-${String(urut).padStart(4, '0')}-${bulan}-${tahun}`;
+            }
+        }
+
+        const { error: insertError } = await supaJR.from('invoices').insert([{
+            no_invoice: noInv,
+            nama_murid: kepada,
+            paket: deskripsi,
+            biaya: nominal,
+            total: nominal,
+            status: 'Unpaid',
+            admin_id: sessionStorage.getItem('pitching_name') || 'Super Admin',
+            no_wa: wa || '',
+            tanggal_terbit: now.toISOString().split('T')[0]
+        }]);
+
+        if (insertError) throw insertError;
+
+        document.getElementById('print-inv-no').innerText = `${noInv}`;
+        document.getElementById('print-inv-kepada').innerText = kepada;
+        document.getElementById('print-inv-wa').innerText = wa ? `WA: ${wa}` : '-';
+        document.getElementById('print-inv-tgl').innerText = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        document.getElementById('print-inv-desk').innerText = deskripsi;
+        
+        const formatRupiah = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(nominal);
+        document.getElementById('print-inv-nom').innerText = formatRupiah;
+        document.getElementById('print-inv-total').innerText = formatRupiah;
+
+        document.getElementById('page-dashboard').classList.add('hidden');
+        document.getElementById('page-dashboard').classList.remove('block');
+        document.getElementById('page-invoice-print').classList.remove('hidden');
+        document.getElementById('page-invoice-print').classList.add('block');
+
+        this.reset();
+    } catch(err) {
+        console.error("Gagal buat invoice:", err);
+        alert("Gagal memproses Invoice: " + err.message);
+    } finally {
+        btn.innerText = "Simpan & Cetak PDF 🖨️"; btn.disabled = false;
+    }
 });
 
 // INIT JALANKAN PROGRAM DENGAN LOGIKA VIP GATEKEEPER
