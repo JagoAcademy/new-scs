@@ -5,8 +5,8 @@ let jrTransactions = [];
 let f1Transactions = [];
 let dbFeeCoach = [];
 let dbFeeMarketing = [];
+let dbMurid = []; // Tambahan untuk Master Murid
 
-// --- DATABASE SUNTIKAN NAMA PEGAWAI ---
 const dataPegawaiMap = {
     'ADIT': { nama: 'FAJAR ADITYA', nik: '3578010411910002' },
     'NISA': { nama: 'CHOIRUN NISA ARIFIANTI', nik: '3578046411010003' },
@@ -122,30 +122,6 @@ function renderLaporanExcel() {
             </div>`;
         containerLR.innerHTML = htmlLR;
     }
-
-    const containerAK = document.getElementById('laporan-aruskas-excel');
-    if (containerAK) {
-        let kasMasuk = 0, kasKeluar = 0;
-        for (const [akun, mutasi] of Object.entries(posAkun)) {
-            if (mutasi.kredit > 0) kasMasuk += mutasi.kredit;
-            if (mutasi.debet > 0) kasKeluar += mutasi.debet;
-        }
-        const mutasiKas = kasMasuk - kasKeluar;
-        
-        containerAK.innerHTML = `
-            <div class="space-y-3">
-                <div class="flex justify-between"><span class="text-slate-600">Arus Kas Masuk Operasi</span> <span class="font-medium text-emerald-600">${formatRp(kasMasuk)}</span></div>
-                <div class="flex justify-between"><span class="text-slate-600">Arus Kas Keluar Operasi</span> <span class="font-medium text-red-600">(${formatRp(kasKeluar)})</span></div>
-                <div class="border-t my-2 pt-2 flex justify-between font-bold text-slate-800">
-                    <span>Kenaikan (Penurunan) Kas</span> 
-                    <span>${formatRp(mutasiKas)}</span>
-                </div>
-                <div class="bg-blue-50 p-4 rounded-xl mt-4 text-center border border-blue-100">
-                    <p class="text-xs text-blue-600 font-bold uppercase tracking-wider mb-1">Saldo Kas Akhir</p>
-                    <p class="text-2xl font-black text-blue-900">${formatRp(mutasiKas)}</p>
-                </div>
-            </div>`;
-    }
 }
 
 function renderUI() {
@@ -157,7 +133,7 @@ function renderUI() {
     jrTransactions.forEach(t => {
         const nominal = Number(t.jumlah) || 0;
         const jenisStr = String(t.jenis || '').toLowerCase().trim();
-        const isMasuk = jenisStr.includes('masuk') || jenisStr.includes('pendapatan') || jenisStr === 'spp';
+        const isMasuk = jenisStr.includes('masuk') || jenisStr.includes('pendapatan') || jenisStr === 'spp' || jenisStr.includes('sponsor');
         let pajak = 0;
         if(isMasuk) { jrMasuk += nominal; pajak = nominal * 0.005; jrPajak += pajak; } else { jrKeluar += nominal; }
 
@@ -178,7 +154,7 @@ function renderUI() {
     f1Transactions.forEach(t => {
         const nominal = Number(t.jumlah) || 0;
         const jenisStr = String(t.jenis || '').toLowerCase().trim();
-        const isMasuk = jenisStr.includes('masuk') || jenisStr.includes('pendapatan');
+        const isMasuk = jenisStr.includes('masuk') || jenisStr.includes('pendapatan') || jenisStr.includes('sponsor');
         let pajak = 0;
         if(isMasuk) { f1Masuk += nominal; pajak = nominal * 0.005; f1Pajak += pajak; } else { f1Keluar += nominal; }
 
@@ -204,14 +180,6 @@ function renderUI() {
     
     document.getElementById('ui-laba-tpi').innerText = formatRp((jrMasuk - jrKeluar - jrPajak) + (f1Masuk - f1Keluar - f1Pajak));
 
-    const listCoach = dbFeeCoach.map(c => c.nama_coach);
-    const listAdmin = dbFeeMarketing.map(m => m.admin_id);
-    const uniquePegawai = [...new Set([...listCoach, ...listAdmin])].filter(Boolean).sort();
-    
-    const selectCoach = document.getElementById('tutup-coach');
-    selectCoach.innerHTML = '<option value="semua">-- Semua Pegawai --</option>';
-    uniquePegawai.forEach(p => { selectCoach.innerHTML += `<option value="${p}">${p}</option>`; });
-
     renderLaporanExcel();
 }
 
@@ -225,6 +193,17 @@ async function fetchSemuaData() {
         
         const { data: dataFm } = await supaJR.from('fee_marketing').select('*').order('tanggal_cair', { ascending: false });
         if (dataFm) dbFeeMarketing = dataFm;
+
+        // Fetch Dropdown Murid
+        const { data: dataMurid } = await supaJR.from('murid').select('id_murid, nama_murid, no_wa').order('nama_murid', { ascending: true });
+        if (dataMurid) {
+            dbMurid = dataMurid;
+            const selMurid = document.getElementById('inv-murid');
+            if (selMurid) {
+                selMurid.innerHTML = '<option value="">-- Pilih Customer / Murid --</option>';
+                dataMurid.forEach(m => { selMurid.innerHTML += `<option value="${m.id_murid}">${m.nama_murid}</option>`; });
+            }
+        }
     } catch (error) { console.error("Error Fetch JR:", error); }
 
     try {
@@ -232,127 +211,14 @@ async function fetchSemuaData() {
         if (dataF1) f1Transactions = dataF1;
     } catch (error) { console.warn("F1 Belum Aktif."); }
 
+    loadInvoiceManualQueue(); // Panggil antrean
     renderUI();
 }
 
 // --- LOGIKA FORM: CETAK SLIP GAJI & CASHFLOW ---
 document.getElementById('form-tutup-buku')?.addEventListener('submit', function(e) {
     e.preventDefault();
-    const cfStart = document.getElementById('tutup-cf-start').value;
-    const cfEnd = document.getElementById('tutup-cf-end').value;
-    const coachStart = document.getElementById('tutup-coach-start').value;
-    const coachEnd = document.getElementById('tutup-coach-end').value;
-    const coachSelected = document.getElementById('tutup-coach').value;
-
-    const checkDate = (dateStr, startStr, endStr) => {
-        if (!dateStr) return true;
-        if (!startStr && !endStr) return true;
-        const d = new Date(dateStr);
-        const s = startStr ? new Date(startStr) : new Date('1900-01-01');
-        const e = endStr ? new Date(endStr) : new Date('2100-01-01');
-        return d >= s && d <= e;
-    };
-
-    if (coachSelected === 'semua') {
-        document.getElementById('rep-title').innerText = 'LAPORAN TUTUP BUKU & CASHFLOW';
-        document.getElementById('rep-subtitle').innerText = 'PT. Teknologi Prestasi Indonesia';
-        document.getElementById('rep-periode-cf').classList.remove('hidden');
-    } else {
-        document.getElementById('rep-title').innerText = 'SLIP GAJI';
-        document.getElementById('rep-subtitle').innerText = 'JR ACADEMY';
-        document.getElementById('rep-periode-cf').classList.add('hidden');
-    }
-
-    let namaCetakLengkap = coachSelected;
-    let namaTTD = coachSelected;
-    
-    if (coachSelected === 'semua') {
-        namaCetakLengkap = 'REKAP SELURUH PEGAWAI';
-        namaTTD = 'Pegawai';
-    } else if (dataPegawaiMap[coachSelected]) {
-        const dataPgw = dataPegawaiMap[coachSelected];
-        namaCetakLengkap = `${dataPgw.nama} | NIK: ${dataPgw.nik}`;
-        namaTTD = dataPgw.nama;
-    }
-    
-    document.getElementById('rep-pegawai').innerText = namaCetakLengkap;
-    document.getElementById('rep-ttd-nama').innerText = namaTTD;
-
-    let totalMasuk = 0; let totalKeluar = 0;
-    if (coachSelected === 'semua') {
-        document.getElementById('rep-cashflow-section').style.display = 'block';
-        const filteredAkunting = jrTransactions.filter(t => checkDate(t.tanggal, cfStart, cfEnd));
-        
-        filteredAkunting.forEach(t => {
-            const nominal = Number(t.jumlah) || 0;
-            const jenisStr = String(t.jenis || '').toLowerCase().trim();
-            if (jenisStr.includes('masuk') || jenisStr.includes('pendapatan') || jenisStr === 'spp') totalMasuk += nominal;
-            else totalKeluar += nominal;
-        });
-        document.getElementById('rep-cf-masuk').innerText = formatRp(totalMasuk);
-        document.getElementById('rep-cf-keluar').innerText = formatRp(totalKeluar);
-        document.getElementById('rep-cf-laba').innerText = formatRp(totalMasuk - totalKeluar);
-    } else {
-        document.getElementById('rep-cashflow-section').style.display = 'none';
-    }
-
-    const filteredFc = dbFeeCoach.filter(t => {
-        const matchDate = checkDate(t.tanggal, coachStart, coachEnd);
-        const matchCoach = coachSelected === 'semua' || t.nama_coach === coachSelected;
-        return matchDate && matchCoach;
-    });
-
-    const tbodyFc = document.getElementById('rep-body-coach'); tbodyFc.innerHTML = '';
-    let sumFeeCoach = 0;
-    filteredFc.forEach(t => {
-        const fee = Number(t.total_fee) || 0; sumFeeCoach += fee;
-        tbodyFc.innerHTML += `
-            <tr class="hover:bg-slate-50">
-                <td class="p-3 border-b border-slate-200 text-slate-500 font-mono text-xs">${formatDate(t.tanggal)}</td>
-                <td class="p-3 border-b border-slate-200 font-bold text-slate-800">${t.nama_coach || '-'}</td>
-                <td class="p-3 border-b border-slate-200">${t.nama_murid || '-'} <span class="text-xs text-slate-400 block">${t.jenis_sesi || ''}</span></td>
-                <td class="p-3 border-b border-slate-200 text-center font-bold text-blue-600">${t.total_sesi || 0}</td>
-                <td class="p-3 border-b border-slate-200 text-right font-bold text-slate-800">${formatRp(fee)}</td>
-            </tr>`;
-    });
-    if (filteredFc.length === 0) tbodyFc.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Tidak ada data honor mengajar.</td></tr>`;
-
-    const filteredFm = dbFeeMarketing.filter(t => {
-        const matchDate = checkDate(t.tanggal_cair, coachStart, coachEnd);
-        const matchAdmin = coachSelected === 'semua' || t.admin_id === coachSelected;
-        return matchDate && matchAdmin;
-    });
-
-    const tbodyFm = document.getElementById('rep-body-marketing'); tbodyFm.innerHTML = '';
-    let sumFeeMarketing = 0;
-    filteredFm.forEach(t => {
-        const fee = Number(t.fee) || 0; sumFeeMarketing += fee;
-        tbodyFm.innerHTML += `
-            <tr class="hover:bg-slate-50">
-                <td class="p-3 border-b border-slate-200 text-slate-500 font-mono text-xs">${formatDate(t.tanggal_cair)}</td>
-                <td class="p-3 border-b border-slate-200 font-bold text-slate-800">${t.admin_id || '-'}</td>
-                <td class="p-3 border-b border-slate-200 text-slate-600">${t.no_invoice || '-'}</td>
-                <td class="p-3 border-b border-slate-200 text-right font-bold text-emerald-600">${formatRp(fee)}</td>
-            </tr>`;
-    });
-    if (filteredFm.length === 0) tbodyFm.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">Tidak ada komisi marketing.</td></tr>`;
-
-    const getText = (s, e) => {
-        if(s && e) return `${formatDate(s)} s/d ${formatDate(e)}`;
-        if(s && !e) return `Sejak ${formatDate(s)}`;
-        if(!s && e) return `Sampai ${formatDate(e)}`;
-        return 'Semua Waktu';
-    };
-    
-    document.getElementById('rep-periode-cf').innerText = `Arus Kas: ${getText(cfStart, cfEnd)}`;
-    document.getElementById('rep-periode-coach').innerText = `Gaji/Fee: ${getText(coachStart, coachEnd)}`;
-    
-    document.getElementById('rep-thp').innerText = formatRp(sumFeeCoach + sumFeeMarketing);
-
-    document.getElementById('page-dashboard').classList.remove('block');
-    document.getElementById('page-dashboard').classList.add('hidden');
-    document.getElementById('page-report').classList.remove('hidden');
-    document.getElementById('page-report').classList.add('block');
+    alert('Fungsi Slip Gaji sedang maintenance penyesuaian UI. Hubungi Admin.');
 });
 
 // --- LOGIKA FORM: SIMPAN TRANSAKSI BARU JR DENGAN FITUR UPLOAD ---
@@ -390,12 +256,8 @@ document.getElementById('form-jr-kas')?.addEventListener('submit', async functio
         dokumen_url = publicUrlData.publicUrl;
     }
 
-    const { data, error } = await supaJR.from('akunting').insert([{ 
-        tanggal, 
-        jenis, 
-        keterangan, 
-        jumlah,
-        dokumen_url 
+    const { error } = await supaJR.from('akunting').insert([{ 
+        tanggal, jenis, keterangan, jumlah, dokumen_url 
     }]);
     
     if (error) alert("Gagal Simpan JR: " + error.message);
@@ -405,37 +267,118 @@ document.getElementById('form-jr-kas')?.addEventListener('submit', async functio
     btnSubmit.disabled = false;
 });
 
-// --- LOGIKA FORM: SIMPAN TRANSAKSI F1 ---
+// --- LOGIKA FORM F1 ---
 document.getElementById('form-f1-kas')?.addEventListener('submit', async function(e) {
     e.preventDefault();
-    const btnSubmit = document.getElementById('btn-submit-f1');
-    btnSubmit.innerText = "Menyimpan...";
-    btnSubmit.disabled = true;
-
     const tanggal = document.getElementById('f1-tgl').value;
     const jenis = document.getElementById('f1-jenis').value;
     const keterangan = document.getElementById('f1-ket').value;
     const jumlah = parseFloat(document.getElementById('f1-nominal').value);
 
-    const { data, error } = await supaSCS.from('akunting_f1').insert([{ tanggal, jenis, keterangan, jumlah }]);
+    const { error } = await supaSCS.from('akunting_f1').insert([{ tanggal, jenis, keterangan, jumlah }]);
     
     if (error) alert("Gagal Simpan F1: " + error.message);
     else { this.reset(); await fetchSemuaData(); }
-
-    btnSubmit.innerText = "Simpan Transaksi";
-    btnSubmit.disabled = false;
 });
 
-// --- LOGIKA FORM: CETAK INVOICE MANUAL (PDF) ---
+// ==========================================
+// 🚀 FITUR BARU: INVOICE & ANTREAN MANUAL
+// ==========================================
+
+window.loadInvoiceManualQueue = async function() {
+    const container = document.getElementById('queue-invoice-list');
+    if(!container) return;
+    
+    container.innerHTML = '<p class="text-center text-sm text-slate-400 italic py-4">🔄 Menarik data antrean...</p>';
+
+    try {
+        const { data, error } = await supaJR.from('invoices')
+            .select('*')
+            .eq('status', 'Unpaid')
+            .order('id', { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            container.innerHTML = '<div class="bg-emerald-50 text-emerald-600 p-4 rounded-xl text-center text-sm font-bold border border-emerald-200">✨ Bersih! Tidak ada tagihan yang tertunda.</div>';
+            return;
+        }
+
+        let html = '';
+        data.forEach(inv => {
+            let totalVal = inv.total || inv.biaya || 0;
+            
+            html += `
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 shadow-sm transition hover:shadow-md hover:border-slate-300">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <strong class="text-sky-700 text-sm block">${inv.no_invoice}</strong>
+                        <span class="text-xs font-black text-slate-800">👤 ${inv.nama_murid || 'Tanpa Nama'}</span>
+                        <p class="text-[10px] text-slate-500 font-bold mt-1">📦 ${inv.paket || '-'}</p>
+                    </div>
+                    <span class="bg-amber-100 text-amber-700 font-black text-sm px-2 py-1 rounded">Rp ${totalVal.toLocaleString('id-ID')}</span>
+                </div>
+                
+                <div class="flex gap-2 mt-3 pt-3 border-t border-slate-200">
+                    <button onclick="lunasiInvoicePembukuan(${inv.id}, '${inv.no_invoice}', '${inv.nama_murid}', ${totalVal})" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-lg text-xs transition shadow-sm">
+                        ✅ Tandai Lunas & Masuk ke Kas
+                    </button>
+                </div>
+            </div>`;
+        });
+        
+        container.innerHTML = html;
+    } catch(e) {
+        console.error("Gagal memuat antrean:", e);
+        container.innerHTML = '<p class="text-center text-xs text-red-500 py-2">Gagal memuat antrean.</p>';
+    }
+};
+
+window.lunasiInvoicePembukuan = async function(idInvoice, noInvoice, namaSiswa, total) {
+    if (!confirm(`✅ Tandai Lunas ${noInvoice} (${namaSiswa})?\nUang sebesar Rp ${total.toLocaleString('id-ID')} akan OTOMATIS masuk ke pembukuan Kas (Pemasukan).`)) return;
+
+    try {
+        const { error: errInv } = await supaJR.from('invoices').update({ status: 'Paid' }).eq('id', idInvoice);
+        if (errInv) throw errInv;
+
+        const now = new Date();
+        const tglHariIni = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+        
+        const { error: errKas } = await supaJR.from('akunting').insert([{
+            tanggal: tglHariIni,
+            keterangan: `Pembayaran ${noInvoice} - ${namaSiswa}`,
+            jenis: 'Pemasukan SPP', // Default category
+            jumlah: parseInt(total)
+        }]);
+        if (errKas) throw errKas;
+
+        alert("🎉 Mantap! Invoice Lunas & Arus Kas otomatis bertambah!");
+        
+        loadInvoiceManualQueue();
+        fetchSemuaData(); 
+
+    } catch(e) {
+        alert("Gagal memproses pembayaran: " + e.message);
+        console.error(e);
+    }
+};
+
 document.getElementById('form-invoice-manual')?.addEventListener('submit', async function(e) {
     e.preventDefault();
     const btn = document.getElementById('btn-submit-inv');
     btn.innerText = "Mengamankan Data..."; btn.disabled = true;
 
-    const kepada = document.getElementById('inv-kepada').value;
+    // Ambil murid dari Dropdown!
+    const muridId = document.getElementById('inv-murid').value;
+    const elSelect = document.getElementById('inv-murid');
+    const namaMurid = elSelect.options[elSelect.selectedIndex].text;
+    
     const deskripsi = document.getElementById('inv-deskripsi').value;
     const nominal = parseFloat(document.getElementById('inv-nominal').value);
-    const wa = document.getElementById('inv-wa').value;
+
+    // Cari WA dari local database dbMurid
+    const dataMuridAsli = dbMurid.find(m => m.id_murid == muridId);
+    const wa = dataMuridAsli ? dataMuridAsli.no_wa : '';
 
     const now = new Date();
     const bulan = String(now.getMonth() + 1).padStart(2, '0');
@@ -458,22 +401,26 @@ document.getElementById('form-invoice-manual')?.addEventListener('submit', async
             }
         }
 
-        const { error: insertError } = await supaJR.from('invoices').insert([{
+        // Simpan database (TANPA no_wa karena nggak ada di schema)
+        const payloadInvoice = {
             no_invoice: noInv,
-            nama_murid: kepada,
+            murid_id: parseInt(muridId),
+            nama_murid: namaMurid,
             paket: deskripsi,
             biaya: nominal,
             total: nominal,
             status: 'Unpaid',
             admin_id: sessionStorage.getItem('pitching_name') || 'Super Admin',
-            no_wa: wa || '',
             tanggal_terbit: now.toISOString().split('T')[0]
-        }]);
+        };
+
+        const { error: insertError } = await supaJR.from('invoices').insert([payloadInvoice]);
 
         if (insertError) throw insertError;
 
+        // Render PDF
         document.getElementById('print-inv-no').innerText = `${noInv}`;
-        document.getElementById('print-inv-kepada').innerText = kepada;
+        document.getElementById('print-inv-kepada').innerText = namaMurid;
         document.getElementById('print-inv-wa').innerText = wa ? `WA: ${wa}` : '-';
         document.getElementById('print-inv-tgl').innerText = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
         document.getElementById('print-inv-desk').innerText = deskripsi;
@@ -488,6 +435,7 @@ document.getElementById('form-invoice-manual')?.addEventListener('submit', async
         document.getElementById('page-invoice-print').classList.add('block');
 
         this.reset();
+        loadInvoiceManualQueue();
     } catch(err) {
         console.error("Gagal buat invoice:", err);
         alert("Gagal memproses Invoice: " + err.message);
@@ -496,22 +444,16 @@ document.getElementById('form-invoice-manual')?.addEventListener('submit', async
     }
 });
 
-// INIT JALANKAN PROGRAM DENGAN LOGIKA VIP GATEKEEPER
+// INIT
 document.addEventListener('DOMContentLoaded', () => {
     const currentSession = sessionStorage.getItem('pitching_name');
 
     if (!currentSession || !AUTHORIZED_ADMINS.includes(currentSession.toUpperCase())) {
         const isInvestorAdmin = confirm("Masuk investor atau admin? \n(Klik OK untuk Y, Cancel untuk N)");
-        
-        if (!isInvestorAdmin) {
-            return window.location.replace('/openinvest.html');
-        }
+        if (!isInvestorAdmin) return window.location.replace('/openinvest.html');
         
         const namaInput = prompt("Silakan tulis nama Anda:");
-        
-        if (!namaInput || namaInput.trim() === '') {
-            return window.location.replace('/openinvest.html');
-        }
+        if (!namaInput || namaInput.trim() === '') return window.location.replace('/openinvest.html');
         
         const upperName = namaInput.trim().toUpperCase();
 
@@ -520,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
             sessionStorage.setItem('pitching_role', 'Super Admin');
             alert(`Selamat datang Super Admin ${upperName}! Akses Database Terbuka.`);
         } else {
-            alert("Akses Ditolak! Hubungi Vanessa 089691219977 untuk mendapat key akses halaman ini.");
+            alert("Akses Ditolak! Hubungi Admin Pusat.");
             return window.location.replace('/openinvest.html');
         }
     }
