@@ -45,7 +45,7 @@ window.switchTab = function(tabId) {
     if(tabId === 'tab-tpi') activeBtn.classList.add('bg-slate-900', 'text-white');
     if(tabId === 'tab-jr') activeBtn.classList.add('bg-blue-600', 'text-white');
     if(tabId === 'tab-f1') activeBtn.classList.add('bg-red-600', 'text-white');
-    if(tabId === 'tab-excel') activeBtn.classList.add('bg-green-600', 'text-white'); // State untuk tab baru
+    if(tabId === 'tab-excel') activeBtn.classList.add('bg-green-600', 'text-white');
 };
 
 
@@ -56,17 +56,14 @@ window.closeReport = function() {
 };
 
 function renderLaporanExcel() {
-    // Gabungkan node data JR dan F1
     const allTx = [...jrTransactions, ...f1Transactions];
     const posAkun = {};
     
-    // Logika agregasi SUMIF untuk Buku Besar
     allTx.forEach(t => {
         const akun = t.jenis || 'Lain-lain';
         const nominal = Number(t.jumlah) || 0;
         const jenisStr = String(akun).toLowerCase();
         
-        // Aturan akuntansi standar: Pemasukan masuk ke Kredit (Penambahan Kas), selainnya Debet (Beban operasional)
         const isMasuk = jenisStr.includes('masuk') || jenisStr.includes('pendapatan') || jenisStr === 'spp' || jenisStr.includes('sponsor') || jenisStr.includes('fee');
         
         if (!posAkun[akun]) posAkun[akun] = { debet: 0, kredit: 0 };
@@ -75,7 +72,6 @@ function renderLaporanExcel() {
         else posAkun[akun].debet += nominal;
     });
 
-    // A. Render POS (Buku Besar)
     const tbodyPos = document.getElementById('tabel-pos-excel');
     if (tbodyPos) {
         tbodyPos.innerHTML = '';
@@ -91,7 +87,6 @@ function renderLaporanExcel() {
         }
     }
 
-    // B. Render Laba Rugi (LR)
     const containerLR = document.getElementById('laporan-lr-excel');
     if (containerLR) {
         let pendapatan = 0, beban = 0;
@@ -123,7 +118,6 @@ function renderLaporanExcel() {
         containerLR.innerHTML = htmlLR;
     }
 
-    // C. Render Arus Kas (Metode Langsung)
     const containerAK = document.getElementById('laporan-aruskas-excel');
     if (containerAK) {
         let kasMasuk = 0, kasKeluar = 0;
@@ -164,10 +158,13 @@ function renderUI() {
         let pajak = 0;
         if(isMasuk) { jrMasuk += nominal; pajak = nominal * 0.005; jrPajak += pajak; } else { jrKeluar += nominal; }
 
+        // Fitur klik link dokumen bukti
+        const linkBukti = t.dokumen_url ? `<a href="${t.dokumen_url}" target="_blank" class="inline-block mt-1 text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold hover:bg-blue-200">📄 Lihat Bukti</a>` : '';
+
         tBodyJR.innerHTML += `
             <tr class="border-b border-slate-200 hover:bg-slate-50 text-sm">
                 <td class="p-3 text-slate-500 font-mono text-xs">${t.tanggal || '-'}</td>
-                <td class="p-3 font-medium text-slate-800">${t.keterangan || '-'}</td>
+                <td class="p-3 font-medium text-slate-800">${t.keterangan || '-'}<br>${linkBukti}</td>
                 <td class="p-3"><span class="px-2 py-1 rounded text-[10px] font-bold uppercase ${isMasuk ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">${t.jenis || '-'}</span></td>
                 <td class="p-3 text-right font-bold ${isMasuk ? 'text-emerald-600' : 'text-red-600'}">${formatRp(nominal)}</td>
                 <td class="p-3 text-right font-bold text-orange-500">${isMasuk ? formatRp(pajak) : '-'}</td>
@@ -216,7 +213,6 @@ function renderUI() {
     selectCoach.innerHTML = '<option value="semua">-- Semua Pegawai --</option>';
     uniquePegawai.forEach(p => { selectCoach.innerHTML += `<option value="${p}">${p}</option>`; });
 
-    // [TAMBAHKAN INI] Eksekusi injeksi Excel tiap kali UI dirender
     renderLaporanExcel();
 }
 
@@ -362,11 +358,11 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
     document.getElementById('page-report').classList.add('block');
 });
 
-// --- LOGIKA FORM: SIMPAN TRANSAKSI BARU (JR & F1) ---
+// --- LOGIKA FORM: SIMPAN TRANSAKSI BARU JR DENGAN FITUR UPLOAD ---
 document.getElementById('form-jr-kas')?.addEventListener('submit', async function(e) {
     e.preventDefault();
     const btnSubmit = document.getElementById('btn-submit-jr');
-    btnSubmit.innerText = "Menyimpan...";
+    btnSubmit.innerText = "Mengupload & Menyimpan...";
     btnSubmit.disabled = true;
 
     const tanggal = document.getElementById('jr-tgl').value;
@@ -374,7 +370,39 @@ document.getElementById('form-jr-kas')?.addEventListener('submit', async functio
     const keterangan = document.getElementById('jr-ket').value;
     const jumlah = parseFloat(document.getElementById('jr-nominal').value);
 
-    const { data, error } = await supaJR.from('akunting').insert([{ tanggal, jenis, keterangan, jumlah }]);
+    // Proses Logika Upload
+    const fileInput = document.getElementById('jr-dokumen');
+    let dokumen_url = null;
+
+    if (fileInput && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `berkas_${Date.now()}.${fileExt}`;
+        
+        // Upload file ke storage 'berkas_akunting'
+        const { error: uploadError } = await supaJR.storage
+            .from('berkas_akunting')
+            .upload(fileName, file, { cacheControl: '3600', upsert: false });
+            
+        if (uploadError) {
+            alert("Gagal upload dokumen: " + uploadError.message);
+            btnSubmit.innerText = "Simpan Transaksi";
+            btnSubmit.disabled = false;
+            return;
+        }
+        
+        // Ambil URL publik dari file yang sudah diupload
+        const { data: publicUrlData } = supaJR.storage.from('berkas_akunting').getPublicUrl(fileName);
+        dokumen_url = publicUrlData.publicUrl;
+    }
+
+    const { data, error } = await supaJR.from('akunting').insert([{ 
+        tanggal, 
+        jenis, 
+        keterangan, 
+        jumlah,
+        dokumen_url // Tambahan masuk database
+    }]);
     
     if (error) alert("Gagal Simpan JR: " + error.message);
     else { this.reset(); await fetchSemuaData(); }
@@ -383,6 +411,7 @@ document.getElementById('form-jr-kas')?.addEventListener('submit', async functio
     btnSubmit.disabled = false;
 });
 
+// --- LOGIKA FORM: SIMPAN TRANSAKSI F1 ---
 document.getElementById('form-f1-kas')?.addEventListener('submit', async function(e) {
     e.preventDefault();
     const btnSubmit = document.getElementById('btn-submit-f1');
@@ -407,7 +436,6 @@ document.getElementById('form-f1-kas')?.addEventListener('submit', async functio
 document.addEventListener('DOMContentLoaded', () => {
     const currentSession = sessionStorage.getItem('pitching_name');
 
-    // Jika belum login atau yang login BUKAN Fajar, Indra, AY
     if (!currentSession || !AUTHORIZED_ADMINS.includes(currentSession.toUpperCase())) {
         const isInvestorAdmin = confirm("Masuk investor atau admin? \n(Klik OK untuk Y, Cancel untuk N)");
         
@@ -424,17 +452,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const upperName = namaInput.trim().toUpperCase();
 
         if (AUTHORIZED_ADMINS.includes(upperName)) {
-            // Berhasil Validasi sebagai Dewa
             sessionStorage.setItem('pitching_name', upperName);
             sessionStorage.setItem('pitching_role', 'Super Admin');
             alert(`Selamat datang Super Admin ${upperName}! Akses Database Terbuka.`);
         } else {
-            // Selain Dewa, langsung tendang keluar!
             alert("Akses Ditolak! Hubungi Vanessa 089691219977 untuk mendapat key akses halaman ini.");
             return window.location.replace('/openinvest.html');
         }
     }
 
-    // Jika lolos gatekeeper (Fajar, Indra, AY), jalankan data
     fetchSemuaData();
 });
