@@ -32,7 +32,7 @@
 
         <nav class="flex gap-2 mb-6 bg-white p-2 rounded-xl shadow-sm border border-slate-100 overflow-x-auto">
             <button onclick="switchTab('tab-tpi')" id="btn-tpi" class="tab-btn whitespace-nowrap py-2 px-6 rounded-lg font-bold text-sm bg-slate-900 text-white transition-all">📊 Summary PT TPI</button>
-            <button onclick="switchTab('tab-jr')" id="btn-jr" class="tab-btn whitespace-nowrap py-2 px-6 rounded-lg font-bold text-sm text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-all">🏊‍♂️ Arus Kas Jago Renang</button>
+            <button onclick="switchTab('tab-jr')" id="btn-jr" class="tab-btn whitespace-nowrap py-2 px-6 rounded-lg font-bold text-sm text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-all">🏊‍♂️ Arus Kas JR-Academy</button>
             <button onclick="switchTab('tab-f1')" id="btn-f1" class="tab-btn whitespace-nowrap py-2 px-6 rounded-lg font-bold text-sm text-slate-600 hover:bg-red-50 hover:text-red-700 transition-all">🏆 Arus Kas F1 Swimming</button>
             <button onclick="switchTab('tab-excel')" id="btn-excel" class="tab-btn whitespace-nowrap py-2 px-6 rounded-lg font-bold text-sm text-slate-600 hover:bg-green-50 hover:text-green-700 transition-all">📗 Laporan Akuntansi (Excel)</button>
             <button onclick="switchTab('tab-invoice')" id="btn-invoice" class="tab-btn whitespace-nowrap py-2 px-6 rounded-lg font-bold text-sm text-slate-600 hover:bg-purple-50 hover:text-purple-700 transition-all">📝 Buat Invoice</button>
@@ -42,7 +42,7 @@
         <div id="tab-tpi" class="tab-content block">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div class="bg-gradient-to-br from-blue-900 to-blue-950 p-6 rounded-2xl shadow-md text-white border border-blue-800">
-                    <h3 class="font-black text-xl mb-4 text-blue-100">Kinerja Jago Renang</h3>
+                    <h3 class="font-black text-xl mb-4 text-blue-100">Kinerja JR-Academy</h3>
                     <div class="space-y-2">
                         <div class="flex justify-between border-b border-blue-800 pb-2">
                             <span class="text-blue-300 text-sm font-bold">Total Pemasukan</span>
@@ -91,14 +91,14 @@
             </div>
         </div>
 
-        <!-- TAB 2: ARUS KAS JAGO RENANG -->
+        <!-- TAB 2: ARUS KAS JR-ACADEMY -->
         <div id="tab-jr" class="tab-content hidden">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Kolom Kiri -->
                 <div class="lg:col-span-1 flex flex-col gap-6">
                     <!-- Form Kas JR -->
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-blue-100 border-t-4 border-t-blue-600">
-                        <h3 class="font-black text-blue-900 mb-4 flex items-center gap-2"><span>➕</span> Transaksi JR Baru</h3>
+                        <h3 class="font-black text-blue-900 mb-4 flex items-center gap-2"><span>➕</span> Transaksi JR-Academy Baru</h3>
                         <form id="form-jr-kas" class="flex flex-col gap-3">
                             <input type="date" id="jr-tgl" required class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
                             <select id="jr-jenis" required class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
@@ -171,7 +171,7 @@
                 
                 <!-- Table Kas JR -->
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2 overflow-x-auto h-fit">
-                    <h3 class="font-bold text-slate-800 mb-4">Riwayat Transaksi Jago Renang</h3>
+                    <h3 class="font-bold text-slate-800 mb-4">Riwayat Transaksi JR-Academy</h3>
                     <table class="w-full text-left border-collapse min-w-[600px]">
                         <thead>
                             <tr class="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-200">
@@ -264,6 +264,10 @@
                     <h3 class="font-black text-purple-900 mb-6 flex items-center gap-2 text-xl"><span>📝</span> Buat Invoice (Cetak PDF)</h3>
                     <form id="form-invoice-manual" class="flex flex-col gap-4">
                         <div>
+                            <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Tanggal Terbit</label>
+                            <input type="date" id="inv-tgl" required class="w-full p-3 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
+                        </div>
+                        <div>
                             <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Pilih Customer / Murid</label>
                             <select id="inv-murid" required class="w-full p-3 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
                                 <option value="">Memuat database murid...</option>
@@ -271,11 +275,17 @@
                         </div>
                         <div>
                             <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Deskripsi Tagihan / Paket</label>
-                            <input type="text" id="inv-deskripsi" placeholder="Cth: Sponsorship / Privat 4 Sesi" required class="w-full p-3 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
+                            <input type="text" id="inv-deskripsi" placeholder="Cth: Tagihan Privat Bulanan" required class="w-full p-3 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
                         </div>
-                        <div>
-                            <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Total Tagihan (Rp)</label>
-                            <input type="number" id="inv-nominal" placeholder="Hanya Angka" required class="w-full p-3 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Harga / Biaya (Rp)</label>
+                                <input type="number" id="inv-nominal" placeholder="Cth: 500000" required class="w-full p-3 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Diskon (Rp)</label>
+                                <input type="number" id="inv-diskon" value="0" placeholder="0 (Opsional)" class="w-full p-3 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
+                            </div>
                         </div>
                         <button type="submit" id="btn-submit-inv" class="mt-4 w-full bg-purple-600 text-white font-black py-4 rounded-xl hover:bg-purple-700 transition-colors shadow-lg text-lg tracking-wide">
                             Simpan & Cetak PDF 🖨️
@@ -315,7 +325,7 @@
         <div class="bg-white p-8 md:p-12 rounded-2xl shadow-xl print-shadow-none relative overflow-hidden border border-slate-200">
             <div class="text-center border-b-2 border-slate-800 pb-6 mb-6">
                 <h1 id="rep-title" class="text-3xl font-black text-slate-900 tracking-tight">SLIP GAJI</h1>
-                <p id="rep-subtitle" class="text-lg font-bold text-blue-900 mt-1">JR ACADEMY</p>
+                <p id="rep-subtitle" class="text-lg font-bold text-blue-900 mt-1">JR-ACADEMY</p>
                 <div class="flex justify-center gap-4 mt-3 no-print">
                     <p id="rep-periode-cf" class="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded border border-slate-200 hidden">Arus Kas: -</p>
                     <p id="rep-periode-coach" class="text-xs font-bold text-slate-500 bg-yellow-50 text-yellow-800 px-3 py-1 rounded border border-yellow-200">Periode Gaji: -</p>
@@ -382,17 +392,21 @@
         </div>
 
         <div class="bg-white p-10 md:p-14 rounded-2xl shadow-xl print-shadow-none border border-slate-200 relative">
+            
+            <!-- HEADER INVOICE WITH LOGO -->
             <div class="flex justify-between items-start border-b-2 border-slate-100 pb-8 mb-8">
                 <div>
                     <h1 class="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter">INVOICE</h1>
                     <p id="print-inv-no" class="text-slate-500 font-bold tracking-widest mt-1 text-sm">#INV-0000-00-0000</p>
                 </div>
-                <div class="text-right">
-                    <p class="font-black text-slate-800 text-lg">Jago Renang Academy</p>
+                <div class="text-right flex flex-col items-end">
+                    <img src="/images/logojr.png" alt="Logo JR-Academy" class="h-14 object-contain mb-2">
+                    <p class="font-black text-slate-800 text-lg">JR-Academy</p>
                     <p class="text-sm font-medium text-slate-500 mt-1">Surabaya & Sidoarjo</p>
                 </div>
             </div>
 
+            <!-- INFO CUSTOMER & TANGGAL -->
             <div class="flex justify-between mb-10 bg-slate-50 p-6 rounded-xl border border-slate-100">
                 <div>
                     <p class="text-xs text-slate-400 uppercase font-black tracking-widest mb-2">Ditagihkan Kepada:</p>
@@ -405,22 +419,38 @@
                 </div>
             </div>
 
-            <table class="w-full text-left border-collapse mb-10">
+            <!-- TABEL ITEM TAGIHAN -->
+            <table class="w-full text-left border-collapse mb-8">
                 <thead>
                     <tr class="border-b-2 border-slate-800">
                         <th class="py-3 px-2 font-black text-slate-800 uppercase tracking-wider text-xs">Deskripsi Tagihan</th>
-                        <th class="py-3 px-2 font-black text-slate-800 uppercase tracking-wider text-xs text-right w-40">Total</th>
+                        <th class="py-3 px-2 font-black text-slate-800 uppercase tracking-wider text-xs text-right w-40">Subtotal</th>
                     </tr>
                 </thead>
-                <tbody class="text-sm">
-                    <tr class="border-b border-slate-200">
+                <tbody class="text-sm border-b border-slate-200">
+                    <tr>
                         <td id="print-inv-desk" class="py-5 px-2 font-medium text-slate-700 leading-relaxed">Deskripsi</td>
                         <td id="print-inv-nom" class="py-5 px-2 font-bold text-slate-800 text-right">Rp 0</td>
+                    </tr>
+                    <tr id="row-diskon" class="hidden">
+                        <td class="py-3 px-2 font-bold text-red-500 text-right uppercase tracking-wider text-xs">Diskon / Potongan</td>
+                        <td id="print-inv-diskon" class="py-3 px-2 font-bold text-red-500 text-right">- Rp 0</td>
                     </tr>
                 </tbody>
             </table>
 
-            <div class="flex justify-end mb-16">
+            <!-- INFO REKENING & TOTAL -->
+            <div class="flex justify-between items-end mb-16">
+                <!-- Info Rekening -->
+                <div class="w-full md:w-1/2 pr-4">
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Pembayaran Ditransfer Ke:</p>
+                        <p class="font-bold text-slate-800 text-sm">Bank Mandiri</p>
+                        <p class="font-black text-sky-700 text-lg tracking-wider">141-00-2895946-8</p>
+                        <p class="text-[11px] font-bold text-slate-600 mt-1 uppercase tracking-wide">A.n PT. TEKNOLOGI PRESTASI INDONESIA</p>
+                    </div>
+                </div>
+                <!-- Box Total -->
                 <div class="w-full md:w-1/2 bg-slate-900 rounded-2xl p-6 shadow-md print-shadow-none flex justify-between items-center text-white">
                     <span class="font-bold uppercase tracking-widest text-xs text-slate-300">Total Tagihan</span>
                     <span id="print-inv-total" class="text-3xl font-black text-emerald-400">Rp 0</span>
@@ -428,7 +458,7 @@
             </div>
             
             <div class="text-center mt-10 pt-8 border-t border-slate-200">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Terima kasih atas kepercayaannya.</p>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Terima kasih atas kepercayaannya pada JR-Academy.</p>
             </div>
         </div>
     </div>

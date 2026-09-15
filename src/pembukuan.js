@@ -152,12 +152,10 @@ function renderLaporanExcel() {
     }
 }
 
-// --- FUNGSI RENDER DASHBOARD ---
 function renderUI() {
     let jrMasuk = 0, jrKeluar = 0, jrPajak = 0;
     let f1Masuk = 0, f1Keluar = 0, f1Pajak = 0;
 
-    // Render Tabel JR
     const tBodyJR = document.getElementById('tabel-kas-jr'); 
     tBodyJR.innerHTML = '';
     jrTransactions.forEach(t => {
@@ -179,7 +177,6 @@ function renderUI() {
             </tr>`;
     });
 
-    // Render Tabel F1
     const tBodyF1 = document.getElementById('tabel-kas-f1'); 
     tBodyF1.innerHTML = '';
     f1Transactions.forEach(t => {
@@ -199,7 +196,6 @@ function renderUI() {
             </tr>`;
     });
 
-    // Kalkulasi Dashboard
     document.getElementById('ui-masuk-jr').innerText = formatRp(jrMasuk);
     document.getElementById('ui-keluar-jr').innerText = formatRp(jrKeluar);
     document.getElementById('ui-pajak-jr').innerText = formatRp(jrPajak);
@@ -212,7 +208,6 @@ function renderUI() {
     
     document.getElementById('ui-laba-tpi').innerText = formatRp((jrMasuk - jrKeluar - jrPajak) + (f1Masuk - f1Keluar - f1Pajak));
 
-    // Populate Dropdown Pegawai Unik
     const listCoach = dbFeeCoach.map(c => c.nama_coach);
     const listAdmin = dbFeeMarketing.map(m => m.admin_id);
     const uniquePegawai = [...new Set([...listCoach, ...listAdmin])].filter(Boolean).sort();
@@ -224,7 +219,6 @@ function renderUI() {
     renderLaporanExcel();
 }
 
-// --- FETCH SEMUA DATA DARI DB ---
 async function fetchSemuaData() {
     try {
         const { data: dataJR } = await supaJR.from('akunting').select('*').order('tanggal', { ascending: false });
@@ -282,7 +276,7 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
         document.getElementById('rep-periode-cf').classList.remove('hidden');
     } else {
         document.getElementById('rep-title').innerText = 'SLIP GAJI';
-        document.getElementById('rep-subtitle').innerText = 'JR ACADEMY';
+        document.getElementById('rep-subtitle').innerText = 'JR-ACADEMY';
         document.getElementById('rep-periode-cf').classList.add('hidden');
     }
 
@@ -471,7 +465,7 @@ window.loadInvoiceManualQueue = async function() {
 
         let html = '';
         data.forEach(inv => {
-            let totalVal = inv.total || inv.biaya || 0;
+            let totalVal = inv.total || 0;
             
             html += `
             <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 shadow-sm transition hover:shadow-md hover:border-slate-300">
@@ -533,21 +527,25 @@ document.getElementById('form-invoice-manual')?.addEventListener('submit', async
     const btn = document.getElementById('btn-submit-inv');
     btn.innerText = "Mengamankan Data..."; btn.disabled = true;
 
-    // Ambil murid dari Dropdown!
+    // Ambil Data Tanggal
+    const tglTerbit = document.getElementById('inv-tgl').value;
+    const invDateObj = new Date(tglTerbit);
+    const bulan = String(invDateObj.getMonth() + 1).padStart(2, '0');
+    const tahun = invDateObj.getFullYear();
+
+    // Ambil Data Form Lainnya
     const muridId = document.getElementById('inv-murid').value;
     const elSelect = document.getElementById('inv-murid');
     const namaMurid = elSelect.options[elSelect.selectedIndex].text;
     
     const deskripsi = document.getElementById('inv-deskripsi').value;
-    const nominal = parseFloat(document.getElementById('inv-nominal').value);
+    const nominal = parseFloat(document.getElementById('inv-nominal').value) || 0;
+    const diskon = parseFloat(document.getElementById('inv-diskon').value) || 0;
+    const totalBersih = nominal - diskon;
 
     // Cari WA dari local database dbMurid
     const dataMuridAsli = dbMurid.find(m => m.id_murid == muridId);
     const wa = dataMuridAsli ? dataMuridAsli.no_wa : '';
-
-    const now = new Date();
-    const bulan = String(now.getMonth() + 1).padStart(2, '0');
-    const tahun = now.getFullYear();
     
     let noInv = `INV-0001-${bulan}-${tahun}`;
 
@@ -566,33 +564,44 @@ document.getElementById('form-invoice-manual')?.addEventListener('submit', async
             }
         }
 
-        // Simpan database (TANPA no_wa karena nggak ada di schema)
+        // Simpan database beserta diskon
         const payloadInvoice = {
             no_invoice: noInv,
             murid_id: parseInt(muridId),
             nama_murid: namaMurid,
             paket: deskripsi,
             biaya: nominal,
-            total: nominal,
+            diskon: diskon,
+            total: totalBersih,
             status: 'Unpaid',
             admin_id: sessionStorage.getItem('pitching_name') || 'Super Admin',
-            tanggal_terbit: now.toISOString().split('T')[0]
+            tanggal_terbit: tglTerbit
         };
 
         const { error: insertError } = await supaJR.from('invoices').insert([payloadInvoice]);
 
         if (insertError) throw insertError;
 
-        // Render PDF
+        // Render Data ke UI Kertas PDF
         document.getElementById('print-inv-no').innerText = `${noInv}`;
         document.getElementById('print-inv-kepada').innerText = namaMurid;
         document.getElementById('print-inv-wa').innerText = wa ? `WA: ${wa}` : '-';
-        document.getElementById('print-inv-tgl').innerText = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        document.getElementById('print-inv-tgl').innerText = invDateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
         document.getElementById('print-inv-desk').innerText = deskripsi;
         
-        const formatRupiah = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(nominal);
-        document.getElementById('print-inv-nom').innerText = formatRupiah;
-        document.getElementById('print-inv-total').innerText = formatRupiah;
+        const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+        
+        document.getElementById('print-inv-nom').innerText = formatRupiah(nominal);
+        document.getElementById('print-inv-total').innerText = formatRupiah(totalBersih);
+
+        // Render Baris Diskon
+        const rowDiskon = document.getElementById('row-diskon');
+        if (diskon > 0) {
+            rowDiskon.classList.remove('hidden');
+            document.getElementById('print-inv-diskon').innerText = `- ${formatRupiah(diskon)}`;
+        } else {
+            rowDiskon.classList.add('hidden');
+        }
 
         document.getElementById('page-dashboard').classList.add('hidden');
         document.getElementById('page-dashboard').classList.remove('block');
@@ -600,6 +609,7 @@ document.getElementById('form-invoice-manual')?.addEventListener('submit', async
         document.getElementById('page-invoice-print').classList.add('block');
 
         this.reset();
+        document.getElementById('inv-diskon').value = 0; // Kembalikan default
         loadInvoiceManualQueue();
     } catch(err) {
         console.error("Gagal buat invoice:", err);
@@ -637,6 +647,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return window.location.replace('/openinvest.html');
         }
     }
+
+    // Set nilai default form tanggal ke hari ini
+    const today = new Date().toISOString().split('T')[0];
+    const invTglInput = document.getElementById('inv-tgl');
+    if(invTglInput) invTglInput.value = today;
 
     fetchSemuaData();
 });
