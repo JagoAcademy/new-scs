@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         loadingState.classList.add('hidden');
         
-        // 🚀 SHOW PROFILE DAN TOMBOL
+        // SHOW PROFILE DAN TOMBOL
         fullCaptureArea.classList.remove('hidden');
         fullCaptureArea.classList.add('block');
         actionButtonsArea.classList.remove('hidden');
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         contentPencapaian.classList.add('hidden');
     });
 
-    // 🚀 FIX: FUNGSI DOWNLOAD CARD JADI FULL PAGE (DIJEPRET SEMUA)
+    // 🚀 FIX: FUNGSI DOWNLOAD CARD JADI FULL PAGE (DIJEPRET SEMUA + ANTI GEPENG)
     const btnDownload = document.getElementById('btnDownloadCard');
     if (btnDownload) {
         btnDownload.addEventListener('click', async () => {
@@ -92,17 +92,35 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Biar warnanya nyatu sama background pas dijepret
                 captureArea.classList.replace('bg-transparent', 'bg-slate-50');
 
+                // 🚀 TRIK ANTI GEPENG: Kunci resolusi elemen pakai pixel asli sebelum difoto
+                // Biar html2canvas gak kebingungan sama class flex/max-w bawaan tailwind
+                const targetWidth = captureArea.offsetWidth;
+                const targetHeight = captureArea.offsetHeight;
+                
+                const originalWidth = captureArea.style.width;
+                const originalMaxWidth = captureArea.style.maxWidth;
+                
+                captureArea.style.width = targetWidth + 'px';
+                captureArea.style.maxWidth = 'none';
+
                 btnDownload.innerHTML = `<span class="animate-spin text-sm">🔄</span> <span class="text-sm">Memproses...</span>`;
                 
                 const canvas = await html2canvas(captureArea, {
-                    scale: 2, 
+                    scale: 2, // Biar HD tapi ga pecah
                     useCORS: true,
-                    backgroundColor: '#f8fafc' 
+                    backgroundColor: '#f8fafc',
+                    width: targetWidth,     // Paksa ukurannya
+                    height: targetHeight,   // Paksa tingginya
+                    windowWidth: document.documentElement.offsetWidth
                 });
                 
+                // Balikin styling element ke kondisi normal setelah selesai difoto
+                captureArea.style.width = originalWidth;
+                captureArea.style.maxWidth = originalMaxWidth;
+
                 const link = document.createElement('a');
                 link.download = `F1-ID_${targetF1Id}.png`;
-                link.href = canvas.toDataURL('image/png');
+                link.href = canvas.toDataURL('image/png', 1.0);
                 link.click();
             } catch (err) {
                 alert('Gagal mendownload ID Card. Silakan coba lagi.');
@@ -117,7 +135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // 🚀 FIX: FUNGSI SHARE PROFILE PAKAI NATIVE SHARE
+    // FUNGSI SHARE PROFILE PAKAI NATIVE SHARE
     const btnShare = document.getElementById('btnShareProfile');
     if (btnShare) {
         btnShare.addEventListener('click', async () => {
@@ -144,7 +162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 function renderProfile(atlet) {
     document.getElementById('atletName').innerText = atlet.full_name;
     
-    // 🚀 FIX: Unattached Club Text
+    // Unattached Club Text
     document.getElementById('atletKlub').innerHTML = atlet.clubs?.club_name 
         ? `${atlet.clubs.club_name}` 
         : '<span class="text-red-400">❌ Unattached Club</span>';
