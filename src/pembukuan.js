@@ -5,9 +5,8 @@ let jrTransactions = [];
 let f1Transactions = [];
 let dbFeeCoach = [];
 let dbFeeMarketing = [];
-let dbMurid = []; // Tambahan untuk Master Murid buat dropdown Invoice
+let dbMurid = []; 
 
-// --- DATABASE SUNTIKAN NAMA PEGAWAI ---
 const dataPegawaiMap = {
     'ADIT': { nama: 'FAJAR ADITYA', nik: '3578010411910002' },
     'NISA': { nama: 'CHOIRUN NISA ARIFIANTI', nik: '3578046411010003' },
@@ -16,10 +15,8 @@ const dataPegawaiMap = {
     'AFFIX': { nama: 'AFFIX NUR RIZZA', nik: '3515182012010006' }
 };
 
-// --- DAFTAR "DEWA" YANG BOLEH MASUK ---
 const AUTHORIZED_ADMINS = ['FAJAR', 'INDRA', 'AY'];
 
-// --- HELPER FORMATTING ---
 const formatRp = (angka) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0);
 };
@@ -167,6 +164,7 @@ function renderUI() {
 
         const linkBukti = t.dokumen_url ? `<a href="${t.dokumen_url}" target="_blank" class="inline-block mt-1 text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold hover:bg-blue-200">📄 Lihat Bukti</a>` : '';
 
+        // Menambahkan kolom Aksi untuk Edit & Delete
         tBodyJR.innerHTML += `
             <tr class="border-b border-slate-200 hover:bg-slate-50 text-sm">
                 <td class="p-3 text-slate-500 font-mono text-xs">${t.tanggal || '-'}</td>
@@ -174,6 +172,10 @@ function renderUI() {
                 <td class="p-3"><span class="px-2 py-1 rounded text-[10px] font-bold uppercase ${isMasuk ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">${t.jenis || '-'}</span></td>
                 <td class="p-3 text-right font-bold ${isMasuk ? 'text-emerald-600' : 'text-red-600'}">${formatRp(nominal)}</td>
                 <td class="p-3 text-right font-bold text-orange-500">${isMasuk ? formatRp(pajak) : '-'}</td>
+                <td class="p-3 text-center">
+                    <button onclick="editTransaksiJR(${t.id})" class="text-blue-500 hover:text-blue-700 bg-blue-50 p-1.5 rounded transition" title="Edit Transaksi">✏️</button>
+                    <button onclick="hapusTransaksiJR(${t.id})" class="text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded transition ml-1" title="Hapus Transaksi">🗑️</button>
+                </td>
             </tr>`;
     });
 
@@ -230,7 +232,6 @@ async function fetchSemuaData() {
         const { data: dataFm } = await supaJR.from('fee_marketing').select('*').order('tanggal_cair', { ascending: false });
         if (dataFm) dbFeeMarketing = dataFm;
 
-        // Fetch Dropdown Murid (Untuk modal pembuatan Invoice)
         const { data: dataMurid } = await supaJR.from('murid').select('id_murid, nama_murid, no_wa').order('nama_murid', { ascending: true });
         if (dataMurid) {
             dbMurid = dataMurid;
@@ -247,11 +248,70 @@ async function fetchSemuaData() {
         if (dataF1) f1Transactions = dataF1;
     } catch (error) { console.warn("F1 Belum Aktif."); }
 
-    loadInvoiceManualQueue(); // Muat ulang list invoice pending
+    loadInvoiceManualQueue();
     renderUI();
 }
 
-// --- LOGIKA FORM: CETAK SLIP GAJI (RESTORED 100%) ---
+
+// ==========================================
+// 🛠️ FUNGSI EDIT & HAPUS TRANSAKSI JR KAS
+// ==========================================
+
+window.editTransaksiJR = function(id) {
+    const tx = jrTransactions.find(t => t.id === id);
+    if (!tx) return;
+
+    // Isi ulang form dengan data existing
+    document.getElementById('jr-edit-id').value = tx.id;
+    document.getElementById('jr-tgl').value = tx.tanggal || '';
+    document.getElementById('jr-jenis').value = tx.jenis || '';
+    document.getElementById('jr-ket').value = tx.keterangan || '';
+    document.getElementById('jr-nominal').value = tx.jumlah || '';
+    
+    // Ubah Tampilan Tombol Submit menjadi Update
+    const btnSubmit = document.getElementById('btn-submit-jr');
+    btnSubmit.innerText = "Update Transaksi";
+    btnSubmit.classList.replace('w-full', 'w-2/3');
+    btnSubmit.classList.replace('bg-blue-600', 'bg-amber-500');
+    btnSubmit.classList.replace('hover:bg-blue-700', 'hover:bg-amber-600');
+    
+    // Tampilkan tombol Batal
+    document.getElementById('btn-batal-edit-jr').classList.remove('hidden');
+
+    // Scroll otomatis ke atas
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+window.batalEditJR = function() {
+    document.getElementById('form-jr-kas').reset();
+    document.getElementById('jr-edit-id').value = '';
+    
+    // Kembalikan Tampilan Tombol ke mode Insert
+    const btnSubmit = document.getElementById('btn-submit-jr');
+    btnSubmit.innerText = "Simpan Transaksi";
+    btnSubmit.classList.replace('w-2/3', 'w-full');
+    btnSubmit.classList.replace('bg-amber-500', 'bg-blue-600');
+    btnSubmit.classList.replace('hover:bg-amber-600', 'hover:bg-blue-700');
+    
+    // Sembunyikan tombol Batal
+    document.getElementById('btn-batal-edit-jr').classList.add('hidden');
+};
+
+window.hapusTransaksiJR = async function(id) {
+    if (!confirm("⚠️ Yakin ingin menghapus transaksi ini?\nData yang dihapus akan merubah perhitungan kas dan tidak bisa dikembalikan!")) return;
+
+    try {
+        const { error } = await supaJR.from('akunting').delete().eq('id', id);
+        if (error) throw error;
+        alert("🗑️ Transaksi berhasil dihapus!");
+        fetchSemuaData(); // Refresh UI
+    } catch (err) {
+        alert("Gagal menghapus data: " + err.message);
+    }
+};
+
+
+// --- LOGIKA FORM: CETAK SLIP GAJI ---
 document.getElementById('form-tutup-buku')?.addEventListener('submit', function(e) {
     e.preventDefault();
     
@@ -372,11 +432,13 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
     document.getElementById('page-report').classList.add('block');
 });
 
-// --- LOGIKA FORM: SIMPAN TRANSAKSI BARU JR DENGAN FITUR UPLOAD ---
+// --- LOGIKA FORM: SIMPAN / UPDATE TRANSAKSI JR ---
 document.getElementById('form-jr-kas')?.addEventListener('submit', async function(e) {
     e.preventDefault();
     const btnSubmit = document.getElementById('btn-submit-jr');
-    btnSubmit.innerText = "Mengupload & Menyimpan...";
+    const editId = document.getElementById('jr-edit-id').value;
+    
+    btnSubmit.innerText = editId ? "Mengupdate Data..." : "Mengupload & Menyimpan...";
     btnSubmit.disabled = true;
 
     const tanggal = document.getElementById('jr-tgl').value;
@@ -386,7 +448,9 @@ document.getElementById('form-jr-kas')?.addEventListener('submit', async functio
 
     const fileInput = document.getElementById('jr-dokumen');
     let dokumen_url = null;
+    let uploadSuccess = true;
 
+    // Cek kalau ada file diupload
     if (fileInput && fileInput.files.length > 0) {
         const file = fileInput.files[0];
         const fileExt = file.name.split('.').pop();
@@ -398,24 +462,45 @@ document.getElementById('form-jr-kas')?.addEventListener('submit', async functio
             
         if (uploadError) {
             alert("Gagal upload dokumen: " + uploadError.message);
-            btnSubmit.innerText = "Simpan Transaksi";
-            btnSubmit.disabled = false;
-            return;
+            uploadSuccess = false;
+        } else {
+            const { data: publicUrlData } = supaJR.storage.from('berkas_akunting').getPublicUrl(fileName);
+            dokumen_url = publicUrlData.publicUrl;
         }
-        
-        const { data: publicUrlData } = supaJR.storage.from('berkas_akunting').getPublicUrl(fileName);
-        dokumen_url = publicUrlData.publicUrl;
     }
 
-    const { error } = await supaJR.from('akunting').insert([{ 
-        tanggal, jenis, keterangan, jumlah, dokumen_url 
-    }]);
-    
-    if (error) alert("Gagal Simpan JR: " + error.message);
-    else { this.reset(); await fetchSemuaData(); }
-    
-    btnSubmit.innerText = "Simpan Transaksi";
-    btnSubmit.disabled = false;
+    if (!uploadSuccess) {
+        btnSubmit.innerText = editId ? "Update Transaksi" : "Simpan Transaksi";
+        btnSubmit.disabled = false;
+        return;
+    }
+
+    // Persiapkan data Payload DB
+    const payload = { tanggal, jenis, keterangan, jumlah };
+    if (dokumen_url) payload.dokumen_url = dokumen_url; // Override jika ada file baru diupload
+
+    try {
+        if (editId) {
+            // Mode EDIT (UPDATE)
+            const { error } = await supaJR.from('akunting').update(payload).eq('id', editId);
+            if (error) throw error;
+            alert("✅ Transaksi berhasil diupdate!");
+            window.batalEditJR(); // Reset tampilan UI kembali ke mode Insert
+        } else {
+            // Mode INSERT BARU
+            const { error } = await supaJR.from('akunting').insert([payload]);
+            if (error) throw error;
+            this.reset();
+        }
+        
+        await fetchSemuaData(); // Tarik data terbaru
+
+    } catch (err) {
+        alert("Gagal menyimpan data: " + err.message);
+    } finally {
+        btnSubmit.disabled = false;
+        if(!editId) btnSubmit.innerText = "Simpan Transaksi";
+    }
 });
 
 // --- LOGIKA FORM F1 ---
