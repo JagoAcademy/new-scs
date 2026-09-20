@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Multi-Lane Stopwatch | SCS Tools</title>
+    <!-- 🚀 Path CSS absolute biar nyedot dari src root -->
+    <link rel="stylesheet" href="/src/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .font-lcd { font-family: 'Courier New', Courier, monospace; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-200 min-h-screen flex flex-col">
+
+    <nav class="bg-slate-900/80 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 border-b border-slate-800">
+        <div class="max-w-4xl mx-auto px-4 h-14 flex justify-between items-center">
+            <a href="./index.html" class="text-xl hover:scale-110 transition-transform">⬅️</a>
+            <span class="font-black text-blue-400 tracking-wider uppercase">Multi Stopwatch</span>
+            <div class="w-6"></div>
+        </div>
+    </nav>
+
+    <div class="max-w-md mx-auto w-full pt-20 px-4 flex flex-col flex-1 h-screen pb-6">
+        
+        <!-- MASTER CLOCK -->
+        <div class="text-center mb-6">
+            <p id="masterClock" class="font-lcd text-6xl md:text-7xl font-black text-white tracking-tighter drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]">00:00.00</p>
+            <div class="flex gap-3 justify-center mt-4">
+                <button id="btnMasterStart" class="bg-blue-600 hover:bg-blue-500 text-white font-black px-8 py-3 rounded-full shadow-[0_0_15px_rgba(37,99,235,0.4)] active:scale-95">START</button>
+                <button id="btnMasterReset" class="bg-slate-800 text-slate-400 font-bold px-6 py-3 rounded-full hover:text-white active:scale-95">RESET</button>
+            </div>
+        </div>
+
+        <!-- 4 LANES -->
+        <div class="flex-1 overflow-y-auto hide-scrollbar space-y-3 pb-10">
+            <!-- Lane 1 -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center font-black text-slate-400">1</div>
+                    <div>
+                        <input type="text" class="bg-transparent text-sm font-bold text-white outline-none w-24" placeholder="Nama Atlet 1">
+                        <p id="lapTime1" class="font-lcd text-xl font-bold text-slate-500">00:00.00</p>
+                    </div>
+                </div>
+                <button onclick="window.recordLap(1)" class="bg-slate-800 hover:bg-blue-600 text-white font-black w-16 h-16 rounded-2xl active:scale-95 transition-colors border border-slate-700">LAP</button>
+            </div>
+            
+            <!-- Lane 2 -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center font-black text-slate-400">2</div>
+                    <div>
+                        <input type="text" class="bg-transparent text-sm font-bold text-white outline-none w-24" placeholder="Nama Atlet 2">
+                        <p id="lapTime2" class="font-lcd text-xl font-bold text-slate-500">00:00.00</p>
+                    </div>
+                </div>
+                <button onclick="window.recordLap(2)" class="bg-slate-800 hover:bg-emerald-600 text-white font-black w-16 h-16 rounded-2xl active:scale-95 transition-colors border border-slate-700">LAP</button>
+            </div>
+
+            <!-- Lane 3 -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center font-black text-slate-400">3</div>
+                    <div>
+                        <input type="text" class="bg-transparent text-sm font-bold text-white outline-none w-24" placeholder="Nama Atlet 3">
+                        <p id="lapTime3" class="font-lcd text-xl font-bold text-slate-500">00:00.00</p>
+                    </div>
+                </div>
+                <button onclick="window.recordLap(3)" class="bg-slate-800 hover:bg-amber-600 text-white font-black w-16 h-16 rounded-2xl active:scale-95 transition-colors border border-slate-700">LAP</button>
+            </div>
+
+            <!-- Lane 4 -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center font-black text-slate-400">4</div>
+                    <div>
+                        <input type="text" class="bg-transparent text-sm font-bold text-white outline-none w-24" placeholder="Nama Atlet 4">
+                        <p id="lapTime4" class="font-lcd text-xl font-bold text-slate-500">00:00.00</p>
+                    </div>
+                </div>
+                <button onclick="window.recordLap(4)" class="bg-slate-800 hover:bg-rose-600 text-white font-black w-16 h-16 rounded-2xl active:scale-95 transition-colors border border-slate-700">LAP</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🚀 Load JS Relatif dari folder tools -->
+    <script type="module" src="./stopwatch.js"></script>
+</body>
+</html>

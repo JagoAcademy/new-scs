@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smart Send-Off | SCS Tools</title>
+    <!-- 🚀 Path CSS absolute biar nyedot dari src root -->
+    <link rel="stylesheet" href="/src/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .font-lcd { font-family: 'Courier New', Courier, monospace; }
+        .flash-green { animation: flashG 1s ease-out; }
+        .flash-red { animation: flashR 1s ease-out; }
+        @keyframes flashG { 0% { background-color: #10b981; } 100% { background-color: #020617; } }
+        @keyframes flashR { 0% { background-color: #ef4444; } 100% { background-color: #020617; } }
+    </style>
+</head>
+<body id="bgBody" class="bg-slate-950 text-slate-200 min-h-screen transition-colors duration-300 flex flex-col">
+
+    <nav class="bg-slate-900/80 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 border-b border-slate-800">
+        <div class="max-w-4xl mx-auto px-4 h-14 flex justify-between items-center">
+            <a href="./index.html" class="text-xl hover:scale-110 transition-transform">⬅️</a>
+            <span class="font-black text-emerald-400 tracking-wider">SMART SEND-OFF</span>
+            <div class="w-6"></div>
+        </div>
+    </nav>
+
+    <!-- SETUP AREA -->
+    <div id="setupArea" class="max-w-md mx-auto px-6 pt-24 flex-1 w-full">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl">
+            <div class="mb-6">
+                <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Jumlah Repetisi (Set)</label>
+                <input type="number" id="inputReps" value="10" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-4 text-2xl font-black text-center text-white outline-none focus:border-emerald-500">
+            </div>
+            <div class="mb-8">
+                <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Interval (Menit : Detik)</label>
+                <div class="flex gap-4">
+                    <input type="number" id="inputMin" value="01" min="0" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-4 text-3xl font-black text-center text-white outline-none focus:border-emerald-500">
+                    <span class="text-4xl font-black text-slate-600 self-center">:</span>
+                    <input type="number" id="inputSec" value="30" min="0" max="59" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-4 text-3xl font-black text-center text-white outline-none focus:border-emerald-500">
+                </div>
+            </div>
+            <button id="btnStart" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-4 rounded-xl text-lg shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-transform active:scale-95">
+                MULAI PROGRAM 🚀
+            </button>
+        </div>
+    </div>
+
+    <!-- ACTIVE CLOCK AREA -->
+    <div id="activeArea" class="hidden flex-1 flex flex-col items-center justify-center px-4 w-full h-screen">
+        <p class="text-slate-400 font-bold tracking-widest uppercase mb-2">Repetisi Tersisa</p>
+        <p id="displayReps" class="text-6xl font-black text-amber-400 mb-8 drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]">10</p>
+        
+        <div class="relative w-full max-w-sm aspect-square bg-slate-900 rounded-full flex items-center justify-center border-8 border-slate-800 shadow-[0_0_50px_rgba(0,0,0,0.5)] mb-10">
+            <svg class="absolute inset-0 w-full h-full transform -rotate-90">
+                <circle cx="50%" cy="50%" r="46%" stroke="rgba(16, 185, 129, 0.2)" stroke-width="12" fill="none"></circle>
+                <circle id="progressCircle" cx="50%" cy="50%" r="46%" stroke="#10b981" stroke-width="12" fill="none" stroke-dasharray="1000" stroke-dashoffset="0" stroke-linecap="round" class="transition-all duration-100"></circle>
+            </svg>
+            <span id="displayTime" class="font-lcd text-7xl font-black text-white tracking-tighter z-10">01:30</span>
+        </div>
+
+        <div class="flex gap-4 w-full max-w-xs">
+            <button id="btnPause" class="flex-1 bg-amber-600/20 text-amber-500 border border-amber-500/50 font-black py-4 rounded-2xl active:scale-95 transition-transform">PAUSE</button>
+            <button id="btnStop" class="flex-1 bg-red-600/20 text-red-500 border border-red-500/50 font-black py-4 rounded-2xl active:scale-95 transition-transform">STOP</button>
+        </div>
+    </div>
+
+    <!-- 🚀 Load JS Relatif dari folder tools -->
+    <script type="module" src="./interval.js"></script>
+</body>
+</html>

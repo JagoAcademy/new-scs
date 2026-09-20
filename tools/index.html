@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SCS Coach Tools | F1 Swimming</title>
+    <!-- 🚀 Path Tailwind udah aman ngarah ke root src -->
+    <link rel="stylesheet" href="/src/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 font-sans text-slate-200 min-h-screen pb-20 selection:bg-amber-500 selection:text-white">
+
+    <!-- NAVBAR -->
+    <nav class="bg-slate-900/80 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 h-14 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-xl">🛠️</span>
+                <span class="font-black text-white tracking-wider">SCS <span class="text-amber-400">TOOLS</span></span>
+            </div>
+            <a href="/" class="text-xs font-bold text-slate-400 hover:text-white transition-colors">&laquo; Beranda SCS</a>
+        </div>
+    </nav>
+
+    <!-- CONTENT -->
+    <div class="max-w-xl mx-auto px-4 pt-24">
+        <div class="text-center mb-10">
+            <h1 class="text-3xl font-black text-white mb-2">Coach <span class="text-blue-500">Arsenal</span></h1>
+            <p class="text-sm text-slate-400">Alat bantu gratis untuk pelatih di pinggir kolam.</p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4">
+            <!-- Tool 1: Interval -->
+            <a href="./interval.html" class="block bg-slate-900 border border-slate-800 p-5 rounded-3xl hover:border-emerald-500 hover:bg-slate-800 transition-all group">
+                <div class="flex items-center gap-5">
+                    <div class="w-16 h-16 bg-emerald-900/30 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
+                        ⏱️
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-black text-white group-hover:text-emerald-400 transition-colors">Smart Send-Off</h2>
+                        <p class="text-xs text-slate-400 mt-1">Layar visual interval training (10x100m on 1:30).</p>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Tool 2: Multi Stopwatch -->
+            <a href="./stopwatch.html" class="block bg-slate-900 border border-slate-800 p-5 rounded-3xl hover:border-blue-500 hover:bg-slate-800 transition-all group">
+                <div class="flex items-center gap-5">
+                    <div class="w-16 h-16 bg-blue-900/30 text-blue-400 rounded-2xl flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
+                        🏃‍♂️
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-black text-white group-hover:text-blue-400 transition-colors">Multi-Lane Stopwatch</h2>
+                        <p class="text-xs text-slate-400 mt-1">Ambil waktu & lap untuk 4 atlet sekaligus dalam 1 layar.</p>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Tool 3: Stroke Rate -->
+            <div class="block bg-slate-900/50 border border-slate-800/50 p-5 rounded-3xl opacity-60 cursor-not-allowed">
+                <div class="flex items-center gap-5">
+                    <div class="w-16 h-16 bg-amber-900/20 text-amber-500/50 rounded-2xl flex items-center justify-center text-3xl">
+                        👆
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-lg font-black text-slate-300">Stroke Rate Tap</h2>
+                            <span class="text-[8px] bg-slate-800 px-2 py-0.5 rounded font-bold text-slate-400 uppercase tracking-widest">Segera</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1">Hitung Stroke Per Minute (SPM) dengan ketukan jari.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

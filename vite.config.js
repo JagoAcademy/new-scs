@@ -6,59 +6,64 @@ export default defineConfig({
     rollupOptions: {
       input: {
         // --- 1. MAIN & PUBLIC PAGES (Akses Tanpa Login) ---
-        main: resolve(__dirname, 'index.html'), // Homepage
-        about: resolve(__dirname, 'about.html'), // Halaman Tentang Kami (Pilar SEO)
-        jobs: resolve(__dirname, 'jobs.html'), // Portal Karir & Rekrutmen SCS
-        openinvest: resolve(__dirname, 'openinvest.html'), // Pitch Deck Pendanaan F1Swimming
-        auth: resolve(__dirname, 'auth.html'), // Login & Register System
-        register: resolve(__dirname, 'register.html'), // Form Registrasi
-        pricing: resolve(__dirname, 'pricing.html'), // Halaman Harga SCS
+        main: resolve(__dirname, 'index.html'),
+        about: resolve(__dirname, 'about.html'),
+        jobs: resolve(__dirname, 'jobs.html'),
+        openinvest: resolve(__dirname, 'openinvest.html'),
+        auth: resolve(__dirname, 'auth.html'),
+        register: resolve(__dirname, 'register.html'),
+        pricing: resolve(__dirname, 'pricing.html'),
         promosi: resolve(__dirname, 'promosi.html'),
-        event: resolve(__dirname, 'event.html'), // Kalender Event Publik Nasional
+        event: resolve(__dirname, 'event.html'),
         pulse: resolve(__dirname, 'pulse.html'),
-        eventPublic: resolve(__dirname, 'event-public.html'), // Landing page spesifik 1 event
-        liveResult: resolve(__dirname, 'live-result.html'), // Live scoreboard pertandingan
-        eventLeaderboard: resolve(__dirname, 'event-leaderboard.html'), // Halaman Cetak Piagam Juara
-        rank: resolve(__dirname, 'rank.html'), // Leaderboard Peringkat Klub/Atlet
-        result: resolve(__dirname, 'result.html'), // Hasil resmi perlombaan
-        cetakSertifikat: resolve(__dirname, 'cetak-sertifikat.html'), // Halaman Cetak Sertifikat Peserta
+        eventPublic: resolve(__dirname, 'event-public.html'),
+        liveResult: resolve(__dirname, 'live-result.html'),
+        eventLeaderboard: resolve(__dirname, 'event-leaderboard.html'),
+        rank: resolve(__dirname, 'rank.html'),
+        result: resolve(__dirname, 'result.html'),
+        cetakSertifikat: resolve(__dirname, 'cetak-sertifikat.html'),
         sponsorship: resolve(__dirname, 'sponsorship.html'),
-        pitch: resolve(__dirname, 'pitch.html'), // Web-Based Pitch Deck Nestle 
-        pitchClient: resolve(__dirname, 'pitch-client.html'), // Halaman Front-End Pitching Klien (B2B)
-        media: resolve(__dirname, 'media.html'), // SCS Media & Ads Portal 
-        sponsorRate: resolve(__dirname, 'sponsor-rate.html'), // Halaman Rate Card / Paket Pricing Sponsor
+        pitch: resolve(__dirname, 'pitch.html'),
+        pitchClient: resolve(__dirname, 'pitch-client.html'),
+        media: resolve(__dirname, 'media.html'),
+        sponsorRate: resolve(__dirname, 'sponsor-rate.html'),
 
         // --- 2. DASHBOARD KLUB / PELATIH ---
-        dashboard: resolve(__dirname, 'dashboard.html'), // Command Center Manajemen Klub
-        f1Profile: resolve(__dirname, 'f1-profile.html'), // Landing Page F1 ID / Edukasi
-        f1Id: resolve(__dirname, 'f1-id.html'), // Brankas Profil F1 ID
+        dashboard: resolve(__dirname, 'dashboard.html'),
+        f1Profile: resolve(__dirname, 'f1-profile.html'),
+        f1Id: resolve(__dirname, 'f1-id.html'),
 
         // --- 3. DASHBOARD EO / PANITIA LOMBA ---
-        eventDashboard: resolve(__dirname, 'event-dashboard.html'), // Panel Utama Command Center 1 Event
-        eventSponsor: resolve(__dirname, 'event-sponsor.html'), // Manajemen Sponsor Deal & Pitching
-        logoSponsor: resolve(__dirname, 'logosponsor.html'), // Master Database Sponsor HTML 
-        eventPeserta: resolve(__dirname, 'event-peserta.html'), // List & Verifikasi Peserta Lomba
-        settingsLomba: resolve(__dirname, 'settings-lomba.html'), // Setup Nomor Lomba, Usia & Gaya
+        eventDashboard: resolve(__dirname, 'event-dashboard.html'),
+        eventSponsor: resolve(__dirname, 'event-sponsor.html'),
+        logoSponsor: resolve(__dirname, 'logosponsor.html'),
+        eventPeserta: resolve(__dirname, 'event-peserta.html'),
+        settingsLomba: resolve(__dirname, 'settings-lomba.html'),
 
         // --- 4. MODULE PUSAT CETAK & HEAT BUILDER (PRO) ---
-        book: resolve(__dirname, 'book/book.html'), // Dashboard Modul Buku Acara
-        heatBuilder: resolve(__dirname, 'book/heat-builder.html'), // Editor Drag & Drop Seed/Seri
-        printStartList: resolve(__dirname, 'book/print-startlist.html'), // Cetak PDF Buku Startlist (A4)
-        eventResult: resolve(__dirname, 'book/event-result.html'), // Hasil Resmi Per Nomor Lomba
-        eventSertifikatSetup: resolve(__dirname, 'book/event-sertifikat.html'), // Dapur Admin Setup Koordinat Sertifikat
-        clubTestimony: resolve (__dirname, 'admin-testi.html'), // Testimoni Klub
+        book: resolve(__dirname, 'book/book.html'),
+        heatBuilder: resolve(__dirname, 'book/heat-builder.html'),
+        printStartList: resolve(__dirname, 'book/print-startlist.html'),
+        eventResult: resolve(__dirname, 'book/event-result.html'),
+        eventSertifikatSetup: resolve(__dirname, 'book/event-sertifikat.html'),
+        clubTestimony: resolve (__dirname, 'admin-testi.html'),
         pembukuan: resolve(__dirname, 'pembukuan.html'),
 
         // --- 5. SUPER ADMIN PUSAT ---
-        admin: resolve(__dirname, 'admin.html'), // Panel Kontrol Super Admin SCS
+        admin: resolve(__dirname, 'admin.html'),
         adminAds: resolve(__dirname, 'admin-ads.html'),
         sponsorPreview: resolve(__dirname, 'sponsor-preview.html'),
-        adminApproval: resolve(__dirname, 'admin-approval.html'), // ACC Sponsor
-        work: resolve(__dirname, 'work.html'), // 🚀 TAMBAHAN: WFH Admin Task Tracker
+        adminApproval: resolve(__dirname, 'admin-approval.html'),
+        work: resolve(__dirname, 'work.html'),
 
         // --- 6. DASHBOARD BRAND / SPONSOR ---
         sponsorPortal: resolve(__dirname, 'sponsor.html'), 
-        sponsorAuth: resolve(__dirname, 'sponsor-auth.html'), // Landing Page Daftar Sponsor & Free Token
+        sponsorAuth: resolve(__dirname, 'sponsor-auth.html'),
+
+        // --- 7. 🚀 LEAD MAGNET: SCS COACH TOOLS (Pindah ke Root) ---
+        toolsHub: resolve(__dirname, 'tools/index.html'), 
+        toolsInterval: resolve(__dirname, 'tools/interval.html'), 
+        toolsStopwatch: resolve(__dirname, 'tools/stopwatch.html'), 
       }
     }
   },
@@ -66,5 +71,5 @@ export default defineConfig({
     port: 3000,
     open: true,
   },
-  appType: 'mpa', // Multi-Page Application
+  appType: 'mpa', 
 });
