@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Multi-Lane Stopwatch | SCS Tools</title>
-    <!-- 🚀 Path CSS absolute biar nyedot dari src root -->
     <link rel="stylesheet" href="/src/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -17,7 +16,8 @@
 
     <nav class="bg-slate-900/80 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 border-b border-slate-800">
         <div class="max-w-4xl mx-auto px-4 h-14 flex justify-between items-center">
-            <a href="./index.html" class="text-xl hover:scale-110 transition-transform">⬅️</a>
+            <!-- 🚀 FIX: Absolute Path -->
+            <a href="/tools/index.html" class="text-xl hover:scale-110 transition-transform">⬅️</a>
             <span class="font-black text-blue-400 tracking-wider uppercase">Multi Stopwatch</span>
             <div class="w-6"></div>
         </div>
@@ -36,7 +36,6 @@
 
         <!-- 4 LANES -->
         <div class="flex-1 overflow-y-auto hide-scrollbar space-y-3 pb-10">
-            <!-- Lane 1 -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center font-black text-slate-400">1</div>
@@ -48,7 +47,6 @@
                 <button onclick="window.recordLap(1)" class="bg-slate-800 hover:bg-blue-600 text-white font-black w-16 h-16 rounded-2xl active:scale-95 transition-colors border border-slate-700">LAP</button>
             </div>
             
-            <!-- Lane 2 -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center font-black text-slate-400">2</div>
@@ -60,7 +58,6 @@
                 <button onclick="window.recordLap(2)" class="bg-slate-800 hover:bg-emerald-600 text-white font-black w-16 h-16 rounded-2xl active:scale-95 transition-colors border border-slate-700">LAP</button>
             </div>
 
-            <!-- Lane 3 -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center font-black text-slate-400">3</div>
@@ -72,7 +69,6 @@
                 <button onclick="window.recordLap(3)" class="bg-slate-800 hover:bg-amber-600 text-white font-black w-16 h-16 rounded-2xl active:scale-95 transition-colors border border-slate-700">LAP</button>
             </div>
 
-            <!-- Lane 4 -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center font-black text-slate-400">4</div>
@@ -86,7 +82,7 @@
         </div>
     </div>
 
-    <!-- 🚀 Load JS Relatif dari folder tools -->
-    <script type="module" src="./stopwatch.js"></script>
+    <!-- 🚀 FIX: Absolute Path JS -->
+    <script type="module" src="/tools/stopwatch.js"></script>
 </body>
 </html>

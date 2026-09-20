@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Smart Send-Off | SCS Tools</title>
-    <!-- 🚀 Path CSS absolute biar nyedot dari src root -->
     <link rel="stylesheet" href="/src/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -19,7 +18,8 @@
 
     <nav class="bg-slate-900/80 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 border-b border-slate-800">
         <div class="max-w-4xl mx-auto px-4 h-14 flex justify-between items-center">
-            <a href="./index.html" class="text-xl hover:scale-110 transition-transform">⬅️</a>
+            <!-- 🚀 FIX: Absolute Path untuk kembali ke index tools -->
+            <a href="/tools/index.html" class="text-xl hover:scale-110 transition-transform">⬅️</a>
             <span class="font-black text-emerald-400 tracking-wider">SMART SEND-OFF</span>
             <div class="w-6"></div>
         </div>
@@ -65,7 +65,7 @@
         </div>
     </div>
 
-    <!-- 🚀 Load JS Relatif dari folder tools -->
-    <script type="module" src="./interval.js"></script>
+    <!-- 🚀 FIX: Absolute Path JS -->
+    <script type="module" src="/tools/interval.js"></script>
 </body>
 </html>
