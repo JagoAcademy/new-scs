@@ -150,28 +150,28 @@ function renderLaporanExcel() {
 }
 
 function renderUI() {
-    let jrMasuk = 0, jrKeluar = 0, jrPajak = 0;
-    let f1Masuk = 0, f1Keluar = 0, f1Pajak = 0;
+    let jrMasuk = 0, jrKeluar = 0;
+    let f1Masuk = 0, f1Keluar = 0;
 
     const tBodyJR = document.getElementById('tabel-kas-jr'); 
     tBodyJR.innerHTML = '';
+    
+    // 🚀 FIX: Pajak otomatis dihapus agar Neraca Saldo Kas Seimbang
     jrTransactions.forEach(t => {
         const nominal = Number(t.jumlah) || 0;
         const jenisStr = String(t.jenis || '').toLowerCase().trim();
         const isMasuk = jenisStr.includes('masuk') || jenisStr.includes('pendapatan') || jenisStr === 'spp' || jenisStr.includes('sponsor');
-        let pajak = 0;
-        if(isMasuk) { jrMasuk += nominal; pajak = nominal * 0.005; jrPajak += pajak; } else { jrKeluar += nominal; }
+        
+        if(isMasuk) { jrMasuk += nominal; } else { jrKeluar += nominal; }
 
         const linkBukti = t.dokumen_url ? `<a href="${t.dokumen_url}" target="_blank" class="inline-block mt-1 text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold hover:bg-blue-200">📄 Lihat Bukti</a>` : '';
 
-        // Menambahkan kolom Aksi untuk Edit & Delete
         tBodyJR.innerHTML += `
             <tr class="border-b border-slate-200 hover:bg-slate-50 text-sm">
                 <td class="p-3 text-slate-500 font-mono text-xs">${t.tanggal || '-'}</td>
                 <td class="p-3 font-medium text-slate-800">${t.keterangan || '-'}<br>${linkBukti}</td>
                 <td class="p-3"><span class="px-2 py-1 rounded text-[10px] font-bold uppercase ${isMasuk ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">${t.jenis || '-'}</span></td>
                 <td class="p-3 text-right font-bold ${isMasuk ? 'text-emerald-600' : 'text-red-600'}">${formatRp(nominal)}</td>
-                <td class="p-3 text-right font-bold text-orange-500">${isMasuk ? formatRp(pajak) : '-'}</td>
                 <td class="p-3 text-center">
                     <button onclick="editTransaksiJR(${t.id})" class="text-blue-500 hover:text-blue-700 bg-blue-50 p-1.5 rounded transition" title="Edit Transaksi">✏️</button>
                     <button onclick="hapusTransaksiJR(${t.id})" class="text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded transition ml-1" title="Hapus Transaksi">🗑️</button>
@@ -185,8 +185,8 @@ function renderUI() {
         const nominal = Number(t.jumlah) || 0;
         const jenisStr = String(t.jenis || '').toLowerCase().trim();
         const isMasuk = jenisStr.includes('masuk') || jenisStr.includes('pendapatan') || jenisStr.includes('sponsor');
-        let pajak = 0;
-        if(isMasuk) { f1Masuk += nominal; pajak = nominal * 0.005; f1Pajak += pajak; } else { f1Keluar += nominal; }
+        
+        if(isMasuk) { f1Masuk += nominal; } else { f1Keluar += nominal; }
 
         tBodyF1.innerHTML += `
             <tr class="border-b border-slate-200 hover:bg-slate-50 text-sm">
@@ -194,21 +194,18 @@ function renderUI() {
                 <td class="p-3 font-medium text-slate-800">${t.keterangan || '-'}</td>
                 <td class="p-3"><span class="px-2 py-1 rounded text-[10px] font-bold uppercase ${isMasuk ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">${t.jenis || '-'}</span></td>
                 <td class="p-3 text-right font-bold ${isMasuk ? 'text-emerald-600' : 'text-red-600'}">${formatRp(nominal)}</td>
-                <td class="p-3 text-right font-bold text-orange-500">${isMasuk ? formatRp(pajak) : '-'}</td>
             </tr>`;
     });
 
     document.getElementById('ui-masuk-jr').innerText = formatRp(jrMasuk);
     document.getElementById('ui-keluar-jr').innerText = formatRp(jrKeluar);
-    document.getElementById('ui-pajak-jr').innerText = formatRp(jrPajak);
-    document.getElementById('ui-laba-jr').innerText = formatRp(jrMasuk - jrKeluar - jrPajak);
+    document.getElementById('ui-laba-jr').innerText = formatRp(jrMasuk - jrKeluar);
 
     document.getElementById('ui-masuk-f1').innerText = formatRp(f1Masuk);
     document.getElementById('ui-keluar-f1').innerText = formatRp(f1Keluar);
-    document.getElementById('ui-pajak-f1').innerText = formatRp(f1Pajak);
-    document.getElementById('ui-laba-f1').innerText = formatRp(f1Masuk - f1Keluar - f1Pajak);
+    document.getElementById('ui-laba-f1').innerText = formatRp(f1Masuk - f1Keluar);
     
-    document.getElementById('ui-laba-tpi').innerText = formatRp((jrMasuk - jrKeluar - jrPajak) + (f1Masuk - f1Keluar - f1Pajak));
+    document.getElementById('ui-laba-tpi').innerText = formatRp((jrMasuk - jrKeluar) + (f1Masuk - f1Keluar));
 
     const listCoach = dbFeeCoach.map(c => c.nama_coach);
     const listAdmin = dbFeeMarketing.map(m => m.admin_id);
@@ -252,33 +249,26 @@ async function fetchSemuaData() {
     renderUI();
 }
 
-
 // ==========================================
 // 🛠️ FUNGSI EDIT & HAPUS TRANSAKSI JR KAS
 // ==========================================
-
 window.editTransaksiJR = function(id) {
     const tx = jrTransactions.find(t => t.id === id);
     if (!tx) return;
 
-    // Isi ulang form dengan data existing
     document.getElementById('jr-edit-id').value = tx.id;
     document.getElementById('jr-tgl').value = tx.tanggal || '';
     document.getElementById('jr-jenis').value = tx.jenis || '';
     document.getElementById('jr-ket').value = tx.keterangan || '';
     document.getElementById('jr-nominal').value = tx.jumlah || '';
     
-    // Ubah Tampilan Tombol Submit menjadi Update
     const btnSubmit = document.getElementById('btn-submit-jr');
     btnSubmit.innerText = "Update Transaksi";
     btnSubmit.classList.replace('w-full', 'w-2/3');
     btnSubmit.classList.replace('bg-blue-600', 'bg-amber-500');
     btnSubmit.classList.replace('hover:bg-blue-700', 'hover:bg-amber-600');
     
-    // Tampilkan tombol Batal
     document.getElementById('btn-batal-edit-jr').classList.remove('hidden');
-
-    // Scroll otomatis ke atas
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
@@ -286,14 +276,12 @@ window.batalEditJR = function() {
     document.getElementById('form-jr-kas').reset();
     document.getElementById('jr-edit-id').value = '';
     
-    // Kembalikan Tampilan Tombol ke mode Insert
     const btnSubmit = document.getElementById('btn-submit-jr');
     btnSubmit.innerText = "Simpan Transaksi";
     btnSubmit.classList.replace('w-2/3', 'w-full');
     btnSubmit.classList.replace('bg-amber-500', 'bg-blue-600');
     btnSubmit.classList.replace('hover:bg-amber-600', 'hover:bg-blue-700');
     
-    // Sembunyikan tombol Batal
     document.getElementById('btn-batal-edit-jr').classList.add('hidden');
 };
 
@@ -304,12 +292,11 @@ window.hapusTransaksiJR = async function(id) {
         const { error } = await supaJR.from('akunting').delete().eq('id', id);
         if (error) throw error;
         alert("🗑️ Transaksi berhasil dihapus!");
-        fetchSemuaData(); // Refresh UI
+        fetchSemuaData(); 
     } catch (err) {
         alert("Gagal menghapus data: " + err.message);
     }
 };
-
 
 // --- LOGIKA FORM: CETAK SLIP GAJI ---
 document.getElementById('form-tutup-buku')?.addEventListener('submit', function(e) {
@@ -353,6 +340,7 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
     }
     
     document.getElementById('rep-pegawai').innerText = namaCetakLengkap;
+    // 🚀 FIX: Elemen rep-ttd-nama sudah terhubung!
     document.getElementById('rep-ttd-nama').innerText = namaTTD;
 
     let totalMasuk = 0; let totalKeluar = 0;
@@ -400,6 +388,7 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
         return matchDate && matchAdmin;
     });
 
+    // 🚀 FIX: Element rep-body-marketing sudah ada!
     const tbodyFm = document.getElementById('rep-body-marketing'); tbodyFm.innerHTML = '';
     let sumFeeMarketing = 0;
     filteredFm.forEach(t => {
@@ -450,7 +439,6 @@ document.getElementById('form-jr-kas')?.addEventListener('submit', async functio
     let dokumen_url = null;
     let uploadSuccess = true;
 
-    // Cek kalau ada file diupload
     if (fileInput && fileInput.files.length > 0) {
         const file = fileInput.files[0];
         const fileExt = file.name.split('.').pop();
@@ -475,26 +463,21 @@ document.getElementById('form-jr-kas')?.addEventListener('submit', async functio
         return;
     }
 
-    // Persiapkan data Payload DB
     const payload = { tanggal, jenis, keterangan, jumlah };
-    if (dokumen_url) payload.dokumen_url = dokumen_url; // Override jika ada file baru diupload
+    if (dokumen_url) payload.dokumen_url = dokumen_url; 
 
     try {
         if (editId) {
-            // Mode EDIT (UPDATE)
             const { error } = await supaJR.from('akunting').update(payload).eq('id', editId);
             if (error) throw error;
             alert("✅ Transaksi berhasil diupdate!");
-            window.batalEditJR(); // Reset tampilan UI kembali ke mode Insert
+            window.batalEditJR(); 
         } else {
-            // Mode INSERT BARU
             const { error } = await supaJR.from('akunting').insert([payload]);
             if (error) throw error;
             this.reset();
         }
-        
-        await fetchSemuaData(); // Tarik data terbaru
-
+        await fetchSemuaData(); 
     } catch (err) {
         alert("Gagal menyimpan data: " + err.message);
     } finally {
@@ -591,7 +574,7 @@ window.lunasiInvoicePembukuan = async function(idInvoice, noInvoice, namaSiswa, 
         const { error: errKas } = await supaJR.from('akunting').insert([{
             tanggal: tglHariIni,
             keterangan: `Pembayaran ${noInvoice} - ${namaSiswa}`,
-            jenis: 'Pemasukan SPP', // Default category
+            jenis: 'Pemasukan SPP', 
             jumlah: parseInt(total)
         }]);
         if (errKas) throw errKas;
@@ -612,13 +595,11 @@ document.getElementById('form-invoice-manual')?.addEventListener('submit', async
     const btn = document.getElementById('btn-submit-inv');
     btn.innerText = "Mengamankan Data..."; btn.disabled = true;
 
-    // Ambil Data Tanggal
     const tglTerbit = document.getElementById('inv-tgl').value;
     const invDateObj = new Date(tglTerbit);
     const bulan = String(invDateObj.getMonth() + 1).padStart(2, '0');
     const tahun = invDateObj.getFullYear();
 
-    // Ambil Data Form Lainnya
     const muridId = document.getElementById('inv-murid').value;
     const elSelect = document.getElementById('inv-murid');
     const namaMurid = elSelect.options[elSelect.selectedIndex].text;
@@ -628,7 +609,6 @@ document.getElementById('form-invoice-manual')?.addEventListener('submit', async
     const diskon = parseFloat(document.getElementById('inv-diskon').value) || 0;
     const totalBersih = nominal - diskon;
 
-    // Cari WA dari local database dbMurid
     const dataMuridAsli = dbMurid.find(m => m.id_murid == muridId);
     const wa = dataMuridAsli ? dataMuridAsli.no_wa : '';
     
@@ -649,7 +629,6 @@ document.getElementById('form-invoice-manual')?.addEventListener('submit', async
             }
         }
 
-        // Simpan database beserta diskon
         const payloadInvoice = {
             no_invoice: noInv,
             murid_id: parseInt(muridId),
@@ -667,9 +646,9 @@ document.getElementById('form-invoice-manual')?.addEventListener('submit', async
 
         if (insertError) throw insertError;
 
-        // Render Data ke UI Kertas PDF
         document.getElementById('print-inv-no').innerText = `${noInv}`;
         document.getElementById('print-inv-kepada').innerText = namaMurid;
+        // 🚀 FIX: Elemen ini akhirnya nyambung
         document.getElementById('print-inv-wa').innerText = wa ? `WA: ${wa}` : '-';
         document.getElementById('print-inv-tgl').innerText = invDateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
         document.getElementById('print-inv-desk').innerText = deskripsi;
@@ -679,8 +658,8 @@ document.getElementById('form-invoice-manual')?.addEventListener('submit', async
         document.getElementById('print-inv-nom').innerText = formatRupiah(nominal);
         document.getElementById('print-inv-total').innerText = formatRupiah(totalBersih);
 
-        // Render Baris Diskon
-        const rowDiskon = document.getElementById('row-diskon');
+        // 🚀 FIX: Nama ID HTML dan JS sudah cocok ('print-inv-row-diskon')
+        const rowDiskon = document.getElementById('print-inv-row-diskon');
         if (diskon > 0) {
             rowDiskon.classList.remove('hidden');
             document.getElementById('print-inv-diskon').innerText = `- ${formatRupiah(diskon)}`;
@@ -694,7 +673,7 @@ document.getElementById('form-invoice-manual')?.addEventListener('submit', async
         document.getElementById('page-invoice-print').classList.add('block');
 
         this.reset();
-        document.getElementById('inv-diskon').value = 0; // Kembalikan default
+        document.getElementById('inv-diskon').value = 0; 
         loadInvoiceManualQueue();
     } catch(err) {
         console.error("Gagal buat invoice:", err);
@@ -733,7 +712,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Set nilai default form tanggal ke hari ini
     const today = new Date().toISOString().split('T')[0];
     const invTglInput = document.getElementById('inv-tgl');
     if(invTglInput) invTglInput.value = today;

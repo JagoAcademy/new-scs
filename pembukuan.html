@@ -52,12 +52,8 @@
                             <span class="text-blue-300 text-sm font-bold">Total Pengeluaran</span>
                             <span id="ui-keluar-jr" class="font-bold text-red-400">Rp 0</span>
                         </div>
-                        <div class="flex justify-between border-b border-blue-800 pb-2">
-                            <span class="text-orange-300 text-sm font-bold flex items-center gap-1">⚠️ Pajak Final (0.5%)</span>
-                            <span id="ui-pajak-jr" class="font-bold text-orange-400">Rp 0</span>
-                        </div>
                         <div class="flex justify-between pt-2">
-                            <span class="text-white text-sm font-bold">Laba Bersih Unit Bisnis</span>
+                            <span class="text-white text-sm font-bold">Saldo Kas Aktual</span>
                             <span id="ui-laba-jr" class="font-black text-lg">Rp 0</span>
                         </div>
                     </div>
@@ -73,12 +69,8 @@
                             <span class="text-red-300 text-sm font-bold">Total Pengeluaran</span>
                             <span id="ui-keluar-f1" class="font-bold text-red-400">Rp 0</span>
                         </div>
-                        <div class="flex justify-between border-b border-red-800 pb-2">
-                            <span class="text-orange-300 text-sm font-bold flex items-center gap-1">⚠️ Pajak Final (0.5%)</span>
-                            <span id="ui-pajak-f1" class="font-bold text-orange-400">Rp 0</span>
-                        </div>
                         <div class="flex justify-between pt-2">
-                            <span class="text-white text-sm font-bold">Laba Bersih Unit Bisnis</span>
+                            <span class="text-white text-sm font-bold">Saldo Kas Aktual</span>
                             <span id="ui-laba-f1" class="font-black text-lg">Rp 0</span>
                         </div>
                     </div>
@@ -86,7 +78,7 @@
             </div>
             <div class="bg-slate-900 p-8 rounded-2xl shadow-lg text-center border border-slate-800 mt-6 relative overflow-hidden">
                 <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-                <p class="text-slate-400 font-bold tracking-widest uppercase text-sm mb-2 relative z-10">Total Laba Bersih Konsolidasi PT TPI (Setelah Pajak)</p>
+                <p class="text-slate-400 font-bold tracking-widest uppercase text-sm mb-2 relative z-10">Total Saldo Kas Konsolidasi PT TPI</p>
                 <h2 id="ui-laba-tpi" class="text-4xl md:text-5xl font-black text-emerald-400 relative z-10">Rp 0</h2>
             </div>
         </div>
@@ -111,12 +103,14 @@
                                     <option value="Pemasukan Sponsorship">Sponsorship / Donatur</option>
                                 </optgroup>
                                 <optgroup label="PENGELUARAN">
-                                    <option value="Pengeluaran Gaji">Gaji / Honor</option>
+                                    <option value="Pengeluaran Gaji">Gaji / Honor / Komisi</option>
                                     <option value="Pengeluaran Operasional">Operasional (Sewa Kolam, Tiket Pelatih)</option>
                                     <option value="Pengeluaran Marketing">Marketing (Ads)</option>
+                                    <option value="Pengeluaran Pajak">Pajak (PPh Final / Lainnya)</option>
+                                    <option value="Pengeluaran Lainnya">Pengeluaran Lainnya</option>
                                 </optgroup>
                             </select>
-                            <input type="text" id="jr-ket" placeholder="Keterangan Detail (Cth: Bayar Tiket)" required class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
+                            <input type="text" id="jr-ket" placeholder="Keterangan Detail (Cth: Bayar Pajak Agustus)" required class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
                             <input type="number" id="jr-nominal" placeholder="Nominal (Rp)" required class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
                             
                             <div class="bg-blue-50/50 p-2 rounded-lg border border-blue-100 mt-1">
@@ -178,19 +172,18 @@
                 <!-- Table Kas JR -->
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2 overflow-x-auto h-fit">
                     <h3 class="font-bold text-slate-800 mb-4">Riwayat Transaksi JR-Academy</h3>
-                    <table class="w-full text-left border-collapse min-w-[600px]">
+                    <table class="w-full text-left border-collapse min-w-[500px]">
                         <thead>
                             <tr class="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-200">
                                 <th class="p-3 w-24">Tanggal</th>
                                 <th class="p-3">Keterangan</th>
                                 <th class="p-3">Jenis (Pos)</th>
                                 <th class="p-3 text-right">Nominal</th>
-                                <th class="p-3 text-right text-orange-500">Pajak (0.5%)</th>
                                 <th class="p-3 text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="tabel-kas-jr" class="text-sm">
-                            <tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Mengambil data dari Supabase JR...</td></tr>
+                            <tr><td colspan="5" class="p-4 text-center text-slate-400 italic">Mengambil data dari Supabase JR...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -205,8 +198,16 @@
                     <form id="form-f1-kas" class="flex flex-col gap-3">
                         <input type="date" id="f1-tgl" required class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
                         <select id="f1-jenis" required class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
-                            <optgroup label="PEMASUKAN"><option value="Pemasukan Event">SCS Event Fee</option><option value="Pemasukan Sponsor">Sponsorship</option></optgroup>
-                            <optgroup label="PENGELUARAN"><option value="Pengeluaran Server">Server / API</option><option value="Pengeluaran Operasional">Operasional Lomba</option></optgroup>
+                            <optgroup label="PEMASUKAN">
+                                <option value="Pemasukan Event">SCS Event Fee</option>
+                                <option value="Pemasukan Sponsor">Sponsorship</option>
+                            </optgroup>
+                            <optgroup label="PENGELUARAN">
+                                <option value="Pengeluaran Server">Server / API</option>
+                                <option value="Pengeluaran Operasional">Operasional Lomba</option>
+                                <option value="Pengeluaran Pajak">Pajak (PPh Final)</option>
+                                <option value="Pengeluaran Lainnya">Lain-lain</option>
+                            </optgroup>
                         </select>
                         <input type="text" id="f1-ket" placeholder="Keterangan" required class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
                         <input type="number" id="f1-nominal" placeholder="Nominal (Rp)" required class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
@@ -215,10 +216,13 @@
                 </div>
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2 overflow-x-auto h-fit">
                     <h3 class="font-bold text-slate-800 mb-4">Riwayat Transaksi F1 Swimming</h3>
-                    <table class="w-full text-left border-collapse min-w-[600px]">
+                    <table class="w-full text-left border-collapse min-w-[500px]">
                         <thead>
                             <tr class="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-200">
-                                <th class="p-3 w-24">Tanggal</th><th class="p-3">Keterangan</th><th class="p-3">Jenis (Pos)</th><th class="p-3 text-right">Nominal</th><th class="p-3 text-right text-orange-500">Pajak (0.5%)</th>
+                                <th class="p-3 w-24">Tanggal</th>
+                                <th class="p-3">Keterangan</th>
+                                <th class="p-3">Jenis (Pos)</th>
+                                <th class="p-3 text-right">Nominal</th>
                             </tr>
                         </thead>
                         <tbody id="tabel-kas-f1" class="text-sm"></tbody>
@@ -360,6 +364,7 @@
                 </div>
             </div>
 
+            <!-- Tabel Coach -->
             <div class="mb-8">
                 <h2 class="text-lg font-black text-slate-800 mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">🏊‍♂️ Rincian Honor Mengajar</h2>
                 <table class="w-full text-left border-collapse text-sm border border-slate-200">
@@ -376,12 +381,40 @@
                 </table>
             </div>
 
+            <!-- 🚀 FIX: Tabel Komisi Marketing yang Hilang Ditambahkan! -->
+            <div class="mb-8">
+                <h2 class="text-lg font-black text-slate-800 mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">📢 Rincian Komisi Marketing</h2>
+                <table class="w-full text-left border-collapse text-sm border border-slate-200">
+                    <thead class="bg-slate-100 text-slate-600">
+                        <tr>
+                            <th class="p-3 border-b border-slate-200 w-24">Tanggal</th>
+                            <th class="p-3 border-b border-slate-200">Nama Admin</th>
+                            <th class="p-3 border-b border-slate-200">No. Invoice</th>
+                            <th class="p-3 border-b border-slate-200 text-right">Total Komisi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rep-body-marketing"></tbody>
+                </table>
+            </div>
+
             <div class="bg-slate-900 p-6 rounded-2xl text-white flex justify-between items-center shadow-lg print-shadow-none mt-4">
                 <div>
                     <p class="text-sm font-bold text-slate-300 uppercase tracking-widest mb-1">Total Take Home Pay</p>
                 </div>
                 <div class="text-right">
                     <h2 id="rep-thp" class="text-4xl font-black text-emerald-400 tracking-tight">Rp 0</h2>
+                </div>
+            </div>
+
+            <!-- 🚀 FIX: Tanda Tangan Ditambahkan agar JS tidak error -->
+            <div class="mt-16 flex justify-between items-end text-center no-print-bg">
+                <div class="w-48">
+                    <p class="text-sm font-bold text-slate-500 mb-16">Manajemen,</p>
+                    <p class="font-black text-slate-800 underline uppercase">PT. TPI</p>
+                </div>
+                <div class="w-48">
+                    <p class="text-sm font-bold text-slate-500 mb-16">Penerima,</p>
+                    <p id="rep-ttd-nama" class="font-black text-slate-800 underline uppercase"></p>
                 </div>
             </div>
         </div>
@@ -417,6 +450,8 @@
                 <div>
                     <p class="text-xs text-slate-400 uppercase font-black tracking-widest mb-2">Ditagihkan Kepada:</p>
                     <p id="print-inv-kepada" class="font-black text-sky-700 text-xl">Nama Customer</p>
+                    <!-- 🚀 FIX: Elemen No WA ditambahkan agar JS tidak error -->
+                    <p id="print-inv-wa" class="font-bold text-slate-500 text-sm mt-1">-</p>
                 </div>
                 <div class="text-right">
                     <p class="text-xs text-slate-400 uppercase font-black tracking-widest mb-2">Tanggal Terbit:</p>
@@ -454,6 +489,7 @@
                         <span>Subtotal</span>
                         <span id="print-inv-subtotal">Rp 0</span>
                     </div>
+                    <!-- 🚀 FIX: ID Diskon disamakan -->
                     <div id="print-inv-row-diskon" class="flex justify-between text-sm font-bold text-red-500 mb-4 px-2 hidden">
                         <span>Diskon (Potongan)</span>
                         <span id="print-inv-diskon">- Rp 0</span>
