@@ -60,10 +60,13 @@ export default defineConfig({
         sponsorPortal: resolve(__dirname, 'sponsor.html'), 
         sponsorAuth: resolve(__dirname, 'sponsor-auth.html'),
 
-        // --- 7. 🚀 LEAD MAGNET: SCS COACH TOOLS (Pindah ke Root) ---
+        // --- 7. LEAD MAGNET: SCS COACH TOOLS ---
         toolsHub: resolve(__dirname, 'tools/index.html'), 
         toolsInterval: resolve(__dirname, 'tools/interval.html'), 
         toolsStopwatch: resolve(__dirname, 'tools/stopwatch.html'), 
+
+        // --- 8. 🚀 UNOFFICIAL EVENT (KONTINGEN) ---
+        unofficialHub: resolve(__dirname, 'unofficial/index.html'), 
       }
     }
   },

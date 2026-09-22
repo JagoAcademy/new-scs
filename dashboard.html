@@ -14,39 +14,22 @@
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
         @keyframes neon-merah-putih {
-            0% {
-                box-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(239, 68, 68, 0.2);
-                border-color: rgba(239, 68, 68, 0.3);
-            }
-            50% {
-                box-shadow: 0 0 10px rgba(255, 255, 255, 0.9), 0 0 20px rgba(239, 68, 68, 0.7), 0 0 35px rgba(239, 68, 68, 0.5);
-                border-color: rgba(239, 68, 68, 0.8);
-            }
-            100% {
-                box-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(239, 68, 68, 0.2);
-                border-color: rgba(239, 68, 68, 0.3);
-            }
+            0% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.3); }
+            50% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.9), 0 0 20px rgba(239, 68, 68, 0.7), 0 0 35px rgba(239, 68, 68, 0.5); border-color: rgba(239, 68, 68, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.3); }
         }
-        .neon-merah-putih {
-            animation: neon-merah-putih 2.5s infinite ease-in-out;
-        }
+        .neon-merah-putih { animation: neon-merah-putih 2.5s infinite ease-in-out; }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen font-sans pb-20">
 
-    <!-- TOP NAV -->
     <nav class="bg-white shadow-sm p-3 md:p-4 flex justify-between items-center border-b sticky top-0 z-50">
-        
         <div class="flex items-center gap-2 md:gap-3 overflow-hidden">
             <a href="#" class="shrink-0">
                 <img src="" id="clubLogoDisplay" alt="Club Logo" class="w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-200 shadow-sm object-cover bg-white">
             </a>
-            
             <div class="border-l-2 border-gray-200 pl-2 md:pl-3 flex items-center gap-2 md:gap-3 shrink-0">
-                <h1 id="secretAdminTrigger" class="text-[11px] sm:text-sm md:text-lg font-black text-blue-900 tracking-tight cursor-pointer select-none transition-all uppercase whitespace-nowrap">
-                    SCS COMMAND CENTER
-                </h1>
-                
+                <h1 id="secretAdminTrigger" class="text-[11px] sm:text-sm md:text-lg font-black text-blue-900 tracking-tight cursor-pointer select-none transition-all uppercase whitespace-nowrap">SCS COMMAND CENTER</h1>
                 <button id="btnToggleView" class="hidden md:flex items-center justify-center p-1.5 ml-1 bg-slate-100 hover:bg-blue-50 text-slate-500 hover:text-blue-600 rounded-md border border-slate-200 transition-colors shadow-sm" title="Toggle Desktop / Mobile View">
                     <svg id="iconDesktop" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                     <svg id="iconMobile" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
@@ -54,9 +37,7 @@
             </div>
         </div>
         
-        <!-- KANAN: Desktop Menu -->
         <div class="hidden md:flex items-center gap-4">
-            <!-- INBOX DESKTOP -->
             <button id="btnOpenInboxDesktop" class="relative p-2 text-gray-400 hover:text-blue-900 transition-colors focus:outline-none" title="Kotak Masuk">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                 <span id="inboxBadgeDesktop" class="absolute top-0 right-0 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
@@ -83,7 +64,6 @@
             </div>
         </div>
 
-        <!-- KANAN: Mobile Burger Menu -->
         <div class="md:hidden flex items-center shrink-0 ml-2 gap-2">
             <button id="btnToggleViewMobile" class="flex items-center justify-center p-2 bg-slate-100 hover:bg-blue-50 text-slate-500 hover:text-blue-600 rounded-lg border border-slate-200 transition-colors shadow-sm" title="Toggle Desktop View">
                 <svg id="iconDesktopMobile" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
@@ -95,7 +75,6 @@
         </div>
     </nav>
 
-    <!-- MOBILE MENU OVERLAY -->
     <div id="mobileMenuOverlay" class="fixed inset-0 bg-black/50 z-[55] hidden backdrop-blur-sm transition-opacity"></div>
     <div id="mobileMenuPanel" class="fixed top-0 right-0 h-full w-4/5 max-w-sm bg-white z-[60] transform translate-x-full transition-transform duration-300 shadow-2xl flex flex-col">
         <div class="p-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
@@ -106,7 +85,6 @@
             <button id="closeMobileMenu" class="text-gray-400 hover:text-red-500 text-3xl font-bold">&times;</button>
         </div>
         <div class="flex flex-col flex-grow overflow-y-auto p-4 space-y-2">
-            <!-- INBOX MOBILE -->
             <button id="btnOpenInboxMobile" class="w-full text-left p-4 rounded-xl text-sm text-gray-700 hover:bg-blue-50 font-bold border border-gray-100 shadow-sm flex items-center justify-between">
                 <div class="flex items-center gap-3"><span>✉️</span> Kotak Masuk</div>
                 <span id="inboxBadgeMobile" class="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full hidden">0</span>
@@ -213,6 +191,23 @@
             <div id="eventListContainer" class="p-5 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <p class="text-sm text-gray-500">Mencari data event...</p>
             </div>
+        </div>
+
+        <!-- 🚀 FITUR BARU: ENTRY LOMBA EKSTERNAL -->
+        <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-3xl shadow-md border border-slate-700 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 mb-10 relative overflow-hidden group">
+            <div class="absolute right-0 top-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+            <div class="relative z-10 flex items-center gap-5">
+                <div class="w-16 h-16 bg-slate-800/50 border border-slate-700 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl shadow-inner shrink-0">
+                    📊
+                </div>
+                <div>
+                    <h2 class="text-xl md:text-2xl font-black text-white mb-1">Entry Lomba Eksternal</h2>
+                    <p class="text-xs md:text-sm text-slate-400">Auto-Generate file Excel (EBN) atlet untuk pendaftaran lomba di luar sistem SCS.</p>
+                </div>
+            </div>
+            <button id="btnOpenEBN" class="relative z-10 shrink-0 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 px-8 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all active:scale-95 whitespace-nowrap">
+                Buat EBN Sekarang 📥
+            </button>
         </div>
 
         <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden mb-10">
@@ -538,7 +533,6 @@
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">Jarak <span class="text-red-500">*</span></label>
-                        <!-- 🚀 FIX: Jarak Free Fill di Dashboard Pelatih -->
                         <input type="text" id="mtJarak" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm" placeholder="Contoh: 33m, 50m">
                     </div>
                 </div>
@@ -670,7 +664,70 @@
         </div>
     </div>
 
+    <!-- 🚀 REVISI: MODAL KONTINGEN LOMBA LUAR -->
+    <div id="modalEBN" class="fixed inset-0 bg-black/70 z-[85] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 max-h-[95vh] flex flex-col">
+            <div class="p-5 border-b border-gray-100 bg-slate-900 text-white flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">🌍</span>
+                    <h3 class="font-extrabold text-lg">Buat Link Kontingen</h3>
+                </div>
+                <button id="closeModalEBNBtn" class="text-slate-400 hover:text-white text-2xl font-bold transition">&times;</button>
+            </div>
+            
+            <div class="p-6 space-y-4 overflow-y-auto hide-scrollbar flex-1 bg-slate-50">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Nama Lomba</label>
+                        <input type="text" id="inputEbnEventName" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-slate-800" placeholder="Cth: Kejurda Jatim 2026">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Tanggal Lomba</label>
+                        <input type="date" id="inputEbnEventDate" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-slate-700 font-bold">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-2">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Nama Kolam</label>
+                        <input type="text" id="inputEbnLokasi" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-xs font-bold text-slate-700" placeholder="Cth: Kolam Renang KONI">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Kota</label>
+                        <input type="text" id="inputEbnKota" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-xs font-bold text-slate-700" placeholder="Cth: Surabaya">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Provinsi</label>
+                        <input type="text" id="inputEbnProvinsi" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-xs font-bold text-slate-700" placeholder="Cth: Jawa Timur">
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm flex flex-col h-72">
+                    <div class="bg-slate-100 p-3 flex justify-between items-center border-b border-slate-200 shrink-0">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="checkAllEbn" class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
+                            <span class="text-xs font-black text-slate-700 uppercase tracking-wider">Pilih Atlet Berangkat</span>
+                        </label>
+                        <span id="ebnSelectedCount" class="text-xs font-bold bg-slate-200 text-slate-600 px-2 py-1 rounded">0 Terpilih</span>
+                    </div>
+                    <div class="overflow-y-auto p-2 flex-1" id="ebnAthleteList">
+                        <p class="text-center text-xs text-slate-400 mt-4">Memuat data atlet...</p>
+                    </div>
+                </div>
+
+                <div id="ebnStatusMsg" class="hidden text-sm font-bold text-center rounded-lg p-4"></div>
+            </div>
+
+            <div class="p-5 bg-white border-t border-gray-100 shrink-0">
+                <button id="btnPublishUnofficial" class="w-full bg-emerald-600 text-white font-black py-4 rounded-xl hover:bg-emerald-700 transition shadow-lg flex justify-center items-center gap-2">
+                    Terbitkan Link Kontingen 🚀
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Panggil File JS Utama -->
     <script type="module" src="/src/dashboard.js"></script>
 </body>
 </html>
+            

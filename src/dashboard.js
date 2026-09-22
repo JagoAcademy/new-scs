@@ -229,9 +229,6 @@ Terima kasih.`);
         });
     }
 
-    // ==============================================================
-    // 🚀 INI BLOK YANG NEMBAK KE MANUAL_RESULTS SECARA AMAN
-    // ==============================================================
     const btnSaveManualTime = document.getElementById('btnSaveManualTime');
     if (btnSaveManualTime) {
         btnSaveManualTime.addEventListener('click', async () => {
@@ -245,7 +242,6 @@ Terima kasih.`);
             const waktu = document.getElementById('mtWaktu').value.trim();
             const statusMsg = document.getElementById('mtStatusMsg');
             
-            // 🚀 FIX: Ditaruh aman di dalem fungsi click!
             const medaliVal = document.getElementById('mtMedali').value; 
 
             if (!eventName || !eventDate || !prov || !kota || !gaya || !jarak || !waktu) {
@@ -275,7 +271,6 @@ Terima kasih.`);
             try {
                 const nomorLomba = `${jarak} Gaya ${gaya}`;
                 
-                // Langsung simpan ke tabel manual_results dengan aman!
                 const { error: manualError } = await supabaseClient
                     .from('manual_results')
                     .insert([{
@@ -311,7 +306,6 @@ Terima kasih.`);
         });
     }
 
-    // 🚀 EVENT LISTENER INBOX
     const btnOpenInboxDesktop = document.getElementById('btnOpenInboxDesktop');
     const btnOpenInboxMobile = document.getElementById('btnOpenInboxMobile');
     const modalInbox = document.getElementById('modalInbox');
@@ -321,7 +315,7 @@ Terima kasih.`);
         if(modalInbox) {
             modalInbox.classList.remove('hidden');
             setTimeout(() => modalInbox.firstElementChild.classList.remove('scale-95'), 10);
-            fetchInbox(); // Tarik data pas diklik
+            fetchInbox(); 
             
             const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
             if(mobileMenuOverlay && !mobileMenuOverlay.classList.contains('hidden')) {
@@ -454,13 +448,11 @@ function renderInbox(data) {
 window.approveAtlet = async function(inboxId, f1Id) {
     document.getElementById(`actionInbox_${inboxId}`).innerHTML = '<span class="text-xs text-blue-500 font-bold">Memproses...</span>';
     
-    // 1. Kasih Hak Paten Atlet ke Klub dan Pelatih
     const { data: userData } = await supabaseClient.auth.getUser();
     const currentUserIdGlobal = userData?.user?.id;
 
     const { error: err1 } = await supabaseClient.from('athletes').update({ club_id: currentClubId, owner_id: currentUserIdGlobal }).eq('f1_id', f1Id);
     
-    // 2. Matikan notifikasi inbox
     if (!err1) {
         await supabaseClient.from('club_inbox').update({ is_actioned: true, is_read: true }).eq('id', inboxId);
         fetchDashboardData(); 
@@ -551,7 +543,6 @@ async function fetchDashboardData() {
         currentClubId = clubData.id; 
         currentClubData = clubData; 
 
-        // 🚀 TRIGGER INBOX FETCHER DISINI!
         await fetchInbox();
 
         const displayName = clubData.short_name || clubData.club_name;
@@ -1526,46 +1517,146 @@ if (btnSaveEvent) {
     });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    let clickCount = 0;
-    let clickTimer;
+// ==============================================================
+// 🚀 FITUR KONTINGEN UNOFFICIAL EVENT (PENGGANTI EBN EXCEL)
+// ==============================================================
+const btnOpenEBN = document.getElementById('btnOpenEBN');
+const modalEBN = document.getElementById('modalEBN');
+const closeModalEBNBtn = document.getElementById('closeModalEBNBtn');
+const ebnAthleteList = document.getElementById('ebnAthleteList');
+const checkAllEbn = document.getElementById('checkAllEbn');
+const btnPublishUnofficial = document.getElementById('btnPublishUnofficial');
+const ebnSelectedCount = document.getElementById('ebnSelectedCount');
+const ebnStatusMsg = document.getElementById('ebnStatusMsg');
 
-    const secretBtn = document.getElementById('secretAdminTrigger');
-    
-    if(secretBtn) {
-        secretBtn.addEventListener('click', () => {
-            clickCount++;
-            clearTimeout(clickTimer);
-            
-            if (clickCount === 1) {
-                secretBtn.style.color = "#3b82f6"; 
-                secretBtn.style.transform = "scale(1.05)";
-            } 
-            else if (clickCount === 2) {
-                secretBtn.style.color = "#f59e0b"; 
-                secretBtn.style.transform = "scale(1.1)";
-            } 
-            else if (clickCount === 3) {
-                secretBtn.style.color = "#ef4444"; 
-                secretBtn.style.textShadow = "0 0 15px rgba(239,68,68,0.8)";
-                secretBtn.style.transform = "scale(1.2)";
-                
-                sessionStorage.setItem('aztec_key', 'buka_sesame');
+if (btnOpenEBN && modalEBN) {
+    btnOpenEBN.addEventListener('click', () => {
+        modalEBN.classList.remove('hidden');
+        setTimeout(() => modalEBN.firstElementChild.classList.remove('scale-95'), 10);
+        renderEbnList();
+        ebnStatusMsg.classList.add('hidden'); // Reset pesan
+    });
 
-                setTimeout(() => {
-                    window.location.href = '/admin.html';
-                }, 500);
-                
-                clickCount = 0;
-                return;
-            }
+    closeModalEBNBtn.addEventListener('click', () => {
+        modalEBN.firstElementChild.classList.add('scale-95');
+        setTimeout(() => modalEBN.classList.add('hidden'), 200);
+    });
 
-            clickTimer = setTimeout(() => {
-                clickCount = 0;
-                secretBtn.style.color = ""; 
-                secretBtn.style.transform = "scale(1)";
-                secretBtn.style.textShadow = "none";
-            }, 2000);
+    checkAllEbn.addEventListener('change', (e) => {
+        const isChecked = e.target.checked;
+        const checkboxes = ebnAthleteList.querySelectorAll('.ebn-checkbox');
+        checkboxes.forEach(cb => cb.checked = isChecked);
+        updateEbnCount();
+    });
+
+    function renderEbnList() {
+        if (!allAthletes || allAthletes.length === 0) {
+            ebnAthleteList.innerHTML = '<p class="text-center text-xs text-slate-500 mt-4">Belum ada atlet di klub ini.</p>';
+            return;
+        }
+
+        const sorted = [...allAthletes].sort((a, b) => a.full_name.localeCompare(b.full_name));
+        
+        let html = '<div class="space-y-1">';
+        sorted.forEach(atlet => {
+            const genderIcon = atlet.gender === 'Putra' ? '👦' : '👧';
+            html += `
+                <label class="flex items-center gap-3 p-3 hover:bg-emerald-50 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-emerald-100 group">
+                    <input type="checkbox" value="${atlet.f1_id}" class="ebn-checkbox w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold text-slate-800 truncate">${atlet.full_name}</p>
+                        <p class="text-[10px] font-medium text-slate-500">${genderIcon} ${atlet.gender} • ${atlet.f1_id}</p>
+                    </div>
+                </label>
+            `;
         });
+        html += '</div>';
+        ebnAthleteList.innerHTML = html;
+
+        const checkboxes = ebnAthleteList.querySelectorAll('.ebn-checkbox');
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updateEbnCount);
+        });
+        
+        updateEbnCount();
+        checkAllEbn.checked = false;
     }
-});
+
+    function updateEbnCount() {
+        const checked = ebnAthleteList.querySelectorAll('.ebn-checkbox:checked').length;
+        ebnSelectedCount.innerText = `${checked} Terpilih`;
+    }
+
+    btnPublishUnofficial.addEventListener('click', async () => {
+        const eventName = document.getElementById('inputEbnEventName').value.trim();
+        const eventDate = document.getElementById('inputEbnEventDate').value;
+        const lokasi = document.getElementById('inputEbnLokasi').value.trim();
+        const kota = document.getElementById('inputEbnKota').value.trim();
+        const provinsi = document.getElementById('inputEbnProvinsi').value.trim();
+        
+        if(!eventName || !eventDate) {
+            alert("Nama Lomba dan Tanggal wajib diisi!");
+            return;
+        }
+
+        const checkedBoxes = ebnAthleteList.querySelectorAll('.ebn-checkbox:checked');
+        if (checkedBoxes.length === 0) {
+            return alert("Pilih minimal 1 atlet untuk diberangkatkan!");
+        }
+
+        btnPublishUnofficial.innerHTML = `Menerbitkan Link... ⏳`;
+        btnPublishUnofficial.disabled = true;
+
+        const selectedF1Ids = Array.from(checkedBoxes).map(cb => cb.value);
+        
+        // Buat Array JSONB berisi snapshot data atlet terpilih
+        const pesertaArray = allAthletes
+            .filter(a => selectedF1Ids.includes(a.f1_id))
+            .map(a => ({
+                f1_id: a.f1_id,
+                nama: a.full_name,
+                gender: a.gender,
+                foto_url: a.foto_url // Bawa foto URL biar UI Kontingen-nya cantik
+            }));
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('unofficial_events')
+                .insert([{
+                    club_id: currentClubId,
+                    nama_event: eventName,
+                    tanggal: eventDate,
+                    lokasi_kolam: lokasi || '-',
+                    kota: kota || '-',
+                    provinsi: provinsi || '-',
+                    peserta: pesertaArray
+                }])
+                .select('id')
+                .single();
+
+            if (error) throw error;
+
+            const publicUrl = `https://f1swimming.com/unofficial/?id=${data.id}`;
+            
+            // Tampilkan Link ke UI Modal
+            document.getElementById('ebnAthleteList').parentElement.classList.add('hidden'); // Sembunyiin list
+            ebnStatusMsg.classList.remove('hidden');
+            ebnStatusMsg.className = "text-sm font-bold text-center rounded-xl p-6 bg-emerald-50 border border-emerald-200 block";
+            ebnStatusMsg.innerHTML = `
+                <div class="text-4xl mb-2">🎉</div>
+                <h4 class="text-emerald-800 text-lg mb-2">Berhasil Diterbitkan!</h4>
+                <p class="text-emerald-600 text-xs mb-4 font-normal">Link kontingen Anda sudah aktif dan siap dibagikan ke orang tua atau sosial media.</p>
+                <input type="text" value="${publicUrl}" readonly class="w-full p-3 bg-white border border-emerald-300 rounded-lg text-emerald-900 font-mono text-xs mb-3 text-center outline-none">
+                <button onclick="navigator.clipboard.writeText('${publicUrl}'); alert('Link disalin!')" class="w-full bg-emerald-600 text-white py-2 rounded-lg text-sm shadow-sm hover:bg-emerald-700">Copy Link Kontingen</button>
+            `;
+            
+            btnPublishUnofficial.classList.add('hidden'); // Sembunyiin tombol terbit
+
+        } catch (err) {
+            console.error(err);
+            alert("Gagal menerbitkan: " + err.message);
+            btnPublishUnofficial.innerHTML = `Terbitkan Link Kontingen 🚀`;
+            btnPublishUnofficial.disabled = false;
+        }
+    });
+}

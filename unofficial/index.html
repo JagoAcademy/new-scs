@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Official Roster | Kontingen Lomba</title>
+    <link rel="stylesheet" href="/src/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .bg-pattern { background-image: radial-gradient(#334155 1px, transparent 1px); background-size: 20px 20px; }
+    </style>
+</head>
+<body class="bg-slate-950 font-sans text-slate-200 min-h-screen pb-20 bg-pattern">
+
+    <!-- NAVBAR -->
+    <nav class="bg-slate-900/80 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 border-b border-slate-800">
+        <div class="max-w-4xl mx-auto px-4 h-16 flex justify-between items-center">
+            <a href="/" class="block hover:scale-105 transition-transform duration-200">
+                <img src="/images/logof1.png" alt="SCS Logo" class="h-8 object-contain">
+            </a>
+            <a href="/f1-profile.html" class="text-[10px] font-black text-amber-500 uppercase tracking-widest border border-amber-500/50 bg-amber-500/10 px-3 py-1.5 rounded-full">F1 ID Scanner</a>
+        </div>
+    </nav>
+
+    <!-- HEADER HYPE KONTINGEN -->
+    <section class="pt-28 pb-10 px-4 text-center">
+        <div class="max-w-3xl mx-auto">
+            <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Daftar Kontingen Atlet</p>
+            <h1 id="uiClubName" class="text-4xl md:text-5xl font-black text-white mb-2 leading-tight drop-shadow-md">
+                Memuat Klub...
+            </h1>
+            <p id="uiEventInfo" class="text-sm md:text-base font-medium text-slate-400">
+                Sedang memuat data kejuaraan...
+            </p>
+        </div>
+    </section>
+
+    <!-- LIST ATLET KONTINGEN -->
+    <section class="max-w-3xl mx-auto px-4 relative z-10">
+        <div class="flex items-center justify-between mb-4 px-2">
+            <h2 class="text-lg font-black text-white">Roster Atlet</h2>
+            <span id="uiTotalPeserta" class="bg-emerald-500 text-slate-950 text-xs font-black px-3 py-1 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.3)]">0 Pasukan</span>
+        </div>
+
+        <div id="rosterList" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="p-6 text-center text-slate-500 font-bold col-span-2">
+                ⏳ Menyusun formasi...
+            </div>
+        </div>
+        
+        <!-- CALL TO ACTION ORTU -->
+        <div class="mt-12 bg-slate-900 border border-slate-800 p-6 rounded-3xl text-center shadow-lg relative overflow-hidden">
+            <div class="absolute inset-0 bg-blue-600/10 blur-3xl"></div>
+            <h3 class="text-lg font-black text-white mb-2 relative z-10">Dukung Kontingen Kami!</h3>
+            <p class="text-xs text-slate-400 mb-5 relative z-10">Bagikan halaman ini ke keluarga atau sosial media Anda.</p>
+            <button onclick="navigator.clipboard.writeText(window.location.href); alert('Link berhasil disalin!')" class="relative z-10 bg-white text-slate-900 hover:bg-slate-200 font-black py-3 px-8 rounded-full transition-colors shadow-md text-sm">
+                Salin Link Halaman 🔗
+            </button>
+        </div>
+    </section>
+
+    <script type="module" src="./app.js"></script>
+</body>
+</html>
