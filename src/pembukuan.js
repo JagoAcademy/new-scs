@@ -6,6 +6,7 @@ let f1Transactions = [];
 let dbFeeCoach = [];
 let dbFeeMarketing = [];
 let dbMurid = []; 
+let pendingInvoices = []; // 🚀 Array Global penyimpan data Antrean Tagihan
 
 const dataPegawaiMap = {
     'ADIT': { nama: 'FAJAR ADITYA', nik: '3578010411910002' },
@@ -59,6 +60,30 @@ window.closeInvoicePrint = function() {
     document.getElementById('page-dashboard').classList.remove('hidden');
     document.getElementById('page-dashboard').classList.add('block');
     if (typeof fetchSemuaData === "function") fetchSemuaData();
+};
+
+window.printSlipGaji = function() {
+    const originalTitle = document.title;
+    const namaPegawai = document.getElementById('rep-ttd-nama').innerText || 'Pegawai';
+    const tglCetak = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    
+    let docName = `Slip Gaji - ${namaPegawai} - ${tglCetak}`;
+    if (namaPegawai === 'Pegawai') docName = `Rekap Gaji - Seluruh Pegawai - ${tglCetak}`;
+    
+    document.title = docName;
+    window.print();
+    setTimeout(() => { document.title = originalTitle; }, 500);
+};
+
+window.printInvoice = function() {
+    const originalTitle = document.title;
+    const noInvRaw = document.getElementById('print-inv-no').innerText || 'INV';
+    const noInv = noInvRaw.replace('#', ''); 
+    const namaCustomer = document.getElementById('print-inv-kepada').innerText || 'Customer';
+    
+    document.title = `Invoice - ${namaCustomer} - ${noInv}`;
+    window.print();
+    setTimeout(() => { document.title = originalTitle; }, 500);
 };
 
 function renderLaporanExcel() {
@@ -156,7 +181,6 @@ function renderUI() {
     const tBodyJR = document.getElementById('tabel-kas-jr'); 
     tBodyJR.innerHTML = '';
     
-    // 🚀 FIX: Pajak otomatis dihapus agar Neraca Saldo Kas Seimbang
     jrTransactions.forEach(t => {
         const nominal = Number(t.jumlah) || 0;
         const jenisStr = String(t.jenis || '').toLowerCase().trim();
@@ -249,9 +273,6 @@ async function fetchSemuaData() {
     renderUI();
 }
 
-// ==========================================
-// 🛠️ FUNGSI EDIT & HAPUS TRANSAKSI JR KAS
-// ==========================================
 window.editTransaksiJR = function(id) {
     const tx = jrTransactions.find(t => t.id === id);
     if (!tx) return;
@@ -298,7 +319,6 @@ window.hapusTransaksiJR = async function(id) {
     }
 };
 
-// --- LOGIKA FORM: CETAK SLIP GAJI ---
 document.getElementById('form-tutup-buku')?.addEventListener('submit', function(e) {
     e.preventDefault();
     
@@ -340,7 +360,6 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
     }
     
     document.getElementById('rep-pegawai').innerText = namaCetakLengkap;
-    // 🚀 FIX: Elemen rep-ttd-nama sudah terhubung!
     document.getElementById('rep-ttd-nama').innerText = namaTTD;
 
     let totalMasuk = 0; let totalKeluar = 0;
@@ -388,7 +407,6 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
         return matchDate && matchAdmin;
     });
 
-    // 🚀 FIX: Element rep-body-marketing sudah ada!
     const tbodyFm = document.getElementById('rep-body-marketing'); tbodyFm.innerHTML = '';
     let sumFeeMarketing = 0;
     filteredFm.forEach(t => {
@@ -421,7 +439,6 @@ document.getElementById('form-tutup-buku')?.addEventListener('submit', function(
     document.getElementById('page-report').classList.add('block');
 });
 
-// --- LOGIKA FORM: SIMPAN / UPDATE TRANSAKSI JR ---
 document.getElementById('form-jr-kas')?.addEventListener('submit', async function(e) {
     e.preventDefault();
     const btnSubmit = document.getElementById('btn-submit-jr');
@@ -486,7 +503,6 @@ document.getElementById('form-jr-kas')?.addEventListener('submit', async functio
     }
 });
 
-// --- LOGIKA FORM F1 ---
 document.getElementById('form-f1-kas')?.addEventListener('submit', async function(e) {
     e.preventDefault();
     const btnSubmit = document.getElementById('btn-submit-f1');
@@ -507,11 +523,9 @@ document.getElementById('form-f1-kas')?.addEventListener('submit', async functio
     btnSubmit.disabled = false;
 });
 
-
 // ==========================================
-// 🚀 FITUR BARU: INVOICE & ANTREAN MANUAL
+// 🚀 INVOICE & ANTREAN MANUAL
 // ==========================================
-
 window.loadInvoiceManualQueue = async function() {
     const container = document.getElementById('queue-invoice-list');
     if(!container) return;
@@ -531,6 +545,9 @@ window.loadInvoiceManualQueue = async function() {
             return;
         }
 
+        // 🚀 FIX: Simpan ke Global Array biar bisa dipanggil fungsi Cetak Ulang
+        pendingInvoices = data;
+
         let html = '';
         data.forEach(inv => {
             let totalVal = inv.total || 0;
@@ -543,7 +560,11 @@ window.loadInvoiceManualQueue = async function() {
                         <span class="text-xs font-black text-slate-800">👤 ${inv.nama_murid || 'Tanpa Nama'}</span>
                         <p class="text-[10px] text-slate-500 font-bold mt-1">📦 ${inv.paket || '-'}</p>
                     </div>
-                    <span class="bg-amber-100 text-amber-700 font-black text-sm px-2 py-1 rounded">Rp ${totalVal.toLocaleString('id-ID')}</span>
+                    <div class="text-right">
+                        <span class="bg-amber-100 text-amber-700 font-black text-sm px-2 py-1 rounded block mb-2">Rp ${totalVal.toLocaleString('id-ID')}</span>
+                        <!-- 🚀 FITUR CETAK ULANG DARI ANTREAN -->
+                        <button onclick="window.cetakUlangInvoice(${inv.id})" class="text-[10px] bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1.5 rounded font-bold transition shadow-sm border border-slate-300">🖨️ Cetak Ulang PDF</button>
+                    </div>
                 </div>
                 
                 <div class="flex gap-2 mt-3 pt-3 border-t border-slate-200">
@@ -559,6 +580,41 @@ window.loadInvoiceManualQueue = async function() {
         console.error("Gagal memuat antrean:", e);
         container.innerHTML = '<p class="text-center text-xs text-red-500 py-2">Gagal memuat antrean.</p>';
     }
+};
+
+// 🚀 FUNGSI CETAK ULANG INVOICE (TANPA SAVE KE DB LAGI)
+window.cetakUlangInvoice = function(idInvoice) {
+    const inv = pendingInvoices.find(i => i.id === idInvoice);
+    if(!inv) return alert('Data invoice tidak ditemukan di memori.');
+
+    const dataMuridAsli = dbMurid.find(m => m.id_murid == inv.murid_id);
+    const wa = dataMuridAsli ? dataMuridAsli.no_wa : '';
+    
+    document.getElementById('print-inv-no').innerText = inv.no_invoice;
+    document.getElementById('print-inv-kepada').innerText = inv.nama_murid;
+    document.getElementById('print-inv-wa').innerText = wa ? `WA: ${wa}` : '-';
+    
+    const tglTerbit = new Date(inv.tanggal_terbit);
+    document.getElementById('print-inv-tgl').innerText = tglTerbit.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    document.getElementById('print-inv-desk').innerText = inv.paket;
+    
+    const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+    
+    document.getElementById('print-inv-nom').innerText = formatRupiah(inv.biaya);
+    document.getElementById('print-inv-total').innerText = formatRupiah(inv.total);
+
+    const rowDiskon = document.getElementById('print-inv-row-diskon');
+    if (inv.diskon > 0) {
+        rowDiskon.classList.remove('hidden');
+        document.getElementById('print-inv-diskon').innerText = `- ${formatRupiah(inv.diskon)}`;
+    } else {
+        rowDiskon.classList.add('hidden');
+    }
+
+    document.getElementById('page-dashboard').classList.add('hidden');
+    document.getElementById('page-dashboard').classList.remove('block');
+    document.getElementById('page-invoice-print').classList.remove('hidden');
+    document.getElementById('page-invoice-print').classList.add('block');
 };
 
 window.lunasiInvoicePembukuan = async function(idInvoice, noInvoice, namaSiswa, total) {
@@ -648,7 +704,6 @@ document.getElementById('form-invoice-manual')?.addEventListener('submit', async
 
         document.getElementById('print-inv-no').innerText = `${noInv}`;
         document.getElementById('print-inv-kepada').innerText = namaMurid;
-        // 🚀 FIX: Elemen ini akhirnya nyambung
         document.getElementById('print-inv-wa').innerText = wa ? `WA: ${wa}` : '-';
         document.getElementById('print-inv-tgl').innerText = invDateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
         document.getElementById('print-inv-desk').innerText = deskripsi;
@@ -658,7 +713,6 @@ document.getElementById('form-invoice-manual')?.addEventListener('submit', async
         document.getElementById('print-inv-nom').innerText = formatRupiah(nominal);
         document.getElementById('print-inv-total').innerText = formatRupiah(totalBersih);
 
-        // 🚀 FIX: Nama ID HTML dan JS sudah cocok ('print-inv-row-diskon')
         const rowDiskon = document.getElementById('print-inv-row-diskon');
         if (diskon > 0) {
             rowDiskon.classList.remove('hidden');

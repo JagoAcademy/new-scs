@@ -6,10 +6,35 @@
     <title>Buku Besar Induk - PT TPI</title>
     <link rel="stylesheet" href="/src/style.css">
     <style>
+        /* 🚀 FIX: LOGIKA KERTAS A4 FIX 1 HALAMAN (ANTI MELEBER) */
         @media print {
-            body { background: white !important; }
-            .no-print { display: none !important; }
+            @page {
+                size: A4 portrait;
+                margin: 10mm; /* Margin tipis biar muat banyak tapi rapi */
+            }
+            body { 
+                background: white !important; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+            }
+            .no-print, .no-print * { display: none !important; }
             .print-shadow-none { box-shadow: none !important; border: 1px solid #e2e8f0 !important; }
+            
+            /* Paksa kontainer nyesuaikan 1 halaman utuh dan buang efek screen/scroll */
+            #page-invoice-print, #page-report {
+                display: block !important;
+                width: 100% !important;
+                min-height: auto !important;
+                height: auto !important;
+                page-break-after: avoid !important;
+                page-break-before: avoid !important;
+                page-break-inside: avoid !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            /* Sembunyikan dashboard secara paksa saat print */
+            #page-dashboard { display: none !important; }
         }
     </style>
 </head>
@@ -325,17 +350,17 @@
     <!-- ========================================== -->
     <!-- HALAMAN 2: CETAK SLIP GAJI & CASHFLOW -->
     <!-- ========================================== -->
-    <div id="page-report" class="hidden max-w-4xl mx-auto p-4 md:p-10 min-h-screen bg-slate-50">
+    <div id="page-report" class="hidden max-w-4xl mx-auto p-4 md:p-10 bg-slate-50">
         <div class="flex justify-between items-center mb-8 no-print">
             <button onclick="closeReport()" class="text-blue-600 font-bold hover:text-blue-800 transition-colors flex items-center gap-2">
                 <span>&larr;</span> Kembali ke Dashboard
             </button>
-            <button onclick="window.print()" class="bg-slate-800 text-white px-5 py-2 rounded-lg font-bold shadow-md hover:bg-slate-900 flex items-center gap-2">
+            <button onclick="printSlipGaji()" class="bg-slate-800 text-white px-5 py-2 rounded-lg font-bold shadow-md hover:bg-slate-900 flex items-center gap-2">
                 🖨️ Cetak / Simpan PDF
             </button>
         </div>
 
-        <div class="bg-white p-8 md:p-12 rounded-2xl shadow-xl print-shadow-none relative overflow-hidden border border-slate-200">
+        <div class="bg-white p-8 md:p-12 rounded-2xl shadow-xl print-shadow-none relative border border-slate-200">
             <div class="text-center border-b-2 border-slate-800 pb-6 mb-6">
                 <h1 id="rep-title" class="text-3xl font-black text-slate-900 tracking-tight">SLIP GAJI</h1>
                 <p id="rep-subtitle" class="text-lg font-bold text-blue-900 mt-1">JR-Academy</p>
@@ -381,7 +406,7 @@
                 </table>
             </div>
 
-            <!-- 🚀 FIX: Tabel Komisi Marketing yang Hilang Ditambahkan! -->
+            <!-- Tabel Komisi Marketing -->
             <div class="mb-8">
                 <h2 class="text-lg font-black text-slate-800 mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">📢 Rincian Komisi Marketing</h2>
                 <table class="w-full text-left border-collapse text-sm border border-slate-200">
@@ -406,7 +431,7 @@
                 </div>
             </div>
 
-            <!-- 🚀 FIX: Tanda Tangan Ditambahkan agar JS tidak error -->
+            <!-- Tanda Tangan -->
             <div class="mt-16 flex justify-between items-end text-center no-print-bg">
                 <div class="w-48">
                     <p class="text-sm font-bold text-slate-500 mb-16">Manajemen,</p>
@@ -423,12 +448,12 @@
     <!-- ========================================== -->
     <!-- HALAMAN 3: CETAK INVOICE MANUAL (PDF)      -->
     <!-- ========================================== -->
-    <div id="page-invoice-print" class="hidden max-w-4xl mx-auto p-4 md:p-10 min-h-screen bg-slate-50">
+    <div id="page-invoice-print" class="hidden max-w-4xl mx-auto p-4 md:p-10 bg-slate-50">
         <div class="flex justify-between items-center mb-8 no-print">
             <button onclick="closeInvoicePrint()" class="text-blue-600 font-bold hover:text-blue-800 transition-colors flex items-center gap-2">
                 <span>&larr;</span> Kembali ke Dashboard
             </button>
-            <button onclick="window.print()" class="bg-slate-800 text-white px-5 py-2 rounded-lg font-bold shadow-md hover:bg-slate-900 flex items-center gap-2">
+            <button onclick="printInvoice()" class="bg-slate-800 text-white px-5 py-2 rounded-lg font-bold shadow-md hover:bg-slate-900 flex items-center gap-2">
                 🖨️ Cetak / Simpan PDF
             </button>
         </div>
@@ -450,7 +475,6 @@
                 <div>
                     <p class="text-xs text-slate-400 uppercase font-black tracking-widest mb-2">Ditagihkan Kepada:</p>
                     <p id="print-inv-kepada" class="font-black text-sky-700 text-xl">Nama Customer</p>
-                    <!-- 🚀 FIX: Elemen No WA ditambahkan agar JS tidak error -->
                     <p id="print-inv-wa" class="font-bold text-slate-500 text-sm mt-1">-</p>
                 </div>
                 <div class="text-right">
@@ -489,7 +513,6 @@
                         <span>Subtotal</span>
                         <span id="print-inv-subtotal">Rp 0</span>
                     </div>
-                    <!-- 🚀 FIX: ID Diskon disamakan -->
                     <div id="print-inv-row-diskon" class="flex justify-between text-sm font-bold text-red-500 mb-4 px-2 hidden">
                         <span>Diskon (Potongan)</span>
                         <span id="print-inv-diskon">- Rp 0</span>
