@@ -6,31 +6,38 @@
     <title>Buku Besar Induk - PT TPI</title>
     <link rel="stylesheet" href="/src/style.css">
     <style>
-        /* 🚀 FIX: LOGIKA KERTAS A4 FIX 1 HALAMAN (ANTI MELEBER) */
+        /* 🚀 FIX: LOGIKA KERTAS A4 FIX 1 HALAMAN & ANTI TABRAKAN */
         @media print {
             @page {
                 size: A4 portrait;
-                margin: 10mm; /* Margin tipis biar muat banyak tapi rapi */
+                margin: 5mm; /* Margin super tipis biar ga nge-blank di halaman 2 */
             }
             body { 
                 background: white !important; 
                 -webkit-print-color-adjust: exact; 
                 print-color-adjust: exact; 
+                margin: 0;
+                padding: 0;
             }
             .no-print, .no-print * { display: none !important; }
             .print-shadow-none { box-shadow: none !important; border: 1px solid #e2e8f0 !important; }
             
-            /* Paksa kontainer nyesuaikan 1 halaman utuh dan buang efek screen/scroll */
-            #page-invoice-print, #page-report {
+            /* 1. Cabut kutukan min-h-screen yang bikin kertas nambah 1 lembar kosong */
+            .min-h-screen { min-height: 0 !important; }
+
+            /* 2. JANGAN PERNAH FORCE TAMPIL KE SEMUA ELEMEN! Hormati class hidden dari layar */
+            #page-invoice-print.hidden, #page-report.hidden {
+                display: none !important;
+            }
+            
+            /* 3. Hanya elemen yang lagi dibuka (block) yang dipaksa cetak full */
+            #page-invoice-print.block, #page-report.block {
                 display: block !important;
                 width: 100% !important;
-                min-height: auto !important;
                 height: auto !important;
-                page-break-after: avoid !important;
-                page-break-before: avoid !important;
-                page-break-inside: avoid !important;
                 margin: 0 !important;
-                padding: 0 !important;
+                padding: 10mm !important; /* Sebagai ganti margin kertas */
+                page-break-inside: avoid !important;
             }
             
             /* Sembunyikan dashboard secara paksa saat print */
