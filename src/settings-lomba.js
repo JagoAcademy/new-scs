@@ -254,7 +254,6 @@ window.renderKU = () => {
 
 window.openModalKU = (id = null) => {
     if (id) {
-        // PERBAIKAN BUG STRING VS INTEGER
         const ku = window.configKU.find(k => String(k.id) === String(id));
         if (!ku) return alert("Data KU tidak ditemukan!");
         
@@ -311,7 +310,6 @@ window.renderGaya = () => {
         (gaya.jarak || []).forEach(jrk => {
             const bgBadge = jrk.aktif ? 'bg-indigo-100 border-indigo-200' : 'bg-slate-100 border-slate-200 line-through opacity-70';
             
-            // Re-layout untuk layar HP: Chip berisi teks jarak, di bawahnya tombol Aturan & Hapus
             jarakHtml += `
                 <div class="flex flex-col gap-1.5 ${bgBadge} p-2 rounded-lg border shadow-sm w-[110px] shrink-0" onclick="window.toggleJarak('${gaya.id}', '${jrk.id}')">
                     <span class="text-xs font-bold text-center text-indigo-900 pointer-events-none">${jrk.nama}</span>
@@ -540,7 +538,7 @@ window.deleteItemEstafet = (estafetId, itemId) => {
 };
 
 // ========================================================
-// MODAL ATURAN & KUOTA LOMBA (INJEKSI BARU)
+// MODAL ATURAN & KUOTA LOMBA (DI-FIX TANPA FILTER AKTIF)
 // ========================================================
 window.openModalAturanLomba = (gayaId, jarakId) => {
     document.getElementById('aturanGayaId').value = gayaId;
@@ -554,7 +552,9 @@ window.openModalAturanLomba = (gayaId, jarakId) => {
     const containerKU = document.getElementById('containerAturanKU');
     containerKU.innerHTML = '';
     
-    window.configKU.filter(k => k.aktif).forEach(ku => {
+    // FIX: Hapus .filter(k => k.aktif) karena toggle aktif KU udah kita buang.
+    // Tambahan .sort() biar daftar KU di modal urut rapi dari tahun termuda.
+    window.configKU.sort((a,b) => b.tahunAkhir - a.tahunAkhir).forEach(ku => {
         const isBlacklisted = (jarak.blacklist_ku || []).includes(ku.nama);
         containerKU.innerHTML += `
             <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer p-1.5 hover:bg-slate-100 rounded transition-colors">
