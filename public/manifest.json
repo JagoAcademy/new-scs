@@ -1,6 +1,6 @@
 {
-  "name": "SCS - Swimming Competition System",
-  "short_name": "SCS App",
+  "name": "F1Swimming",
+  "short_name": "F1Swimming",
   "description": "Sistem Manajemen Lomba Renang Indonesia",
   "start_url": "/index.html",
   "display": "standalone",
@@ -8,13 +8,13 @@
   "theme_color": "#1e3a8a",
   "icons": [
     {
-      "src": "/images/logof1.png",
+      "src": "/images/weblogo.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/images/logof1.png",
+      "src": "/images/weblogo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
