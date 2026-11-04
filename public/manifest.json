@@ -1,6 +1,6 @@
 {
-  "name": "F1Swimming",
-  "short_name": "F1Swimming",
+  "name": "SCS",
+  "short_name": "SCS",
   "description": "Sistem Manajemen Lomba Renang Indonesia",
   "start_url": "/index.html",
   "display": "standalone",
@@ -8,13 +8,13 @@
   "theme_color": "#1e3a8a",
   "icons": [
     {
-      "src": "/images/weblogo.png",
+      "src": "/scs.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/images/weblogo.png",
+      "src": "/scs.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
