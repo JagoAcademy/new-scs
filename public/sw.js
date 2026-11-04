@@ -1,4 +1,4 @@
-const CACHE_NAME = 'scs-app-v1';
+const CACHE_NAME = 'scs-app-v2'; // <-- NAIK VERSI BIAR CACHE LAMA DIHAPUS
 
 // Saat diinstal, langsung aktifkan
 self.addEventListener('install', (event) => {
