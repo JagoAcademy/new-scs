@@ -248,16 +248,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (err) { console.error("Stats Error"); }
 
         // =========================================================
-        // RENDER KELOMPOK UMUR & GAYA INDIVIDU
+        // RENDER KELOMPOK UMUR & GAYA INDIVIDU (WITH BLACKLIST LOGIC)
         // =========================================================
         const kuList = eventData.config_ku || [];
-        document.getElementById('inputTglLahir').addEventListener('change', (e) => {
-            const tahunLahir = new Date(e.target.value).getFullYear();
-            if (isNaN(tahunLahir)) return;
-            const matchedKU = kuList.find(ku => tahunLahir >= Number(ku.tahunMulai) && tahunLahir <= Number(ku.tahunAkhir));
-            document.getElementById('inputAutoKU').value = matchedKU ? matchedKU.nama : "Di Luar Rentang KU";
-        });
-
         const gayaList = eventData.config_gaya || [];
         const containerGaya = document.getElementById('containerNomorLomba');
         containerGaya.innerHTML = '';
@@ -266,10 +259,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             let jarakHTML = '';
             (gaya.jarak || []).forEach(jrk => {
                 if(jrk.aktif) {
+                    // Simpan data blacklist KU ke dalam attribute custom html
+                    const blacklistKuJSON = JSON.stringify(jrk.blacklist_ku || []);
                     jarakHTML += `
-                        <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-slate-50 p-2.5 rounded-lg border border-slate-200 cursor-pointer hover:bg-blue-50 transition-colors">
-                            <input type="checkbox" name="nomor_lomba" value="${gaya.nama} ${jrk.nama}" class="w-4 h-4 text-blue-600 rounded">
-                            ${jrk.nama}
+                        <label class="lbl-nomor flex items-center gap-2 text-xs font-bold text-slate-700 bg-slate-50 p-2.5 rounded-lg border border-slate-200 cursor-pointer hover:bg-blue-50 transition-colors">
+                            <input type="checkbox" name="nomor_lomba" value="${gaya.nama} ${jrk.nama}" data-blacklist='${blacklistKuJSON}' class="w-4 h-4 text-blue-600 rounded disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span class="teks-nomor">${jrk.nama}</span>
                         </label>
                     `;
                 }
@@ -282,6 +277,40 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                 `;
             }
+        });
+
+        // LOGIKA DETEKSI UMUR & DISABLE CHECKBOX LOMBA
+        document.getElementById('inputTglLahir').addEventListener('change', (e) => {
+            const tahunLahir = new Date(e.target.value).getFullYear();
+            if (isNaN(tahunLahir)) return;
+            
+            const matchedKU = kuList.find(ku => tahunLahir >= Number(ku.tahunMulai) && tahunLahir <= Number(ku.tahunAkhir));
+            const currentKUName = matchedKU ? matchedKU.nama : "Di Luar Rentang KU";
+            document.getElementById('inputAutoKU').value = currentKUName;
+
+            // Eksekusi Malaikat Pencabut Nyawa (Blacklist Validator)
+            const checkboxes = document.querySelectorAll('input[name="nomor_lomba"]');
+            checkboxes.forEach(cb => {
+                const blacklistArr = JSON.parse(cb.getAttribute('data-blacklist') || '[]');
+                const lbl = cb.closest('.lbl-nomor');
+                const teks = lbl.querySelector('.teks-nomor');
+
+                // Kalo KU anak tersebut ada di daftar blacklist, MATIKAN NOMORNYA!
+                if (blacklistArr.includes(currentKUName) || currentKUName === "Di Luar Rentang KU") {
+                    cb.checked = false;
+                    cb.disabled = true;
+                    lbl.classList.add('bg-slate-200', 'opacity-50', 'cursor-not-allowed');
+                    lbl.classList.remove('bg-slate-50', 'hover:bg-blue-50', 'cursor-pointer');
+                    teks.classList.add('line-through', 'text-slate-400');
+                    teks.classList.remove('text-slate-700');
+                } else {
+                    cb.disabled = false;
+                    lbl.classList.remove('bg-slate-200', 'opacity-50', 'cursor-not-allowed');
+                    lbl.classList.add('bg-slate-50', 'hover:bg-blue-50', 'cursor-pointer');
+                    teks.classList.remove('line-through', 'text-slate-400');
+                    teks.classList.add('text-slate-700');
+                }
+            });
         });
 
         // =========================================================
@@ -808,6 +837,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('areaAkta').classList.remove('hidden'); 
         }
         document.querySelectorAll('input[name="nomor_lomba"]:checked').forEach(cb => cb.checked = false);
+        
+        // Kembalikan semua visual checkbox jadi nyala setelah form dire-reset
+        document.getElementById('inputTglLahir').dispatchEvent(new Event('change'));
     }
 
     // ==========================================

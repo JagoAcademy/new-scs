@@ -309,11 +309,16 @@ window.renderGaya = () => {
     window.configGaya.forEach(gaya => {
         let jarakHtml = '';
         (gaya.jarak || []).forEach(jrk => {
-            const bgBadge = jrk.aktif ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-slate-100 text-slate-400 border-slate-200 line-through';
+            const bgBadge = jrk.aktif ? 'bg-indigo-100 border-indigo-200' : 'bg-slate-100 border-slate-200 line-through opacity-70';
+            
+            // Re-layout untuk layar HP: Chip berisi teks jarak, di bawahnya tombol Aturan & Hapus
             jarakHtml += `
-                <div class="flex items-center gap-1.5 ${bgBadge} px-2.5 py-1 rounded border text-[11px] font-bold cursor-pointer group shadow-sm transition-colors" onclick="window.toggleJarak('${gaya.id}', '${jrk.id}')">
-                    <span>${jrk.nama}</span>
-                    <button onclick="event.stopPropagation(); window.deleteJarak('${gaya.id}', '${jrk.id}')" class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 ml-1 bg-white/50 rounded-full w-4 h-4 flex items-center justify-center transition-all">×</button>
+                <div class="flex flex-col gap-1.5 ${bgBadge} p-2 rounded-lg border shadow-sm w-[110px] shrink-0" onclick="window.toggleJarak('${gaya.id}', '${jrk.id}')">
+                    <span class="text-xs font-bold text-center text-indigo-900 pointer-events-none">${jrk.nama}</span>
+                    <div class="flex items-center gap-1 justify-center mt-1">
+                        <button onclick="event.stopPropagation(); window.openModalAturanLomba('${gaya.id}', '${jrk.id}')" class="bg-indigo-50 text-indigo-700 border border-indigo-100 px-1.5 py-1 rounded text-[9px] font-bold active:scale-95 transition-transform flex-1">Aturan</button>
+                        <button onclick="event.stopPropagation(); window.deleteJarak('${gaya.id}', '${jrk.id}')" class="bg-red-50 text-red-600 border border-red-100 px-1.5 py-1 rounded text-[9px] font-bold active:scale-95 transition-transform">X</button>
+                    </div>
                 </div>
             `;
         });
@@ -533,6 +538,51 @@ window.deleteItemEstafet = (estafetId, itemId) => {
         window.renderEstafet();
     }
 };
+
+// ========================================================
+// MODAL ATURAN & KUOTA LOMBA (INJEKSI BARU)
+// ========================================================
+window.openModalAturanLomba = (gayaId, jarakId) => {
+    document.getElementById('aturanGayaId').value = gayaId;
+    document.getElementById('aturanJarakId').value = jarakId;
+    
+    const gaya = window.configGaya.find(g => String(g.id) === String(gayaId));
+    const jarak = gaya.jarak.find(j => String(j.id) === String(jarakId));
+    
+    document.getElementById('aturanKuota').value = jarak.kuota || 0;
+    
+    const containerKU = document.getElementById('containerAturanKU');
+    containerKU.innerHTML = '';
+    
+    window.configKU.filter(k => k.aktif).forEach(ku => {
+        const isBlacklisted = (jarak.blacklist_ku || []).includes(ku.nama);
+        containerKU.innerHTML += `
+            <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer p-1.5 hover:bg-slate-100 rounded transition-colors">
+                <input type="checkbox" value="${ku.nama}" class="chk-blacklist-ku w-4 h-4 text-red-500 rounded focus:ring-red-500" ${isBlacklisted ? 'checked' : ''}>
+                Tolak ${ku.nama}
+            </label>
+        `;
+    });
+    
+    document.getElementById('modalAturanLomba').classList.remove('hidden');
+    document.getElementById('modalAturanLomba').classList.add('flex');
+}
+
+window.saveAturanLomba = () => {
+    const gayaId = document.getElementById('aturanGayaId').value;
+    const jarakId = document.getElementById('aturanJarakId').value;
+    const kuota = document.getElementById('aturanKuota').value;
+    
+    const blacklist = Array.from(document.querySelectorAll('.chk-blacklist-ku:checked')).map(cb => cb.value);
+    
+    const gayaIndex = window.configGaya.findIndex(g => String(g.id) === String(gayaId));
+    const jarakIndex = window.configGaya[gayaIndex].jarak.findIndex(j => String(j.id) === String(jarakId));
+    
+    window.configGaya[gayaIndex].jarak[jarakIndex].kuota = Number(kuota);
+    window.configGaya[gayaIndex].jarak[jarakIndex].blacklist_ku = blacklist;
+    
+    window.closeModal('modalAturanLomba');
+}
 
 // ========================================================
 // GLOBAL MODAL CLOSER
