@@ -35,7 +35,8 @@
     <link rel="stylesheet" href="/src/style.css">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1e3a8a">
-    <link rel="apple-touch-icon" href="/images/weblogo.png">
+    <!-- SESUAIKAN DENGAN LOGO BARU LU -->
+    <link rel="apple-touch-icon" href="/scs.png">
     
     <style>
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -523,6 +524,17 @@
             </div>
         </div>
     </div>
+
+    <!-- SCRIPT PEMANGGIL SERVICE WORKER (WAJIB ADA BIAR BISA DI-INSTALL) -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('Service Worker Active! Scope:', reg.scope))
+            .catch(err => console.error('Service Worker Gagal:', err));
+        });
+      }
+    </script>
 
     <script type="module">
         import { supabaseClient } from '/src/supabase.js';
