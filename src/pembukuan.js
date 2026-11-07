@@ -174,6 +174,52 @@ function renderLaporanExcel() {
     }
 }
 
+function renderJurnalUmum(allTx) {
+    const tbodyJurnal = document.getElementById('tabel-jurnal-umum');
+    if (!tbodyJurnal) return;
+
+    let htmlJurnal = '';
+    let totalDebet = 0;
+    let totalKredit = 0;
+
+    // Urutkan dari yang tertua ke terbaru untuk format jurnal standar
+    const sortedTx = [...allTx].sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+
+    sortedTx.forEach(t => {
+        const nominal = Number(t.jumlah) || 0;
+        const jenisStr = String(t.jenis || '').toLowerCase().trim();
+        const isMasuk = jenisStr.includes('masuk') || jenisStr.includes('pendapatan') || jenisStr === 'spp' || jenisStr.includes('sponsor') || jenisStr.includes('fee');
+
+        // STANDAR AKUNTANSI DOUBLE ENTRY:
+        // Jika Pemasukan -> Debet: Kas/Bank, Kredit: Pendapatan (Jenis)
+        // Jika Pengeluaran -> Debet: Beban (Jenis), Kredit: Kas/Bank
+        let akunDebet = isMasuk ? 'Kas & Bank' : (t.jenis || 'Beban Operasional');
+        let akunKredit = isMasuk ? (t.jenis || 'Pendapatan') : 'Kas & Bank';
+
+        totalDebet += nominal;
+        totalKredit += nominal;
+
+        htmlJurnal += `
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+                <td class="p-3 text-xs text-slate-500 font-mono align-top pt-4" rowspan="2">${t.tanggal || '-'}</td>
+                <td class="p-2 pt-4 font-bold text-slate-800">${akunDebet}</td>
+                <td class="p-2 pt-4 text-right text-xs text-slate-400 align-top" rowspan="2">${t.keterangan || '-'}</td>
+                <td class="p-2 pt-4 text-right font-bold text-blue-600">${formatRp(nominal)}</td>
+                <td class="p-2 pt-4 text-right font-medium text-slate-400">-</td>
+            </tr>
+            <tr class="border-b-2 border-slate-200 hover:bg-slate-50">
+                <td class="p-2 pb-4 pl-8 italic text-slate-600">${akunKredit}</td>
+                <td class="p-2 pb-4 text-right font-medium text-slate-400">-</td>
+                <td class="p-2 pb-4 text-right font-bold text-emerald-600">${formatRp(nominal)}</td>
+            </tr>
+        `;
+    });
+
+    tbodyJurnal.innerHTML = htmlJurnal || '<tr><td colspan="5" class="text-center p-4 italic text-slate-400">Tidak ada transaksi.</td></tr>';
+    document.getElementById('tot-jurnal-debet').innerText = formatRp(totalDebet);
+    document.getElementById('tot-jurnal-kredit').innerText = formatRp(totalKredit);
+}
+
 function renderUI() {
     let jrMasuk = 0, jrKeluar = 0;
     let f1Masuk = 0, f1Keluar = 0;
@@ -240,6 +286,10 @@ function renderUI() {
     uniquePegawai.forEach(p => { selectCoach.innerHTML += `<option value="${p}">${p}</option>`; });
 
     renderLaporanExcel();
+    
+    // Render Jurnal Umum di Tab Laporan Akuntansi
+    const allTx = [...jrTransactions, ...f1Transactions];
+    renderJurnalUmum(allTx);
 }
 
 async function fetchSemuaData() {
