@@ -35,7 +35,7 @@
     
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1e3a8a">
-    <link rel="apple-touch-icon" href="/images/weblogo.png">
+    <link rel="apple-touch-icon" href="/images/scs.png">
     
     <style>
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -101,10 +101,10 @@
       }
     }
     </script>
-  <script type="module" crossorigin src="/assets/main-870d9a8e.js"></script>
+  <script type="module" crossorigin src="/assets/main-931f233d.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-3cfb730f.js">
-  <link rel="modulepreload" crossorigin href="/assets/supabase-b7fcd0c7.js">
-  <link rel="stylesheet" href="/assets/style-4a6a5742.css">
+  <link rel="modulepreload" crossorigin href="/assets/supabase-e9059105.js">
+  <link rel="stylesheet" href="/assets/style-51f43795.css">
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans antialiased relative">
     
@@ -528,6 +528,17 @@
             </div>
         </div>
     </div>
+
+    <!-- SCRIPT PEMANGGIL SERVICE WORKER (WAJIB ADA BIAR BISA DI-INSTALL) -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('Service Worker Active! Scope:', reg.scope))
+            .catch(err => console.error('Service Worker Gagal:', err));
+        });
+      }
+    </script>
 
     
 </body>

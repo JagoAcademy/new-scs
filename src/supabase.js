@@ -1,7 +1,10 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://ynixwjufhutrqocdlcww.supabase.co';
-// Ingat: Nanti di versi production, Key ini sebaiknya dimasukkan ke file .env
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InluaXh3anVmaHV0cnFvY2RsY3d3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMzMzkxMzQsImV4cCI6MjA5ODkxNTEzNH0.M3zOtZm0-O5IiYL5zpvDKBQwwa27dayEtqZ0Z6-mAMQ';
+const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || '').trim();
+const supabaseKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
+
+if (!supabaseUrl || !supabaseKey) {
+    console.error('❌ Env Node 1 (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY) belum terbaca.');
+}
 
 export const supabaseClient = createClient(supabaseUrl, supabaseKey);

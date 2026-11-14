@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sponsorship Portal | F1 Swimming Ad-Tech</title>
+    
+    <!-- PRIMARY META -->
+    <meta name="description" content="Pantau performa kampanye brand Anda, kelola portofolio, dan temukan target event potensial berikutnya.">
+    
+    <!-- OPEN GRAPH META TAGS (Facebook, WhatsApp, LinkedIn) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://f1swimming.com/sponsor">
+    <meta property="og:title" content="Sponsorship Portal | F1 Swimming Ad-Tech">
+    <meta property="og:description" content="Pantau performa kampanye brand Anda, kelola portofolio, dan temukan target event potensial berikutnya.">
+    <meta property="og:image" content="https://f1swimming.com/images/sponsormeta.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="600">
+
+    <!-- TWITTER META TAGS -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://f1swimming.com/sponsor">
+    <meta name="twitter:title" content="Sponsorship Portal | F1 Swimming Ad-Tech">
+    <meta name="twitter:description" content="Pantau performa kampanye brand Anda, kelola portofolio, dan temukan target event potensial berikutnya.">
+    <meta name="twitter:image" content="https://f1swimming.com/images/sponsormeta.jpg">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+  <script type="module" crossorigin src="/assets/sponsorPortal-30bbdc54.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-3cfb730f.js">
+  <link rel="modulepreload" crossorigin href="/assets/supabase-e9059105.js">
+</head>
+<body class="bg-slate-900 font-sans text-slate-200 min-h-screen flex flex-col pb-10">
+
+    <nav class="bg-black shadow-lg p-3 md:px-6 md:py-4 flex justify-between items-center border-b border-slate-800 sticky top-0 z-40">
+        <div class="flex items-center gap-2 md:gap-3">
+            <span class="text-lg md:text-xl font-black text-white uppercase tracking-widest">Brand<span class="text-blue-500">Portal</span></span>
+        </div>
+        
+        <div class="hidden md:flex items-center gap-4">
+            <div class="relative group cursor-pointer" id="btnEditProfilSponsor">
+                <div class="flex items-center gap-3 bg-slate-800 hover:bg-slate-700 p-2 px-4 rounded-xl border border-slate-700 transition-colors shadow-sm">
+                    <div class="text-right">
+                        <p class="text-sm font-black text-white uppercase tracking-widest truncate max-w-[150px]" id="brandNameUI">Memuat...</p>
+                        <p class="text-[10px] text-amber-500 uppercase font-black tracking-widest">Pengaturan Profil ⚙️</p>
+                    </div>
+                    <img id="brandLogoUI" src="/images/logo.png" class="w-8 h-8 rounded-full border border-slate-600 object-cover bg-white">
+                </div>
+            </div>
+            <button id="logoutBtnDesk" class="text-xs text-red-400 hover:text-red-300 font-bold ml-2 border-l border-slate-700 pl-4 transition-colors">Log Out</button>
+        </div>
+
+        <div class="md:hidden flex items-center">
+            <button id="mobileMenuToggle" class="text-slate-300 hover:text-white p-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </div>
+    </nav>
+
+    <div id="mobileMenuOverlay" class="fixed inset-0 bg-black/80 z-[50] hidden backdrop-blur-sm transition-opacity"></div>
+    <div id="mobileMenuPanel" class="fixed top-0 right-0 h-full w-64 bg-slate-800 z-[60] transform translate-x-full transition-transform duration-300 shadow-2xl flex flex-col border-l border-slate-700">
+        <div class="p-5 border-b border-slate-700 bg-slate-900 flex justify-between items-center cursor-pointer hover:bg-slate-800 transition-colors" id="btnEditProfilMobile">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-white rounded-full p-0.5"><img id="mobileLogoUI" src="/images/logo.png" class="w-full h-full object-contain rounded-full"></div>
+                <div>
+                    <p class="text-xs font-black text-white uppercase tracking-widest truncate max-w-[100px]" id="mobileBrandNameUI">Brand</p>
+                    <p class="text-[9px] text-amber-500 font-bold uppercase">Edit Profil ⚙️</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-4 border-t border-slate-700 mt-auto">
+            <button id="logoutBtnMob" class="w-full text-center p-3 rounded-xl text-sm text-red-400 bg-red-900/30 font-bold border border-red-500/30 transition-colors">Keluar</button>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="p-4 md:p-8 max-w-7xl mx-auto w-full space-y-6 md:space-y-8">
+        
+        <!-- HEADER DASHBOARD -->
+        <div class="bg-gradient-to-br from-blue-900/40 to-slate-900 border border-blue-500/30 rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+            <p class="text-xs md:text-sm font-bold text-blue-400 uppercase tracking-widest mb-1">Corporate Dashboard</p>
+            <h1 class="text-3xl md:text-4xl font-black text-white leading-tight">Halo, <span id="welcomeName" class="text-blue-300">Memuat...</span> 👋</h1>
+            <p class="text-sm text-slate-400 mt-2 max-w-2xl">Pantau performa kampanye brand Anda, kelola portofolio, dan temukan target event potensial berikutnya.</p>
+        </div>
+
+        <!-- 🚀 NEW SECTION: ANALYTICS OVERVIEW -->
+        <div class="bg-slate-800/40 rounded-3xl border border-slate-700 p-6 md:p-8 shadow-lg">
+            
+            <!-- FILTER ANALYTICS DROPDOWN -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6 pb-4 border-b border-slate-700">
+                <div>
+                    <h2 class="text-xl font-black text-white flex items-center gap-2"><span>⚡</span> Kinerja Kampanye Iklan</h2>
+                    <p class="text-[11px] text-slate-400 mt-1">Data interaksi audiens secara real-time pada event aktif.</p>
+                </div>
+                <div class="w-full sm:w-auto">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 sm:hidden">Filter Data Per Brand:</label>
+                    <select id="filterBrandAnalytics" class="bg-slate-900 border border-slate-600 text-white text-xs font-bold rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full sm:w-64 p-3 outline-none cursor-pointer shadow-sm transition-colors hover:border-blue-400">
+                        <option value="ALL">Semua Brand (Akumulasi)</option>
+                        <!-- Opsi brand diisi oleh JS -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- 4 KARTU METRIK -->
+            <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
+                <div class="bg-slate-900/80 border border-slate-700 rounded-2xl p-5 shadow-inner relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 text-6xl opacity-5">👁️</div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Impressions</p>
+                    <h3 class="text-3xl font-black text-white" id="statImpressions">0</h3>
+                    <p class="text-xs text-blue-400 mt-2 font-medium">Tayangan di layar audiens</p>
+                </div>
+                
+                <div class="bg-slate-900/80 border border-slate-700 rounded-2xl p-5 shadow-inner relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 text-6xl opacity-5">🖱️</div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Clicks</p>
+                    <h3 class="text-3xl font-black text-white" id="statClicks">0</h3>
+                    <p class="text-xs text-amber-400 mt-2 font-medium">Interaksi klik aktif</p>
+                </div>
+
+                <div class="bg-slate-900/80 border border-slate-700 rounded-2xl p-5 shadow-inner relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 text-6xl opacity-5">📊</div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Avg. CTR (Click Rate)</p>
+                    <h3 class="text-3xl font-black text-white" id="statCTR">0.00%</h3>
+                    <p class="text-xs text-emerald-400 mt-2 font-medium">Rasio efektivitas iklan</p>
+                </div>
+
+                <div class="bg-slate-900/80 border border-slate-700 rounded-2xl p-5 shadow-inner relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 text-6xl opacity-5">🎯</div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Active Events</p>
+                    <h3 class="text-3xl font-black text-white" id="statEvents">0</h3>
+                    <p class="text-xs text-purple-400 mt-2 font-medium">Kompetisi menayangkan Ads</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 1: MANAJEMEN BRAND -->
+        <div class="bg-slate-800/40 rounded-3xl border border-slate-700 p-6 md:p-8 shadow-lg">
+            <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6 border-b border-slate-700 pb-4">
+                <div>
+                    <h2 class="text-xl font-black text-white flex items-center gap-2"><span>🏷️</span> Portofolio Brand & Produk</h2>
+                    <p class="text-[11px] text-slate-400 mt-1">Daftarkan brand atau lini produk Anda agar siap disuntikkan ke sistem Live Result.</p>
+                </div>
+                <button id="btnOpenAddBrand" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl font-black shadow-lg transition-colors text-sm flex items-center justify-center gap-2 shrink-0">
+                    <span>+</span> TAMBAH BRAND
+                </button>
+            </div>
+            <div id="brandGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                <p class="text-sm text-slate-500 italic col-span-full py-4 text-center">Memuat daftar brand...</p>
+            </div>
+        </div>
+
+        <!-- SECTION 2: KATALOG EVENT LOMBA -->
+        <div class="bg-slate-800/40 rounded-3xl border border-slate-700 p-6 md:p-8 shadow-lg">
+            <div class="flex flex-col xl:flex-row justify-between xl:items-end gap-4 mb-6 border-b border-slate-700 pb-4">
+                <div>
+                    <h2 class="text-xl font-black text-white flex items-center gap-2"><span>🎯</span> Target Event Tersedia</h2>
+                    <p class="text-[11px] text-slate-400 mt-1">Pilih event kompetisi yang sesuai dengan target demografi audiens brand Anda.</p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3 w-full xl:w-auto shrink-0">
+                    <div class="relative w-full sm:w-56">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <input type="search" id="searchEvent" name="q_event_search" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly');" class="bg-slate-900 border border-slate-600 text-white text-xs font-bold rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full pl-9 p-3 outline-none transition-colors" placeholder="Cari event...">
+                    </div>
+                    <select id="filterProvinsi" class="bg-slate-900 border border-slate-600 text-slate-300 text-xs font-bold rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3 outline-none w-full sm:w-40 cursor-pointer">
+                        <option value="">Semua Provinsi</option>
+                    </select>
+                    <select id="filterKota" class="bg-slate-900 border border-slate-600 text-slate-300 text-xs font-bold rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3 outline-none w-full sm:w-40 cursor-pointer" disabled>
+                        <option value="">Semua Kota/Kab</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5" id="eventGrid">
+                <div class="col-span-full p-8 text-center text-slate-500">
+                    <span class="animate-spin inline-block text-2xl mb-2">↻</span><br>Memuat data event...
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAL PENGATURAN PROFIL & AKUN KORPORASI -->
+    <div id="modalEditProfile" class="fixed inset-0 bg-black/80 z-[80] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-slate-800 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-slate-700">
+            <div class="p-5 border-b border-slate-700 bg-slate-900 flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">⚙️</span>
+                    <h3 class="font-extrabold text-white text-lg">Pengaturan Induk</h3>
+                </div>
+                <button id="closeModalProfileBtn" class="text-slate-400 hover:text-red-500 text-2xl font-bold transition">&times;</button>
+            </div>
+            
+            <div class="flex border-b border-slate-700 shrink-0 bg-slate-900">
+                <button id="tabProfilSponsorBtn" class="flex-1 py-3 text-sm font-bold text-blue-400 border-b-2 border-blue-500 bg-slate-800">Profil Korporat</button>
+                <button id="tabAkunSponsorBtn" class="flex-1 py-3 text-sm font-bold text-slate-500 border-b-2 border-transparent hover:text-slate-300 transition-colors">Keamanan Akun</button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto hide-scrollbar flex-1">
+                <div id="formProfilSponsor" class="space-y-4">
+                    <div class="flex items-center gap-4 bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <img src="/images/logo.png" id="editLogoPreview" class="w-14 h-14 rounded-full border-2 border-slate-600 object-cover bg-white">
+                        <div class="flex-1">
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Ganti Logo Korporasi</label>
+                            <input type="file" id="inputEditLogo" accept="image/*" class="w-full text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:font-bold file:bg-blue-900/50 file:text-blue-400 hover:file:bg-blue-800/50 text-slate-400 outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Nama Perusahaan / Induk</label>
+                        <input type="text" id="editCorpName" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Nama PIC (Penanggung Jawab)</label>
+                        <input type="text" id="editPicName" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">No WhatsApp PIC</label>
+                        <input type="text" id="editContactWa" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0812xxxxxx">
+                    </div>
+                    <button id="btnSaveProfileInfo" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-500 transition shadow-lg mt-4">Simpan Profil Induk</button>
+                    <div id="statusProfilMsg" class="hidden text-sm font-bold text-center rounded-lg p-3"></div>
+                </div>
+                
+                <div id="formAkunSponsor" class="space-y-4 hidden">
+                    <div class="p-3 bg-amber-900/30 border border-amber-500/30 rounded-xl text-amber-400 text-xs leading-relaxed mb-2">
+                        <strong>Perhatian:</strong> Jika Anda mengubah Email, sistem akan mengirimkan link verifikasi ke email baru Anda.
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Ubah Alamat Email Login</label>
+                        <input type="email" id="editAuthEmail" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Email Baru">
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-xs font-bold text-slate-300 mb-1">Ubah Password Login</label>
+                        <input type="password" id="editAuthPassword" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Masukkan password baru...">
+                        <p class="text-[10px] text-slate-500 mt-1">*Kosongkan jika tidak ingin mengubah password.</p>
+                    </div>
+                    <button id="btnSaveAuthInfo" class="w-full bg-red-600/90 text-white font-bold py-3.5 rounded-xl hover:bg-red-500 transition shadow-lg mt-4">Terapkan Perubahan Akun</button>
+                    <div id="statusAkunMsg" class="hidden text-sm font-bold text-center rounded-lg p-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TAMBAH BRAND -->
+    <div id="modalAddBrand" class="fixed inset-0 bg-[#0b1120]/90 z-[90] hidden flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
+        <div class="bg-[#1e293b] rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden my-auto border border-slate-700 mt-10 mb-10">
+            <div class="p-5 border-b border-slate-700 bg-[#1e293b] flex justify-between items-center sticky top-0 z-10">
+                <h3 id="modalBrandTitle" class="font-black text-blue-400 text-sm tracking-widest uppercase flex items-center gap-2">
+                    <span>➕</span> TAMBAH BRAND / PRODUK
+                </h3>
+                <button id="closeModalBrandBtn" class="text-slate-400 hover:text-white text-2xl font-bold">&times;</button>
+            </div>
+            
+            <div class="p-6 space-y-5">
+                <input type="hidden" id="editBrandId">
+                <div id="brandStatusMsg" class="hidden bg-emerald-900/30 text-emerald-400 p-3 rounded-lg text-xs font-bold border border-emerald-800"></div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Nama Brand / Produk</label>
+                        <input type="text" id="inputBrandName" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-blue-500 outline-none" placeholder="Cth: Livin' by Mandiri">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">URL Landing Page / Promo</label>
+                        <input type="url" id="inputBrandUrl" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-blue-500 outline-none font-mono" placeholder="https://...">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Tipe Penempatan</label>
+                        <select id="inputBrandType" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-blue-500 outline-none">
+                            <option value="corporate">🏢 CORPORATE (Direct Promo)</option>
+                            <option value="high_potential">💎 HIGH POTENTIAL TARGET</option>
+                            <option value="unofficial">⚪ STANDARD CATALOG</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Kategori Industri</label>
+                        <input type="text" id="inputBrandCategory" class="w-full bg-[#0f172a] border border-slate-700 rounded-xl p-3 text-sm text-white focus:border-blue-500 outline-none" placeholder="Cth: Banking / FnB / Tech">
+                    </div>
+                </div>
+
+                <!-- DYNAMIC SMART-TARGETING (AD-TECH) -->
+                <div class="bg-blue-900/20 p-4 rounded-xl border border-blue-500/30">
+                    <label class="block text-[10px] font-black text-blue-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <span>🎯</span> Dynamic Smart-Targeting (Ad-Tech Engine)
+                    </label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Target Gender</label>
+                            <select id="inputTargetGender" class="w-full bg-[#0f172a] border border-slate-600 rounded-lg p-2.5 text-sm text-white focus:border-blue-500 outline-none">
+                                <option value="ALL">Semua Gender</option>
+                                <option value="Putra">Khusus Putra</option>
+                                <option value="Putri">Khusus Putri</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Target Umur</label>
+                            <select id="inputTargetUmur" class="w-full bg-[#0f172a] border border-slate-600 rounded-lg p-2.5 text-sm text-white focus:border-blue-500 outline-none">
+                                <option value="ALL">Semua Umur</option>
+                                <option value="KIDS">Anak-anak (Pemula / Kids)</option>
+                                <option value="ADULT">Dewasa (Open / Senior)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- UPLOAD LOGO BRAND -->
+                <div class="bg-[#0f172a] p-4 rounded-xl border border-slate-700">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Aset Logo Brand (PNG / JPG Transparan)</label>
+                    <input type="file" id="inputBrandLogo" accept="image/*" class="text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer w-full mb-3 outline-none">
+                    <div class="h-24 w-40 bg-white rounded-lg border-2 border-dashed border-slate-600 flex items-center justify-center p-2 relative mx-auto">
+                        <img id="previewKatalogLogo" src="" class="max-h-full max-w-full object-contain hidden z-10">
+                        <span id="previewPlaceholder" class="text-slate-400 text-xs font-bold absolute z-0">Preview Logo</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-5 bg-[#1e293b] border-t border-slate-700 flex justify-between gap-4 sticky bottom-0 z-10">
+                <button id="btnSaveBrand" class="w-full bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-black text-sm transition shadow-lg">💾 SIMPAN & AKTIFKAN BRAND</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ONBOARDING AWAL -->
+    <div id="modalOnboarding" class="fixed inset-0 bg-slate-900/95 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="bg-slate-800 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[95vh] border border-slate-700">
+            <div class="p-6 border-b border-slate-700 bg-slate-900 text-center shrink-0">
+                <span class="text-4xl block mb-2">🏢</span>
+                <h3 class="font-extrabold text-white text-xl">Profil Korporat</h3>
+                <p class="text-xs text-slate-400 mt-2">Lengkapi data korporat atau perusahaan induk Anda untuk mulai mengelola brand.</p>
+            </div>
+            
+            <div class="p-6 space-y-4 overflow-y-auto hide-scrollbar flex-1">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Nama Perusahaan / Induk <span class="text-red-500">*</span></label>
+                    <input type="text" id="onbCompanyName" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: PT. Mahaka Radio Integra">
+                </div>
+                <div class="border-t border-slate-700 pt-4 mt-2">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Kontak Penanggung Jawab</label>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1">Nama PIC <span class="text-red-500">*</span></label>
+                            <input type="text" id="onbPicName" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: Putri / Angga">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1">Email Korporat / PIC <span class="text-red-500">*</span></label>
+                            <input type="email" id="onbEmail" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="pic@mahaka.com">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1">No WhatsApp PIC <span class="text-red-500">*</span></label>
+                            <input type="tel" id="onbWa" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: 081234567890">
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="onboardMsg" class="hidden text-xs font-bold text-center rounded-lg p-3"></div>
+            </div>
+            
+            <div class="p-6 bg-slate-900 border-t border-slate-700 shrink-0">
+                <button id="btnSaveOnboarding" class="w-full bg-blue-600 text-white font-black py-3.5 rounded-xl hover:bg-blue-500 transition shadow-[0_0_15px_rgba(37,99,235,0.4)]">Simpan & Masuk Dashboard 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    
+</body>
+</html>

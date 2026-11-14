@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WFH Tracker | F1 Swimming</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* 🚀 FIX: Trik "Print Section Mirroring" + CSS Presisi (2 Halaman Seimbang) */
+        @media screen {
+            #printSection { display: none !important; }
+        }
+        
+        @media print {
+            @page {
+                size: A4; 
+                margin: 15mm 20mm 15mm 20mm; /* Naikkan sedikit margin agar layout bernapas */
+            }
+
+            body { 
+                background: white !important; 
+                font-size: 10.5pt !important; /* Kembalikan ukuran font ke standar proporsional */
+                line-height: 1.35 !important;
+                color: #000 !important;
+            }
+            
+            body > *:not(#printSection) { display: none !important; }
+            
+            #printSection { 
+                display: block !important; 
+                visibility: visible !important; 
+                width: 100%;
+                font-family: "Times New Roman", Times, serif !important;
+            }
+            
+            #printSection * { visibility: visible !important; }
+
+            /* Berikan jarak margin yang rapi pada paragraf */
+            #printSection p, #printSection li {
+                margin-top: 4px !important;
+                margin-bottom: 4px !important;
+            }
+
+            #printSection h1, #printSection h2, #printSection h3, #printSection h4, #printSection .pasal-title {
+                margin-top: 12px !important;
+                margin-bottom: 6px !important;
+                font-size: 11.5pt !important;
+                text-align: center;
+                page-break-after: avoid;
+            }
+
+            #printSection p, #printSection li, #printSection table { page-break-inside: auto; }
+
+            /* 🚀 KUNCI UTAMA: Paksa Pasal 3 untuk memotong ke halaman baru secara bersih */
+            .pasal-3-wrapper {
+                page-break-before: always !important;
+            }
+
+            /* Amankan bagian penutup dan tanda tangan agar wajib bersatu di akhir dokumen */
+            .area-tanda-tangan {
+                page-break-inside: avoid !important;
+                margin-top: 15px !important;
+            }
+        }
+    </style>
+  <script type="module" crossorigin src="/assets/work-22dbf4bc.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-3cfb730f.js">
+  <link rel="modulepreload" crossorigin href="/assets/supabase-e9059105.js">
+  <link rel="stylesheet" href="/assets/style-51f43795.css">
+</head>
+<body class="bg-slate-900 font-sans text-slate-200 min-h-screen relative">
+
+    <!-- LOGIN OVERLAY -->
+    <div id="loginScreen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 p-8 rounded-3xl w-full max-w-sm shadow-2xl relative z-10">
+            <div class="text-center mb-6">
+                <span class="text-4xl">🏊‍♂️</span>
+                <h2 class="text-2xl font-black text-white mt-2">Login WFH</h2>
+                <p class="text-xs text-slate-400 mt-1">Portal Tugas Admin F1 Swimming</p>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">ID Admin</label>
+                    <input type="text" id="loginId" class="w-full bg-slate-900 border border-slate-600 rounded-xl p-3 text-sm text-white focus:border-blue-500 outline-none" placeholder="admin01">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Password</label>
+                    <input type="password" id="loginPass" class="w-full bg-slate-900 border border-slate-600 rounded-xl p-3 text-sm text-white focus:border-blue-500 outline-none" placeholder="••••••••">
+                </div>
+                <div id="loginError" class="hidden text-xs font-bold text-red-400 bg-red-900/30 p-3 rounded-lg border border-red-500/30 text-center"></div>
+                <button id="btnLogin" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-xl shadow-lg transition-transform active:scale-95 mt-2">Masuk Panel 🚀</button>
+                
+                <!-- MENU BAWAH: ALUR KERJA & BUKA MODAL PKS -->
+                <div class="flex justify-between items-center mt-5 pt-4 border-t border-slate-700/50">
+                    <button type="button" onclick="document.getElementById('modalAlurKerja').classList.remove('hidden')" class="text-[11px] font-bold text-rose-400 hover:text-rose-300 transition-colors flex items-center gap-1.5 hover:underline underline-offset-4 bg-transparent border-none p-0 cursor-pointer">
+                        📖 Alur Kerja
+                    </button>
+                    <!-- Buka Modal PKS -->
+                    <button type="button" onclick="document.getElementById('modalPKS').classList.remove('hidden')" class="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1.5 hover:underline underline-offset-4 bg-transparent border-none p-0 cursor-pointer">
+                        📄 Buka PKS
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🚀 MODAL ALUR KERJA WFH -->
+    <div id="modalAlurKerja" class="fixed inset-0 z-[150] bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-2xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
+            <button onclick="document.getElementById('modalAlurKerja').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 font-bold text-3xl transition-colors z-30 bg-slate-800 rounded-full w-10 h-10 flex items-center justify-center leading-none shadow-sm border border-slate-700">&times;</button>
+            <div class="p-6 md:p-10 overflow-y-auto hide-scrollbar relative z-10 w-full text-center">
+                <h2 class="text-2xl md:text-3xl font-black text-white mb-6 md:mb-8 tracking-tight">Pedoman Kerja <span class="text-blue-500">WFH</span></h2>
+                
+                <div class="text-left mb-6 bg-blue-900/20 p-5 md:p-6 rounded-2xl border border-blue-500/30 shadow-sm">
+                    <h3 class="font-extrabold text-lg text-blue-400 mb-4 border-b border-blue-500/30 pb-3 flex items-center gap-2"><span>🔄</span> Alur Kerja (Data Scraping & Outreach)</h3>
+                    <div class="space-y-3">
+                        <p class="text-sm font-medium text-slate-300 leading-relaxed"><strong class="text-white font-black">1. Pencarian Data (Scraping):</strong> Pekerja secara mandiri mencari 15-20 data kontak baru per hari, dengan target sasaran spesifik: Klub Renang Grassroot, Event Organizer (EO) lomba, dan Orang Tua Atlet.</p>
+                        <p class="text-sm font-medium text-slate-300 leading-relaxed"><strong class="text-white font-black">2. Input & Otomatisasi:</strong> Data kontak wajib dimasukkan ke dalam portal WFH Tracker. Sistem kami dilengkapi mesin auto-generation yang merakit copywriting pesan perkenalan secara dinamis.</p>
+                        <p class="text-sm font-medium text-slate-300 leading-relaxed"><strong class="text-white font-black">3. Eksekusi Pesan:</strong> Pekerja menekan tombol "Share" di dalam sistem yang akan langsung diarahkan menuju DM Instagram, TikTok, atau WhatsApp target.</p>
+                        <p class="text-sm font-medium text-slate-300 leading-relaxed"><strong class="text-white font-black">4. Fleksibilitas & Pelaporan:</strong> Estimasi pengerjaan 2-3 jam/hari. Target data dan pembaruan status wajib diselesaikan sebelum pukul 21.00 WIB setiap harinya.</p>
+                    </div>
+                </div>
+
+                <div class="text-left space-y-4 bg-emerald-900/20 p-5 md:p-6 rounded-2xl border border-emerald-500/30 shadow-sm">
+                    <h3 class="font-extrabold text-lg text-emerald-400 mb-3 border-b border-emerald-500/30 pb-3 flex items-center gap-2"><span>💰</span> Skema Benefit & Kompensasi</h3>
+                    <p class="text-sm font-medium text-slate-300 leading-relaxed mb-4">Kompensasi dirancang ke dalam dua pilar utama:</p>
+                    
+                    <p class="text-sm font-medium text-slate-300 leading-relaxed"><strong class="text-white font-black">1. Pilar Administratif (Pasti):</strong> Kompensasi pasti sebesar <strong class="text-emerald-400">Rp20.000 per hari kerja</strong>. Fee ini murni bersifat task-based dan diakumulasikan jika target scraping harian berhasil diselesaikan penuh.</p>
+                    
+                    <p class="text-sm font-medium text-slate-300 leading-relaxed"><strong class="text-white font-black">2. Pilar Akselerasi (Unlimited Earning):</strong> Jalur berbasis persentase kesuksesan membawa sponsor masuk (success fee).
+                        <ul class="list-disc pl-5 mt-2 space-y-1 text-slate-300 text-sm">
+                            <li>Bonus tunai <strong class="text-emerald-400">Rp100.000</strong> untuk setiap closing kerja sama sponsor berbentuk Produk.</li>
+                            <li>Komisi <strong class="text-emerald-400">5%</strong> jika berhasil closing kesepakatan untuk kategori Sponsor Placement atau Sponsor Eksklusif.</li>
+                        </ul>
+                    </p>
+                    <p class="text-xs font-medium text-slate-400 leading-relaxed mt-4 italic bg-slate-800 p-3 rounded-xl border border-slate-700">*Gunakan tautan <span class="text-blue-400">f1swimming.com/sponsor-rate</span> sebagai amunisi utama dalam melakukan pitching.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END MODAL -->
+
+    <!-- 🚀 MODAL SURAT PERJANJIAN KERJA SAMA (PKS) -->
+    <div id="modalPKS" class="fixed inset-0 z-[160] bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4 md:p-8 transition-opacity">
+        <div class="bg-white text-slate-900 rounded-sm w-full max-w-4xl shadow-2xl relative overflow-hidden flex flex-col max-h-full font-serif border border-slate-300">
+            <!-- Header Modal -->
+            <div class="bg-slate-100 p-4 border-b border-slate-300 flex justify-between items-center shrink-0">
+                <h2 class="font-bold text-slate-800 font-sans flex items-center gap-2"><span>📄</span> Draf Perjanjian Kerja Sama (PKS)</h2>
+                <div class="flex items-center gap-3">
+                    <button onclick="printDraftPKS()" class="bg-blue-600 hover:bg-blue-700 text-white font-sans font-bold px-4 py-2 rounded-md text-xs shadow-sm flex items-center gap-1.5 transition-colors">
+                        🖨️ Cetak / PDF
+                    </button>
+                    <button onclick="document.getElementById('modalPKS').classList.add('hidden')" class="text-slate-500 hover:text-red-500 font-black text-2xl transition-colors w-8 h-8 flex items-center justify-center font-sans">&times;</button>
+                </div>
+            </div>
+
+            <!-- Konten PKS yang akan di-clone oleh JS -->
+            <div id="printablePKS" class="p-8 md:p-16 overflow-y-auto bg-white text-black text-sm md:text-base leading-relaxed text-justify relative flex-1 hide-scrollbar">
+                
+                <div class="absolute inset-0 z-0 opacity-[0.03] pointer-events-none flex items-center justify-center no-print">
+                    <img src="/images/f1logo.png" class="w-2/3 grayscale">
+                </div>
+
+                <div class="relative z-10">
+                    <h1 class="text-center font-bold text-lg md:text-xl uppercase mb-1">PERJANJIAN KERJA SAMA (PKS)</h1>
+                    <h2 class="text-center font-bold text-base md:text-lg uppercase mb-1">LAYANAN ADMINISTRASI REMOTE & OUTREACH</h2>
+                    <p class="text-center text-sm mb-8 font-medium">Nomor: 001/PKS-SCS/F1S/IX/2026</p>
+
+                    <p class="mb-4">Pada hari ini, ...................., tanggal ...................., bulan ...................., tahun ...................., bertempat di ...................., yang bertandatangan di bawah ini:</p>
+
+                    <div class="mb-4 flex">
+                        <div class="w-6 shrink-0"><strong>1.</strong></div>
+                        <div class="flex-1">
+                            <div class="flex mb-1"><div class="w-48 shrink-0">Nama Perusahaan / Induk</div><div class="w-4 shrink-0">:</div><div class="font-bold">PT Teknologi Prestasi Indonesia (F1 Swimming)</div></div>
+                            <div class="flex mb-1"><div class="w-48 shrink-0">Perwakilan / Jabatan</div><div class="w-4 shrink-0">:</div><div></div></div>
+                            <div class="flex mb-1"><div class="w-48 shrink-0">Alamat</div><div class="w-4 shrink-0">:</div><div></div></div>
+                            <p class="mt-2">Selanjutnya disebut sebagai <strong>PIHAK PERTAMA</strong> (Pemberi Kerja).</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-6 flex">
+                        <div class="w-6 shrink-0"><strong>2.</strong></div>
+                        <div class="flex-1">
+                            <div class="flex mb-1"><div class="w-48 shrink-0">Nama Lengkap</div><div class="w-4 shrink-0">:</div><div class="flex-1 border-b border-dotted border-black"></div></div>
+                            <div class="flex mb-1"><div class="w-48 shrink-0">No. KTP/Identitas</div><div class="w-4 shrink-0">:</div><div class="flex-1 border-b border-dotted border-black"></div></div>
+                            <div class="flex mb-1"><div class="w-48 shrink-0">Alamat Domisili</div><div class="w-4 shrink-0">:</div><div class="flex-1 border-b border-dotted border-black"></div></div>
+                            <p class="mt-2">Selanjutnya disebut sebagai <strong>PIHAK KEDUA</strong> (Pekerja Remote).</p>
+                        </div>
+                    </div>
+
+                    <p class="mb-6"><strong>PIHAK PERTAMA</strong> dan <strong>PIHAK KEDUA</strong> secara bersama-sama disebut sebagai PARA PIHAK. PARA PIHAK sepakat untuk mengikatkan diri dalam Perjanjian Kerja Sama Berbasis Proyek dengan ketentuan sebagai berikut:</p>
+
+                    <h3 class="pasal-title font-bold text-center mb-2 mt-4">PASAL 1<br>RUANG LINGKUP PEKERJAAN</h3>
+                    <p class="mb-4">PIHAK KEDUA bersedia menerima penugasan dari PIHAK PERTAMA untuk melaksanakan pekerjaan secara remote (WFH) yang meliputi:</p>
+                    <ol class="list-decimal pl-6 mb-6 space-y-1">
+                        <li><strong>Data Scraping:</strong> Mencari, memvalidasi, dan mengumpulkan data kontak (Instagram, TikTok, Facebook, atau WhatsApp) dari Klub Renang Grassroot (Non-Afiliasi), sekolah, atau EO lomba di wilayah target.</li>
+                        <li><strong>Cold Outreach:</strong> Melakukan pengenalan (intro) platform F1 Swimming SCS kepada data kontak yang telah dikumpulkan melalui Direct Message (DM) atau WhatsApp resmi.</li>
+                        <li><strong>Pelaporan:</strong> Memasukkan seluruh data hasil kerja ke dalam sistem WFH Tracker yang telah disediakan PIHAK PERTAMA secara harian.</li>
+                    </ol>
+
+                    <h3 class="pasal-title font-bold text-center mb-2 mt-4">PASAL 2<br>TARGET HARIAN & SISTEM KERJA</h3>
+                    <ol class="list-decimal pl-6 mb-6 space-y-1">
+                        <li>Perjanjian ini berbasis proyek harian yang fleksibel dengan target kuantitas yang wajib dipenuhi oleh PIHAK KEDUA sebagai berikut:
+                            <ul class="list-[lower-alpha] pl-5 mt-1">
+                                <li>Melakukan scraping/validasi data minimal 15-20 akun/kontak baru per hari.</li>
+                                <li>Mengirimkan pesan intro/outreach minimal 10-15 kontak baru per hari.</li>
+                            </ul>
+                        </li>
+                        <li>PIHAK KEDUA mengatur waktu kerjanya secara mandiri (remote) dengan estimasi waktu 2 hingga 3 jam per hari, asalkan target harian terpenuhi dan laporan diserahkan sebelum pukul 21.00 WIB setiap harinya.</li>
+                    </ol>
+
+                    <!-- 🚀 FIX: Elemen ini dipaksa pindah ke halaman 2 saat dicetak -->
+                    <div class="pasal-3-wrapper">
+                        <h3 class="pasal-title font-bold text-center mb-2">PASAL 3<br>HONORARIUM & SISTEM PEMBAYARAN</h3>
+                        <ol class="list-decimal pl-6 mb-6 space-y-1">
+                            <li>PIHAK PERTAMA akan memberikan kompensasi kepada PIHAK KEDUA sebesar Rp20.000,- (Dua Puluh Ribu Rupiah) per hari kerja yang berhasil diselesaikan sesuai target Pasal 2.</li>
+                            <li>Pembayaran honorarium akan diakumulasikan dan dibayarkan secara berkala melalui transfer bank ke rekening PIHAK KEDUA yang sah.</li>
+                            <li>Jika PIHAK KEDUA tidak memenuhi target harian atau tidak menyerahkan laporan tanpa alasan yang sah, PIHAK PERTAMA berhak memotong honorarium hari tersebut secara proporsional.</li>
+                        </ol>
+
+                        <h3 class="pasal-title font-bold text-center mb-2 mt-4">PASAL 4<br>KEAMANAN DATA & KERAHASIAAN</h3>
+                        <ol class="list-decimal pl-6 mb-6 space-y-1">
+                            <li>PIHAK KEDUA wajib menjaga kerahasiaan seluruh data atlet, data klub, strategi internal, dan informasi akses sistem F1 Swimming yang diperoleh selama bekerja.</li>
+                            <li>Sesuai dengan regulasi perlindungan data yang berlaku (UU PDP), PIHAK KEDUA dilarang keras menyebarluaskan, memperbanyak, atau menyalahgunakan data kontak yang didapatkan untuk kepentingan di luar proyek F1 Swimming.</li>
+                        </ol>
+
+                        <h3 class="pasal-title font-bold text-center mb-2 mt-4">PASAL 5<br>MASA BERLAKU & PEMUTUSAN HUBUNGAN KERJA</h3>
+                        <ol class="list-decimal pl-6 mb-6 space-y-1">
+                            <li>Perjanjian ini berlaku sejak tanggal ditandatangani sampai dengan proyek ini dinyatakan selesai oleh PIHAK PERTAMA.</li>
+                            <li>PIHAK PERTAMA berhak memutuskan kerja sama ini secara sepihak dan seketika jika PIHAK KEDUA terbukti melakukan tindakan kecurangan (manipulasi laporan data), melanggar kerahasiaan data, atau tidak mencapai target minimal selama 3 (tiga) hari berturut-turut.</li>
+                        </ol>
+
+                        <div class="area-tanda-tangan">
+                            <p class="mb-10 mt-6">Demikian Perjanjian Kerja Sama ini dibuat dalam rangkap 2 (dua) bermaterai cukup, memiliki kekuatan hukum yang sama, dan ditandatangani oleh PARA PIHAK tanpa paksaan dari pihak manapun.</p>
+
+                            <div class="flex justify-between items-start mt-8">
+                                <div class="text-center w-48">
+                                    <p class="mb-20"><strong>PIHAK PERTAMA,</strong><br>PT Teknologi Prestasi Indonesia</p>
+                                    <div class="border-b border-black mb-1"></div>
+                                    <p class="text-xs">Manajemen F1 Swimming</p>
+                                </div>
+                                
+                                <div class="text-center w-48">
+                                    <p class="mb-20"><strong>PIHAK KEDUA,</strong><br>Pekerja Remote</p>
+                                    <div class="border-b border-black mb-1"></div>
+                                    <p class="text-xs">Nama Terang & Tanda Tangan</p>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-12 text-[10px] text-slate-400 italic font-sans no-print">
+                                Dokumen ini dihasilkan secara otomatis sebagai draf hukum operasional F1 Swimming 2026.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END MODAL PKS -->
+
+    <!-- MAIN APP -->
+    <div id="mainApp" class="hidden max-w-7xl mx-auto p-4 md:p-6 pb-20">
+        
+        <!-- HEADER DENGAN TOMBOL PITCH DECK -->
+        <div class="bg-slate-800 border border-slate-700 rounded-3xl p-6 shadow-xl mb-6 flex flex-col lg:flex-row justify-between lg:items-center gap-5 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"></div>
+            
+            <div>
+                <h1 class="text-2xl md:text-3xl font-black text-white">Hai, <span id="uiFullName" class="text-blue-400">Memuat...</span> 👋</h1>
+                <p class="text-sm text-slate-400 mt-1">Target harian Anda: 15 Data Scraping & Outreach.</p>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-3 z-10">
+                <a href="/pitch.html" target="_blank" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 px-4 py-3 rounded-xl font-black text-xs transition-all shadow-[0_0_15px_rgba(245,158,11,0.3)] flex items-center gap-1.5 hover:-translate-y-0.5 border border-amber-400/50">
+                    🎯 Buka Pitch Deck
+                </a>
+
+                <div class="bg-slate-900 border border-slate-600 p-2 rounded-xl flex flex-col items-end">
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-0.5" id="uiBulanTahun">Bulan Tahun</span>
+                    <input type="date" id="uiTanggal" class="bg-transparent text-white font-black text-sm outline-none cursor-pointer [color-scheme:dark]">
+                </div>
+                <button id="btnLogout" class="bg-red-900/40 hover:bg-red-900/60 text-red-400 border border-red-500/30 px-4 py-3 rounded-xl font-bold text-xs transition-colors">Keluar</button>
+            </div>
+        </div>
+
+        <!-- PROGRESS BAR -->
+        <div class="bg-slate-800 border border-slate-700 rounded-3xl p-6 shadow-xl mb-6">
+            <div class="flex justify-between items-end mb-2">
+                <div>
+                    <h3 class="font-black text-white">Progress Harian</h3>
+                    <p id="uiStatusTarget" class="text-xs text-amber-400 font-bold mt-1">⏳ Menunggu 15 Data</p>
+                </div>
+                <div class="text-right">
+                    <span class="text-2xl font-black text-white" id="uiProgressCount">0</span>
+                    <span class="text-sm text-slate-400 font-bold">/ 20</span>
+                </div>
+            </div>
+            <div class="w-full bg-slate-900 rounded-full h-3 border border-slate-700 overflow-hidden">
+                <div id="uiProgressBar" class="bg-blue-500 h-3 rounded-full transition-all duration-500 w-0"></div>
+            </div>
+        </div>
+
+        <!-- DATA TABLE -->
+        <div class="bg-slate-800 border border-slate-700 rounded-3xl shadow-xl overflow-hidden">
+            <div class="overflow-x-auto hide-scrollbar">
+                <table class="w-full text-left border-collapse min-w-[1000px]">
+                    <thead>
+                        <tr class="bg-slate-900 text-[10px] text-slate-400 uppercase tracking-widest border-b border-slate-700">
+                            <th class="p-4 w-12 text-center">No</th>
+                            <th class="p-4 w-48">Nama / Sosmed</th>
+                            <th class="p-4 w-32">WA / @</th>
+                            <th class="p-4 w-48">Club / EO / Kota</th>
+                            <th class="p-4 w-48">Intro Action (Pesan)</th>
+                            <th class="p-4 w-28 text-center">Aksi</th>
+                            <th class="p-4 w-44">Status Outreach</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr><td colspan="7" class="p-8 text-center text-slate-500 animate-pulse font-bold">Menarik Data dari Database... ⏳</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL PILIH SOSMED -->
+    <div id="sosmedChoiceModal" class="fixed inset-0 bg-black/80 z-[110] hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden flex flex-col transform scale-100">
+            <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+                <h3 class="font-black text-white text-sm tracking-wide">Pilih Target Sosmed</h3>
+                <button id="btnCloseSosmed" class="text-slate-400 hover:text-white text-2xl font-bold transition">&times;</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <p class="text-xs text-slate-400 text-center mb-4 leading-relaxed">Pilih platform untuk menghubungi:<br><strong id="sosmedTargetName" class="text-amber-400 mt-1 block text-lg tracking-widest"></strong></p>
+                <button id="btnGoIG" class="w-full py-3.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-black rounded-xl text-xs transition-colors flex items-center justify-center gap-2 shadow-lg">
+                    📸 Direct Message (Instagram)
+                </button>
+                <button id="btnGoTikTok" class="w-full py-3.5 bg-black hover:bg-slate-950 border border-slate-700 text-white font-black rounded-xl text-xs transition-colors flex items-center justify-center gap-2 shadow-lg">
+                    🎵 Buka Profil (TikTok)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-2xl font-bold text-sm transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        ✅ Data berhasil disimpan!
+    </div>
+
+    <!-- 🚀 FIX: Kontainer Kosong Khusus untuk Mencetak (Print Mirroring) -->
+    <div id="printSection"></div>
+
+    <!-- 🚀 FIX: JavaScript Pemicu Trik Print Mirroring -->
+    <script>
+        function printDraftPKS() {
+            const pksContent = document.getElementById('printablePKS').innerHTML;
+            const printSection = document.getElementById('printSection');
+            
+            printSection.innerHTML = pksContent;
+            window.print();
+            
+            setTimeout(() => {
+                printSection.innerHTML = "";
+            }, 1000);
+        }
+    </script>
+
+    
+</body>
+</html>
