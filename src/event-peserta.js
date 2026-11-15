@@ -133,7 +133,6 @@ function renderTable() {
         if (urlStruk && item.status_pembayaran === 'Menunggu Konfirmasi') {
             const listKolektif = allRegistrations.filter(r => r.bukti_transfer_url === urlStruk && r.status_pembayaran === 'Menunggu Konfirmasi');
             if (listKolektif.length > 1) {
-                // Munculin Badge kalau struknya sama persis lebih dari 1 orang
                 badgeKolektif = `<div class="text-[9px] font-black text-blue-700 bg-blue-100 border border-blue-200 px-2 py-0.5 rounded mt-1 w-full text-center tracking-widest shadow-sm" title="Dibayar menggunakan 1 struk yang sama">📦 ${listKolektif.length} KOLEKTIF</div>`;
             }
         }
@@ -200,7 +199,6 @@ function renderTable() {
                     </a>
                     <button onclick="window.openModalSeedTime('${item.id}')" class="bg-white hover:bg-blue-50 border border-slate-200 text-slate-400 hover:text-blue-600 px-2.5 py-1.5 rounded-lg text-xs transition-colors shadow-sm" title="Edit Seed Time">✏️</button>
                     
-                    <!-- URL STRUK DILEMPAR KE SINI BIAR BISA DICEK PAS DIKLIK -->
                     ${item.status_pembayaran !== 'Lunas' ? `<button onclick="window.verifikasiLunas('${item.id}', '${urlStruk}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg> Lunas</button>` : ''}
                 </div>
             </td>
@@ -226,13 +224,12 @@ window.verifikasiLunas = async function(id, strukUrl) {
     let targetIds = [id];
     let isKolektif = false;
     
-    // Cek apakah struk ini dipakai bareng-bareng sama peserta lain
     if (strukUrl && strukUrl !== 'null' && strukUrl.trim() !== '') {
         const kolektifList = allRegistrations.filter(r => r.bukti_transfer_url === strukUrl && r.status_pembayaran === 'Menunggu Konfirmasi');
         if (kolektifList.length > 1) {
             isKolektif = true;
             if(!confirm(`📦 PEMBAYARAN KOLEKTIF TERDETEKSI!\n\nStruk transfer ini digunakan untuk membayar ${kolektifList.length} peserta sekaligus.\n\nKlik OK untuk mengubah status SEMUA peserta tersebut menjadi LUNAS. Cukup satu klik aja bos!`)) {
-                return; // Batal kalau di-cancel
+                return;
             }
             targetIds = kolektifList.map(r => r.id);
         }
@@ -243,7 +240,6 @@ window.verifikasiLunas = async function(id, strukUrl) {
     }
 
     try {
-        // Update massal pakai '.in'
         const { error } = await supabaseClient.from('event_registrations').update({ status_pembayaran: 'Lunas' }).in('id', targetIds);
         if (error) throw error;
         
@@ -294,8 +290,21 @@ window.openModalSeedTime = function(regId) {
             
             container.innerHTML += `
                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
-                    <label class="block text-xs font-bold text-slate-700 mb-2 uppercase">${namaGaya}</label>
-                    <input type="text" id="seed_time_${index}" value="${currentST}" placeholder="Kosongkan jika NT (Contoh: 00:35.50)" class="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm font-bold font-mono focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-xs font-bold text-slate-700 uppercase">${namaGaya}</label>
+                        <span class="text-[10px] font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">MM:DD.MS</span>
+                    </div>
+                    <input 
+                        type="text" 
+                        id="seed_time_${index}" 
+                        value="${currentST}" 
+                        oninput="this.value = this.value.replace(/,/g, '.')"
+                        placeholder="00:35.50 (Menit:Detik.Milidetik) — Kosong = NT" 
+                        class="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm font-bold font-mono text-slate-800 placeholder:text-slate-400 placeholder:font-normal focus:ring-2 focus:ring-indigo-500 outline-none bg-white shadow-inner"
+                    >
+                    <p class="text-[10px] text-slate-500 mt-1.5">
+                        Gunakan <strong>titik dua (:)</strong> setelah menit dan <strong>titik (.)</strong> sebelum milidetik. Contoh: <code class="font-mono font-bold text-slate-700">01:12.45</code>
+                    </p>
                 </div>
             `;
         });
@@ -318,7 +327,8 @@ document.getElementById('btnSaveSeedTime').addEventListener('click', async () =>
     updatedNomorLomba.forEach((nomor, index) => {
         const inputEl = document.getElementById(`seed_time_${index}`);
         if (inputEl) {
-            let inputVal = inputEl.value.trim();
+            // Normalisasi koma menjadi titik otomatis agar standar startlist tidak rusak
+            let inputVal = inputEl.value.trim().replace(/,/g, '.');
             
             if (typeof nomor === 'string') {
                 nomor = { gaya: nomor };
@@ -350,19 +360,127 @@ document.getElementById('btnSaveSeedTime').addEventListener('click', async () =>
 });
 
 // ==========================================
-// LOGIKA AUTO-SYNC F1
+// HELPER: KONVERSI WAKTU (MM:SS.ms) KE MILIDETIK
+// ==========================================
+function parseTimeToMs(timeStr) {
+    if (!timeStr || typeof timeStr !== 'string') return Infinity;
+    const clean = timeStr.trim().replace(/,/g, '.');
+    if (!/^\d{1,2}(:\d{2})?\.\d{1,3}$/.test(clean)) return Infinity;
+
+    let minutes = 0;
+    let secondsPart = clean;
+
+    if (clean.includes(':')) {
+        const parts = clean.split(':');
+        minutes = parseInt(parts[0], 10);
+        secondsPart = parts[1];
+    }
+
+    const secParts = secondsPart.split('.');
+    const seconds = parseInt(secParts[0], 10);
+    const msStr = secParts[1].padEnd(3, '0').slice(0, 3);
+    const ms = parseInt(msStr, 10);
+
+    const totalMs = (minutes * 60 * 1000) + (seconds * 1000) + ms;
+    return totalMs > 0 ? totalMs : Infinity;
+}
+
+// ==========================================
+// LOGIKA AUTO-SYNC F1 (TARIK PERSONAL BEST DARI HISTORI LOMBA)
 // ==========================================
 document.getElementById('btnSyncF1').addEventListener('click', async () => {
+    const f1Registrations = allRegistrations.filter(
+        r => r.f1_id && r.f1_id !== 'ESTAFET-VVIP' && Array.isArray(r.nomor_lomba) && r.nomor_lomba.length > 0
+    );
+
+    if (f1Registrations.length === 0) {
+        alert("Tidak ada peserta dengan F1 ID yang terdaftar di event ini.");
+        return;
+    }
+
     const btn = document.getElementById('btnSyncF1');
     btn.innerHTML = '⏳ Menyinkronkan...';
     btn.disabled = true;
 
     try {
-        await new Promise(r => setTimeout(r, 1500)); 
-        alert("Sync Selesai! (Saat ini dalam mode simulasi, fitur pencarian histori akan aktif di tahap selanjutnya).");
+        // Kumpulkan semua nomor lomba yang diikuti peserta F1 di event ini
+        const targetEventsSet = new Set();
+        f1Registrations.forEach(reg => {
+            reg.nomor_lomba.forEach(n => {
+                const gayaName = (typeof n === 'object' ? n.gaya : n) || '';
+                if (gayaName) targetEventsSet.add(gayaName.trim());
+            });
+        });
+
+        // Tarik riwayat hasil lomba resmi dari event-event sebelumnya
+        const { data: historyData, error: histErr } = await supabaseClient
+            .from('event_leaderboard')
+            .select('nama_peserta, nomor_lomba, catatan_waktu')
+            .neq('event_id', currentEventId);
+
+        if (histErr) throw histErr;
+
+        // Petakan Personal Best (waktu tercepat) per Nama Atlet + Nomor Lomba
+        const pbMap = {}; // key: "nama_peserta|nomor_lomba" -> { timeStr, ms }
+        (historyData || []).forEach(row => {
+            if (!row.nama_peserta || !row.nomor_lomba || !row.catatan_waktu) return;
+            const ms = parseTimeToMs(row.catatan_waktu);
+            if (ms === Infinity) return;
+
+            const key = `${row.nama_peserta.trim().toLowerCase()}|${row.nomor_lomba.trim().toLowerCase()}`;
+            if (!pbMap[key] || ms < pbMap[key].ms) {
+                pbMap[key] = {
+                    timeStr: row.catatan_waktu.trim().replace(/,/g, '.'),
+                    ms: ms
+                };
+            }
+        });
+
+        let updatedAthletesCount = 0;
+        let updatedEventsCount = 0;
+
+        for (const reg of f1Registrations) {
+            let hasChange = false;
+            const athleteKeyPrefix = reg.nama_peserta.trim().toLowerCase();
+
+            const newNomorLomba = reg.nomor_lomba.map(nomor => {
+                const namaGaya = (typeof nomor === 'object' ? nomor.gaya : nomor) || '';
+                const existingST = typeof nomor === 'object' ? (nomor.seed_time || '') : '';
+                const lookupKey = `${athleteKeyPrefix}|${namaGaya.trim().toLowerCase()}`;
+                const pbRecord = pbMap[lookupKey];
+
+                if (pbRecord) {
+                    const currentMs = parseTimeToMs(existingST);
+                    // Isi seed_time jika masih kosong/NT atau jika PB di database lebih cepat
+                    if (!existingST || pbRecord.ms < currentMs) {
+                        hasChange = true;
+                        updatedEventsCount++;
+                        return { gaya: namaGaya, seed_time: pbRecord.timeStr };
+                    }
+                }
+
+                return typeof nomor === 'object' ? nomor : { gaya: namaGaya };
+            });
+
+            if (hasChange) {
+                const { error: upErr } = await supabaseClient
+                    .from('event_registrations')
+                    .update({ nomor_lomba: newNomorLomba })
+                    .eq('id', reg.id);
+
+                if (!upErr) updatedAthletesCount++;
+            }
+        }
+
+        if (updatedAthletesCount > 0) {
+            alert(`✅ Sync F1 Selesai!\n\nBerhasil menarik catatan waktu terbaik untuk ${updatedAthletesCount} atlet (${updatedEventsCount} nomor lomba). Nomor tanpa histori tetap berstatus NT.`);
+        } else {
+            alert("ℹ️ Sync F1 Selesai!\n\nBelum ditemukan histori catatan waktu baru untuk nomor lomba yang diikuti peserta F1 saat ini (status tetap NT / sesuai input sebelumnya).");
+        }
+
     } catch (err) {
         console.error(err);
-        alert("Gagal melakukan sinkronisasi.");
+        alert("Gagal melakukan sinkronisasi F1: " + err.message);
     } finally {
         btn.innerHTML = '🔄 Auto-Sync F1';
         btn.disabled = false;

@@ -4,7 +4,7 @@ let eventData = null;
 let certTemplateUrl = null;
 let templateImage = new Image();
 let baseConfig = null;
-let activeSponsors = []; // Wadah sponsor untuk round-robin Ads
+let activeSponsors = []; 
 
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -21,12 +21,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (event) {
             document.getElementById('eventName').innerText = event.event_name;
             eventData = event;
-
-            // 1. TARIK & RENDER SPONSOR DARI DATABASE
             await fetchAndRenderSponsors(eventId);
         }
 
-        // Ambil Template Juara
         const { data: certs, error: errCert } = await supabaseClient
             .from('event_certificates')
             .select('*')
@@ -45,7 +42,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        // Ambil Data Leaderboard
         const { data: juara, error: errJuara } = await supabaseClient
             .from('event_leaderboard')
             .select('*')
@@ -62,9 +58,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// ==========================================
-// MESIN IKLAN: RENDER SPONSOR 3 LAPIS
-// ==========================================
 async function fetchAndRenderSponsors(eventId) {
     try {
         const { data: linkData } = await supabaseClient
@@ -84,7 +77,6 @@ async function fetchAndRenderSponsors(eventId) {
         
         activeSponsors = sponsors;
 
-        // LAPIS 1: TOP BANNER AWARENESS
         const wrapper = document.getElementById('partnerWrapper');
         if (wrapper) {
             let html = `
@@ -105,7 +97,6 @@ async function fetchAndRenderSponsors(eventId) {
             wrapper.innerHTML = html;
         }
 
-        // LAPIS 3: STICKY EXCLUSIVE PARTNER (Ambil Sponsor Urutan Pertama sbg VIP)
         const vipSponsor = sponsors[0]; 
         if(!document.getElementById('scs-exclusive-partner')) {
             const partnerHtml = `
@@ -119,9 +110,8 @@ async function fetchAndRenderSponsors(eventId) {
                 </div>
             `;
             document.body.insertAdjacentHTML('beforeend', partnerHtml);
-            document.body.style.paddingBottom = '70px'; // Beri jarak scroll bawah
+            document.body.style.paddingBottom = '70px'; 
         }
-
     } catch (err) { console.error("Gagal menarik data sponsor:", err); }
 }
 
@@ -143,7 +133,6 @@ function renderLeaderboard(data) {
 
     listContainer.classList.remove('hidden');
     
-    // Grouping by Nomor Lomba, Gender, KU
     const grouped = data.reduce((acc, curr) => {
         const key = `${curr.nomor_lomba} ${curr.gender} ${curr.kelompok_umur}`;
         if (!acc[key]) acc[key] = [];
@@ -152,11 +141,10 @@ function renderLeaderboard(data) {
     }, {});
 
     let html = '';
-    let categoryIndex = 0; // Buat Index Round-Robin Sponsor
+    let categoryIndex = 0; 
     
     for (const [kategori, listJuara] of Object.entries(grouped)) {
         
-        // LAPIS 2: TARGETED CATEGORY SPONSOR (Round-Robin Injeksi per Kategori)
         let categorySponsorHtml = '';
         if (activeSponsors.length > 0) {
             const spIndex = categoryIndex % activeSponsors.length;
@@ -197,6 +185,20 @@ function renderLeaderboard(data) {
             
             const dataJuaraObj = encodeURIComponent(JSON.stringify(j));
 
+            // 🔥 LOGIC CETAK PIAGAM VS FINISHER 🔥
+            let tombolCetak = '';
+            if (j.peringkat <= 3) {
+                tombolCetak = `
+                <button onclick="downloadSertifikatJuara('${dataJuaraObj}')" class="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold py-2.5 px-5 rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition-all flex items-center justify-center gap-2 shrink-0 border border-emerald-400">
+                    <span>🏆</span> Cetak Piagam
+                </button>`;
+            } else {
+                tombolCetak = `
+                <div class="text-center sm:text-right shrink-0 mt-2 sm:mt-0">
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest bg-slate-100 border border-slate-200 px-3 py-1.5 rounded">Finisher</span>
+                </div>`;
+            }
+
             html += `
                 <div class="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-50 transition">
                     <div class="flex items-center gap-4">
@@ -207,22 +209,17 @@ function renderLeaderboard(data) {
                             <span class="inline-block bg-sky-100 text-sky-800 text-[10px] px-2 py-0.5 rounded font-black tracking-wider">⏱️ ${j.catatan_waktu}</span>
                         </div>
                     </div>
-                    <button onclick="downloadSertifikatJuara('${dataJuaraObj}')" class="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold py-2.5 px-5 rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition-all flex items-center justify-center gap-2 shrink-0 border border-emerald-400">
-                        <span>⬇️</span> Cetak Piagam
-                    </button>
+                    ${tombolCetak}
                 </div>
             `;
         });
         html += `</div></div>`;
         
-        categoryIndex++; // Naikkan index untuk sponsor card selanjutnya
+        categoryIndex++; 
     }
     listContainer.innerHTML = html;
 }
 
-// ==========================================
-// FUNGSI RENDER CETAK PIAGAM (TIDAK DIUBAH)
-// ==========================================
 window.downloadSertifikatJuara = function(encodedData) {
     if (!certTemplateUrl) {
         alert("❌ Template belum disetting! Pastikan EO sudah upload template Juara di Dapur Admin.");
