@@ -16,13 +16,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!subdomain) {
         const domainParts = hostname.split('.');
         
-        // Validasi: Exact check untuk format <event>.f1swimming.com (3 parts)
         if (domainParts.length === 3 && domainParts[1] === 'f1swimming' && domainParts[2] === 'com') {
             subdomain = domainParts[0];
             console.log(`[SCS-ROUTING] ✅ Valid event subdomain detected: ${subdomain}`);
         } else {
             console.warn(`[SCS-ROUTING] ⚠️ Hostname diabaikan atau format tidak valid: ${hostname}`);
-            return; // Stop eksekusi script untuk domain root atau localhost tanpa hardcode
+            return;
         }
     }
     
@@ -124,22 +123,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         const infoDiskon = document.getElementById('infoDiskon');
         let hargaStripTampil = "Rp 0";
 
-        if (config.tarif_individu && config.tarif_individu.length > 0) {
+        const validTiersDisplay = (config.tarif_individu || [])
+            .filter(t => Number(t.qty) > 0 && t.price !== '' && t.price !== null && t.price !== undefined)
+            .map(t => ({ qty: Number(t.qty), price: Number(t.price) }))
+            .sort((a, b) => a.qty - b.qty);
+
+        const hargaEkstraDisplay = Number(config.tarif_tambahan ?? config.biaya_normal ?? 0);
+
+        if (validTiersDisplay.length > 0) {
             let textTarif = "<span class='font-bold opacity-80'>Pendaftaran Individu:</span><br>";
-            let sortedTiers = [...config.tarif_individu].sort((a,b) => a.qty - b.qty);
             
-            sortedTiers.forEach(t => {
-                textTarif += `• ${t.qty} Nomor = Rp ${Number(t.price).toLocaleString('id-ID')}<br>`;
+            validTiersDisplay.forEach(t => {
+                textTarif += `• ${t.qty} Nomor = Rp ${t.price.toLocaleString('id-ID')}<br>`;
             });
 
-            if (config.tarif_tambahan) {
-                let maxQty = sortedTiers[sortedTiers.length - 1].qty;
-                textTarif += `<span class="text-[10.5px] text-blue-200 mt-1 inline-block border-t border-blue-800/50 pt-1 w-full">💡 Lebih dari ${maxQty} nomor: +Rp ${Number(config.tarif_tambahan).toLocaleString('id-ID')} / nomor ekstra.</span>`;
+            if (hargaEkstraDisplay > 0) {
+                let maxQty = validTiersDisplay[validTiersDisplay.length - 1].qty;
+                textTarif += `<span class="text-[10.5px] text-blue-200 mt-1 inline-block border-t border-blue-800/50 pt-1 w-full">💡 Lebih dari ${maxQty} nomor: +Rp ${hargaEkstraDisplay.toLocaleString('id-ID')} / nomor ekstra.</span>`;
             }
 
             infoBiayaNormal.innerHTML = textTarif;
             if(infoDiskon) infoDiskon.classList.add('hidden'); 
-            hargaStripTampil = `Mulai Rp ${Number(sortedTiers[0].price).toLocaleString('id-ID')}`;
+            hargaStripTampil = `Mulai Rp ${validTiersDisplay[0].price.toLocaleString('id-ID')}`;
         } else {
             const normalPrice = Number(config.biaya_normal || 0).toLocaleString('id-ID');
             infoBiayaNormal.innerText = `Biaya per nomor: Rp ${normalPrice}`;
@@ -259,7 +264,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             let jarakHTML = '';
             (gaya.jarak || []).forEach(jrk => {
                 if(jrk.aktif) {
-                    // Simpan data blacklist KU ke dalam attribute custom html
                     const blacklistKuJSON = JSON.stringify(jrk.blacklist_ku || []);
                     jarakHTML += `
                         <label class="lbl-nomor flex items-center gap-2 text-xs font-bold text-slate-700 bg-slate-50 p-2.5 rounded-lg border border-slate-200 cursor-pointer hover:bg-blue-50 transition-colors">
@@ -288,14 +292,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const currentKUName = matchedKU ? matchedKU.nama : "Di Luar Rentang KU";
             document.getElementById('inputAutoKU').value = currentKUName;
 
-            // Eksekusi Malaikat Pencabut Nyawa (Blacklist Validator)
             const checkboxes = document.querySelectorAll('input[name="nomor_lomba"]');
             checkboxes.forEach(cb => {
                 const blacklistArr = JSON.parse(cb.getAttribute('data-blacklist') || '[]');
                 const lbl = cb.closest('.lbl-nomor');
                 const teks = lbl.querySelector('.teks-nomor');
 
-                // Kalo KU anak tersebut ada di daftar blacklist, MATIKAN NOMORNYA!
                 if (blacklistArr.includes(currentKUName) || currentKUName === "Di Luar Rentang KU") {
                     cb.checked = false;
                     cb.disabled = true;
@@ -321,10 +323,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (selectEstafet) {
             selectEstafet.innerHTML = '<option value="">-- Pilih Kategori & Jarak Estafet --</option>';
             estafetList.forEach(estafet => {
-                (estafet.list || []).forEach(item => {
-                    if(item.aktif) {
-                        selectEstafet.innerHTML += `<option value="${estafet.nama} ${item.jarak} (${item.jenis})">${estafet.nama} - ${item.jarak} ${item.jenis}</option>`;
-                    }
+                const items = estafet.items || estafet.list || [];
+                items.forEach(item => {
+                    selectEstafet.innerHTML += `<option value="${estafet.nama} ${item.jarak} (${item.jenis})">${estafet.nama} - ${item.jarak} ${item.jenis}</option>`;
                 });
             });
         }
@@ -332,10 +333,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const selectKUEstafet = document.getElementById('inputKUEstafet');
         if (selectKUEstafet) {
             selectKUEstafet.innerHTML = '<option value="">-- Tentukan KU Regu --</option>';
-            kuList.forEach(ku => {
-                if(ku.aktif) {
-                    selectKUEstafet.innerHTML += `<option value="${ku.nama}">${ku.nama} (${ku.tahunMulai}-${ku.tahunAkhir})</option>`;
-                }
+            [...kuList].sort((a,b) => b.tahunAkhir - a.tahunAkhir).forEach(ku => {
+                selectKUEstafet.innerHTML += `<option value="${ku.nama}">${ku.nama} (${ku.tahunMulai}-${ku.tahunAkhir})</option>`;
             });
         }
 
@@ -354,7 +353,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   
     // ==========================================
-    // LOGIKA LOGIN GOOGLE (SUPABASE OAUTH REDIRECT - ANTI ERROR SUBDOMAIN)
+    // LOGIKA LOGIN GOOGLE (SUPABASE OAUTH REDIRECT)
     // ==========================================
     const btnGoogleLoginPublic = document.getElementById('btnGoogleLoginPublic');
     if (btnGoogleLoginPublic) {
@@ -379,7 +378,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ==========================================
-    // TOGGLE & LOGIKA LOGIN MANUAL EMAIL (FALLBACK)
+    // TOGGLE & LOGIKA LOGIN MANUAL EMAIL
     // ==========================================
     document.getElementById('btnToggleManualLogin').addEventListener('click', () => {
         document.getElementById('areaLogin').classList.toggle('hidden');
@@ -410,7 +409,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // ==========================================
-    // LOGOUT (FIXED: BERSIHKAN SAMPAH URL)
+    // LOGOUT
     // ==========================================
     document.getElementById('btnLogout').addEventListener('click', async () => {
         await supabaseClient.auth.signOut();
@@ -418,7 +417,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // ==========================================
-    // FUNGSI LOAD ATLET KE DROPDOWN (Bisa Dipanggil Ulang)
+    // FUNGSI LOAD ATLET KE DROPDOWN
     // ==========================================
     async function loadAthletesToDropdown(clubId, preselectId = null) {
         const { data: athletes, error: athErr } = await supabaseClient
@@ -683,26 +682,36 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return alert(`❌ GAGAL! Atlet ini sudah pernah didaftarkan di nomor:\n\n${nomorBentrok.join(', ')}\n\nSilakan hilangkan centang pada nomor tersebut jika ingin menambah nomor gaya baru.`);
             }
 
+            // =========================================================
+            // KALKULASI TARIF BERJENJANG + NOMOR EKSTRA (FIXED)
+            // =========================================================
             const config = currentEvent.config || {};
             let qty = selectedNomor.length;
             let totalBiaya = 0;
 
-            if (config.tarif_individu && config.tarif_individu.length > 0) {
-                let sortedTiers = [...config.tarif_individu].sort((a,b) => a.qty - b.qty);
-                let maxTier = sortedTiers[sortedTiers.length - 1];
-                let exactTier = sortedTiers.find(t => t.qty == qty);
+            const validTiers = (config.tarif_individu || [])
+                .filter(t => Number(t.qty) > 0 && t.price !== '' && t.price !== null && t.price !== undefined)
+                .map(t => ({ qty: Number(t.qty), price: Number(t.price) }))
+                .sort((a, b) => a.qty - b.qty);
+
+            const extraPrice = Number(config.tarif_tambahan ?? config.biaya_normal ?? 0);
+
+            if (validTiers.length > 0) {
+                let maxTier = validTiers[validTiers.length - 1];
+                let exactTier = validTiers.find(t => t.qty === qty);
                 
                 if (exactTier) {
-                    totalBiaya = Number(exactTier.price);
+                    totalBiaya = exactTier.price;
                 } else if (qty > maxTier.qty) {
-                    let basePrice = Number(maxTier.price);
+                    let basePrice = maxTier.price;
                     let extraQty = qty - maxTier.qty;
-                    let extraPrice = Number(config.tarif_tambahan || 0);
                     totalBiaya = basePrice + (extraQty * extraPrice);
                 } else {
-                    let lowerTier = sortedTiers.slice().reverse().find(t => t.qty < qty);
-                    if(lowerTier) {
-                        totalBiaya = Number(lowerTier.price) + ((qty - lowerTier.qty) * Number(config.tarif_tambahan || 0));
+                    let lowerTier = [...validTiers].reverse().find(t => t.qty < qty);
+                    if (lowerTier) {
+                        totalBiaya = lowerTier.price + ((qty - lowerTier.qty) * extraPrice);
+                    } else {
+                        totalBiaya = qty * extraPrice;
                     }
                 }
             } else {
@@ -836,10 +845,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('inputGender').classList.remove('bg-slate-200', 'pointer-events-none');
             document.getElementById('areaAkta').classList.remove('hidden'); 
         }
-        document.querySelectorAll('input[name="nomor_lomba"]:checked').forEach(cb => cb.checked = false);
-        
-        // Kembalikan semua visual checkbox jadi nyala setelah form dire-reset
-        document.getElementById('inputTglLahir').dispatchEvent(new Event('change'));
+
+        document.querySelectorAll('input[name="nomor_lomba"]').forEach(cb => {
+            cb.checked = false;
+            cb.disabled = false;
+            const lbl = cb.closest('.lbl-nomor');
+            const teks = lbl?.querySelector('.teks-nomor');
+            if (lbl) {
+                lbl.classList.remove('bg-slate-200', 'opacity-50', 'cursor-not-allowed');
+                lbl.classList.add('bg-slate-50', 'hover:bg-blue-50', 'cursor-pointer');
+            }
+            if (teks) {
+                teks.classList.remove('line-through', 'text-slate-400');
+                teks.classList.add('text-slate-700');
+            }
+        });
     }
 
     // ==========================================
@@ -888,7 +908,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             card.className = "card-tagihan bg-white border border-slate-200 rounded-2xl p-4 flex gap-3 items-start shadow-sm transition-all hover:border-blue-300";
             
             let arrayNomor = item.nomor_lomba || [];
-            let listNomor = arrayNomor.join(', ');
+            let listNomor = arrayNomor.map(n => typeof n === 'object' ? n.gaya : n).join(', ');
 
             const isBelumBayar = item.status_pembayaran === 'Belum Bayar';
             const isLunas = item.status_pembayaran === 'Lunas';

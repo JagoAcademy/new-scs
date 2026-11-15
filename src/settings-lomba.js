@@ -48,13 +48,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             .eq('user_id', userId)
             .single();
 
-        // JIKA YANG LOGIN ADALAH TIM MILO / SPONSOR (CO-ADMIN)
         if (collabData && collabData.role === 'Co-Admin') {
-            // Sembunyikan Info Pembayaran & QRIS
             document.getElementById('inputInfoPembayaran').parentElement.classList.add('hidden');
             document.getElementById('inputQris').parentElement.classList.add('hidden');
             
-            // Nonaktifkan pengaturan Biaya & Tarif biar gak diubah sepihak
             document.getElementById('inputTarifTambahan').disabled = true;
             document.getElementById('inputBiayaEstafet').disabled = true;
             const btnTambahTarif = document.querySelector('button[onclick="window.tambahTarifIndividu()"]');
@@ -71,11 +68,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.tautanEkstra = config.tautan_ekstra || [];
 
         // 5. Injeksi Input HTML
-        // Status Event (PERBAIKAN KOLOM IS_CLOSED)
         const toggleStatus = document.getElementById('toggleStatusEvent');
         const labelStatus = document.getElementById('labelStatusEvent');
         
-        // Logika: Jika is_closed false/null, maka saklar DIBUKA (true)
         toggleStatus.checked = !eventData.is_closed; 
         
         labelStatus.innerText = toggleStatus.checked ? 'DIBUKA' : 'DITUTUP';
@@ -90,8 +85,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 : 'text-xs font-black text-red-600 bg-red-100 px-2.5 py-1 rounded-md uppercase tracking-widest';
         });
 
-        // Basic Config
-        document.getElementById('inputTarifTambahan').value = config.biaya_normal || '';
+        // Basic Config (Baca tarif_tambahan dengan fallback biaya_normal)
+        document.getElementById('inputTarifTambahan').value = config.tarif_tambahan ?? config.biaya_normal ?? '';
         document.getElementById('inputBiayaEstafet').value = config.biaya_estafet !== undefined ? config.biaya_estafet : '';
         document.getElementById('inputNamaKolam').value = config.nama_kolam || '';
         document.getElementById('inputAdminWA1').value = config.admin_wa_1 || '';
@@ -309,10 +304,15 @@ window.renderGaya = () => {
         let jarakHtml = '';
         (gaya.jarak || []).forEach(jrk => {
             const bgBadge = jrk.aktif ? 'bg-indigo-100 border-indigo-200' : 'bg-slate-100 border-slate-200 line-through opacity-70';
+            const blockedCount = Array.isArray(jrk.blacklist_ku) ? jrk.blacklist_ku.length : 0;
+            const blockedBadge = blockedCount > 0 
+                ? `<span class="text-[8px] font-black text-red-700 bg-red-100 border border-red-200 px-1.5 py-0.5 rounded text-center">🚫 Tolak ${blockedCount} KU</span>` 
+                : '';
             
             jarakHtml += `
-                <div class="flex flex-col gap-1.5 ${bgBadge} p-2 rounded-lg border shadow-sm w-[110px] shrink-0" onclick="window.toggleJarak('${gaya.id}', '${jrk.id}')">
+                <div class="flex flex-col gap-1.5 ${bgBadge} p-2 rounded-lg border shadow-sm w-[115px] shrink-0 cursor-pointer" onclick="window.toggleJarak('${gaya.id}', '${jrk.id}')">
                     <span class="text-xs font-bold text-center text-indigo-900 pointer-events-none">${jrk.nama}</span>
+                    ${blockedBadge}
                     <div class="flex items-center gap-1 justify-center mt-1">
                         <button onclick="event.stopPropagation(); window.openModalAturanLomba('${gaya.id}', '${jrk.id}')" class="bg-indigo-50 text-indigo-700 border border-indigo-100 px-1.5 py-1 rounded text-[9px] font-bold active:scale-95 transition-transform flex-1">Aturan</button>
                         <button onclick="event.stopPropagation(); window.deleteJarak('${gaya.id}', '${jrk.id}')" class="bg-red-50 text-red-600 border border-red-100 px-1.5 py-1 rounded text-[9px] font-bold active:scale-95 transition-transform">X</button>
@@ -538,7 +538,7 @@ window.deleteItemEstafet = (estafetId, itemId) => {
 };
 
 // ========================================================
-// MODAL ATURAN & KUOTA LOMBA (DI-FIX TANPA FILTER AKTIF)
+// MODAL ATURAN & KUOTA LOMBA (AUTO-SAVE LANGSUNG KE SUPABASE)
 // ========================================================
 window.openModalAturanLomba = (gayaId, jarakId) => {
     document.getElementById('aturanGayaId').value = gayaId;
@@ -552,23 +552,25 @@ window.openModalAturanLomba = (gayaId, jarakId) => {
     const containerKU = document.getElementById('containerAturanKU');
     containerKU.innerHTML = '';
     
-    // FIX: Hapus .filter(k => k.aktif) karena toggle aktif KU udah kita buang.
-    // Tambahan .sort() biar daftar KU di modal urut rapi dari tahun termuda.
-    window.configKU.sort((a,b) => b.tahunAkhir - a.tahunAkhir).forEach(ku => {
-        const isBlacklisted = (jarak.blacklist_ku || []).includes(ku.nama);
-        containerKU.innerHTML += `
-            <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer p-1.5 hover:bg-slate-100 rounded transition-colors">
-                <input type="checkbox" value="${ku.nama}" class="chk-blacklist-ku w-4 h-4 text-red-500 rounded focus:ring-red-500" ${isBlacklisted ? 'checked' : ''}>
-                Tolak ${ku.nama}
-            </label>
-        `;
-    });
+    if (!window.configKU || window.configKU.length === 0) {
+        containerKU.innerHTML = '<p class="text-[11px] text-slate-400 italic p-2">Belum ada data Kelompok Umur (KU).</p>';
+    } else {
+        window.configKU.sort((a,b) => b.tahunAkhir - a.tahunAkhir).forEach(ku => {
+            const isBlacklisted = (jarak.blacklist_ku || []).includes(ku.nama);
+            containerKU.innerHTML += `
+                <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer p-1.5 hover:bg-slate-100 rounded transition-colors">
+                    <input type="checkbox" value="${ku.nama}" class="chk-blacklist-ku w-4 h-4 text-red-500 rounded focus:ring-red-500" ${isBlacklisted ? 'checked' : ''}>
+                    Tolak ${ku.nama}
+                </label>
+            `;
+        });
+    }
     
     document.getElementById('modalAturanLomba').classList.remove('hidden');
     document.getElementById('modalAturanLomba').classList.add('flex');
 }
 
-window.saveAturanLomba = () => {
+window.saveAturanLomba = async () => {
     const gayaId = document.getElementById('aturanGayaId').value;
     const jarakId = document.getElementById('aturanJarakId').value;
     const kuota = document.getElementById('aturanKuota').value;
@@ -576,12 +578,38 @@ window.saveAturanLomba = () => {
     const blacklist = Array.from(document.querySelectorAll('.chk-blacklist-ku:checked')).map(cb => cb.value);
     
     const gayaIndex = window.configGaya.findIndex(g => String(g.id) === String(gayaId));
+    if (gayaIndex === -1) return;
     const jarakIndex = window.configGaya[gayaIndex].jarak.findIndex(j => String(j.id) === String(jarakId));
+    if (jarakIndex === -1) return;
     
     window.configGaya[gayaIndex].jarak[jarakIndex].kuota = Number(kuota);
     window.configGaya[gayaIndex].jarak[jarakIndex].blacklist_ku = blacklist;
-    
-    window.closeModal('modalAturanLomba');
+
+    const btn = document.getElementById('btnSaveAturanLomba');
+    if (btn) {
+        btn.innerText = 'Menyimpan Aturan... ⏳';
+        btn.disabled = true;
+    }
+
+    try {
+        // Langsung simpan config_gaya ke Supabase agar tidak hilang walau tidak klik tombol Simpan bawah
+        const { error } = await supabaseClient
+            .from('events')
+            .update({ config_gaya: window.configGaya })
+            .eq('id', currentEventId);
+
+        if (error) throw error;
+
+        window.renderGaya();
+        window.closeModal('modalAturanLomba');
+    } catch (err) {
+        alert("Gagal menyimpan aturan blokir KU ke server: " + err.message);
+    } finally {
+        if (btn) {
+            btn.innerText = 'Simpan Aturan';
+            btn.disabled = false;
+        }
+    }
 }
 
 // ========================================================
@@ -640,10 +668,13 @@ window.simpanKeDatabase = async () => {
         if (fileBg) finalBgUrl = await uploadFile(fileBg, 'bg');
         if (fileQris) finalQrisUrl = await uploadFile(fileQris, 'qris');
 
-        // Rakit Data Config
+        const nilaiTarifTambahan = document.getElementById('inputTarifTambahan').value;
+
+        // Rakit Data Config (Simpan ke tarif_tambahan & biaya_normal agar kompatibel penuh)
         const newConfig = {
             ...currentEventData.config,
-            biaya_normal: document.getElementById('inputTarifTambahan').value, 
+            tarif_tambahan: nilaiTarifTambahan,
+            biaya_normal: nilaiTarifTambahan, 
             biaya_estafet: document.getElementById('inputBiayaEstafet').value,
             nama_kolam: document.getElementById('inputNamaKolam').value,
             admin_wa_1: document.getElementById('inputAdminWA1').value,
@@ -656,11 +687,9 @@ window.simpanKeDatabase = async () => {
             tautan_ekstra: window.tautanEkstra
         };
 
-        // BACA SAKLAR: Kalo true (DIBUKA), berarti is_closed = false
         const isRegistrationOpen = document.getElementById('toggleStatusEvent').checked;
         const isClosedStatus = !isRegistrationOpen;
 
-        // Tembak Database
         const { error } = await supabaseClient
             .from('events')
             .update({
