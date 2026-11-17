@@ -230,7 +230,7 @@ window.renderKU = () => {
     
     window.configKU.sort((a,b) => b.tahunAkhir - a.tahunAkhir).forEach(ku => {
         container.innerHTML += `
-            <div class="p-3 md:px-4 border border-slate-200 rounded-lg flex flex-col md:flex-row md:items-center justify-between bg-slate-50 hover:bg-white hover:border-blue-300 transition-colors gap-3">
+            <div class="p-3 md:px-4 border border-slate-200 rounded-lg flex flex-col md:flex-row md:items-center justify-between bg-slate-5 hover:bg-white hover:border-blue-300 transition-colors gap-3">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">KU</div>
                     <div>
@@ -309,9 +309,17 @@ window.renderGaya = () => {
                 ? `<span class="text-[8px] font-black text-red-700 bg-red-100 border border-red-200 px-1.5 py-0.5 rounded text-center">🚫 Tolak ${blockedCount} KU</span>` 
                 : '';
             
+            const kuotaVal = Number(jrk.kuota || 0);
+            const tipeKuota = jrk.tipe_kuota || 'per_ku_gender';
+            const kuotaLabel = tipeKuota === 'total_nomor' ? `${kuotaVal} Total` : `${kuotaVal}/KU & Pa/Pi`;
+            const kuotaBadge = kuotaVal > 0
+                ? `<span class="text-[8px] font-black text-emerald-700 bg-emerald-100 border border-emerald-200 px-1.5 py-0.5 rounded text-center">👥 Maks ${kuotaLabel}</span>`
+                : '';
+            
             jarakHtml += `
-                <div class="flex flex-col gap-1.5 ${bgBadge} p-2 rounded-lg border shadow-sm w-[115px] shrink-0 cursor-pointer" onclick="window.toggleJarak('${gaya.id}', '${jrk.id}')">
+                <div class="flex flex-col gap-1.5 ${bgBadge} p-2 rounded-lg border shadow-sm w-[125px] shrink-0 cursor-pointer" onclick="window.toggleJarak('${gaya.id}', '${jrk.id}')">
                     <span class="text-xs font-bold text-center text-indigo-900 pointer-events-none">${jrk.nama}</span>
+                    ${kuotaBadge}
                     ${blockedBadge}
                     <div class="flex items-center gap-1 justify-center mt-1">
                         <button onclick="event.stopPropagation(); window.openModalAturanLomba('${gaya.id}', '${jrk.id}')" class="bg-indigo-50 text-indigo-700 border border-indigo-100 px-1.5 py-1 rounded text-[9px] font-bold active:scale-95 transition-transform flex-1">Aturan</button>
@@ -548,6 +556,7 @@ window.openModalAturanLomba = (gayaId, jarakId) => {
     const jarak = gaya.jarak.find(j => String(j.id) === String(jarakId));
     
     document.getElementById('aturanKuota').value = jarak.kuota || 0;
+    document.getElementById('aturanTipeKuota').value = jarak.tipe_kuota || 'per_ku_gender';
     
     const containerKU = document.getElementById('containerAturanKU');
     containerKU.innerHTML = '';
@@ -574,6 +583,7 @@ window.saveAturanLomba = async () => {
     const gayaId = document.getElementById('aturanGayaId').value;
     const jarakId = document.getElementById('aturanJarakId').value;
     const kuota = document.getElementById('aturanKuota').value;
+    const tipeKuota = document.getElementById('aturanTipeKuota').value || 'per_ku_gender';
     
     const blacklist = Array.from(document.querySelectorAll('.chk-blacklist-ku:checked')).map(cb => cb.value);
     
@@ -583,6 +593,7 @@ window.saveAturanLomba = async () => {
     if (jarakIndex === -1) return;
     
     window.configGaya[gayaIndex].jarak[jarakIndex].kuota = Number(kuota);
+    window.configGaya[gayaIndex].jarak[jarakIndex].tipe_kuota = tipeKuota;
     window.configGaya[gayaIndex].jarak[jarakIndex].blacklist_ku = blacklist;
 
     const btn = document.getElementById('btnSaveAturanLomba');
@@ -592,7 +603,6 @@ window.saveAturanLomba = async () => {
     }
 
     try {
-        // Langsung simpan config_gaya ke Supabase agar tidak hilang walau tidak klik tombol Simpan bawah
         const { error } = await supabaseClient
             .from('events')
             .update({ config_gaya: window.configGaya })
@@ -603,7 +613,7 @@ window.saveAturanLomba = async () => {
         window.renderGaya();
         window.closeModal('modalAturanLomba');
     } catch (err) {
-        alert("Gagal menyimpan aturan blokir KU ke server: " + err.message);
+        alert("Gagal menyimpan aturan lomba ke server: " + err.message);
     } finally {
         if (btn) {
             btn.innerText = 'Simpan Aturan';
@@ -670,7 +680,7 @@ window.simpanKeDatabase = async () => {
 
         const nilaiTarifTambahan = document.getElementById('inputTarifTambahan').value;
 
-        // Rakit Data Config (Simpan ke tarif_tambahan & biaya_normal agar kompatibel penuh)
+        // Rakit Data Config
         const newConfig = {
             ...currentEventData.config,
             tarif_tambahan: nilaiTarifTambahan,

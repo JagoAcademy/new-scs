@@ -6,6 +6,130 @@ let loggedInClubData = null;
 let dataTagihan = []; 
 let selectedTagihanIds = new Set(); 
 
+// Peta Counter Kuota Real-Time
+let kuotaMapSpecific = {}; // Key: "NamaNomor|||KU|||Gender" -> jumlah terisi
+let kuotaMapTotal = {};    // Key: "NamaNomor" -> jumlah terisi total
+
+function hitungUlangPetaKuota(regsList) {
+    kuotaMapSpecific = {};
+    kuotaMapTotal = {};
+    (regsList || []).forEach(reg => {
+        if (reg.gender === 'Regu/Tim') return;
+        const ku = (reg.kelompok_umur || '').trim();
+        const gender = (reg.gender || '').trim();
+        const listNomor = Array.isArray(reg.nomor_lomba) ? reg.nomor_lomba : [];
+        listNomor.forEach(n => {
+            const namaNomor = typeof n === 'object' ? n.gaya : n;
+            if (!namaNomor) return;
+            kuotaMapTotal[namaNomor] = (kuotaMapTotal[namaNomor] || 0) + 1;
+            if (ku && gender) {
+                const key = `${namaNomor}|||${ku}|||${gender}`;
+                kuotaMapSpecific[key] = (kuotaMapSpecific[key] || 0) + 1;
+            }
+        });
+    });
+}
+
+async function refreshKuotaCounter() {
+    if (!currentEvent) return [];
+    const { data, error } = await supabaseClient
+        .from('event_registrations')
+        .select('f1_id, nama_peserta, tanggal_lahir, nomor_lomba, kelompok_umur, gender')
+        .eq('event_id', currentEvent.id);
+
+    if (!error && data) {
+        hitungUlangPetaKuota(data);
+        const stripEl = document.getElementById('stripPeserta');
+        if (stripEl) stripEl.innerText = `${data.length} Terdaftar`;
+        updateStatusNomorLomba();
+        return data;
+    }
+    return [];
+}
+
+function updateStatusNomorLomba() {
+    const currentKUName = (document.getElementById('inputAutoKU')?.value || '').trim();
+    const currentGender = (document.getElementById('inputGender')?.value || '').trim();
+
+    const checkboxes = document.querySelectorAll('input[name="nomor_lomba"]');
+    checkboxes.forEach(cb => {
+        const namaNomor = cb.value;
+        const blacklistArr = JSON.parse(cb.getAttribute('data-blacklist') || '[]');
+        const kuota = Number(cb.getAttribute('data-kuota') || 0);
+        const tipeKuota = cb.getAttribute('data-tipe-kuota') || 'per_ku_gender';
+
+        const lbl = cb.closest('.lbl-nomor');
+        const teks = lbl?.querySelector('.teks-nomor');
+        const badgeKuota = lbl?.querySelector('.badge-kuota');
+
+        const setDisabled = (isFullOrBlocked, badgeHtml) => {
+            if (isFullOrBlocked) {
+                cb.checked = false;
+                cb.disabled = true;
+                lbl?.classList.add('bg-slate-200', 'opacity-60', 'cursor-not-allowed');
+                lbl?.classList.remove('bg-slate-50', 'hover:bg-blue-50', 'cursor-pointer');
+                teks?.classList.add('line-through', 'text-slate-400');
+                teks?.classList.remove('text-slate-700');
+            } else {
+                cb.disabled = false;
+                lbl?.classList.remove('bg-slate-200', 'opacity-60', 'cursor-not-allowed');
+                lbl?.classList.add('bg-slate-50', 'hover:bg-blue-50', 'cursor-pointer');
+                teks?.classList.remove('line-through', 'text-slate-400');
+                teks?.classList.add('text-slate-700');
+            }
+            if (badgeKuota) badgeKuota.innerHTML = badgeHtml || '';
+        };
+
+        // 1. Cek validitas KU & Blacklist terlebih dahulu
+        if (currentKUName === "Di Luar Rentang KU") {
+            setDisabled(true, `<span class="text-[9px] font-bold text-red-600">Di luar KU</span>`);
+            return;
+        }
+        if (currentKUName !== "" && blacklistArr.includes(currentKUName)) {
+            setDisabled(true, `<span class="text-[9px] font-bold text-red-600">🚫 Bukan ${currentKUName}</span>`);
+            return;
+        }
+
+        // 2. Cek Kuota jika diset > 0
+        if (kuota > 0) {
+            if (tipeKuota === 'total_nomor') {
+                const terpakai = kuotaMapTotal[namaNomor] || 0;
+                const sisa = Math.max(0, kuota - terpakai);
+                if (terpakai >= kuota) {
+                    setDisabled(true, `<span class="text-[9px] font-black text-red-700 bg-red-100 px-1.5 py-0.5 rounded">⛔ PENUH (${terpakai}/${kuota})</span>`);
+                } else {
+                    setDisabled(false, `<span class="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">Sisa ${sisa}/${kuota} Total</span>`);
+                }
+            } else {
+                // Mode default: per_ku_gender
+                if (currentKUName !== "" && currentGender !== "") {
+                    const key = `${namaNomor}|||${currentKUName}|||${currentGender}`;
+                    const terpakai = kuotaMapSpecific[key] || 0;
+                    const sisa = Math.max(0, kuota - terpakai);
+                    if (terpakai >= kuota) {
+                        setDisabled(true, `<span class="text-[9px] font-black text-red-700 bg-red-100 px-1.5 py-0.5 rounded">⛔ PENUH (${terpakai}/${kuota})</span>`);
+                    } else {
+                        setDisabled(false, `<span class="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">Sisa ${sisa}/${kuota} (${currentKUName} ${currentGender})</span>`);
+                    }
+                } else if (currentKUName !== "" && currentGender === "") {
+                    const usedPa = kuotaMapSpecific[`${namaNomor}|||${currentKUName}|||Putra`] || 0;
+                    const usedPi = kuotaMapSpecific[`${namaNomor}|||${currentKUName}|||Putri`] || 0;
+                    if (usedPa >= kuota && usedPi >= kuota) {
+                        setDisabled(true, `<span class="text-[9px] font-black text-red-700 bg-red-100 px-1.5 py-0.5 rounded">⛔ PENUH (${currentKUName})</span>`);
+                    } else {
+                        setDisabled(false, `<span class="text-[9px] font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded">Pa ${usedPa}/${kuota} • Pi ${usedPi}/${kuota}</span>`);
+                    }
+                } else {
+                    setDisabled(false, `<span class="text-[9px] font-bold text-slate-500 bg-slate-200/80 px-1.5 py-0.5 rounded">Maks ${kuota} / KU & Gender</span>`);
+                }
+            }
+        } else {
+            // Tanpa batas kuota
+            setDisabled(false, '');
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const hostname = window.location.hostname;
     let subdomain = null;
@@ -245,15 +369,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // =========================================================
-        // 2. STATISTIK REAL DARI DATABASE
-        // =========================================================
-        try {
-            const { count: countPeserta } = await supabaseClient.from('event_registrations').select('*', { count: 'exact', head: true }).eq('event_id', currentEvent.id);
-            document.getElementById('stripPeserta').innerText = `${countPeserta || 0} Terdaftar`;
-        } catch (err) { console.error("Stats Error"); }
-
-        // =========================================================
-        // RENDER KELOMPOK UMUR & GAYA INDIVIDU (WITH BLACKLIST LOGIC)
+        // RENDER KELOMPOK UMUR & GAYA INDIVIDU (WITH BLACKLIST & KUOTA)
         // =========================================================
         const kuList = eventData.config_ku || [];
         const gayaList = eventData.config_gaya || [];
@@ -265,10 +381,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             (gaya.jarak || []).forEach(jrk => {
                 if(jrk.aktif) {
                     const blacklistKuJSON = JSON.stringify(jrk.blacklist_ku || []);
+                    const kuotaVal = Number(jrk.kuota || 0);
+                    const tipeKuota = jrk.tipe_kuota || 'per_ku_gender';
                     jarakHTML += `
-                        <label class="lbl-nomor flex items-center gap-2 text-xs font-bold text-slate-700 bg-slate-50 p-2.5 rounded-lg border border-slate-200 cursor-pointer hover:bg-blue-50 transition-colors">
-                            <input type="checkbox" name="nomor_lomba" value="${gaya.nama} ${jrk.nama}" data-blacklist='${blacklistKuJSON}' class="w-4 h-4 text-blue-600 rounded disabled:opacity-50 disabled:cursor-not-allowed">
-                            <span class="teks-nomor">${jrk.nama}</span>
+                        <label class="lbl-nomor flex flex-col justify-between gap-1 text-xs font-bold text-slate-700 bg-slate-50 p-2.5 rounded-lg border border-slate-200 cursor-pointer hover:bg-blue-50 transition-colors">
+                            <div class="flex items-center gap-2">
+                                <input type="checkbox" name="nomor_lomba" value="${gaya.nama} ${jrk.nama}" data-blacklist='${blacklistKuJSON}' data-kuota="${kuotaVal}" data-tipe-kuota="${tipeKuota}" class="w-4 h-4 text-blue-600 rounded disabled:opacity-50 disabled:cursor-not-allowed shrink-0">
+                                <span class="teks-nomor leading-tight">${jrk.nama}</span>
+                            </div>
+                            <div class="badge-kuota empty:hidden pl-6"></div>
                         </label>
                     `;
                 }
@@ -277,42 +398,34 @@ document.addEventListener('DOMContentLoaded', async () => {
                 containerGaya.innerHTML += `
                     <div class="border border-slate-100 p-3 rounded-xl bg-slate-50/50">
                         <p class="font-extrabold text-blue-900 text-xs mb-2">${gaya.nama}</p>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">${jarakHTML}</div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">${jarakHTML}</div>
                     </div>
                 `;
             }
         });
 
-        // LOGIKA DETEKSI UMUR & DISABLE CHECKBOX LOMBA
+        // Muat Statistik & Kuota Terkini dari Database
+        await refreshKuotaCounter();
+
+        // LOGIKA DETEKSI UMUR & UPDATE STATUS KUOTA/BLACKLIST
         document.getElementById('inputTglLahir').addEventListener('change', (e) => {
             const tahunLahir = new Date(e.target.value).getFullYear();
-            if (isNaN(tahunLahir)) return;
+            if (isNaN(tahunLahir)) {
+                document.getElementById('inputAutoKU').value = '';
+                updateStatusNomorLomba();
+                return;
+            }
             
             const matchedKU = kuList.find(ku => tahunLahir >= Number(ku.tahunMulai) && tahunLahir <= Number(ku.tahunAkhir));
             const currentKUName = matchedKU ? matchedKU.nama : "Di Luar Rentang KU";
             document.getElementById('inputAutoKU').value = currentKUName;
 
-            const checkboxes = document.querySelectorAll('input[name="nomor_lomba"]');
-            checkboxes.forEach(cb => {
-                const blacklistArr = JSON.parse(cb.getAttribute('data-blacklist') || '[]');
-                const lbl = cb.closest('.lbl-nomor');
-                const teks = lbl.querySelector('.teks-nomor');
+            updateStatusNomorLomba();
+        });
 
-                if (blacklistArr.includes(currentKUName) || currentKUName === "Di Luar Rentang KU") {
-                    cb.checked = false;
-                    cb.disabled = true;
-                    lbl.classList.add('bg-slate-200', 'opacity-50', 'cursor-not-allowed');
-                    lbl.classList.remove('bg-slate-50', 'hover:bg-blue-50', 'cursor-pointer');
-                    teks.classList.add('line-through', 'text-slate-400');
-                    teks.classList.remove('text-slate-700');
-                } else {
-                    cb.disabled = false;
-                    lbl.classList.remove('bg-slate-200', 'opacity-50', 'cursor-not-allowed');
-                    lbl.classList.add('bg-slate-50', 'hover:bg-blue-50', 'cursor-pointer');
-                    teks.classList.remove('line-through', 'text-slate-400');
-                    teks.classList.add('text-slate-700');
-                }
-            });
+        // LOGIKA DETEKSI PERUBAHAN GENDER & UPDATE STATUS KUOTA
+        document.getElementById('inputGender').addEventListener('change', () => {
+            updateStatusNomorLomba();
         });
 
         // =========================================================
@@ -657,23 +770,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         const fileAkta = document.getElementById('inputAkta').files[0];
         if (requiresAktaUpload && !fileAkta) return alert("Anda wajib mengunggah foto Akta Kelahiran!");
 
-        btn.innerHTML = "Mengecek Data... ⏳"; 
+        btn.innerHTML = "Mengecek Kuota & Data... ⏳"; 
         btn.disabled = true;
 
         try {
-            let checkQuery = supabaseClient.from('event_registrations').select('nomor_lomba').eq('event_id', currentEvent.id);
-            if (isKlubLoggedIn && f1_id) checkQuery = checkQuery.eq('f1_id', f1_id);
-            else checkQuery = checkQuery.eq('nama_peserta', nama_peserta).eq('tanggal_lahir', tanggal_lahir);
+            // 1. Tarik seluruh data pendaftaran event terkini (untuk cek duplikat + validasi kuota live)
+            const { data: allEventRegs, error: errCheck } = await supabaseClient
+                .from('event_registrations')
+                .select('f1_id, nama_peserta, tanggal_lahir, nomor_lomba, kelompok_umur, gender')
+                .eq('event_id', currentEvent.id);
 
-            const { data: existingRegs, error: errCheck } = await checkQuery;
             if (errCheck) throw errCheck;
 
+            // Segarkan peta kuota terbaru dari database
+            hitungUlangPetaKuota(allEventRegs || []);
+
+            // 2. Cek apakah atlet sudah terdaftar di nomor yang sama
             let nomorSudahAda = [];
-            if (existingRegs && existingRegs.length > 0) {
-                existingRegs.forEach(reg => {
-                    if (Array.isArray(reg.nomor_lomba)) nomorSudahAda.push(...reg.nomor_lomba);
-                });
-            }
+            (allEventRegs || []).forEach(reg => {
+                const isSameAthlete = (isKlubLoggedIn && f1_id)
+                    ? (reg.f1_id === f1_id)
+                    : (reg.nama_peserta === nama_peserta && reg.tanggal_lahir === tanggal_lahir);
+                if (isSameAthlete && Array.isArray(reg.nomor_lomba)) {
+                    nomorSudahAda.push(...reg.nomor_lomba);
+                }
+            });
 
             let nomorBentrok = selectedNomor.filter(n => nomorSudahAda.includes(n));
             if (nomorBentrok.length > 0) {
@@ -682,8 +803,37 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return alert(`❌ GAGAL! Atlet ini sudah pernah didaftarkan di nomor:\n\n${nomorBentrok.join(', ')}\n\nSilakan hilangkan centang pada nomor tersebut jika ingin menambah nomor gaya baru.`);
             }
 
+            // 3. Validasi Live Kuota per Nomor (Per KU & Per Gender / Total)
+            let nomorPenuh = [];
+            checkboxesNomor.forEach(cb => {
+                const namaNomor = cb.value;
+                const kuota = Number(cb.getAttribute('data-kuota') || 0);
+                const tipeKuota = cb.getAttribute('data-tipe-kuota') || 'per_ku_gender';
+                if (kuota > 0) {
+                    if (tipeKuota === 'total_nomor') {
+                        const terpakai = kuotaMapTotal[namaNomor] || 0;
+                        if (terpakai >= kuota) {
+                            nomorPenuh.push(`${namaNomor} (Penuh ${terpakai}/${kuota} Total)`);
+                        }
+                    } else {
+                        const key = `${namaNomor}|||${kelompok_umur}|||${gender}`;
+                        const terpakai = kuotaMapSpecific[key] || 0;
+                        if (terpakai >= kuota) {
+                            nomorPenuh.push(`${namaNomor} — ${kelompok_umur} ${gender} (Penuh ${terpakai}/${kuota})`);
+                        }
+                    }
+                }
+            });
+
+            if (nomorPenuh.length > 0) {
+                updateStatusNomorLomba();
+                btn.innerHTML = "Daftar Individu, Masuk Antrian";
+                btn.disabled = false;
+                return alert(`❌ MAAF, KUOTA PENUH!\n\nNomor berikut baru saja mencapai batas maksimal peserta:\n• ${nomorPenuh.join('\n• ')}\n\nSilakan pilih nomor lain.`);
+            }
+
             // =========================================================
-            // KALKULASI TARIF BERJENJANG + NOMOR EKSTRA (FIXED)
+            // KALKULASI TARIF BERJENJANG + NOMOR EKSTRA
             // =========================================================
             const config = currentEvent.config || {};
             let qty = selectedNomor.length;
@@ -762,9 +912,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             checkboxesNomor.forEach(cb => cb.checked = false);
             alert("✅ Individu berhasil dimasukkan ke Daftar Tagihan!");
             
-            const { count } = await supabaseClient.from('event_registrations').select('*', { count: 'exact', head: true }).eq('event_id', currentEvent.id);
-            document.getElementById('stripPeserta').innerText = `${count || 0} Terdaftar`;
-
+            await refreshKuotaCounter();
             loadTagihan();
 
         } catch (err) {
@@ -819,6 +967,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('inputNomorEstafet').value = "";
                 document.getElementById('inputKUEstafet').value = "";
                 
+                await refreshKuotaCounter();
                 loadTagihan();
 
             } catch (err) {
@@ -848,18 +997,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         document.querySelectorAll('input[name="nomor_lomba"]').forEach(cb => {
             cb.checked = false;
-            cb.disabled = false;
-            const lbl = cb.closest('.lbl-nomor');
-            const teks = lbl?.querySelector('.teks-nomor');
-            if (lbl) {
-                lbl.classList.remove('bg-slate-200', 'opacity-50', 'cursor-not-allowed');
-                lbl.classList.add('bg-slate-50', 'hover:bg-blue-50', 'cursor-pointer');
-            }
-            if (teks) {
-                teks.classList.remove('line-through', 'text-slate-400');
-                teks.classList.add('text-slate-700');
-            }
         });
+        updateStatusNomorLomba();
     }
 
     // ==========================================
@@ -1003,9 +1142,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         localStorage.setItem(`scs_guest_${currentEvent.id}`, JSON.stringify(guestIds));
                     }
                     loadTagihan(); 
-                    
-                    const { count } = await supabaseClient.from('event_registrations').select('*', { count: 'exact', head: true }).eq('event_id', currentEvent.id);
-                    document.getElementById('stripPeserta').innerText = `${count || 0} Terdaftar`;
+                    await refreshKuotaCounter();
 
                 } catch (err) {
                     alert("Gagal menghapus data: " + err.message);
