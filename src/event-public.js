@@ -1,5 +1,57 @@
 import { supabaseClient } from './supabase.js';
 
+async function compressImageTo150KB(file, maxKB = 150) {
+    if (!file || !file.type.startsWith("image/")) return file;
+    const maxBytes = maxKB * 1024;
+    if (file.size <= maxBytes) return file;
+
+    const objectUrl = URL.createObjectURL(file);
+    try {
+        const img = await new Promise((resolve, reject) => {
+            const image = new Image();
+            image.onload = () => resolve(image);
+            image.onerror = reject;
+            image.src = objectUrl;
+        });
+
+        let width = img.naturalWidth || img.width;
+        let height = img.naturalHeight || img.height;
+        const maxDim = 1600;
+        if (width > maxDim || height > maxDim) {
+            const ratio = Math.min(maxDim / width, maxDim / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+        }
+
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        let blob = null;
+
+        while (width >= 400) {
+            canvas.width = width;
+            canvas.height = height;
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(0, 0, width, height);
+            ctx.drawImage(img, 0, 0, width, height);
+
+            for (let q = 0.85; q >= 0.45; q -= 0.1) {
+                blob = await new Promise(res => canvas.toBlob(res, "image/jpeg", Number(q.toFixed(2))));
+                if (blob && blob.size <= maxBytes) break;
+            }
+            if (blob && blob.size <= maxBytes) break;
+
+            width = Math.round(width * 0.75);
+            height = Math.round(height * 0.75);
+        }
+
+        if (!blob || blob.size >= file.size) return file;
+        const baseName = file.name.replace(/\.[^/.]+$/, "");
+        return new File([blob], baseName + ".jpg", { type: "image/jpeg", lastModified: Date.now() });
+    } finally {
+        URL.revokeObjectURL(objectUrl);
+    }
+}
+
 let currentEvent = null; 
 let isKlubLoggedIn = false; 
 let loggedInClubData = null; 
@@ -768,7 +820,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if(selectedNomor.length === 0) return alert("Pilih minimal 1 nomor lomba!");
 
         const fileAkta = document.getElementById('inputAkta').files[0];
-        if (requiresAktaUpload && !fileAkta) return alert("Anda wajib mengunggah foto Akta Kelahiran!");
+        if (requiresAktaUpload && !fileAkta) return alert("Anda wajib mengunggah foto Akta Kelahiran atau KIA!");
 
         btn.innerHTML = "Mengecek Kuota & Data... ⏳"; 
         btn.disabled = true;
@@ -874,9 +926,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             let finalAktaUrl = null;
             if (requiresAktaUpload && fileAkta) {
-                const fileExt = fileAkta.name.split('.').pop();
+                const readyAkta = await compressImageTo150KB(fileAkta, 150);
+                const fileExt = readyAkta.name.split('.').pop();
                 const fileName = `akta_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-                const { error: uploadError } = await supabaseClient.storage.from('verifikasi-akta').upload(fileName, fileAkta);
+                const { error: uploadError } = await supabaseClient.storage.from('verifikasi-akta').upload(fileName, readyAkta);
                 if (uploadError) throw uploadError;
                 const { data: urlData } = supabaseClient.storage.from('verifikasi-akta').getPublicUrl(fileName);
                 finalAktaUrl = urlData.publicUrl;
@@ -1192,9 +1245,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (total > 0) {
                 statusBayar = 'Menunggu Konfirmasi';
-                const fileExt = fileStruk.name.split('.').pop();
+                const readyStruk = await compressImageTo150KB(fileStruk, 150);
+                const fileExt = readyStruk.name.split('.').pop();
                 const fileName = `struk_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-                const { error: uploadError } = await supabaseClient.storage.from('bukti-transfer').upload(fileName, fileStruk);
+                const { error: uploadError } = await supabaseClient.storage.from('bukti-transfer').upload(fileName, readyStruk);
                 if (uploadError) throw uploadError;
                 const { data: urlData } = supabaseClient.storage.from('bukti-transfer').getPublicUrl(fileName);
                 strukUrl = urlData.publicUrl;

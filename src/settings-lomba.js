@@ -1,5 +1,57 @@
 import { supabaseClient } from './supabase.js';
 
+async function compressImageTo150KB(file, maxKB = 150) {
+    if (!file || !file.type.startsWith("image/")) return file;
+    const maxBytes = maxKB * 1024;
+    if (file.size <= maxBytes) return file;
+
+    const objectUrl = URL.createObjectURL(file);
+    try {
+        const img = await new Promise((resolve, reject) => {
+            const image = new Image();
+            image.onload = () => resolve(image);
+            image.onerror = reject;
+            image.src = objectUrl;
+        });
+
+        let width = img.naturalWidth || img.width;
+        let height = img.naturalHeight || img.height;
+        const maxDim = 1600;
+        if (width > maxDim || height > maxDim) {
+            const ratio = Math.min(maxDim / width, maxDim / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+        }
+
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        let blob = null;
+
+        while (width >= 400) {
+            canvas.width = width;
+            canvas.height = height;
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(0, 0, width, height);
+            ctx.drawImage(img, 0, 0, width, height);
+
+            for (let q = 0.85; q >= 0.45; q -= 0.1) {
+                blob = await new Promise(res => canvas.toBlob(res, "image/jpeg", Number(q.toFixed(2))));
+                if (blob && blob.size <= maxBytes) break;
+            }
+            if (blob && blob.size <= maxBytes) break;
+
+            width = Math.round(width * 0.75);
+            height = Math.round(height * 0.75);
+        }
+
+        if (!blob || blob.size >= file.size) return file;
+        const baseName = file.name.replace(/\.[^/.]+$/, "");
+        return new File([blob], baseName + ".jpg", { type: "image/jpeg", lastModified: Date.now() });
+    } finally {
+        URL.revokeObjectURL(objectUrl);
+    }
+}
+
 let currentEventId = null;
 let currentEventData = null;
 
@@ -666,9 +718,10 @@ window.simpanKeDatabase = async () => {
 
         // FUNGSI HELPER UPLOAD SUPABASE
         const uploadFile = async (file, prefix) => {
-            const ext = file.name.split('.').pop();
+            const readyFile = await compressImageTo150KB(file, 150);
+            const ext = readyFile.name.split('.').pop();
             const fileName = `${prefix}_${currentEventId}_${Date.now()}.${ext}`;
-            const { error } = await supabaseClient.storage.from('event-assets').upload(fileName, file);
+            const { error } = await supabaseClient.storage.from('event-assets').upload(fileName, readyFile);
             if (error) throw error;
             const { data } = supabaseClient.storage.from('event-assets').getPublicUrl(fileName);
             return data.publicUrl;
