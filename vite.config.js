@@ -39,6 +39,7 @@ export default defineConfig({
         logoSponsor: resolve(__dirname, 'logosponsor.html'),
         eventPeserta: resolve(__dirname, 'event-peserta.html'),
         settingsLomba: resolve(__dirname, 'settings-lomba.html'),
+        eventCashflow: resolve(__dirname, 'event-cashflow.html'),
 
         // --- 4. MODULE PUSAT CETAK & HEAT BUILDER (PRO) ---
         book: resolve(__dirname, 'book/book.html'),
@@ -46,7 +47,7 @@ export default defineConfig({
         printStartList: resolve(__dirname, 'book/print-startlist.html'),
         eventResult: resolve(__dirname, 'book/event-result.html'),
         eventSertifikatSetup: resolve(__dirname, 'book/event-sertifikat.html'),
-        clubTestimony: resolve (__dirname, 'admin-testi.html'),
+        clubTestimony: resolve(__dirname, 'admin-testi.html'),
         pembukuan: resolve(__dirname, 'pembukuan.html'),
 
         // --- 5. SUPER ADMIN PUSAT ---

@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Admin | SCS</title>
     
-  <script type="module" crossorigin src="/assets/admin-3daeb5bf.js"></script>
+  <script type="module" crossorigin src="/assets/admin-53faa5e5.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-3cfb730f.js">
   <link rel="modulepreload" crossorigin href="/assets/supabase-e9059105.js">
-  <link rel="stylesheet" href="/assets/style-de1a759c.css">
+  <link rel="stylesheet" href="/assets/style-0f08ced1.css">
 </head>
 <body class="bg-slate-900 min-h-screen font-sans text-slate-200 pb-20">
 
@@ -130,6 +130,55 @@
                         <tr><td colspan="5" class="p-8 text-center text-slate-500">Mencari usulan perubahan data...</td></tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- SECTION 1.8: ATLET BELUM TERIKAT CLUB (UNBOUND ATHLETES) -->
+        <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden border-l-4 border-l-cyan-500">
+            <div class="p-5 border-b border-slate-700 bg-slate-800/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <div class="flex items-center gap-2.5 flex-wrap">
+                        <h2 class="text-xl font-extrabold text-white flex items-center gap-2">
+                            <span>🔗</span> Atlet Belum Terikat Club
+                        </h2>
+                        <span id="badgeUnboundQueue" class="bg-cyan-500 text-slate-950 font-black px-3 py-0.5 rounded-full text-xs">0 Atlet</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">Tautkan atlet independen / tanpa klub ke klub terdaftar di ekosistem SCS.</p>
+                </div>
+                <!-- SEARCH BAR ATLET -->
+                <div class="relative w-full md:w-72">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <input type="text" id="searchUnboundAthlete" class="bg-slate-900 border border-slate-700 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full pl-10 p-2.5 text-white placeholder-slate-400" placeholder="Cari nama atlet atau F1 ID...">
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm whitespace-nowrap">
+                    <thead class="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider">
+                        <tr>
+                            <th class="p-4 font-bold w-12 text-center">No</th>
+                            <th class="p-4 font-bold">F1 ID & Profil Atlet</th>
+                            <th class="p-4 font-bold text-center">Status F1 ID</th>
+                            <th class="p-4 font-bold">Tautkan ke Club Terdaftar</th>
+                            <th class="p-4 font-bold text-center">Aksi Dewa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="unboundAthleteTableBody" class="divide-y divide-slate-700/50">
+                        <tr><td colspan="5" class="p-8 text-center text-slate-500">Mencari atlet yang belum terikat club...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- FOOTER INFO LIMIT & PAGINATION UNBOUND -->
+            <div class="p-4 border-t border-slate-700 bg-slate-800/50 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p id="unboundCountInfo" class="text-xs text-slate-400 font-medium">Menampilkan 0 atlet tanpa klub.</p>
+                <div class="flex items-center gap-2">
+                    <button id="btnPrevUnbound" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded text-xs font-bold transition disabled:opacity-50 disabled:cursor-not-allowed">&laquo; Prev</button>
+                    <span id="pageInfoUnbound" class="text-xs font-bold text-slate-300">Page 1</span>
+                    <button id="btnNextUnbound" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded text-xs font-bold transition disabled:opacity-50 disabled:cursor-not-allowed">Next &raquo;</button>
+                </div>
             </div>
         </div>
 

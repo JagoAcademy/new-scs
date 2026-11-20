@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" id="viewportMeta" content="width=device-width, initial-scale=1.0">
+    <title>Event Cashflow | SCS</title>
+    <link rel="stylesheet" href="/src/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        .theme-transition, .theme-transition * { transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 min-h-screen font-sans text-slate-800 dark:text-slate-200 theme-transition pb-20">
+
+    <!-- Top Navigation -->
+    <nav class="bg-slate-900 dark:bg-black text-white shadow-md px-4 md:px-6 py-3 flex justify-between items-center sticky top-0 z-50 border-b border-transparent dark:border-slate-800">
+        <a id="btnBackToEvent" href="/dashboard.html" class="flex items-center gap-2 text-slate-300 hover:text-white transition text-sm font-medium shrink-0 mr-4">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            <span class="hidden md:inline">Kembali ke Event Command Center</span>
+            <span class="md:hidden">Kembali</span>
+        </a>
+
+        <div class="flex items-center gap-3">
+            <!-- Toggle Desktop/Mobile View -->
+            <button id="btnToggleView" class="flex items-center justify-center p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-md transition-colors" title="Toggle Desktop / Mobile View">
+                <svg id="iconDesktop" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                <svg id="iconMobile" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+            </button>
+
+            <!-- Toggle Dark Mode -->
+            <button id="btnToggleDark" class="text-slate-400 hover:text-amber-400 focus:outline-none transition-transform hover:scale-110">
+                <svg id="iconMoon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                <svg id="iconSun" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            </button>
+
+            <div class="text-[10px] md:text-xs font-bold tracking-widest text-emerald-400 uppercase border-l border-slate-700 pl-3">Event Cashflow</div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
+
+        <!-- 1. HEADER CARD -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 md:p-7">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                        <span class="text-2xl">💰</span>
+                        <h1 id="cfEventName" class="text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight">Memuat Event...</h1>
+                    </div>
+                    <p id="cfEventSubdomain" class="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-mono">...f1swimming.com</p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <span id="roleBadge" class="px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
+                        Memeriksa Akses...
+                    </span>
+                    <button id="btnExportCashflowExcel" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5 cursor-pointer">
+                        <span>📊</span> Export Excel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Banner Info Khusus Kolaborator (Read-Only) -->
+            <div id="collabReadOnlyNotice" class="hidden mt-4 p-3.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs font-medium flex items-start gap-2.5">
+                <span class="text-base leading-none">👁️</span>
+                <span><strong>Mode Pantau Kolaborator:</strong> Anda memiliki akses penuh untuk melihat seluruh arus kas event ini. Penambahan, perubahan, dan penghapusan transaksi hanya dapat dilakukan oleh pembuat event (<strong>Event Maker</strong>).</span>
+            </div>
+        </div>
+
+        <!-- 2. SUMMARY CARDS -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-emerald-200 dark:border-emerald-900/50 p-5">
+                <p class="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Total Pemasukan</p>
+                <p id="statTotalMasuk" class="text-2xl font-black text-emerald-600 dark:text-emerald-400">Rp 0</p>
+                <p id="statRefRegistrasi" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 font-medium">Ref. Pendaftaran Lunas: Rp 0</p>
+            </div>
+
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-rose-200 dark:border-rose-900/50 p-5">
+                <p class="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Total Pengeluaran</p>
+                <p id="statTotalKeluar" class="text-2xl font-black text-rose-600 dark:text-rose-400">Rp 0</p>
+                <p id="statJumlahTransaksi" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 font-medium">0 transaksi tercatat</p>
+            </div>
+
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-blue-200 dark:border-blue-900/50 p-5">
+                <p class="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Saldo Akhir (Net)</p>
+                <p id="statSaldoBersih" class="text-2xl font-black text-blue-600 dark:text-blue-400">Rp 0</p>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 font-medium">Pemasukan - Pengeluaran</p>
+            </div>
+        </div>
+
+        <!-- 3. FORM INPUT CASHFLOW (HANYA EVENT MAKER) -->
+        <div id="sectionInputCashflow" class="hidden bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-5 md:p-7">
+            <div class="flex items-center justify-between mb-5 border-b border-slate-100 dark:border-slate-700 pb-3">
+                <div>
+                    <h2 id="formCashflowTitle" class="text-base md:text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>➕</span> Catat Arus Kas Event
+                    </h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Khusus Event Maker: catat pemasukan maupun pengeluaran operasional lomba.</p>
+                </div>
+                <button id="btnCancelEdit" type="button" class="hidden px-3 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-200 transition cursor-pointer">
+                    Batal Edit
+                </button>
+            </div>
+
+            <form id="formCashflow" class="space-y-4">
+                <input type="hidden" id="editCashflowId" value="">
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Tanggal <span class="text-red-500">*</span></label>
+                        <input type="date" id="cfTanggal" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Jenis Arus Kas <span class="text-red-500">*</span></label>
+                        <select id="cfTipe" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="MASUK">🟢 Pemasukan (Cash In)</option>
+                            <option value="KELUAR">🔴 Pengeluaran (Cash Out)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Kategori <span class="text-red-500">*</span></label>
+                        <select id="cfKategori" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="Pendaftaran Peserta">Pendaftaran Peserta</option>
+                            <option value="Sponsor & Donasi">Sponsor & Donasi</option>
+                            <option value="Sewa Kolam & Venue">Sewa Kolam & Venue</option>
+                            <option value="Medali, Piala & Sertifikat">Medali, Piala & Sertifikat</option>
+                            <option value="Honor Wasit & Panitia">Honor Wasit & Panitia</option>
+                            <option value="Konsumsi">Konsumsi</option>
+                            <option value="Perlengkapan & Cetak">Perlengkapan & Cetak</option>
+                            <option value="Operasional Lainnya">Operasional Lainnya</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Keterangan / Uraian Transaksi <span class="text-red-500">*</span></label>
+                        <input type="text" id="cfKeterangan" required placeholder="Contoh: DP Sewa Kolam Renang KONI / Pembayaran Medali 300 pcs" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white text-sm font-medium outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Nominal (Rp) <span class="text-red-500">*</span></label>
+                        <input type="number" id="cfNominal" required min="1" step="any" placeholder="500000" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white text-sm font-mono font-bold outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Metode Pembayaran</label>
+                        <select id="cfMetode" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="Transfer Bank">Transfer Bank</option>
+                            <option value="Tunai / Cash">Tunai / Cash</option>
+                            <option value="QRIS / E-Wallet">QRIS / E-Wallet</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Bukti Nota / Transfer (Opsional, Max 2MB)</label>
+                        <input type="file" id="cfBuktiFile" accept=".jpg,.jpeg,.png,.pdf" class="w-full text-xs file:bg-slate-800 file:text-white file:rounded-lg file:border-0 file:px-3 file:py-2 file:font-bold file:mr-3 file:cursor-pointer text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-600 p-1">
+                    </div>
+                </div>
+
+                <div class="pt-2 flex justify-end">
+                    <button type="submit" id="btnSubmitCashflow" class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-sm shadow-md transition cursor-pointer">
+                        💾 Simpan Transaksi
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 4. TABEL RIWAYAT CASHFLOW (BISA DILIHAT SEMUA KOLABORATOR & MAKER) -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-base md:text-lg font-extrabold text-slate-900 dark:text-white">Riwayat Arus Kas Event</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Transparansi keuangan event untuk Event Maker & Tim Kolaborator.</p>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-2.5 w-full md:w-auto">
+                    <select id="filterTipeCashflow" class="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none">
+                        <option value="ALL">Semua Transaksi</option>
+                        <option value="MASUK">🟢 Pemasukan Saja</option>
+                        <option value="KELUAR">🔴 Pengeluaran Saja</option>
+                    </select>
+
+                    <input type="text" id="searchCashflow" placeholder="Cari keterangan / kategori..." class="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm whitespace-nowrap">
+                    <thead class="bg-slate-50 dark:bg-slate-900/60 text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider border-b border-slate-100 dark:border-slate-700">
+                        <tr>
+                            <th class="p-4 font-bold">Tanggal</th>
+                            <th class="p-4 font-bold">Kategori & Keterangan</th>
+                            <th class="p-4 font-bold">Metode</th>
+                            <th class="p-4 font-bold text-center">Bukti</th>
+                            <th class="p-4 font-bold text-right">Nominal</th>
+                            <th id="thAksiCashflow" class="hidden p-4 font-bold text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cashflowTableBody" class="divide-y divide-slate-100 dark:divide-slate-700/60">
+                        <tr><td colspan="6" class="p-8 text-center text-slate-400 font-bold">Memuat data cashflow...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module" src="/src/event-cashflow.js"></script>
+</body>
+</html>

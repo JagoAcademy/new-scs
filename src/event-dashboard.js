@@ -38,24 +38,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     const iconDesktop = document.getElementById('iconDesktop');
     const iconMobile = document.getElementById('iconMobile');
 
-    // Cek di localStorage apakah user pernah ngeset mode desktop
     let isDesktopMode = localStorage.getItem('scs_desktop_mode') === 'true';
 
     function applyViewportMode() {
         if (isDesktopMode) {
             viewportMeta.setAttribute('content', 'width=1280');
-            // Ganti icon jadi Mobile (buat tombol balik)
             if(iconDesktop) iconDesktop.classList.add('hidden');
             if(iconMobile) iconMobile.classList.remove('hidden');
         } else {
             viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0');
-            // Ganti icon jadi Desktop (buat tombol ngubah)
             if(iconDesktop) iconDesktop.classList.remove('hidden');
             if(iconMobile) iconMobile.classList.add('hidden');
         }
     }
 
-    // Apply saat pertama kali load
     applyViewportMode();
 
     function toggleViewMode() {
@@ -293,7 +289,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         // SISANYA FUNGSI BIASA (LINK, COPY, OPEN, DKK)
         // ==========================================
         
-        // BALIKIN PAKE PARAMETER ?id= BIAR DATA EVENT BISA KETARIK
         const publicLink = `https://${eventData.subdomain}.f1swimming.com?id=${currentEventId}`;
         const linkInput = document.getElementById('publicLinkInput');
         if (linkInput) linkInput.value = publicLink;
@@ -352,53 +347,41 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('qrPreviewImage').classList.add('hidden');
             document.getElementById('btnDownloadFinalQR').classList.add('hidden');
 
-            // Kita gambar pakai Canvas HTML5
             const canvas = document.createElement('canvas');
             canvas.width = 500;
             canvas.height = 650;
             const ctx = canvas.getContext('2d');
 
-            // Fill Background Putih
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, 500, 650);
 
-            // Border Luar (Navy)
             ctx.strokeStyle = '#1e3a8a'; 
             ctx.lineWidth = 12;
             ctx.strokeRect(15, 15, 470, 620);
             
-            // Border Dalam (Emas)
             ctx.strokeStyle = '#f59e0b'; 
             ctx.lineWidth = 3;
             ctx.strokeRect(33, 33, 434, 584);
 
-            // Teks Atas (e.g. SCAN UNTUK MENDAFTAR)
             ctx.fillStyle = '#1e3a8a';
             ctx.font = '900 24px Arial, sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText(topText.toUpperCase(), 250, 80);
 
-            // Teks Bawah (Nama Event)
             ctx.fillStyle = '#334155';
             ctx.font = 'bold 22px Arial, sans-serif';
             ctx.fillText(titleText, 250, 560);
 
-            // Teks Watermark
             ctx.fillStyle = '#94a3b8';
             ctx.font = 'bold 14px Arial, sans-serif';
             ctx.fillText('Powered by f1swimming.com', 250, 590);
 
-            // Load QR Image
             const img = new Image();
-            img.crossOrigin = 'Anonymous'; // Biar canvas bisa di-save ke PNG tanpa error CORS
+            img.crossOrigin = 'Anonymous';
             img.onload = () => {
-                // Gambar QR Code di tengah canvas
                 ctx.drawImage(img, 50, 110, 400, 400); 
-                
-                // Konversi Canvas ke Data URL (Gambar jadi)
                 const finalImageUrl = canvas.toDataURL('image/png');
                 
-                // Tampilkan di Modal
                 document.getElementById('qrLoading').classList.add('hidden');
                 document.getElementById('qrPreviewImage').src = finalImageUrl;
                 document.getElementById('qrPreviewImage').classList.remove('hidden');
@@ -425,6 +408,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // TAUTAN HALAMAN
         document.getElementById('btnSettingsLomba').onclick = () => window.location.href = `/settings-lomba.html?id=${currentEventId}`;
+        const btnEventCashflow = document.getElementById('btnEventCashflow');
+        if (btnEventCashflow) {
+            btnEventCashflow.onclick = () => window.location.href = `/event-cashflow.html?id=${currentEventId}`;
+        }
         document.getElementById('btnLiveResult').onclick = () => window.location.href = `/live-result.html?id=${currentEventId}`;
         document.getElementById('btnDataPeserta').onclick = () => window.location.href = `/event-peserta.html?id=${currentEventId}`;
 
@@ -480,7 +467,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        // Event listener close modal yang aman
         document.querySelectorAll('.btn-close-modal').forEach(btn => {
             btn.onclick = (e) => {
                 e.target.closest('.fixed').classList.add('hidden');
