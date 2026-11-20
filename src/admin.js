@@ -1,9 +1,14 @@
 import { supabaseClient } from './supabase.js';
 
-// Variabel Global untuk Pagination
+// Variabel Global untuk Pagination Club
 let currentClubPage = 1;
 const clubsPerPage = 10;
 let filteredClubsAdmin = [];
+
+// Variabel Global untuk Pagination Atlet Tanpa Klub
+let currentUnboundPage = 1;
+const unboundPerPage = 10;
+let filteredUnboundAthletes = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
     // ==========================================
@@ -25,8 +30,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Daftar email dewa (Super Admin)
-    const allowedAdmins = ['radityaraja@gmail.com', 'fajar@f1swimming.com', 'jagorenangakademi@gmail.com',
-'indra@f1swimming.com', 'donybaktiar.me@gmail.com'];
+    const allowedAdmins = [
+        'radityaraja@gmail.com',
+        'fajar@f1swimming.com',
+        'jagorenangakademi@gmail.com',
+        'indra@f1swimming.com',
+        'donybaktiar.me@gmail.com'
+    ];
 
     // Kalau email user tidak ada di dalam daftar dewa, tendang!
     if (!allowedAdmins.includes(user.email)) {
@@ -42,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadAdminData();
 
     // ==========================================
-    // 🔍 3. EVENT LISTENER SEARCH & PAGINATION
+    // 🔍 3. EVENT LISTENER SEARCH & PAGINATION CLUB
     // ==========================================
     const searchClubInput = document.getElementById('searchClub');
     if (searchClubInput) {
@@ -57,13 +67,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 (c.provinsi && c.provinsi.toLowerCase().includes(keyword))
             );
             
-            // Reset ke halaman 1 setiap kali mencari
             currentClubPage = 1;
             renderClubs(filteredClubsAdmin);
         });
     }
 
-    // Event Listener Tombol Prev & Next
     const btnPrev = document.getElementById('btnPrevClub');
     const btnNext = document.getElementById('btnNextClub');
     
@@ -82,6 +90,47 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (currentClubPage < totalPages) {
                 currentClubPage++;
                 renderClubs(filteredClubsAdmin);
+            }
+        });
+    }
+
+    // ==========================================
+    // 🔗 4. EVENT LISTENER SEARCH & PAGINATION UNBOUND ATHLETES
+    // ==========================================
+    const searchUnboundInput = document.getElementById('searchUnboundAthlete');
+    if (searchUnboundInput) {
+        searchUnboundInput.addEventListener('input', (e) => {
+            const keyword = e.target.value.toLowerCase();
+            if (!window.allUnboundAthletes) return;
+
+            filteredUnboundAthletes = window.allUnboundAthletes.filter(a =>
+                (a.full_name && a.full_name.toLowerCase().includes(keyword)) ||
+                (a.f1_id && a.f1_id.toLowerCase().includes(keyword))
+            );
+
+            currentUnboundPage = 1;
+            renderUnboundAthletes(filteredUnboundAthletes);
+        });
+    }
+
+    const btnPrevUnbound = document.getElementById('btnPrevUnbound');
+    const btnNextUnbound = document.getElementById('btnNextUnbound');
+
+    if (btnPrevUnbound) {
+        btnPrevUnbound.addEventListener('click', () => {
+            if (currentUnboundPage > 1) {
+                currentUnboundPage--;
+                renderUnboundAthletes(filteredUnboundAthletes);
+            }
+        });
+    }
+
+    if (btnNextUnbound) {
+        btnNextUnbound.addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredUnboundAthletes.length / unboundPerPage);
+            if (currentUnboundPage < totalPages) {
+                currentUnboundPage++;
+                renderUnboundAthletes(filteredUnboundAthletes);
             }
         });
     }
@@ -130,7 +179,7 @@ async function loadAdminData() {
         if (errEdits) throw errEdits;
         renderEditQueues(edits);
 
-        // --- C. TARIK DATA FULL CLUB MANAGER (Adaptasi dari dashboard.js) ---
+        // --- C. TARIK DATA FULL CLUB MANAGER ---
         const { data: clubs, error: errC } = await supabaseClient
             .from('clubs')
             .select('*') 
@@ -153,6 +202,19 @@ async function loadAdminData() {
         filteredClubsAdmin = [...window.allClubsAdmin];
         currentClubPage = 1;
         renderClubs(filteredClubsAdmin);
+
+        // --- D. TARIK DATA ATLET BELUM TERIKAT CLUB ---
+        const { data: unbound, error: errUnbound } = await supabaseClient
+            .from('athletes')
+            .select('*')
+            .is('club_id', null)
+            .order('full_name', { ascending: true });
+        if (errUnbound) throw errUnbound;
+
+        window.allUnboundAthletes = unbound || [];
+        filteredUnboundAthletes = [...window.allUnboundAthletes];
+        currentUnboundPage = 1;
+        renderUnboundAthletes(filteredUnboundAthletes);
 
     } catch (error) {
         console.error("Gagal memuat admin:", error);
@@ -216,14 +278,12 @@ window.approveUpgrade = async (trans_id, event_id, event_name) => {
     if (!confirm(`Yakin ingin ACC pembayaran dan mengaktifkan kasta PRO/EMAS untuk event:\n\n👉 ${event_name}\n\nPastikan uang sudah masuk mutasi BCA!`)) return;
     
     try {
-        // 1. Ganti status transaksi jadi APPROVED
         const { error: errTrans } = await supabaseClient
             .from('event_transactions')
             .update({ status: 'APPROVED' })
             .eq('id', trans_id);
         if (errTrans) throw errTrans;
 
-        // 2. Ganti status kasta Event di DB jadi PRO
         const { error: errEvent } = await supabaseClient
             .from('events')
             .update({ event_tier: 'PRO' })
@@ -265,14 +325,16 @@ function renderQueues(queues) {
 
     let html = '';
     queues.forEach(q => {
-        const clubName = q.clubs?.club_name || 'Tanpa Klub';
+        const clubDisplay = q.clubs?.club_name 
+            ? `<span class="text-slate-300 font-medium">${q.clubs.club_name}</span>`
+            : `<span class="px-2 py-0.5 bg-rose-500/20 text-rose-400 border border-rose-500/40 rounded text-[10px] font-bold">⚠️ Tanpa Klub</span>`;
         html += `
             <tr class="hover:bg-slate-800 transition-colors">
                 <td class="p-4">
                     <p class="font-extrabold text-white">${q.full_name}</p>
                     <p class="text-xs font-mono text-emerald-400 mt-0.5">${q.f1_id}</p>
                 </td>
-                <td class="p-4 text-slate-300 font-medium">${clubName}</td>
+                <td class="p-4">${clubDisplay}</td>
                 <td class="p-4">
                     <div class="flex gap-2">
                         <a href="${q.foto_url}" target="_blank" class="px-2 py-1 bg-blue-900/50 text-blue-400 rounded text-[10px] font-bold hover:bg-blue-900 transition border border-blue-800">📸 Lihat Foto</a>
@@ -330,6 +392,141 @@ function renderEditQueues(edits) {
     tbody.innerHTML = html;
 }
 
+// Render Atlet Belum Terikat Club
+function renderUnboundAthletes(athletesArray) {
+    const tbody = document.getElementById('unboundAthleteTableBody');
+    const badge = document.getElementById('badgeUnboundQueue');
+    const infoCount = document.getElementById('unboundCountInfo');
+    const btnPrev = document.getElementById('btnPrevUnbound');
+    const btnNext = document.getElementById('btnNextUnbound');
+    const pageInfo = document.getElementById('pageInfoUnbound');
+
+    const totalAllUnbound = window.allUnboundAthletes ? window.allUnboundAthletes.length : 0;
+    if (badge) badge.innerText = `${totalAllUnbound} Atlet`;
+
+    if (!athletesArray || athletesArray.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500 font-bold">Semua atlet sudah terikat ke club! 🎉</td></tr>`;
+        if (infoCount) infoCount.innerText = "Menampilkan 0 atlet tanpa klub.";
+        if (btnPrev) btnPrev.disabled = true;
+        if (btnNext) btnNext.disabled = true;
+        if (pageInfo) pageInfo.innerText = "Page 1 of 1";
+        return;
+    }
+
+    const totalPages = Math.ceil(athletesArray.length / unboundPerPage);
+    if (currentUnboundPage > totalPages) currentUnboundPage = totalPages;
+    if (currentUnboundPage < 1) currentUnboundPage = 1;
+
+    const startIndex = (currentUnboundPage - 1) * unboundPerPage;
+    const endIndex = startIndex + unboundPerPage;
+    const displayAthletes = athletesArray.slice(startIndex, endIndex);
+
+    // Urutkan daftar klub A-Z untuk dropdown agar mudah dicari
+    const sortedClubs = [...(window.allClubsAdmin || [])].sort((a, b) =>
+        (a.club_name || '').localeCompare(b.club_name || '')
+    );
+
+    const clubOptionsHtml = sortedClubs.map(c => {
+        const kotaTag = c.kota_asal ? ` (${c.kota_asal})` : '';
+        return `<option value="${c.id}">${c.club_name}${kotaTag}</option>`;
+    }).join('');
+
+    let html = '';
+    displayAthletes.forEach((a, index) => {
+        const actualIndex = startIndex + index + 1;
+        const statusBadge = a.is_verified
+            ? `<span class="px-2.5 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/40 rounded text-[10px] font-black uppercase tracking-wider">👑 Verified</span>`
+            : `<span class="px-2.5 py-1 bg-slate-700/60 text-slate-400 border border-slate-600 rounded text-[10px] font-bold uppercase tracking-wider">⏳ Pending</span>`;
+
+        html += `
+            <tr class="hover:bg-slate-700/40 transition-colors">
+                <td class="p-4 text-center text-slate-500 font-bold">${actualIndex}</td>
+                <td class="p-4">
+                    <a href="/f1-id.html?id=${a.f1_id}" target="_blank" class="font-extrabold text-white hover:text-cyan-400 transition-colors">${a.full_name}</a>
+                    <div class="flex items-center gap-2 mt-0.5 text-xs">
+                        <span class="font-mono text-cyan-400 font-bold">${a.f1_id}</span>
+                        <span class="text-slate-600">•</span>
+                        <span class="text-slate-400">${a.gender || '-'} (${a.dob || '-'})</span>
+                    </div>
+                </td>
+                <td class="p-4 text-center">${statusBadge}</td>
+                <td class="p-4">
+                    <select id="clubSelect_${a.f1_id}" class="bg-slate-900 border border-slate-600 text-xs font-bold rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full min-w-[220px] p-2.5 text-white">
+                        <option value="">-- Pilih Club Tujuan --</option>
+                        ${clubOptionsHtml}
+                    </select>
+                </td>
+                <td class="p-4 text-center">
+                    <button id="btnLink_${a.f1_id}" onclick="linkAthleteToClub('${a.f1_id}')" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-black rounded-lg text-xs shadow-lg transition transform hover:scale-105">
+                        🔗 Tautkan
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+
+    if (infoCount) {
+        const endDisplay = Math.min(endIndex, athletesArray.length);
+        infoCount.innerText = `Menampilkan ${startIndex + 1}-${endDisplay} dari total ${athletesArray.length} atlet tanpa klub.`;
+    }
+    if (pageInfo) pageInfo.innerText = `Page ${currentUnboundPage} of ${totalPages}`;
+    if (btnPrev) btnPrev.disabled = currentUnboundPage === 1;
+    if (btnNext) btnNext.disabled = currentUnboundPage === totalPages;
+}
+
+// Eksekusi Tautkan Atlet ke Club Terdaftar
+window.linkAthleteToClub = async (f1Id) => {
+    const selectEl = document.getElementById(`clubSelect_${f1Id}`);
+    const btnEl = document.getElementById(`btnLink_${f1Id}`);
+    if (!selectEl) return;
+
+    const selectedClubId = selectEl.value;
+    if (!selectedClubId) {
+        alert("Pilih club tujuan terlebih dahulu!");
+        selectEl.focus();
+        return;
+    }
+
+    const targetClub = (window.allClubsAdmin || []).find(c => String(c.id) === String(selectedClubId));
+    const targetAthlete = (window.allUnboundAthletes || []).find(a => a.f1_id === f1Id);
+
+    if (!targetClub) {
+        alert("Data club tidak ditemukan. Coba muat ulang halaman.");
+        return;
+    }
+
+    const athleteLabel = targetAthlete ? `${targetAthlete.full_name} (${f1Id})` : f1Id;
+    if (!confirm(`Yakin ingin menautkan atlet:\n\n🏊 ${athleteLabel}\n\nKe dalam club:\n🏢 ${targetClub.club_name}?`)) return;
+
+    if (btnEl) {
+        btnEl.disabled = true;
+        btnEl.innerText = "⏳ Menautkan...";
+    }
+
+    try {
+        const { error } = await supabaseClient
+            .from('athletes')
+            .update({
+                club_id: targetClub.id,
+                owner_id: targetClub.owner_id || null
+            })
+            .eq('f1_id', f1Id);
+
+        if (error) throw error;
+
+        alert(`✅ Berhasil! ${athleteLabel} kini resmi terdaftar di ${targetClub.club_name}.`);
+        loadAdminData();
+    } catch (err) {
+        alert("Gagal menautkan atlet: " + err.message);
+        if (btnEl) {
+            btnEl.disabled = false;
+            btnEl.innerText = "🔗 Tautkan";
+        }
+    }
+};
+
 function renderClubs(clubsArray) {
     const tbody = document.getElementById('clubTableBody');
     const infoCount = document.getElementById('clubCountInfo');
@@ -360,7 +557,7 @@ function renderClubs(clubsArray) {
         const location = c.kota_asal ? `${c.kota_asal}, ${c.provinsi || ''}` : (c.provinsi || 'Belum diatur');
         const athleteCount = c.athlete_count || 0; 
         
-        const isPro = c.event_tier === 'PRO'; // <-- Ini kalau lu nampilin event. Di sini ini club manager.
+        const isPro = c.event_tier === 'PRO';
         const badgeAkun = isPro 
             ? `<span class="px-2 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/50 rounded text-[10px] font-black tracking-widest uppercase">PRO</span>` 
             : `<span class="px-2 py-1 bg-slate-700/50 text-slate-400 border border-slate-600 rounded text-[10px] font-bold tracking-widest uppercase">BASIC</span>`;
