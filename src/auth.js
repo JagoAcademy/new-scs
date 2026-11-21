@@ -2,7 +2,7 @@ import { supabaseClient } from './supabase.js';
 
 function getSafeRedirectUrl() {
     const params = new URLSearchParams(window.location.search);
-    const rawRedirect = params.get('redirect');
+    const rawRedirect = params.get('redirect') || sessionStorage.getItem('scs_auth_redirect');
     if (!rawRedirect) return null;
     try {
         const parsed = new URL(rawRedirect);
@@ -17,6 +17,7 @@ function getSafeRedirectUrl() {
 function redirectAfterAuth(sessionObj) {
     const targetUrl = getSafeRedirectUrl();
     if (targetUrl && sessionObj?.access_token && sessionObj?.refresh_token) {
+        sessionStorage.removeItem('scs_auth_redirect');
         const base = targetUrl.split('#')[0];
         const hash = `access_token=${encodeURIComponent(sessionObj.access_token)}&refresh_token=${encodeURIComponent(sessionObj.refresh_token)}`;
         window.location.replace(`${base}#${hash}`);
@@ -118,51 +119,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // ==========================================
-    // LOGIKA LOGIN GOOGLE (VERSI CUSTOM DOMAIN)
+    // LOGIKA LOGIN GOOGLE (TOMBOL STATIS ANTI-CACHE)
     // ==========================================
     if (btnGoogleLogin) {
-        btnGoogleLogin.innerHTML = ''; 
-        btnGoogleLogin.className = 'flex justify-center w-full mt-2'; 
+        btnGoogleLogin.addEventListener('click', async () => {
+            const originalHtml = btnGoogleLogin.innerHTML;
+            btnGoogleLogin.innerHTML = '<span class="animate-spin text-base">↻</span> Menghubungkan ke Google...';
+            btnGoogleLogin.disabled = true;
 
-        const renderGoogleButton = () => {
-            if (typeof google === 'undefined' || !google.accounts) {
-                setTimeout(renderGoogleButton, 100); 
-                return;
-            }
-
-            // 1. Inisialisasi Google Auth
-            google.accounts.id.initialize({
-                client_id: '1047924463495-3virdj082194chl013ia1js0ls8c99rv.apps.googleusercontent.com',
-                callback: async (response) => {
-                    try {
-                        const { data, error } = await supabaseClient.auth.signInWithIdToken({
-                            provider: 'google',
-                            token: response.credential,
-                        });
-
-                        if (error) throw error;
-                        redirectAfterAuth(data?.session);
-                    } catch (err) {
-                        alert("Gagal login Google: " + translateAuthError(err));
-                    }
+            try {
+                const pendingRedirect = new URLSearchParams(window.location.search).get('redirect');
+                if (pendingRedirect) {
+                    sessionStorage.setItem('scs_auth_redirect', pendingRedirect);
                 }
-            });
 
-            // 2. Gambar tombol Google yang rapi
-            google.accounts.id.renderButton(
-                btnGoogleLogin, 
-                { 
-                    theme: "outline", 
-                    size: "large", 
-                    text: "continue_with",
-                    shape: "rectangular"
-                } 
-            );
-        };
+                const { error } = await supabaseClient.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: window.location.origin + '/auth.html',
+                        queryParams: {
+                            prompt: 'select_account'
+                        }
+                    }
+                });
 
-        renderGoogleButton();
+                if (error) throw error;
+            } catch (err) {
+                alert("Gagal login Google: " + translateAuthError(err));
+                btnGoogleLogin.innerHTML = originalHtml;
+                btnGoogleLogin.disabled = false;
+            }
+        });
     }
-
 
     // ==========================================
     // LOGIKA LOGIN EMAIL
