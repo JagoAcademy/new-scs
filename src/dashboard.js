@@ -391,6 +391,10 @@ Terima kasih.`);
         });
     }
 
+    supabaseClient.auth.onAuthStateChange((_event, session) => {
+        if (session) currentAuthSession = session;
+    });
+
     fetchDashboardData();
 });
 
@@ -1829,6 +1833,13 @@ async function fetchProEventsSection() {
             return;
         }
 
+        const { data: { session: latestSess } } = await supabaseClient.auth.getSession();
+        const activeSess = latestSess || currentAuthSession;
+        const buildSessionHash = (sess) => (sess?.access_token && sess?.refresh_token)
+            ? `#access_token=${encodeURIComponent(sess.access_token)}&refresh_token=${encodeURIComponent(sess.refresh_token)}`
+            : '';
+        const sessionHash = buildSessionHash(activeSess);
+
         let html = '';
 
         activeProEvents.forEach(ev => {
@@ -1850,8 +1861,9 @@ async function fetchProEventsSection() {
             const wilayah = [ev.kota, ev.provinsi].filter(Boolean).join(', ') || 'Indonesia';
             const lokasiText = `${kolam}${wilayah}`;
 
-            // Arahkan khusus ke portal publik pendaftaran peserta (bukan event-dashboard.html)
-            const publicRegUrl = `https://${ev.subdomain}.f1swimming.com`;
+            // Arahkan ke portal publik pendaftaran peserta sambil membawa session login klub
+            const baseRegUrl = `https://${ev.subdomain}.f1swimming.com`;
+            const publicRegUrl = `${baseRegUrl}${sessionHash}`;
             const publicResultUrl = `https://${ev.subdomain}.f1swimming.com/result`;
 
             html += `
@@ -1869,7 +1881,7 @@ async function fetchProEventsSection() {
                         <p class="text-[11px] text-blue-600 font-mono mt-1 truncate">🔗 ${ev.subdomain}.f1swimming.com</p>
                     </div>
                     <div class="mt-4 grid grid-cols-2 gap-2">
-                        <a href="${publicRegUrl}" target="_blank" rel="noopener noreferrer" class="bg-blue-900 hover:bg-blue-800 text-white text-center text-xs font-extrabold py-2.5 px-3 rounded-xl shadow-sm transition">
+                        <a href="${publicRegUrl}" data-base-reg-url="${baseRegUrl}" target="_blank" rel="noopener noreferrer" class="btn-pro-reg bg-blue-900 hover:bg-blue-800 text-white text-center text-xs font-extrabold py-2.5 px-3 rounded-xl shadow-sm transition">
                             ${ev.is_closed ? 'Info Lomba' : 'Daftar Atlet'} &raquo;
                         </a>
                         <a href="${publicResultUrl}" target="_blank" rel="noopener noreferrer" class="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-center text-xs font-extrabold py-2.5 px-3 rounded-xl transition">
@@ -1881,6 +1893,21 @@ async function fetchProEventsSection() {
         });
 
         container.innerHTML = html;
+
+        if (!container.dataset.sessionSyncBound) {
+            container.dataset.sessionSyncBound = '1';
+            const refreshLinkToken = (e) => {
+                const link = e.target.closest('a.btn-pro-reg');
+                if (!link) return;
+                const base = link.getAttribute('data-base-reg-url');
+                const freshHash = buildSessionHash(currentAuthSession);
+                if (base && freshHash) {
+                    link.href = `${base}${freshHash}`;
+                }
+            };
+            container.addEventListener('pointerdown', refreshLinkToken);
+            container.addEventListener('click', refreshLinkToken);
+        }
     } catch (err) {
         console.error('Gagal memuat event Pro:', err.message);
         container.innerHTML = `

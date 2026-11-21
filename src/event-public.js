@@ -183,6 +183,7 @@ function updateStatusNomorLomba() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    const initialAuthHash = window.location.hash;
     const hostname = window.location.hostname;
     let subdomain = null;
     
@@ -506,15 +507,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         // =========================================================
         // TANGKAP TOKEN BALIKAN DARI f1swimming.com/auth.html (JIKA ADA)
         // =========================================================
-        if (window.location.hash && window.location.hash.includes('access_token=')) {
-            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const authHashToParse = (window.location.hash && window.location.hash.includes('access_token='))
+            ? window.location.hash
+            : initialAuthHash;
+
+        let activeSession = null;
+        if (authHashToParse && authHashToParse.includes('access_token=')) {
+            const hashParams = new URLSearchParams(authHashToParse.substring(1));
             const accessToken = hashParams.get('access_token');
             const refreshToken = hashParams.get('refresh_token');
             if (accessToken && refreshToken) {
-                await supabaseClient.auth.setSession({
+                const { data: setSessData, error: setSessErr } = await supabaseClient.auth.setSession({
                     access_token: accessToken,
                     refresh_token: refreshToken
                 });
+                if (setSessErr) {
+                    console.warn('[SCS-AUTH] Gagal setSession dari hash:', setSessErr.message);
+                } else {
+                    activeSession = setSessData?.session || null;
+                }
                 window.history.replaceState(null, '', window.location.pathname + window.location.search);
             }
         }
@@ -522,9 +533,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         // =========================================================
         // OTOMATIS CEK SESSION (JIKA SUDAH LOGIN SEBELUMNYA)
         // =========================================================
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session) {
-            await applySuccessfulLoginUI(session.user.id);
+        if (!activeSession) {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            activeSession = session;
+        }
+        if (activeSession) {
+            await applySuccessfulLoginUI(activeSession.user.id);
         }
 
         loadTagihan();
