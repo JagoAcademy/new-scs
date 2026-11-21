@@ -504,6 +504,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // =========================================================
+        // TANGKAP TOKEN BALIKAN DARI f1swimming.com/auth.html (JIKA ADA)
+        // =========================================================
+        if (window.location.hash && window.location.hash.includes('access_token=')) {
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const accessToken = hashParams.get('access_token');
+            const refreshToken = hashParams.get('refresh_token');
+            if (accessToken && refreshToken) {
+                await supabaseClient.auth.setSession({
+                    access_token: accessToken,
+                    refresh_token: refreshToken
+                });
+                window.history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+        }
+
+        // =========================================================
         // OTOMATIS CEK SESSION (JIKA SUDAH LOGIN SEBELUMNYA)
         // =========================================================
         const { data: { session } } = await supabaseClient.auth.getSession();
@@ -518,45 +534,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   
     // ==========================================
-    // LOGIKA LOGIN GOOGLE (SUPABASE OAUTH REDIRECT)
+    // ARAHKAN GOOGLE LOGIN & REGISTER KE DOMAIN UTAMA + REDIRECT BALIK
     // ==========================================
-    const btnGoogleLoginPublic = document.getElementById('btnGoogleLoginPublic');
-    if (btnGoogleLoginPublic) {
-        btnGoogleLoginPublic.innerHTML = `
-            <svg class="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-            Masuk dengan Google
-        `;
-        btnGoogleLoginPublic.className = 'w-full h-[48px] bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold rounded-lg shadow-sm flex items-center justify-center gap-3 transition-colors mb-2';
-
-        btnGoogleLoginPublic.addEventListener('click', async () => {
-            try {
-                const cleanUrl = window.location.origin + window.location.pathname + window.location.search;
-                const { error } = await supabaseClient.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: { redirectTo: cleanUrl }
-                });
-                if (error) throw error;
-            } catch (err) {
-                alert("Gagal Inisiasi Google Login: " + err.message);
-            }
-        });
+    const currentEventUrl = window.location.origin + window.location.pathname + window.location.search;
+    const linkAuthGoogle = document.getElementById('linkAuthGoogle');
+    const linkAuthRegister = document.getElementById('linkAuthRegister');
+    if (linkAuthGoogle) {
+        linkAuthGoogle.href = `https://f1swimming.com/auth.html?redirect=${encodeURIComponent(currentEventUrl)}`;
+    }
+    if (linkAuthRegister) {
+        linkAuthRegister.href = `https://f1swimming.com/auth.html?mode=register&redirect=${encodeURIComponent(currentEventUrl)}`;
     }
 
     // ==========================================
-    // TOGGLE & LOGIKA LOGIN MANUAL EMAIL
+    // LOGIKA LOGIN LANGSUNG VIA EMAIL & PASSWORD
     // ==========================================
-    document.getElementById('btnToggleManualLogin').addEventListener('click', () => {
-        document.getElementById('areaLogin').classList.toggle('hidden');
-    });
-
-    document.getElementById('btnProsesLogin').addEventListener('click', async () => {
-        const email = document.getElementById('loginEmail').value;
+    const handleDirectEmailLogin = async () => {
+        const email = document.getElementById('loginEmail').value.trim();
         const password = document.getElementById('loginPassword').value;
         const btnLogin = document.getElementById('btnProsesLogin');
 
-        if(!email || !password) return alert("Email dan Password wajib diisi!");
-        
-        btnLogin.innerText = "Mengecek data..."; 
+        if (!email || !password) return alert("Email dan Password wajib diisi!");
+
+        btnLogin.innerText = "Mengecek akun...";
         btnLogin.disabled = true;
 
         try {
@@ -564,16 +564,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (authError) throw authError;
 
             await applySuccessfulLoginUI(authData.user.id);
-            alert("Login berhasil!");
         } catch (err) {
             alert("Gagal login: " + err.message);
         } finally {
-            btnLogin.innerText = "Masuk & Sinkronisasi"; 
+            btnLogin.innerText = "Masuk & Sinkronisasi 🚀";
             btnLogin.disabled = false;
         }
-    });
+    };
 
-    // ==========================================
+    const formPublicLogin = document.getElementById('formPublicLogin');
+    if (formPublicLogin) {
+        formPublicLogin.addEventListener('submit', handleDirectEmailLogin);
+    }
+
+        // ==========================================
     // LOGOUT
     // ==========================================
     document.getElementById('btnLogout').addEventListener('click', async () => {
@@ -615,9 +619,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const { data: clubData, error: clubErr } = await supabaseClient.from('clubs').select('*').eq('owner_id', userId).single();
             if (clubErr || !clubData) {
-                await supabaseClient.auth.signOut();
-                alert("Akun ini belum memiliki Profil Klub. Silakan lengkapi profil di halaman Dashboard terlebih dahulu.");
-                window.location.href = '/dashboard.html';
+                const { data: { session: activeSess } } = await supabaseClient.auth.getSession();
+                alert("Akun berhasil masuk! Silakan lengkapi Profil Klub Anda terlebih dahulu di Dashboard utama.");
+                if (activeSess?.access_token && activeSess?.refresh_token) {
+                    const hash = `access_token=${encodeURIComponent(activeSess.access_token)}&refresh_token=${encodeURIComponent(activeSess.refresh_token)}`;
+                    window.location.href = `https://f1swimming.com/dashboard.html#${hash}`;
+                } else {
+                    window.location.href = 'https://f1swimming.com/dashboard.html';
+                }
                 return;
             }
             

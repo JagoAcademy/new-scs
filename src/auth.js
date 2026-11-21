@@ -1,11 +1,36 @@
 import { supabaseClient } from './supabase.js';
 
+function getSafeRedirectUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const rawRedirect = params.get('redirect');
+    if (!rawRedirect) return null;
+    try {
+        const parsed = new URL(rawRedirect);
+        const host = parsed.hostname.toLowerCase();
+        if (host === 'f1swimming.com' || host.endsWith('.f1swimming.com') || host === 'localhost') {
+            return parsed.toString();
+        }
+    } catch (e) {}
+    return null;
+}
+
+function redirectAfterAuth(sessionObj) {
+    const targetUrl = getSafeRedirectUrl();
+    if (targetUrl && sessionObj?.access_token && sessionObj?.refresh_token) {
+        const base = targetUrl.split('#')[0];
+        const hash = `access_token=${encodeURIComponent(sessionObj.access_token)}&refresh_token=${encodeURIComponent(sessionObj.refresh_token)}`;
+        window.location.replace(`${base}#${hash}`);
+        return;
+    }
+    redirectAfterAuth(data?.session);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     
     // 1. CEK SESSION: Lempar ke dashboard kalau udah login
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) {
-        window.location.replace('/dashboard.html');
+        redirectAfterAuth(session);
         return;
     }
 
@@ -53,6 +78,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ==========================================
+    // AUTO-BUKA MODE REGISTER JIKA DIPANGGIL DARI HALAMAN LOMBA
+    const initMode = new URLSearchParams(window.location.search).get('mode');
+    if (initMode === 'register' && containerLogin && containerRegister) {
+        containerLogin.classList.add('hidden', '-translate-x-full', 'opacity-0');
+        containerLogin.classList.remove('translate-x-0', 'opacity-100');
+        containerRegister.classList.remove('hidden', 'translate-x-full', 'opacity-0');
+        containerRegister.classList.add('flex', 'translate-x-0', 'opacity-100');
+    }
+
     // SWITCHER ANIMASI (LOGIN <-> REGISTER)
     // ==========================================
     document.getElementById('btnSwitchToRegister').addEventListener('click', () => {
@@ -107,7 +141,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         });
 
                         if (error) throw error;
-                        window.location.replace('/dashboard.html');
+                        redirectAfterAuth(data?.session);
                     } catch (err) {
                         alert("Gagal login Google: " + translateAuthError(err));
                     }
@@ -150,7 +184,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (error) throw error;
             
-            window.location.replace('/dashboard.html');
+            redirectAfterAuth(data?.session);
 
         } catch (err) {
             console.error("Login Error:", err);
@@ -194,7 +228,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // KARENA AUTH EMAIL OFF, LANGSUNG LEMPAR KE DASHBOARD 🚀
-            window.location.replace('/dashboard.html');
+            redirectAfterAuth(data?.session);
 
         } catch (err) {
             console.error("Register Error:", err);
