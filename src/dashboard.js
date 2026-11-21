@@ -709,17 +709,10 @@ async function fetchDashboardData() {
                 evHTML += `<p class="text-sm text-gray-500 italic w-full col-span-2 text-center py-4">Belum ada event lomba yang dibuat atau dikolaborasikan.</p>`;
             }
 
-            evHTML += `
-                <div class="border-2 border-dashed border-blue-200 bg-blue-50/50 p-4 rounded-2xl hover:border-blue-400 transition-all group flex flex-col justify-center items-center text-center ${allEventsToDisplay.length % 2 !== 0 ? 'col-span-1 md:col-span-2' : ''}">
-                    <span class="text-3xl mb-2 group-hover:scale-110 transition-transform">🌍</span>
-                    <h3 class="font-bold text-blue-900 text-base">Jelajahi Kalender Event</h3>
-                    <p class="text-xs text-gray-600 mt-1 mb-4 max-w-sm">Cari kejuaraan renang terdekat di Provinsi / Kota Anda atau pantau event lainnya.</p>
-                    <a href="/event.html" class="bg-blue-600 text-white text-xs font-bold py-2 px-6 rounded-full shadow-md hover:bg-blue-700 transition">Buka Kalender Lomba &raquo;</a>
-                </div>
-            `;
-            
             eventContainer.innerHTML = evHTML;
         }
+
+        await fetchProEventsSection();
 
         const { data: athletesData, error: athletesError } = await supabaseClient
             .from('athletes')
@@ -1779,5 +1772,101 @@ function updateOnboardingAndAlerts(session, clubData, athletesList) {
             localStorage.removeItem(activeNewKey);
             tutorialCard.classList.add('hidden');
         });
+    }
+}
+
+
+// ==============================================================
+// 👑 EVENT SEDANG BERLANGSUNG (KHUSUS TIER PRO)
+// ==============================================================
+async function fetchProEventsSection() {
+    const container = document.getElementById('proEventsContainer');
+    if (!container) return;
+
+    try {
+        const { data: proEvents, error } = await supabaseClient
+            .from('events')
+            .select('*')
+            .ilike('tier', 'pro');
+
+        if (error) throw error;
+
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const todayStr = `${yyyy}-${mm}-${dd}`;
+
+        const activeProEvents = (proEvents || []).filter(ev => {
+            if (ev.subdomain && ev.subdomain.startsWith('unofficial-')) return false;
+            const endDate = ev.end_date || ev.event_date;
+            if (!endDate) return true;
+            return endDate >= todayStr;
+        });
+
+        // Urutkan: yang sedang berlangsung hari ini di atas, lalu terdekat berikutnya
+        activeProEvents.sort((a, b) => {
+            const aLive = (a.event_date <= todayStr && (a.end_date || a.event_date) >= todayStr) ? 0 : 1;
+            const bLive = (b.event_date <= todayStr && (b.end_date || b.event_date) >= todayStr) ? 0 : 1;
+            if (aLive !== bLive) return aLive - bLive;
+            return (a.event_date || '').localeCompare(b.event_date || '');
+        });
+
+        if (activeProEvents.length === 0) {
+            container.innerHTML = `
+                <div class="col-span-full text-center py-6 px-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <p class="text-sm font-bold text-slate-600">Belum ada event tier Pro yang sedang berlangsung saat ini.</p>
+                    <p class="text-xs text-slate-400 mt-1">Gunakan tombol Jelajahi Event di bawah untuk melihat seluruh jadwal kejuaraan.</p>
+                </div>
+            `;
+            return;
+        }
+
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        let html = '';
+
+        activeProEvents.forEach(ev => {
+            const startDate = ev.event_date || '-';
+            const endDate = ev.end_date || startDate;
+            const isLiveNow = startDate <= todayStr && endDate >= todayStr;
+
+            const statusBadge = isLiveNow
+                ? `<span class="inline-flex items-center gap-1 bg-red-100 text-red-700 border border-red-200 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"><span class="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping"></span>Sedang Berlangsung</span>`
+                : `<span class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 border border-emerald-200 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">Buka Pendaftaran</span>`;
+
+            const lokasiText = [ev.kota, ev.provinsi].filter(Boolean).join(', ') || 'Indonesia';
+            const eventUrl = isLocalhost
+                ? `/event-public.html?subdomain=${encodeURIComponent(ev.subdomain)}`
+                : `https://${ev.subdomain}.f1swimming.com`;
+
+            html += `
+                <div class="border-2 border-amber-200 bg-gradient-to-br from-white to-amber-50/40 p-5 rounded-2xl shadow-sm hover:shadow-md hover:border-amber-400 transition-all flex flex-col justify-between relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 bg-gradient-to-r from-amber-400 to-yellow-500 text-blue-950 text-[9px] font-black px-2.5 py-1 rounded-bl-xl tracking-widest uppercase shadow-xs">
+                        👑 PRO EVENT
+                    </div>
+                    <div>
+                        <div class="mb-2 pr-20">
+                            ${statusBadge}
+                        </div>
+                        <h3 class="font-extrabold text-blue-950 text-base md:text-lg group-hover:text-blue-700 transition leading-snug">${ev.event_name}</h3>
+                        <p class="text-xs text-slate-600 font-semibold mt-1.5">📍 ${lokasiText}</p>
+                        <p class="text-xs text-slate-500 mt-1">📅 ${startDate} s/d ${endDate}</p>
+                        <p class="text-[11px] text-blue-600 font-mono mt-1 truncate">🔗 ${ev.subdomain}.f1swimming.com</p>
+                    </div>
+                    <a href="${eventUrl}" target="_blank" rel="noopener noreferrer" class="mt-4 w-full bg-blue-900 hover:bg-blue-800 text-white text-center text-xs font-extrabold py-2.5 px-4 rounded-xl shadow-sm transition">
+                        Lihat & Daftar Lomba &raquo;
+                    </a>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    } catch (err) {
+        console.error('Gagal memuat event Pro:', err.message);
+        container.innerHTML = `
+            <div class="col-span-full text-center py-4 text-xs font-bold text-red-500">
+                Gagal memuat daftar event Pro: ${err.message}
+            </div>
+        `;
     }
 }
