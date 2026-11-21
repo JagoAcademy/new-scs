@@ -1777,18 +1777,18 @@ function updateOnboardingAndAlerts(session, clubData, athletesList) {
 
 
 // ==============================================================
-// 👑 EVENT SEDANG BERLANGSUNG (KHUSUS TIER PRO - UNTUK PENDAFTARAN)
+// 👑 EVENT SEDANG BERLANGSUNG (KHUSUS TIER PRO - ETALASE PESERTA)
 // ==============================================================
 async function fetchProEventsSection() {
     const container = document.getElementById('proEventsContainer');
     if (!container) return;
 
     try {
-        // Sesuai schema event-dashboard.js: event_tier === 'PRO' atau is_pro === true
+        // Kolom sesuai schema public.events: id, event_name, event_date, end_date, subdomain, config, provinsi, kota, is_closed, event_tier
         const { data: proEvents, error } = await supabaseClient
             .from('events')
-            .select('id, event_name, subdomain, event_tier, is_pro, is_closed, start_date, end_date, event_date, kota, provinsi, config')
-            .or('event_tier.ilike.pro,is_pro.eq.true');
+            .select('id, event_name, event_date, end_date, subdomain, config, provinsi, kota, is_closed, event_tier')
+            .ilike('event_tier', 'PRO');
 
         if (error) throw error;
 
@@ -1800,18 +1800,17 @@ async function fetchProEventsSection() {
 
         const activeProEvents = (proEvents || []).filter(ev => {
             if (!ev.subdomain || ev.subdomain.startsWith('unofficial-')) return false;
-            const tierMatch = String(ev.event_tier || '').toUpperCase() === 'PRO' || ev.is_pro === true;
-            if (!tierMatch) return false;
+            if (String(ev.event_tier || '').toUpperCase() !== 'PRO') return false;
 
-            const endDate = ev.end_date || ev.start_date || ev.event_date;
+            const endDate = ev.end_date || ev.event_date;
             if (!endDate) return true;
             return endDate >= todayStr;
         });
 
         activeProEvents.sort((a, b) => {
-            const aStart = a.start_date || a.event_date || '';
+            const aStart = a.event_date || '';
             const aEnd = a.end_date || aStart;
-            const bStart = b.start_date || b.event_date || '';
+            const bStart = b.event_date || '';
             const bEnd = b.end_date || bStart;
 
             const aLive = (aStart && aStart <= todayStr && aEnd >= todayStr) ? 0 : 1;
@@ -1834,7 +1833,7 @@ async function fetchProEventsSection() {
 
         activeProEvents.forEach(ev => {
             const cfg = ev.config || {};
-            const startDate = ev.start_date || ev.event_date || '-';
+            const startDate = ev.event_date || '-';
             const endDate = ev.end_date || startDate;
             const isLiveNow = startDate !== '-' && startDate <= todayStr && endDate >= todayStr;
 
@@ -1847,13 +1846,13 @@ async function fetchProEventsSection() {
                 statusBadge = `<span class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 border border-emerald-200 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">✅ Buka Pendaftaran</span>`;
             }
 
-            const kolam = cfg.nama_kolam ? `${cfg.nama_kolam} — ` : '';
+            const kolam = cfg.nama_kolam ? `${cfg.nama_kolam.trim()} — ` : '';
             const wilayah = [ev.kota, ev.provinsi].filter(Boolean).join(', ') || 'Indonesia';
             const lokasiText = `${kolam}${wilayah}`;
 
-            // Link khusus halaman pendaftaran publik & live result (BUKAN event-dashboard.html)
-            const publicRegUrl = `https://${ev.subdomain}.f1swimming.com?id=${ev.id}`;
-            const publicResultUrl = `https://${ev.subdomain}.f1swimming.com/result?id=${ev.id}`;
+            // Arahkan khusus ke portal publik pendaftaran peserta (bukan event-dashboard.html)
+            const publicRegUrl = `https://${ev.subdomain}.f1swimming.com`;
+            const publicResultUrl = `https://${ev.subdomain}.f1swimming.com/result`;
 
             html += `
                 <div class="border-2 border-amber-200 bg-gradient-to-br from-white to-amber-50/40 p-5 rounded-2xl shadow-sm hover:shadow-md hover:border-amber-400 transition-all flex flex-col justify-between relative overflow-hidden group">
