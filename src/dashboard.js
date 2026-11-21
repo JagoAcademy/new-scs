@@ -395,6 +395,10 @@ Terima kasih.`);
         if (session) currentAuthSession = session;
     });
 
+    try {
+        const { data: { session: initSess } } = await supabaseClient.auth.getSession();
+        if (initSess) currentAuthSession = initSess;
+    } catch (_) {}
     fetchDashboardData();
 });
 

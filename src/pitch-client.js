@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const waText = `Halo tim F1 Swimming, saya ${pitchData.cp_name} dari ${pitchData.company_name}. Saya sudah mencoba simulasi sistem Ad-Tech Anda dan tertarik berdiskusi lebih lanjut mengenai tarif dan penempatan.`;
                 newWaBtns.forEach(btn => {
                     btn.addEventListener('click', () => {
-                        window.open(`https://wa.me/6289691219977?text=${encodeURIComponent(waText)}`, '_blank');
+                        window.open(`https://wa.me/6283146851999?text=${encodeURIComponent(waText)}`, '_blank');
                     });
                 });
             }
@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const waText = `Halo tim F1 Swimming, saya ${pitchData.cp_name} dari ${pitchData.company_name}. Saya sudah melihat penawarannya dan tertarik berdiskusi.`;
             btnWaElements.forEach(btn => {
                 btn.addEventListener('click', () => {
-                    window.open(`https://wa.me/6289691219977?text=${encodeURIComponent(waText)}`, '_blank');
+                    window.open(`https://wa.me/6283146851999?text=${encodeURIComponent(waText)}`, '_blank');
                 });
             });
         }

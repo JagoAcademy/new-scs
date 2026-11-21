@@ -183,7 +183,7 @@ function updateStatusNomorLomba() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const initialAuthHash = window.location.hash;
+    const initialAuthHash = window.__SCS_INIT_HASH || window.location.hash;
     const hostname = window.location.hostname;
     let subdomain = null;
     

@@ -5,7 +5,7 @@
         (function() {
             const host = window.location.hostname;
             if (host !== 'f1swimming.com' && host !== 'www.f1swimming.com' && host !== 'localhost' && !host.includes('vercel.app')) {
-                window.location.replace('/event-public.html');
+                window.location.replace('/event-public.html' + window.location.search + window.location.hash);
             }
         })();
     </script>
@@ -116,7 +116,43 @@
         </a>
     </div>
     
-    <a href="https://wa.me/6289691219977" target="_blank" rel="noopener noreferrer" class="fixed bottom-6 left-6 md:bottom-8 md:left-8 z-[100] bg-[#25D366] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-[0_10px_20px_rgba(37,211,102,0.4)] hover:bg-[#1ebd5a] hover:-translate-y-1 hover:scale-105 transition-all duration-300 group">
+        <!-- FLOATING WIDGET EVENT PRO BERLANGSUNG -->
+    <div id="floatingProEventWrap" class="hidden fixed bottom-6 right-4 md:bottom-8 md:right-8 z-[100] max-w-[270px] sm:max-w-[310px] transition-all duration-300">
+        <!-- Mode Minimized (Pill) -->
+        <button id="floatingProMiniBtn" type="button" class="hidden ml-auto bg-gradient-to-r from-blue-950 via-blue-900 to-slate-900 text-white border-2 border-amber-400 px-3.5 py-2.5 rounded-full shadow-2xl flex items-center gap-2 hover:scale-105 active:scale-95 transition-all cursor-pointer">
+            <span class="relative flex h-2.5 w-2.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+            </span>
+            <span class="text-[11px] font-black tracking-wide text-amber-300">👑 PRO EVENT</span>
+            <span id="floatingProCountBadge" class="bg-amber-400 text-blue-950 text-[10px] font-black px-1.5 py-0.2 rounded-full">1</span>
+        </button>
+
+        <!-- Mode Card Expanded -->
+        <div id="floatingProCard" class="bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 text-white rounded-2xl p-3.5 shadow-[0_15px_35px_rgba(15,23,42,0.45)] border-2 border-amber-400/90 relative overflow-hidden">
+            <div class="flex items-center justify-between gap-2 mb-1.5">
+                <span id="floatingProStatusTag" class="inline-flex items-center gap-1.5 bg-red-500/20 border border-red-400/40 text-red-200 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping"></span>
+                    PRO EVENT BERLANGSUNG
+                </span>
+                <div class="flex items-center gap-1">
+                    <button id="floatingProSwitchBtn" type="button" class="hidden text-[9px] font-black bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-400/40 px-2 py-0.5 rounded-full transition cursor-pointer" title="Lihat event pro lainnya">
+                        +1 Lainnya
+                    </button>
+                    <button id="floatingProMinimizeBtn" type="button" class="text-slate-300 hover:text-white w-6 h-6 rounded-full hover:bg-white/10 flex items-center justify-center text-sm font-bold transition cursor-pointer" title="Perkecil">
+                        &minus;
+                    </button>
+                </div>
+            </div>
+
+            <div id="floatingProActiveBody"></div>
+
+            <!-- Dropdown daftar jika event pro aktif > 1 -->
+            <div id="floatingProListDrawer" class="hidden mt-2.5 pt-2 border-t border-white/15 space-y-1.5 max-h-40 overflow-y-auto hide-scrollbar"></div>
+        </div>
+    </div>
+
+    <a href="https://wa.me/6283146851999" target="_blank" rel="noopener noreferrer" class="fixed bottom-6 left-6 md:bottom-8 md:left-8 z-[100] bg-[#25D366] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-[0_10px_20px_rgba(37,211,102,0.4)] hover:bg-[#1ebd5a] hover:-translate-y-1 hover:scale-105 transition-all duration-300 group">
         <svg class="w-8 h-8 fill-current" viewBox="0 0 24 24"><path d="M12.031 0C5.385 0 0 5.384 0 12.03c0 2.122.553 4.195 1.603 6.012L.266 23.36l5.474-1.44c1.764.954 3.738 1.458 5.753 1.458h.005c6.645 0 12.029-5.385 12.029-12.03S18.676 0 12.031 0zm.005 21.411c-1.785 0-3.528-.481-5.06-1.388l-.363-.214-3.766.988.997-3.673-.235-.375a10.052 10.052 0 01-1.542-5.35c0-5.556 4.524-10.08 10.086-10.08 2.693 0 5.221 1.05 7.121 2.956a10.06 10.06 0 012.952 7.119c0 5.555-4.523 10.075-10.08 10.075zm5.525-7.55c-.303-.152-1.792-.885-2.071-.987-.278-.1-.481-.152-.684.151-.202.304-.784.987-.96 1.189-.177.203-.355.228-.658.076-.303-.152-1.28-.472-2.438-1.332-.904-.672-1.512-1.503-1.69-1.807-.176-.303-.018-.467.133-.618.134-.135.303-.354.455-.53.152-.178.203-.304.304-.507.101-.203.05-.38-.025-.531-.076-.152-.684-1.644-.937-2.25-.246-.593-.496-.512-.684-.521-.176-.01-.38-.012-.583-.012-.202 0-.53.076-.809.38-.278.303-1.062 1.038-1.062 2.532s1.088 2.937 1.24 3.139c.152.203 2.14 3.272 5.185 4.536.724.3 1.288.479 1.728.613.725.23 1.385.197 1.905.12.583-.086 1.792-.733 2.044-1.442.253-.709.253-1.317.177-1.442-.076-.127-.279-.203-.583-.355z"/></svg>
     </a>
 
@@ -555,8 +591,10 @@
             if(mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMobile);
             if(closeMobileBtn) closeMobileBtn.addEventListener('click', toggleMobile);
 
+            let currentSession = null;
             try {
                 const { data: { session } } = await supabaseClient.auth.getSession();
+                currentSession = session;
                 
                 const floatBtn = document.getElementById('floatingAuthBtn');
                 const floatText = document.getElementById('floatingAuthText');
@@ -673,6 +711,122 @@
 
             } catch (err) {
                 console.error("Gagal memuat data:", err);
+            }
+
+            // =========================================================
+            // FLOATING WIDGET: EVENT PRO BERLANGSUNG
+            // =========================================================
+            try {
+                const { data: proEventsRaw, error: proEvErr } = await supabaseClient
+                    .from('events')
+                    .select('*')
+                    .eq('is_pro', true)
+                    .order('start_date', { ascending: true });
+
+                if (!proEvErr && Array.isArray(proEventsRaw) && proEventsRaw.length > 0) {
+                    const todayStr = new Date().toLocaleDateString('en-CA');
+                    const ongoingEvents = proEventsRaw.filter(ev => {
+                        if (!ev || !ev.subdomain) return false;
+                        if (ev.is_closed === true || String(ev.is_closed) === 'true') return false;
+                        if (ev.end_date && ev.end_date < todayStr) return false;
+                        return true;
+                    });
+
+                    // Prioritaskan event yang sedang berlangsung hari ini di urutan paling atas
+                    ongoingEvents.sort((a, b) => {
+                        const aLive = (!a.start_date || a.start_date <= todayStr) ? 0 : 1;
+                        const bLive = (!b.start_date || b.start_date <= todayStr) ? 0 : 1;
+                        return aLive - bLive;
+                    });
+
+                    if (ongoingEvents.length > 0) {
+                        const wrap = document.getElementById('floatingProEventWrap');
+                        const activeBody = document.getElementById('floatingProActiveBody');
+                        const statusTag = document.getElementById('floatingProStatusTag');
+                        const switchBtn = document.getElementById('floatingProSwitchBtn');
+                        const listDrawer = document.getElementById('floatingProListDrawer');
+                        const miniBtn = document.getElementById('floatingProMiniBtn');
+                        const card = document.getElementById('floatingProCard');
+                        const minimizeBtn = document.getElementById('floatingProMinimizeBtn');
+                        const countBadge = document.getElementById('floatingProCountBadge');
+
+                        const sessionHash = (currentSession?.access_token && currentSession?.refresh_token)
+                            ? `#access_token=${encodeURIComponent(currentSession.access_token)}&refresh_token=${encodeURIComponent(currentSession.refresh_token)}`
+                            : '';
+
+                        const renderSelectedEvent = (ev) => {
+                            const isLiveNow = !ev.start_date || ev.start_date <= todayStr;
+                            statusTag.innerHTML = isLiveNow
+                                ? '<span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping"></span> LIVE • PRO EVENT'
+                                : '👑 PRO EVENT AKTIF';
+
+                            const lokasi = ev.location || ev.venue || ev.city || 'Indonesia';
+                            const tgl = ev.start_date
+                                ? (ev.end_date && ev.end_date !== ev.start_date ? `${ev.start_date} s/d ${ev.end_date}` : ev.start_date)
+                                : 'Segera';
+                            const regUrl = `https://${ev.subdomain}.f1swimming.com${sessionHash}`;
+                            const resUrl = `https://${ev.subdomain}.f1swimming.com/result`;
+
+                            activeBody.innerHTML = `
+                                <h4 class="font-black text-xs sm:text-sm text-white leading-snug line-clamp-1" title="${ev.event_name}">${ev.event_name}</h4>
+                                <p class="text-[10px] text-blue-200 mt-0.5 truncate">📍 ${lokasi} &bull; 📅 ${tgl}</p>
+                                <div class="mt-2.5 grid grid-cols-2 gap-1.5">
+                                    <a href="${regUrl}" target="_blank" rel="noopener noreferrer" class="bg-amber-400 hover:bg-amber-300 text-blue-950 font-black text-[11px] py-1.5 px-2.5 rounded-xl text-center shadow transition">
+                                        Daftar &raquo;
+                                    </a>
+                                    <a href="${resUrl}" target="_blank" rel="noopener noreferrer" class="bg-white/10 hover:bg-white/20 text-white border border-white/20 font-extrabold text-[11px] py-1.5 px-2.5 rounded-xl text-center transition">
+                                        🏆 Live Result
+                                    </a>
+                                </div>
+                            `;
+                        };
+
+                        renderSelectedEvent(ongoingEvents[0]);
+                        if (countBadge) countBadge.textContent = String(ongoingEvents.length);
+
+                        if (ongoingEvents.length > 1 && switchBtn && listDrawer) {
+                            switchBtn.classList.remove('hidden');
+                            switchBtn.textContent = `+${ongoingEvents.length - 1} Lainnya`;
+                            listDrawer.innerHTML = ongoingEvents.map((ev, idx) => `
+                                <button type="button" data-ev-idx="${idx}" class="w-full text-left px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 transition flex items-center justify-between gap-2 cursor-pointer">
+                                    <span class="text-[11px] font-bold text-white truncate">${ev.event_name}</span>
+                                    <span class="text-[9px] text-amber-300 font-black shrink-0">Pilih &rarr;</span>
+                                </button>
+                            `).join('');
+
+                            switchBtn.addEventListener('click', () => {
+                                listDrawer.classList.toggle('hidden');
+                            });
+
+                            listDrawer.addEventListener('click', (e) => {
+                                const btn = e.target.closest('button[data-ev-idx]');
+                                if (!btn) return;
+                                const picked = ongoingEvents[Number(btn.getAttribute('data-ev-idx'))];
+                                if (picked) {
+                                    renderSelectedEvent(picked);
+                                    listDrawer.classList.add('hidden');
+                                }
+                            });
+                        }
+
+                        if (minimizeBtn && miniBtn && card) {
+                            minimizeBtn.addEventListener('click', () => {
+                                card.classList.add('hidden');
+                                miniBtn.classList.remove('hidden');
+                                miniBtn.classList.add('flex');
+                            });
+                            miniBtn.addEventListener('click', () => {
+                                miniBtn.classList.add('hidden');
+                                miniBtn.classList.remove('flex');
+                                card.classList.remove('hidden');
+                            });
+                        }
+
+                        wrap.classList.remove('hidden');
+                    }
+                }
+            } catch (proErr) {
+                console.warn('Gagal memuat floating pro event:', proErr);
             }
         });
     </script>

@@ -582,7 +582,7 @@ function renderEvents() {
 
     filtered.forEach(ev => {
         const waText = encodeURIComponent(`Halo Tim F1 Swimming, saya dari ${currentSponsor.company_name}.\n\nKami tertarik untuk mengajukan penempatan Brand kami di event *${ev.event_name}* (${ev.kota || 'Nasional'}).\nMohon info lebih lanjut terkait rate card dan prosedur injeksi.`);
-        const waUrl = `https://wa.me/6289691219977?text=${waText}`;
+        const waUrl = `https://wa.me/6283146851999?text=${waText}`;
 
         grid.innerHTML += `
             <div class="bg-slate-900 border border-slate-700 p-6 rounded-3xl flex flex-col justify-between hover:border-blue-500/50 transition-colors group relative overflow-hidden shadow-lg">

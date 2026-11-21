@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Aksi Klik WA
     document.getElementById('btnContactWa').addEventListener('click', () => {
-        const phone = "6289691219977"; 
+        const phone = "6283146851999"; 
         const text = `Halo tim F1 Swimming (Vanessa), saya tertarik untuk mendiskusikan penawaran *${selectedPaket}*. Mohon info lebih lanjut mengenai proses penempatan Ad-Tech ini.`;
         window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
         closeContactChoice();

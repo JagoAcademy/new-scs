@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Binding tombol WA Lapor
         const btnLapor = document.getElementById('btnLaporWA');
         btnLapor.onclick = () => {
-            const phone = "6289691219977"; // WA F1 Swimming / Tim HR
+            const phone = "6283146851999"; // WA F1 Swimming / Tim HR
             window.open(`https://wa.me/${phone}?text=${encodeURIComponent(laporanWA)}`, '_blank');
         };
 

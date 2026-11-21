@@ -811,7 +811,7 @@ document.addEventListener('DOMContentLoaded', () => {
             sessionStorage.setItem('pitching_role', 'Super Admin');
             alert(`Selamat datang Super Admin ${upperName}! Akses Database Terbuka.`);
         } else {
-            alert("Akses Ditolak! Hubungi Vanessa 089691219977 untuk mendapat key akses halaman ini.");
+            alert("Akses Ditolak! Hubungi Vanessa 083146851999 untuk mendapat key akses halaman ini.");
             return window.location.replace('/openinvest.html');
         }
     }
