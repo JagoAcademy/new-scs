@@ -1777,17 +1777,18 @@ function updateOnboardingAndAlerts(session, clubData, athletesList) {
 
 
 // ==============================================================
-// 👑 EVENT SEDANG BERLANGSUNG (KHUSUS TIER PRO)
+// 👑 EVENT SEDANG BERLANGSUNG (KHUSUS TIER PRO - UNTUK PENDAFTARAN)
 // ==============================================================
 async function fetchProEventsSection() {
     const container = document.getElementById('proEventsContainer');
     if (!container) return;
 
     try {
+        // Sesuai schema event-dashboard.js: event_tier === 'PRO' atau is_pro === true
         const { data: proEvents, error } = await supabaseClient
             .from('events')
-            .select('*')
-            .ilike('tier', 'pro');
+            .select('id, event_name, subdomain, event_tier, is_pro, is_closed, start_date, end_date, event_date, kota, provinsi, config')
+            .or('event_tier.ilike.pro,is_pro.eq.true');
 
         if (error) throw error;
 
@@ -1798,46 +1799,61 @@ async function fetchProEventsSection() {
         const todayStr = `${yyyy}-${mm}-${dd}`;
 
         const activeProEvents = (proEvents || []).filter(ev => {
-            if (ev.subdomain && ev.subdomain.startsWith('unofficial-')) return false;
-            const endDate = ev.end_date || ev.event_date;
+            if (!ev.subdomain || ev.subdomain.startsWith('unofficial-')) return false;
+            const tierMatch = String(ev.event_tier || '').toUpperCase() === 'PRO' || ev.is_pro === true;
+            if (!tierMatch) return false;
+
+            const endDate = ev.end_date || ev.start_date || ev.event_date;
             if (!endDate) return true;
             return endDate >= todayStr;
         });
 
-        // Urutkan: yang sedang berlangsung hari ini di atas, lalu terdekat berikutnya
         activeProEvents.sort((a, b) => {
-            const aLive = (a.event_date <= todayStr && (a.end_date || a.event_date) >= todayStr) ? 0 : 1;
-            const bLive = (b.event_date <= todayStr && (b.end_date || b.event_date) >= todayStr) ? 0 : 1;
+            const aStart = a.start_date || a.event_date || '';
+            const aEnd = a.end_date || aStart;
+            const bStart = b.start_date || b.event_date || '';
+            const bEnd = b.end_date || bStart;
+
+            const aLive = (aStart && aStart <= todayStr && aEnd >= todayStr) ? 0 : 1;
+            const bLive = (bStart && bStart <= todayStr && bEnd >= todayStr) ? 0 : 1;
             if (aLive !== bLive) return aLive - bLive;
-            return (a.event_date || '').localeCompare(b.event_date || '');
+            return aStart.localeCompare(bStart);
         });
 
         if (activeProEvents.length === 0) {
             container.innerHTML = `
                 <div class="col-span-full text-center py-6 px-4 bg-slate-50 rounded-2xl border border-slate-100">
                     <p class="text-sm font-bold text-slate-600">Belum ada event tier Pro yang sedang berlangsung saat ini.</p>
-                    <p class="text-xs text-slate-400 mt-1">Gunakan tombol Jelajahi Event di bawah untuk melihat seluruh jadwal kejuaraan.</p>
+                    <p class="text-xs text-slate-400 mt-1">Klik tombol <strong>Jelajahi Event</strong> di bawah untuk melihat seluruh jadwal kejuaraan.</p>
                 </div>
             `;
             return;
         }
 
-        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         let html = '';
 
         activeProEvents.forEach(ev => {
-            const startDate = ev.event_date || '-';
+            const cfg = ev.config || {};
+            const startDate = ev.start_date || ev.event_date || '-';
             const endDate = ev.end_date || startDate;
-            const isLiveNow = startDate <= todayStr && endDate >= todayStr;
+            const isLiveNow = startDate !== '-' && startDate <= todayStr && endDate >= todayStr;
 
-            const statusBadge = isLiveNow
-                ? `<span class="inline-flex items-center gap-1 bg-red-100 text-red-700 border border-red-200 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"><span class="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping"></span>Sedang Berlangsung</span>`
-                : `<span class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 border border-emerald-200 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">Buka Pendaftaran</span>`;
+            let statusBadge = '';
+            if (ev.is_closed) {
+                statusBadge = `<span class="inline-flex items-center gap-1 bg-slate-200 text-slate-700 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">⛔ Pendaftaran Ditutup</span>`;
+            } else if (isLiveNow) {
+                statusBadge = `<span class="inline-flex items-center gap-1 bg-red-100 text-red-700 border border-red-200 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider"><span class="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping"></span>Sedang Berlangsung</span>`;
+            } else {
+                statusBadge = `<span class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 border border-emerald-200 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">✅ Buka Pendaftaran</span>`;
+            }
 
-            const lokasiText = [ev.kota, ev.provinsi].filter(Boolean).join(', ') || 'Indonesia';
-            const eventUrl = isLocalhost
-                ? `/event-public.html?subdomain=${encodeURIComponent(ev.subdomain)}`
-                : `https://${ev.subdomain}.f1swimming.com`;
+            const kolam = cfg.nama_kolam ? `${cfg.nama_kolam} — ` : '';
+            const wilayah = [ev.kota, ev.provinsi].filter(Boolean).join(', ') || 'Indonesia';
+            const lokasiText = `${kolam}${wilayah}`;
+
+            // Link khusus halaman pendaftaran publik & live result (BUKAN event-dashboard.html)
+            const publicRegUrl = `https://${ev.subdomain}.f1swimming.com?id=${ev.id}`;
+            const publicResultUrl = `https://${ev.subdomain}.f1swimming.com/result?id=${ev.id}`;
 
             html += `
                 <div class="border-2 border-amber-200 bg-gradient-to-br from-white to-amber-50/40 p-5 rounded-2xl shadow-sm hover:shadow-md hover:border-amber-400 transition-all flex flex-col justify-between relative overflow-hidden group">
@@ -1850,12 +1866,17 @@ async function fetchProEventsSection() {
                         </div>
                         <h3 class="font-extrabold text-blue-950 text-base md:text-lg group-hover:text-blue-700 transition leading-snug">${ev.event_name}</h3>
                         <p class="text-xs text-slate-600 font-semibold mt-1.5">📍 ${lokasiText}</p>
-                        <p class="text-xs text-slate-500 mt-1">📅 ${startDate} s/d ${endDate}</p>
+                        <p class="text-xs text-slate-500 mt-1">📅 ${startDate === endDate ? startDate : `${startDate} s/d ${endDate}`}</p>
                         <p class="text-[11px] text-blue-600 font-mono mt-1 truncate">🔗 ${ev.subdomain}.f1swimming.com</p>
                     </div>
-                    <a href="${eventUrl}" target="_blank" rel="noopener noreferrer" class="mt-4 w-full bg-blue-900 hover:bg-blue-800 text-white text-center text-xs font-extrabold py-2.5 px-4 rounded-xl shadow-sm transition">
-                        Lihat & Daftar Lomba &raquo;
-                    </a>
+                    <div class="mt-4 grid grid-cols-2 gap-2">
+                        <a href="${publicRegUrl}" target="_blank" rel="noopener noreferrer" class="bg-blue-900 hover:bg-blue-800 text-white text-center text-xs font-extrabold py-2.5 px-3 rounded-xl shadow-sm transition">
+                            ${ev.is_closed ? 'Info Lomba' : 'Daftar Atlet'} &raquo;
+                        </a>
+                        <a href="${publicResultUrl}" target="_blank" rel="noopener noreferrer" class="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-center text-xs font-extrabold py-2.5 px-3 rounded-xl transition">
+                            🏆 Live Result
+                        </a>
+                    </div>
                 </div>
             `;
         });
