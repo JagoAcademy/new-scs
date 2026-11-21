@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" id="viewportMeta" content="width=device-width, initial-scale=1.0">
+    <title>SCS - Club Command Center</title>
+    <link rel="stylesheet" href="/src/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes neon-merah-putih {
+            0% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.3); }
+            50% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.9), 0 0 20px rgba(239, 68, 68, 0.7), 0 0 35px rgba(239, 68, 68, 0.5); border-color: rgba(239, 68, 68, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.3); }
+        }
+        .neon-merah-putih { animation: neon-merah-putih 2.5s infinite ease-in-out; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans pb-20">
+
+    <nav class="bg-white shadow-sm p-3 md:p-4 flex justify-between items-center border-b sticky top-0 z-50">
+        <div class="flex items-center gap-2 md:gap-3 overflow-hidden">
+            <a href="#" class="shrink-0">
+                <img src="" id="clubLogoDisplay" alt="Club Logo" class="w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-200 shadow-sm object-cover bg-white">
+            </a>
+            <div class="border-l-2 border-gray-200 pl-2 md:pl-3 flex items-center gap-2 md:gap-3 shrink-0">
+                <h1 id="secretAdminTrigger" class="text-[11px] sm:text-sm md:text-lg font-black text-blue-900 tracking-tight cursor-pointer select-none transition-all uppercase whitespace-nowrap">SCS COMMAND CENTER</h1>
+                <button id="btnToggleView" class="hidden md:flex items-center justify-center p-1.5 ml-1 bg-slate-100 hover:bg-blue-50 text-slate-500 hover:text-blue-600 rounded-md border border-slate-200 transition-colors shadow-sm" title="Toggle Desktop / Mobile View">
+                    <svg id="iconDesktop" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    <svg id="iconMobile" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                </button>
+            </div>
+        </div>
+        
+        <div class="hidden md:flex items-center gap-4">
+            <button id="btnOpenInboxDesktop" class="relative p-2 text-gray-400 hover:text-blue-900 transition-colors focus:outline-none" title="Kotak Masuk">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                <span id="inboxBadgeDesktop" class="absolute top-0 right-0 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
+            </button>
+
+            <div class="relative group cursor-pointer">
+                <div class="flex items-center gap-2 bg-white hover:bg-gray-50 p-2 px-4 rounded-xl border border-gray-100 transition-colors shadow-sm">
+                    <div class="text-right">
+                        <p class="text-sm font-black text-gray-800 uppercase tracking-widest" id="clubNameDisplay">Memuat...</p>
+                        <div class="flex items-center justify-end gap-1 mt-0.5" id="clubBadges"></div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                
+                <div class="absolute right-0 mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden transform origin-top-right group-hover:scale-100 scale-95">
+                    <div class="p-3 border-b border-gray-50 bg-gray-50/50">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Manajemen Klub</p>
+                    </div>
+                    <button id="btnEditProfilKlub" class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 font-bold border-b border-gray-50 flex items-center gap-2"><span>⚙️</span> Pengaturan Klub</button>
+                    <button id="btnRankingKlub" class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 font-bold border-b border-gray-50 flex items-center gap-2"><span>🏆</span> Rank Atlet</button>
+                    <button id="btnUpgradeTier" class="w-full text-left px-4 py-3 text-sm text-scsGold bg-blue-900 hover:bg-blue-800 font-bold border-b border-gray-50 flex items-center gap-2"><span>🚀</span> Upgrade SCS Pro</button>
+                    <button id="logoutBtn" class="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 font-bold flex items-center gap-2"><span>🚪</span> Log Out</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="md:hidden flex items-center shrink-0 ml-2 gap-2">
+            <button id="btnToggleViewMobile" class="flex items-center justify-center p-2 bg-slate-100 hover:bg-blue-50 text-slate-500 hover:text-blue-600 rounded-lg border border-slate-200 transition-colors shadow-sm" title="Toggle Desktop View">
+                <svg id="iconDesktopMobile" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                <svg id="iconMobileMobile" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+            </button>
+            <button id="mobileMenuToggle" class="text-gray-700 p-2 focus:outline-none bg-gray-50 rounded-lg border border-gray-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </div>
+    </nav>
+
+    <div id="mobileMenuOverlay" class="fixed inset-0 bg-black/50 z-[55] hidden backdrop-blur-sm transition-opacity"></div>
+    <div id="mobileMenuPanel" class="fixed top-0 right-0 h-full w-4/5 max-w-sm bg-white z-[60] transform translate-x-full transition-transform duration-300 shadow-2xl flex flex-col">
+        <div class="p-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+            <div>
+                <p class="text-base font-black text-gray-800 uppercase tracking-widest" id="mobileClubNameDisplay">Klub</p>
+                <div id="mobileClubBadges" class="flex gap-1 mt-1"></div>
+            </div>
+            <button id="closeMobileMenu" class="text-gray-400 hover:text-red-500 text-3xl font-bold">&times;</button>
+        </div>
+        <div class="flex flex-col flex-grow overflow-y-auto p-4 space-y-2">
+            <button id="btnOpenInboxMobile" class="w-full text-left p-4 rounded-xl text-sm text-gray-700 hover:bg-blue-50 font-bold border border-gray-100 shadow-sm flex items-center justify-between">
+                <div class="flex items-center gap-3"><span>✉️</span> Kotak Masuk</div>
+                <span id="inboxBadgeMobile" class="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full hidden">0</span>
+            </button>
+            <button id="mobileBtnEditProfil" class="w-full text-left p-4 rounded-xl text-sm text-gray-700 hover:bg-blue-50 font-bold border border-gray-100 shadow-sm flex items-center gap-3"><span>⚙️</span> Pengaturan Klub</button>
+            <button class="w-full text-left p-4 rounded-xl text-sm text-gray-700 hover:bg-blue-50 font-bold border border-gray-100 shadow-sm flex items-center gap-3"><span>🏆</span> Rank Atlet</button>
+            <button id="mobileBtnUpgradeTier" class="w-full text-left p-4 rounded-xl text-sm text-scsGold bg-blue-900 hover:bg-blue-800 font-bold shadow-md flex items-center gap-3"><span>🚀</span> Upgrade SCS Pro</button>
+        </div>
+        <div class="p-4 border-t border-gray-100">
+            <button id="mobileLogoutBtn" class="w-full text-center p-4 rounded-xl text-sm text-red-600 bg-red-50 font-bold border border-red-100 shadow-sm">Log Out</button>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="p-4 md:p-6 max-w-7xl mx-auto mt-2">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
+            <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-blue-300 transition">
+                <div>
+                    <p class="text-gray-400 text-[10px] md:text-xs font-bold uppercase tracking-wider mb-1">Total Atlet Aktif</p>
+                    <p id="valTotalAtlet" class="text-2xl md:text-3xl font-black text-blue-900">...</p>
+                </div>
+                <div class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-xl group-hover:scale-110 transition">🏊‍♂️</div>
+            </div>
+            <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-green-300 transition">
+                <div>
+                    <p class="text-gray-400 text-[10px] md:text-xs font-bold uppercase tracking-wider mb-1">Event Diikuti</p>
+                    <p id="valEventAktif" class="text-2xl md:text-3xl font-black text-green-600">...</p>
+                </div>
+                <div class="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center text-xl group-hover:scale-110 transition">🏆</div>
+            </div>
+            <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-yellow-300 transition">
+                <div>
+                    <p class="text-gray-400 text-[10px] md:text-xs font-bold uppercase tracking-wider mb-1">F1 ID Pending</p>
+                    <p id="valF1Pending" class="text-2xl md:text-3xl font-black text-yellow-600">0</p>
+                </div>
+                <div class="w-10 h-10 bg-yellow-50 rounded-full flex items-center justify-center text-xl group-hover:scale-110 transition">⚠️</div>
+            </div>
+            
+            <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between group hover:border-purple-300 transition">
+                <div>
+                    <div class="flex items-center gap-1 mb-1">
+                        <p class="text-gray-400 text-[10px] md:text-xs font-bold uppercase tracking-wider">Poin Klub</p>
+                        <div class="relative group/tooltip cursor-help inline-block">
+                            <span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-gray-200 text-gray-500 text-[9px] font-bold pb-[1px] hover:bg-purple-200 hover:text-purple-700 transition">i</span>
+                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 p-3 bg-gray-900 text-white text-[10px] md:text-xs rounded-xl shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all z-[100] text-center leading-relaxed pointer-events-none">
+                                Setiap Input Atlet: <strong class="text-green-300">+5 Poin</strong><br>
+                                F1 ID Terverifikasi Emas: <strong class="text-amber-400">+5 Poin</strong><br>
+                                <div class="my-2 border-t border-gray-700"></div>
+                                <span class="text-purple-300 font-bold">Klub dengan poin terbanyak per regional berkesempatan mendapat uang pembinaan total Rp 1 Miliar tiap bulan Januari!</span>
+                                <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p id="valPoinKlub" class="text-2xl md:text-3xl font-black text-purple-600">0</p>
+                </div>
+                <div class="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center text-xl group-hover:scale-110 transition">⭐</div>
+            </div>
+        </div>
+
+        <h2 class="text-lg md:text-xl font-extrabold text-blue-900 mb-3 md:mb-4">Aksi Cepat Klub</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+            <button id="btnAddAthlete" class="bg-blue-900 text-white p-5 rounded-2xl text-left shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden group">
+                <span class="absolute right-4 top-4 text-white/10 text-6xl group-hover:scale-110 transition-transform origin-bottom-right">👤</span>
+                <div class="relative z-10">
+                    <span class="text-3xl block mb-2">👤+</span>
+                    <h3 class="font-bold text-lg">Tambah Atlet Baru</h3>
+                    <p class="text-blue-200 text-xs md:text-sm mt-1">Generate F1 ID manual atau import Excel.</p>
+                </div>
+            </button>
+            
+            <button id="btnQuickVerify" class="bg-amber-500 text-white p-5 rounded-2xl text-left shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden group">
+                <div class="relative z-10">
+                    <span class="text-3xl block mb-2">✅</span>
+                    <h3 class="font-bold text-lg">Verifikasi F1 ID</h3>
+                    <p class="text-amber-100 text-xs md:text-sm mt-1">Upload foto & akta atlet yang masih pending.</p>
+                </div>
+            </button>
+            
+            <button id="btnCreateEvent" class="bg-white border-2 text-gray-800 p-5 rounded-2xl text-left transition-all duration-300 transform hover:-translate-y-1 group neon-merah-putih">
+                <span class="absolute top-4 right-4 bg-red-100 text-red-700 text-[10px] font-extrabold px-2 py-1 rounded-full border border-red-200 group-hover:bg-red-500 group-hover:text-white transition-colors">PANITIA</span>
+                <span class="text-3xl block mb-2 group-hover:scale-110 transition-transform origin-left">🚀</span>
+                <h3 class="font-bold text-lg group-hover:text-red-600 transition-colors">Buat Event / Lomba</h3>
+                <p class="text-gray-500 text-xs md:text-sm mt-1 group-hover:text-gray-600 transition-colors">Setup landing page dan pendaftaran event Anda.</p>
+            </button>
+
+            <button id="btnOpenTestimoni" class="bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-5 rounded-2xl text-left shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden group">
+                <span class="absolute right-4 top-4 text-white/10 text-6xl group-hover:scale-110 transition-transform origin-bottom-right">💬</span>
+                <div class="relative z-10">
+                    <span class="text-3xl block mb-2">⭐</span>
+                    <h3 class="font-bold text-lg">Bantu Isi Testimony</h3>
+                    <p class="text-indigo-100 text-xs md:text-sm mt-1">Kita tampilkan di Halaman Depan kami.</p>
+                </div>
+            </button>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden mb-10">
+            <div class="p-5 md:p-6 border-b border-gray-100 bg-emerald-50/50 flex items-center gap-3">
+                <span class="text-2xl">🏆</span>
+                <div>
+                    <h2 class="text-xl font-extrabold text-emerald-900">Event Lomba Saya</h2>
+                    <p class="text-xs text-gray-500 mt-1">Daftar event yang Anda selenggarakan.</p>
+                </div>
+            </div>
+            <div id="eventListContainer" class="p-5 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <p class="text-sm text-gray-500">Mencari data event...</p>
+            </div>
+        </div>
+
+        <!-- 🚀 FITUR BARU: ENTRY LOMBA EKSTERNAL -->
+        <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-3xl shadow-md border border-slate-700 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 mb-10 relative overflow-hidden group">
+            <div class="absolute right-0 top-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+            <div class="relative z-10 flex items-center gap-5">
+                <div class="w-16 h-16 bg-slate-800/50 border border-slate-700 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl shadow-inner shrink-0">
+                    📊
+                </div>
+                <div>
+                    <h2 class="text-xl md:text-2xl font-black text-white mb-1">Entry Lomba Eksternal</h2>
+                    <p class="text-xs md:text-sm text-slate-400">Auto-Generate file Excel (EBN) atlet untuk pendaftaran lomba di luar sistem SCS.</p>
+                </div>
+            </div>
+            <button id="btnOpenEBN" class="relative z-10 shrink-0 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 px-8 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all active:scale-95 whitespace-nowrap">
+                Buat EBN Sekarang 📥
+            </button>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden mb-10">
+            <div class="p-5 md:p-6 border-b border-gray-100 bg-gray-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-extrabold text-blue-900">Database Atlet Klub</h2>
+                    <p class="text-xs text-gray-500 mt-1">Kelola F1 ID peserta dari Supabase.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="btnPrevPage" class="px-3 py-1.5 text-sm font-bold bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-blue-50 disabled:opacity-50">&laquo; Prev</button>
+                    <span id="pageIndicator" class="text-xs font-bold text-gray-400">Hal 1 / 1</span>
+                    <button id="btnNextPage" class="px-3 py-1.5 text-sm font-bold bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-blue-50 disabled:opacity-50">Next &raquo;</button>
+                </div>
+            </div>
+
+            <div class="p-4 border-b border-gray-100 bg-white">
+                <div class="relative w-full shadow-sm rounded-xl">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <input type="text" id="searchKlubAtlet" class="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-3 outline-none font-bold shadow-sm" placeholder="🔍 Cari nama atlet atau F1 ID...">
+                </div>
+            </div>
+
+            <div class="w-full overflow-x-auto hide-scrollbar">
+                <table class="w-full text-left border-collapse whitespace-nowrap">
+                    <thead>
+                        <tr class="bg-white border-b border-gray-100 text-gray-400 text-xs uppercase tracking-wider">
+                            <th class="p-4 font-bold w-10 text-center">No</th>
+                            <th class="p-4 font-bold">Profil Atlet</th>
+                            <th class="p-4 font-bold">F1 ID Resmi</th>
+                            <th class="p-4 font-bold">Tgl Lahir</th>
+                            <th class="p-4 font-bold text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="athleteTableBody" class="text-sm divide-y divide-gray-50">
+                        <tr><td colspan="5" class="p-8 text-center text-gray-500">Mencari data atlet di database...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==============================================================
+         AREA MODAL
+         ============================================================== -->
+
+    <!-- MODAL ONBOARDING -->
+    <div id="modalOnboarding" class="fixed inset-0 bg-blue-900/95 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b border-gray-100 bg-blue-50 text-center shrink-0">
+                <span class="text-4xl block mb-2">🎉</span>
+                <h3 class="font-extrabold text-blue-900 text-xl">Selamat Datang di SCS!</h3>
+                <p class="text-xs text-gray-500 mt-2">Langkah terakhir: Lengkapi profil klub Anda sebelum masuk ke Command Center.</p>
+            </div>
+            <div class="p-6 space-y-4 overflow-y-auto hide-scrollbar flex-1">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Nama Klub <span class="text-red-500">*</span></label>
+                    <input type="text" id="onboardClubName" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: Falconey Swimming Club">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Nama Pelatih (Head Coach) <span class="text-red-500">*</span></label>
+                    <input type="text" id="onboardCoachName" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: Coach Badrus">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">No WhatsApp Klub/Admin <span class="text-red-500">*</span></label>
+                    <input type="tel" id="onboardContactWa" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: 081234567890">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Provinsi <span class="text-red-500">*</span></label>
+                        <select id="onboardProvinsi" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white"></select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Kota/Kab <span class="text-red-500">*</span></label>
+                        <select id="onboardKota" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white" disabled><option value="">Pilih Provinsi Dulu</option></select>
+                    </div>
+                </div>
+                <div id="onboardMsg" class="hidden text-sm font-bold text-center rounded-lg p-3"></div>
+            </div>
+            <div class="p-6 bg-gray-50 border-t border-gray-100 shrink-0">
+                <button id="btnSaveOnboarding" class="w-full bg-blue-900 text-white font-bold py-3.5 rounded-xl hover:bg-blue-800 transition shadow-lg">Buat Klub & Mulai 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PENGATURAN KLUB & AKUN -->
+    <div id="modalEditProfile" class="fixed inset-0 bg-black/60 z-[80] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+            <div class="p-5 border-b border-gray-100 bg-blue-50 flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">⚙️</span>
+                    <h3 class="font-extrabold text-blue-900 text-lg">Pengaturan Sistem</h3>
+                </div>
+                <button id="closeModalProfileBtn" class="text-gray-400 hover:text-red-500 text-2xl font-bold transition">&times;</button>
+            </div>
+            <div class="flex border-b border-gray-100 shrink-0">
+                <button id="tabProfilKlubBtn" class="flex-1 py-3 text-sm font-bold text-blue-900 border-b-2 border-blue-900 bg-white">Profil Klub</button>
+                <button id="tabAkunBtn" class="flex-1 py-3 text-sm font-bold text-gray-500 border-b-2 border-transparent bg-gray-50 hover:bg-gray-100 transition-colors">Keamanan Akun</button>
+            </div>
+            <div class="p-6 overflow-y-auto hide-scrollbar flex-1">
+                <div id="formProfilKlub" class="space-y-4">
+                    <div class="flex items-center gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                        <img src="" id="editLogoPreview" class="w-14 h-14 rounded-full border-2 border-gray-300 object-cover bg-white">
+                        <div class="flex-1">
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Ganti Logo Klub</label>
+                            <input type="file" id="inputEditLogo" accept="image/*" class="w-full text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Nama Klub</label>
+                        <input type="text" id="editClubName" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Singkatan Klub (Max 10 Huruf)</label>
+                        <input type="text" id="editShortName" maxlength="10" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none uppercase">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Nama Pelatih (Head Coach)</label>
+                        <input type="text" id="editCoachName" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Provinsi</label>
+                            <select id="editProvinsi" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white"></select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Kota / Kab</label>
+                            <select id="editKota" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white" disabled><option value="">Pilih Provinsi Dulu</option></select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">No WhatsApp Kontak</label>
+                        <input type="text" id="editContactWa" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0812xxxxxx">
+                    </div>
+                    <button id="btnSaveProfileInfo" class="w-full bg-blue-900 text-white font-bold py-3 rounded-xl hover:bg-blue-800 transition shadow-md mt-4">Simpan Profil Klub</button>
+                    <div id="statusProfilMsg" class="hidden text-sm font-bold text-center rounded-lg p-3"></div>
+                </div>
+                
+                <div id="formAkun" class="space-y-4 hidden">
+                    <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs leading-relaxed mb-2">
+                        <strong>Perhatian:</strong> Jika Anda mengubah Email, sistem akan mengirimkan link verifikasi ke email lama dan email baru Anda.
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Ubah Alamat Email</label>
+                        <input type="email" id="editAuthEmail" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Email Baru">
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Ubah Password Login</label>
+                        <input type="password" id="editAuthPassword" class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Masukkan password baru...">
+                        <p class="text-[10px] text-gray-500 mt-1">*Kosongkan jika tidak ingin mengubah password.</p>
+                    </div>
+                    <button id="btnSaveAuthInfo" class="w-full bg-red-600 text-white font-bold py-3 rounded-xl hover:bg-red-700 transition shadow-md mt-4">Terapkan Perubahan Akun</button>
+                    <div id="statusAkunMsg" class="hidden text-sm font-bold text-center rounded-lg p-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TAMBAH ATLET -->
+    <div id="modalAddAthlete" class="fixed inset-0 bg-black/60 z-[60] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300">
+            <div class="p-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                <h3 class="font-extrabold text-blue-900 text-lg">Tambah Atlet Baru</h3>
+                <button id="closeModalBtn" class="text-gray-400 hover:text-red-500 text-2xl font-bold transition">&times;</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="flex gap-2 p-1 bg-gray-100 rounded-lg">
+                    <button id="tabManualBtn" class="flex-1 py-1.5 bg-white shadow-sm rounded-md text-sm font-bold text-blue-900 transition-all">Manual Input</button>
+                    <button id="tabExcelBtn" class="flex-1 py-1.5 text-gray-500 text-sm font-bold hover:text-blue-900 transition-all">Import Excel</button>
+                </div>
+                <div id="sectionManual" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Nama Lengkap Atlet</label>
+                        <input type="text" id="inputNama" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Contoh: Bima Saputra">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Tanggal Lahir</label>
+                            <input type="date" id="inputDOB" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-600">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Jenis Kelamin</label>
+                            <select id="inputGender" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                <option value="Putra">Putra</option>
+                                <option value="Putri">Putri</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div id="sectionExcel" class="hidden space-y-4">
+                    <div class="p-3 bg-blue-50 border border-blue-100 rounded-xl text-justify">
+                        <p class="text-[10px] text-blue-600 leading-relaxed">Baris pertama wajib:<br><strong>A: Nama Lengkap<br>B: Tanggal Lahir (YYYY-MM-DD)<br>C: Gender (Putra/Putri)</strong></p>
+                    </div>
+                    <div>
+                        <input type="file" id="inputExcel" accept=".csv, .xlsx" class="w-full text-sm file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200">
+                    </div>
+                </div>
+                <div id="statusMsg" class="hidden text-sm font-bold text-center rounded-lg p-3"></div>
+            </div>
+            <div class="p-5 bg-gray-50 border-t border-gray-100">
+                <button id="btnSaveAthlete" class="w-full bg-blue-900 text-white font-bold py-3.5 rounded-xl hover:bg-blue-800 transition shadow-lg">Simpan & Generate F1 ID</button>
+                <button id="btnProsesExcel" class="hidden w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 transition shadow-lg items-center justify-center gap-2">Mulai Import Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL UNIFIED: EDIT & VERIFIKASI (TERMASUK PRIVASI) -->
+    <div id="modalEditVerify" class="fixed inset-0 bg-black/60 z-[65] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 max-h-[95vh] flex flex-col">
+            <div class="p-5 border-b border-gray-100 bg-blue-50 flex justify-between items-center shrink-0">
+                <h3 class="font-extrabold text-blue-900 text-lg flex items-center gap-2"><span>✏️</span> Verifikasi & Edit Data</h3>
+                <button id="closeModalEditVerifyBtn" class="text-gray-400 hover:text-red-500 text-2xl font-bold transition">&times;</button>
+            </div>
+            
+            <div class="p-6 space-y-4 overflow-y-auto hide-scrollbar flex-1">
+                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+                    <span class="text-amber-500 text-lg mt-0.5">⚠️</span>
+                    <p class="text-[10px] md:text-xs font-bold text-amber-800 leading-relaxed">
+                        Mengubah data (Nama/Tgl Lahir) akan <strong class="text-red-600">mereset status verifikasi</strong> menjadi PENDING. Wajib upload ulang Akta jika melakukan perubahan data.
+                    </p>
+                </div>
+
+                <input type="hidden" id="evF1Id">
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Nama Lengkap Atlet</label>
+                    <input type="text" id="evName" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-900">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Tanggal Lahir</label>
+                        <input type="date" id="evDOB" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Jenis Kelamin</label>
+                        <select id="evGender" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white font-bold text-gray-900">
+                            <option value="Putra">Putra</option>
+                            <option value="Putri">Putri</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-100 pt-4 mt-2">
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Pas Foto Atlet (Opsional jika sudah ada)</label>
+                    <input type="file" id="evFoto" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm file:bg-blue-100 file:text-blue-700 file:border-0 file:rounded file:px-2 file:py-1 file:font-bold hover:file:bg-blue-200">
+                    
+                    <label class="flex items-center gap-2 mt-3 cursor-pointer p-2.5 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors">
+                        <input type="checkbox" id="evHideFoto" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                        <span class="text-xs font-bold text-slate-700">🔒 Sembunyikan foto di profil publik (Privasi Anak)</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Scan Akta Kelahiran (Wajib untuk Verif/Edit)</label>
+                    <input type="file" id="evAkta" accept="image/*,.pdf" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm file:bg-amber-100 file:text-amber-800 file:border-0 file:rounded file:px-2 file:py-1 file:font-bold hover:file:bg-amber-200">
+                </div>
+
+                <div id="evStatusMsg" class="hidden text-sm font-bold text-center rounded-lg p-3"></div>
+            </div>
+            <div class="p-5 bg-gray-50 border-t border-gray-100 shrink-0">
+                <button id="btnSaveEditVerify" class="w-full bg-blue-900 text-white font-bold py-3.5 rounded-xl hover:bg-blue-800 transition shadow-lg">Simpan & Kirim Pengajuan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CATATAN WAKTU MANUAL (DENGAN MEDALI) -->
+    <div id="modalManualTime" class="fixed inset-0 bg-black/60 z-[75] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 max-h-[95vh] flex flex-col">
+            <div class="p-5 border-b border-gray-100 bg-emerald-50 flex justify-between items-center shrink-0">
+                <h3 class="font-extrabold text-emerald-900 text-lg flex items-center gap-2"><span>⏱️</span> Catatan Waktu Atlet</h3>
+                <button id="closeModalManualTimeBtn" class="text-gray-400 hover:text-red-500 text-2xl font-bold transition">&times;</button>
+            </div>
+            
+            <div class="p-6 space-y-4 overflow-y-auto hide-scrollbar flex-1">
+                <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-start gap-3">
+                    <span class="text-blue-500 text-lg mt-0.5">ℹ️</span>
+                    <p class="text-[10px] md:text-xs font-bold text-blue-800 leading-relaxed">
+                        Data waktu ini akan masuk ke profil F1 ID atlet sebagai <strong>"Unofficial SCS Label"</strong>.
+                    </p>
+                </div>
+
+                <input type="hidden" id="mtF1Id">
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Nama Atlet</label>
+                    <input type="text" id="mtName" disabled class="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-100 text-gray-500 font-bold outline-none cursor-not-allowed">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Nama Kejuaraan / Event <span class="text-red-500">*</span></label>
+                    <input type="text" id="mtEventName" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Contoh: Kejurcab Surabaya 2026">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Tanggal Kejuaraan <span class="text-red-500">*</span></label>
+                    <input type="date" id="mtEventDate" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Provinsi <span class="text-red-500">*</span></label>
+                        <select id="mtProvinsi" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm"></select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Kota / Kab <span class="text-red-500">*</span></label>
+                        <select id="mtKota" disabled class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm">
+                            <option value="">Pilih Provinsi</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Gaya <span class="text-red-500">*</span></label>
+                        <select id="mtGaya" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm">
+                            <option value="Bebas">Bebas</option>
+                            <option value="Dada">Dada</option>
+                            <option value="Punggung">Punggung</option>
+                            <option value="Kupu-Kupu">Kupu-Kupu</option>
+                            <option value="Ganti">Ganti</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Jarak <span class="text-red-500">*</span></label>
+                        <input type="text" id="mtJarak" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm" placeholder="Contoh: 33m, 50m">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Catatan Waktu <span class="text-red-500">*</span></label>
+                    <input type="text" id="mtWaktu" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-mono text-lg tracking-wider" placeholder="01:23.45">
+                    <p class="text-[10px] text-gray-500 mt-1">Format: MM:SS.ms (Menit:Detik.Milidetik) atau SS.ms</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Medali (Opsional)</label>
+                    <select id="mtMedali" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-sm">
+                        <option value="">-- Hanya Catatan Waktu --</option>
+                        <option value="Emas">🥇 Emas (Juara 1)</option>
+                        <option value="Perak">🥈 Perak (Juara 2)</option>
+                        <option value="Perunggu">🥉 Perunggu (Juara 3)</option>
+                    </select>
+                </div>
+
+                <div id="mtStatusMsg" class="hidden text-sm font-bold text-center rounded-lg p-3"></div>
+            </div>
+            <div class="p-5 bg-gray-50 border-t border-gray-100 shrink-0">
+                <button id="btnSaveManualTime" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 transition shadow-lg">Simpan Catatan Waktu</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAL BUAT EVENT -->
+    <div id="modalCreateEvent" class="fixed inset-0 bg-black/60 z-[70] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300">
+            <div class="p-5 border-b border-gray-100 bg-emerald-50 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">🚀</span>
+                    <h3 class="font-extrabold text-emerald-900 text-lg">Buat Event Baru</h3>
+                </div>
+                <button id="closeModalEventBtn" class="text-gray-400 hover:text-red-500 text-2xl font-bold transition">&times;</button>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Nama Lomba / Kejuaraan</label>
+                    <input type="text" id="inputEventName" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Pilih Subdomain URL</label>
+                    <div class="flex shadow-sm rounded-xl overflow-hidden">
+                        <input type="text" id="inputSubdomain" class="w-full px-4 py-3 border border-gray-300 border-r-0 focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <span class="bg-gray-100 text-gray-500 px-3 py-3 text-sm border border-gray-300 font-mono">.f1swimming.com</span>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Tanggal Pelaksanaan</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="date" id="inputEventStartDate" class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm">
+                        <input type="date" id="inputEventEndDate" class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Region / Lokasi Lomba</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <select id="inputEventProvinsi" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm bg-white"></select>
+                        <select id="inputEventKota" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm bg-white" disabled>
+                            <option value="">Pilih Provinsi Dulu</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="eventStatusMsg" class="hidden"></div>
+            </div>
+            
+            <div class="p-5 bg-gray-50 border-t border-gray-100">
+                <button id="btnSaveEvent" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 transition">Buat Event Sekarang</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TESTIMONI -->
+    <div id="modalTestimoni" class="fixed inset-0 bg-black/60 z-[90] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300">
+            <div class="p-5 border-b border-gray-100 bg-indigo-50 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">💬</span>
+                    <h3 class="font-extrabold text-indigo-900 text-lg">Bantu Isi Testimony</h3>
+                </div>
+                <button id="closeModalTestimoniBtn" class="text-gray-400 hover:text-red-500 text-2xl font-bold transition">&times;</button>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <p class="text-sm text-gray-600 font-medium">Review jujur Anda sangat berarti. Kita tampilkan di Halaman Depan kami!</p>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Pesan Testimoni <span class="text-red-500">*</span></label>
+                    <textarea id="inputKlubTesti" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm" placeholder="Contoh: Aplikasi SCS sangat membantu pendaftaran lomba klub kami..."></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Nama Anda <span class="text-red-500">*</span></label>
+                    <input type="text" id="inputKlubTestiName" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm" placeholder="Nama lengkap">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Jabatan di Klub <span class="text-red-500">*</span></label>
+                    <input type="text" id="inputKlubTestiRole" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm" placeholder="Contoh: Head Coach / Manajer">
+                </div>
+                <div id="testiStatusMsg" class="hidden text-sm font-bold text-center rounded-lg p-3"></div>
+            </div>
+            
+            <div class="p-5 bg-gray-50 border-t border-gray-100">
+                <button id="btnKirimTestimoni" class="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl hover:bg-indigo-700 transition shadow-lg">Kirim Testimoni 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL KOTAK MASUK (INBOX KLUB) -->
+    <div id="modalInbox" class="fixed inset-0 bg-black/60 z-[95] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 max-h-[90vh] flex flex-col">
+            <div class="p-5 border-b border-gray-100 bg-blue-50 flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">✉️</span>
+                    <h3 class="font-extrabold text-blue-900 text-lg">Kotak Masuk Klub</h3>
+                </div>
+                <button id="closeModalInboxBtn" class="text-gray-400 hover:text-red-500 text-2xl font-bold transition">&times;</button>
+            </div>
+            <div class="p-0 overflow-y-auto hide-scrollbar flex-1 bg-slate-50" id="inboxList">
+                <div class="p-8 text-center text-gray-500 text-sm font-bold">Memuat pesan...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🚀 REVISI: MODAL KONTINGEN LOMBA LUAR -->
+    <div id="modalEBN" class="fixed inset-0 bg-black/70 z-[85] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 max-h-[95vh] flex flex-col">
+            <div class="p-5 border-b border-gray-100 bg-slate-900 text-white flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">🌍</span>
+                    <h3 class="font-extrabold text-lg">Buat Link Kontingen</h3>
+                </div>
+                <button id="closeModalEBNBtn" class="text-slate-400 hover:text-white text-2xl font-bold transition">&times;</button>
+            </div>
+            
+            <div class="p-6 space-y-4 overflow-y-auto hide-scrollbar flex-1 bg-slate-50">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Nama Lomba</label>
+                        <input type="text" id="inputEbnEventName" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-slate-800" placeholder="Cth: Kejurda Jatim 2026">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Tanggal Lomba</label>
+                        <input type="date" id="inputEbnEventDate" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-slate-700 font-bold">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-2">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Nama Kolam</label>
+                        <input type="text" id="inputEbnLokasi" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-xs font-bold text-slate-700" placeholder="Cth: Kolam Renang KONI">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Kota</label>
+                        <input type="text" id="inputEbnKota" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-xs font-bold text-slate-700" placeholder="Cth: Surabaya">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Provinsi</label>
+                        <input type="text" id="inputEbnProvinsi" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-xs font-bold text-slate-700" placeholder="Cth: Jawa Timur">
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm flex flex-col h-72">
+                    <div class="bg-slate-100 p-3 flex justify-between items-center border-b border-slate-200 shrink-0">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="checkAllEbn" class="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
+                            <span class="text-xs font-black text-slate-700 uppercase tracking-wider">Pilih Atlet Berangkat</span>
+                        </label>
+                        <span id="ebnSelectedCount" class="text-xs font-bold bg-slate-200 text-slate-600 px-2 py-1 rounded">0 Terpilih</span>
+                    </div>
+                    <div class="overflow-y-auto p-2 flex-1" id="ebnAthleteList">
+                        <p class="text-center text-xs text-slate-400 mt-4">Memuat data atlet...</p>
+                    </div>
+                </div>
+
+                <div id="ebnStatusMsg" class="hidden text-sm font-bold text-center rounded-lg p-4"></div>
+            </div>
+
+            <div class="p-5 bg-white border-t border-gray-100 shrink-0">
+                <button id="btnPublishUnofficial" class="w-full bg-emerald-600 text-white font-black py-4 rounded-xl hover:bg-emerald-700 transition shadow-lg flex justify-center items-center gap-2">
+                    Terbitkan Link Kontingen 🚀
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panggil File JS Utama -->
+    <script type="module" src="/src/dashboard.js"></script>
+</body>
+</html>
+            

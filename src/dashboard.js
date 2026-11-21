@@ -5,7 +5,103 @@ let filteredAthletes = [];
 let currentPage = 1;
 const itemsPerPage = 10;
 let currentClubId = null; 
-let currentClubData = null; 
+let currentClubData = null;
+let currentAuthSession = null;
+
+// ==============================================================
+// 🖼️ AUTO-COMPRESS GAMBAR KE TARGET 150 KB - 200 KB (BY JS)
+// ==============================================================
+async function compressImageToTargetKB(file, minKB = 150, maxKB = 200, maxDimension = 1400) {
+    if (!file || !file.type || !file.type.startsWith('image/')) return file;
+    const maxBytes = maxKB * 1024;
+    const minBytes = minKB * 1024;
+
+    if (file.size <= maxBytes) return file;
+
+    return new Promise((resolve, reject) => {
+        const objectUrl = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = async () => {
+            URL.revokeObjectURL(objectUrl);
+            try {
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxDimension || height > maxDimension) {
+                    const ratio = Math.min(maxDimension / width, maxDimension / height);
+                    width = Math.round(width * ratio);
+                    height = Math.round(height * ratio);
+                }
+
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                const renderBlob = (w, h, q) => new Promise(res => {
+                    canvas.width = w;
+                    canvas.height = h;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, w, h);
+                    ctx.drawImage(img, 0, 0, w, h);
+                    canvas.toBlob(b => res(b), 'image/jpeg', q);
+                });
+
+                let bestBlob = null;
+                let scaleAttempts = 0;
+
+                while (scaleAttempts < 4) {
+                    let low = 0.35;
+                    let high = 0.94;
+                    let candidateBlob = null;
+
+                    for (let i = 0; i < 6; i++) {
+                        const mid = (low + high) / 2;
+                        const blob = await renderBlob(width, height, mid);
+                        if (!blob) break;
+
+                        if (blob.size <= maxBytes) {
+                            candidateBlob = blob;
+                            if (blob.size >= minBytes) break;
+                            low = mid;
+                        } else {
+                            high = mid;
+                        }
+                    }
+
+                    if (candidateBlob) {
+                        bestBlob = candidateBlob;
+                        break;
+                    }
+
+                    bestBlob = await renderBlob(width, height, 0.35);
+                    if (bestBlob && bestBlob.size <= maxBytes) break;
+
+                    width = Math.round(width * 0.75);
+                    height = Math.round(height * 0.75);
+                    scaleAttempts++;
+                }
+
+                if (!bestBlob) {
+                    resolve(file);
+                    return;
+                }
+
+                const baseName = file.name.replace(/\.[^/.]+$/, '');
+                const compressedFile = new File([bestBlob], `${baseName}.jpg`, {
+                    type: 'image/jpeg',
+                    lastModified: Date.now()
+                });
+                resolve(compressedFile);
+            } catch (err) {
+                reject(err);
+            }
+        };
+        img.onerror = () => {
+            URL.revokeObjectURL(objectUrl);
+            reject(new Error('Gagal membaca file gambar untuk dikompresi.'));
+        };
+        img.src = objectUrl;
+    });
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
     
@@ -138,87 +234,6 @@ Terima kasih.`);
     const mobileBtnUpgradeTier = document.getElementById('mobileBtnUpgradeTier');
     if (btnUpgradeTier) btnUpgradeTier.addEventListener('click', upgradeAction);
     if (mobileBtnUpgradeTier) mobileBtnUpgradeTier.addEventListener('click', upgradeAction);
-
-    const btnOpenTestimoni = document.getElementById('btnOpenTestimoni');
-    const modalTestimoni = document.getElementById('modalTestimoni');
-    const closeModalTestimoniBtn = document.getElementById('closeModalTestimoniBtn');
-    const btnKirimTestimoni = document.getElementById('btnKirimTestimoni');
-
-    if(btnOpenTestimoni && modalTestimoni && closeModalTestimoniBtn) {
-        btnOpenTestimoni.addEventListener('click', () => {
-            modalTestimoni.classList.remove('hidden');
-            setTimeout(() => modalTestimoni.firstElementChild.classList.remove('scale-95'), 10);
-        });
-
-        closeModalTestimoniBtn.addEventListener('click', () => {
-            modalTestimoni.firstElementChild.classList.add('scale-95');
-            setTimeout(() => modalTestimoni.classList.add('hidden'), 200);
-        });
-    }
-
-    if (btnKirimTestimoni) {
-        btnKirimTestimoni.addEventListener('click', async () => {
-            const text = document.getElementById('inputKlubTesti').value.trim();
-            const name = document.getElementById('inputKlubTestiName').value.trim();
-            const role = document.getElementById('inputKlubTestiRole').value.trim();
-            const statusMsg = document.getElementById('testiStatusMsg');
-
-            if (!text || !name || !role) {
-                statusMsg.innerText = "Mohon lengkapi semua kolom!";
-                statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block mt-2";
-                return;
-            }
-
-            btnKirimTestimoni.innerText = "Mengirim...";
-            btnKirimTestimoni.disabled = true;
-
-            try {
-                if (!currentClubId || !currentClubData) {
-                    throw new Error("Data klub belum siap, coba refresh halaman.");
-                }
-
-                let currentTesti = currentClubData.testimony || [];
-                if (typeof currentTesti === 'string') {
-                    try { currentTesti = JSON.parse(currentTesti); } catch(e) { currentTesti = []; }
-                }
-
-                const newTesti = {
-                    text, name, role,
-                    timestamp: new Date().toISOString(),
-                    isPublished: false 
-                };
-
-                currentTesti.push(newTesti);
-
-                const { error: updateError } = await supabaseClient
-                    .from('clubs')
-                    .update({ testimony: currentTesti })
-                    .eq('id', currentClubId);
-
-                if (updateError) throw updateError;
-
-                statusMsg.innerHTML = "✅ <strong>Terima kasih!</strong><br><span class='text-xs font-normal'>Testimoni Anda berhasil dikirim dan menunggu antrean tayang.</span>";
-                statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-green-100 text-green-700 block mt-2";
-                
-                document.getElementById('inputKlubTesti').value = '';
-                document.getElementById('inputKlubTestiName').value = '';
-                document.getElementById('inputKlubTestiRole').value = '';
-
-                setTimeout(() => {
-                    closeModalTestimoniBtn.click();
-                    btnKirimTestimoni.innerText = "Kirim Testimoni 🚀";
-                    btnKirimTestimoni.disabled = false;
-                    statusMsg.classList.add('hidden');
-                }, 3000);
-
-            } catch (err) {
-                statusMsg.innerText = "Gagal: " + err.message;
-                statusMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-red-100 text-red-600 block mt-2";
-                btnKirimTestimoni.innerText = "Kirim Testimoni 🚀";
-                btnKirimTestimoni.disabled = false;
-            }
-        });
-    }
 
     const closeModalManualTimeBtn = document.getElementById('closeModalManualTimeBtn');
     if (closeModalManualTimeBtn) {
@@ -499,6 +514,7 @@ async function fetchDashboardData() {
             return;
         }
 
+        currentAuthSession = session;
         const userId = session.user.id; 
         const userEmail = session.user.email;
 
@@ -532,7 +548,7 @@ async function fetchDashboardData() {
                 btnSaveOnboard.disabled = true;
 
                 try {
-                    const { error: insertErr } = await supabaseClient
+                    const { data: createdClub, error: insertErr } = await supabaseClient
                         .from('clubs')
                         .insert([{
                             club_name: cName,
@@ -542,9 +558,14 @@ async function fetchDashboardData() {
                             kota_asal: cKota,
                             owner_id: userId,
                             admin_email: userEmail
-                        }]);
+                        }])
+                        .select('id')
+                        .single();
 
                     if (insertErr) throw insertErr;
+                    if (createdClub?.id) {
+                        localStorage.setItem(`scs_new_club_tutorial_${createdClub.id}`, 'active');
+                    }
 
                     const returnEventUrl = sessionStorage.getItem('scs_onboard_redirect');
                     if (returnEventUrl) {
@@ -724,6 +745,7 @@ async function fetchDashboardData() {
         filteredAthletes = [...allAthletes]; 
         currentPage = 1;
         renderAthleteTable();
+        updateOnboardingAndAlerts(currentAuthSession, currentClubData, allAthletes);
 
     } catch (error) {
         console.error('Gagal menarik data:', error.message);
@@ -929,9 +951,10 @@ if(btnSaveEditVerify) {
             let isUploadBaru = false;
 
             if (fotoFile) {
-                const fotoExt = fotoFile.name.split('.').pop();
+                const compressedFoto = await compressImageToTargetKB(fotoFile, 150, 200, 1000);
+                const fotoExt = compressedFoto.name.split('.').pop();
                 const fotoPath = `foto/${f1Id}_${timeStamp}.${fotoExt}`;
-                const { error: fotoError } = await supabaseClient.storage.from('berkas-atlet').upload(fotoPath, fotoFile);
+                const { error: fotoError } = await supabaseClient.storage.from('berkas-atlet').upload(fotoPath, compressedFoto);
                 if (fotoError) throw fotoError;
                 const { data: fotoUrlData } = supabaseClient.storage.from('berkas-atlet').getPublicUrl(fotoPath);
                 finalFotoUrl = fotoUrlData.publicUrl;
@@ -939,9 +962,12 @@ if(btnSaveEditVerify) {
             }
 
             if (aktaFile) {
-                const aktaExt = aktaFile.name.split('.').pop();
+                const compressedAkta = aktaFile.type.startsWith('image/')
+                    ? await compressImageToTargetKB(aktaFile, 150, 200, 1600)
+                    : aktaFile;
+                const aktaExt = compressedAkta.name.split('.').pop();
                 const aktaPath = `akta/${f1Id}_${timeStamp}.${aktaExt}`;
-                const { error: aktaError } = await supabaseClient.storage.from('berkas-atlet').upload(aktaPath, aktaFile);
+                const { error: aktaError } = await supabaseClient.storage.from('berkas-atlet').upload(aktaPath, compressedAkta);
                 if (aktaError) throw aktaError;
                 const { data: aktaUrlData } = supabaseClient.storage.from('berkas-atlet').getPublicUrl(aktaPath);
                 finalAktaUrl = aktaUrlData.publicUrl;
@@ -1111,7 +1137,15 @@ async function handleProvinsiChange(provElement, kotaElement) {
     }
 }
 
-function openProfileModal() {
+function hasUserSetPassword(session) {
+    const user = session?.user;
+    if (!user) return false;
+    const providers = user.app_metadata?.providers || [];
+    const localDone = localStorage.getItem(`scs_password_set_${user.id}`) === 'true';
+    return providers.includes('email') || localDone;
+}
+
+function openProfileModal(defaultTab = 'profil') {
     if (!currentClubData) return;
     
     document.getElementById('editClubName').value = currentClubData.club_name || '';
@@ -1129,6 +1163,15 @@ function openProfileModal() {
         if(data.user) document.getElementById('editAuthEmail').value = data.user.email;
     });
 
+    const missingPassNote = document.getElementById('akunPasswordMissingNote');
+    if (missingPassNote) {
+        if (!hasUserSetPassword(currentAuthSession)) {
+            missingPassNote.classList.remove('hidden');
+        } else {
+            missingPassNote.classList.add('hidden');
+        }
+    }
+
     document.getElementById('statusProfilMsg').classList.add('hidden');
     document.getElementById('statusAkunMsg').classList.add('hidden');
     
@@ -1137,12 +1180,37 @@ function openProfileModal() {
         document.getElementById('mobileMenuToggle').click(); 
     }
 
+    if (defaultTab === 'akun' && tabAkunBtn) {
+        tabAkunBtn.click();
+    } else if (tabProfilKlubBtn) {
+        tabProfilKlubBtn.click();
+    }
+
     modalEditProfile.classList.remove('hidden');
-    setTimeout(() => modalEditProfile.firstElementChild.classList.remove('scale-95'), 10);
+    setTimeout(() => {
+        modalEditProfile.firstElementChild.classList.remove('scale-95');
+        if (defaultTab === 'akun') {
+            const passInput = document.getElementById('editAuthPassword');
+            if (passInput) passInput.focus();
+        }
+    }, 10);
 }
 
-if (btnEditProfilKlub) btnEditProfilKlub.addEventListener('click', openProfileModal);
-if (mobileBtnEditProfil) mobileBtnEditProfil.addEventListener('click', openProfileModal);
+const btnToggleEditAuthPass = document.getElementById('btnToggleEditAuthPass');
+if (btnToggleEditAuthPass) {
+    btnToggleEditAuthPass.addEventListener('click', () => {
+        const input = document.getElementById('editAuthPassword');
+        if (!input) return;
+        const isHidden = input.type === 'password';
+        input.type = isHidden ? 'text' : 'password';
+        btnToggleEditAuthPass.innerText = isHidden ? 'Sembunyikan' : 'Tampilkan';
+        btnToggleEditAuthPass.classList.toggle('bg-blue-100', isHidden);
+        btnToggleEditAuthPass.classList.toggle('text-blue-700', isHidden);
+    });
+}
+
+if (btnEditProfilKlub) btnEditProfilKlub.addEventListener('click', () => openProfileModal('profil'));
+if (mobileBtnEditProfil) mobileBtnEditProfil.addEventListener('click', () => openProfileModal('profil'));
 
 if (closeModalProfileBtn) {
     closeModalProfileBtn.addEventListener('click', () => {
@@ -1191,9 +1259,10 @@ if (btnSaveProfileInfo) {
             let newLogoUrl = currentClubData.logo_url;
 
             if (fileLogo) {
-                const fileExt = fileLogo.name.split('.').pop();
+                const compressedLogo = await compressImageToTargetKB(fileLogo, 150, 200, 800);
+                const fileExt = compressedLogo.name.split('.').pop();
                 const fileName = `logo_${currentClubId}_${Date.now()}.${fileExt}`;
-                const { error: uploadError } = await supabaseClient.storage.from('logo-klub').upload(fileName, fileLogo);
+                const { error: uploadError } = await supabaseClient.storage.from('logo-klub').upload(fileName, compressedLogo);
                 if (uploadError) throw uploadError;
                 
                 const { data: urlData } = supabaseClient.storage.from('logo-klub').getPublicUrl(fileName);
@@ -1254,7 +1323,23 @@ if (btnSaveAuthInfo) {
             const { data, error } = await supabaseClient.auth.updateUser(updates);
             if (error) throw error;
 
-            statusMsg.innerHTML = "✅ <strong>Berhasil!</strong><br><span class='font-normal text-xs'>Jika Anda mengubah email, silakan cek inbox email lama dan email baru Anda untuk konfirmasi.</span>";
+            if (newPass && data?.user?.id) {
+                localStorage.setItem(`scs_password_set_${data.user.id}`, 'true');
+                if (currentAuthSession?.user) {
+                    const existingProviders = currentAuthSession.user.app_metadata?.providers || [];
+                    if (!existingProviders.includes('email')) {
+                        currentAuthSession.user.app_metadata = {
+                            ...currentAuthSession.user.app_metadata,
+                            providers: [...existingProviders, 'email']
+                        };
+                    }
+                }
+                const missingPassNote = document.getElementById('akunPasswordMissingNote');
+                if (missingPassNote) missingPassNote.classList.add('hidden');
+                updateOnboardingAndAlerts(currentAuthSession, currentClubData, allAthletes);
+            }
+
+            statusMsg.innerHTML = "✅ <strong>Berhasil!</strong><br><span class='font-normal text-xs'>Perubahan akun & password telah disimpan.</span>";
             statusMsg.className = "text-sm text-center rounded-lg p-3 bg-green-100 text-green-700 block mt-4";
             document.getElementById('editAuthPassword').value = '';
 
@@ -1561,145 +1646,138 @@ if (btnSaveEvent) {
 }
 
 // ==============================================================
-// 🚀 FITUR KONTINGEN UNOFFICIAL EVENT (PENGGANTI EBN EXCEL)
+// 🚀 NOTE KELENGKAPAN AKUN & TUTORIAL KLUB BARU
 // ==============================================================
-const btnOpenEBN = document.getElementById('btnOpenEBN');
-const modalEBN = document.getElementById('modalEBN');
-const closeModalEBNBtn = document.getElementById('closeModalEBNBtn');
-const ebnAthleteList = document.getElementById('ebnAthleteList');
-const checkAllEbn = document.getElementById('checkAllEbn');
-const btnPublishUnofficial = document.getElementById('btnPublishUnofficial');
-const ebnSelectedCount = document.getElementById('ebnSelectedCount');
-const ebnStatusMsg = document.getElementById('ebnStatusMsg');
+function updateOnboardingAndAlerts(session, clubData, athletesList) {
+    if (!clubData) return;
 
-if (btnOpenEBN && modalEBN) {
-    btnOpenEBN.addEventListener('click', () => {
-        modalEBN.classList.remove('hidden');
-        setTimeout(() => modalEBN.firstElementChild.classList.remove('scale-95'), 10);
-        renderEbnList();
-        ebnStatusMsg.classList.add('hidden'); // Reset pesan
-    });
+    const isProfileComplete = Boolean(
+        clubData.club_name &&
+        clubData.short_name &&
+        clubData.coach_name &&
+        clubData.contact_wa &&
+        clubData.provinsi &&
+        clubData.kota_asal &&
+        clubData.logo_url
+    );
+    const isPasswordSet = hasUserSetPassword(session);
+    const hasAthletes = Array.isArray(athletesList) && athletesList.length > 0;
 
-    closeModalEBNBtn.addEventListener('click', () => {
-        modalEBN.firstElementChild.classList.add('scale-95');
-        setTimeout(() => modalEBN.classList.add('hidden'), 200);
-    });
+    // 1. Atur Banner Note jika profil klub atau password belum diisi
+    const alertBox = document.getElementById('incompleteAccountAlert');
+    const alertTitle = document.getElementById('incompleteAlertTitle');
+    const alertDesc = document.getElementById('incompleteAlertDesc');
+    const btnAlertPass = document.getElementById('btnAlertOpenPassword');
+    const btnAlertProfil = document.getElementById('btnAlertOpenProfil');
 
-    checkAllEbn.addEventListener('change', (e) => {
-        const isChecked = e.target.checked;
-        const checkboxes = ebnAthleteList.querySelectorAll('.ebn-checkbox');
-        checkboxes.forEach(cb => cb.checked = isChecked);
-        updateEbnCount();
-    });
-
-    function renderEbnList() {
-        if (!allAthletes || allAthletes.length === 0) {
-            ebnAthleteList.innerHTML = '<p class="text-center text-xs text-slate-500 mt-4">Belum ada atlet di klub ini.</p>';
-            return;
+    if (alertBox) {
+        if (!isProfileComplete || !isPasswordSet) {
+            alertBox.classList.remove('hidden');
+            if (!isProfileComplete && !isPasswordSet) {
+                alertTitle.innerText = 'Lengkapi Profil Klub & Password Anda';
+                alertDesc.innerText = 'Profil klub (logo/singkatan/pelatih) dan password login belum lengkap. Segera lengkapi password Anda agar akun aman.';
+                if (btnAlertPass) btnAlertPass.classList.remove('hidden');
+                if (btnAlertProfil) btnAlertProfil.classList.remove('hidden');
+            } else if (!isPasswordSet) {
+                alertTitle.innerText = 'Note: Lengkapi Password Anda';
+                alertDesc.innerText = 'Anda login menggunakan Google dan belum mengatur password. Lengkapi password Anda sekarang agar bisa login menggunakan email & sandi.';
+                if (btnAlertPass) btnAlertPass.classList.remove('hidden');
+                if (btnAlertProfil) btnAlertProfil.classList.add('hidden');
+            } else {
+                alertTitle.innerText = 'Lengkapi Profil Klub Anda';
+                alertDesc.innerText = 'Logo klub atau singkatan klub Anda belum diisi. Lengkapi profil klub agar tampil maksimal di daftar peserta lomba.';
+                if (btnAlertPass) btnAlertPass.classList.add('hidden');
+                if (btnAlertProfil) btnAlertProfil.classList.remove('hidden');
+            }
+        } else {
+            alertBox.classList.add('hidden');
         }
-
-        const sorted = [...allAthletes].sort((a, b) => a.full_name.localeCompare(b.full_name));
-        
-        let html = '<div class="space-y-1">';
-        sorted.forEach(atlet => {
-            const genderIcon = atlet.gender === 'Putra' ? '👦' : '👧';
-            html += `
-                <label class="flex items-center gap-3 p-3 hover:bg-emerald-50 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-emerald-100 group">
-                    <input type="checkbox" value="${atlet.f1_id}" class="ebn-checkbox w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500">
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-bold text-slate-800 truncate">${atlet.full_name}</p>
-                        <p class="text-[10px] font-medium text-slate-500">${genderIcon} ${atlet.gender} • ${atlet.f1_id}</p>
-                    </div>
-                </label>
-            `;
-        });
-        html += '</div>';
-        ebnAthleteList.innerHTML = html;
-
-        const checkboxes = ebnAthleteList.querySelectorAll('.ebn-checkbox');
-        checkboxes.forEach(cb => {
-            cb.addEventListener('change', updateEbnCount);
-        });
-        
-        updateEbnCount();
-        checkAllEbn.checked = false;
     }
 
-    function updateEbnCount() {
-        const checked = ebnAthleteList.querySelectorAll('.ebn-checkbox:checked').length;
-        ebnSelectedCount.innerText = `${checked} Terpilih`;
+    if (btnAlertPass && !btnAlertPass.dataset.bound) {
+        btnAlertPass.dataset.bound = '1';
+        btnAlertPass.addEventListener('click', () => openProfileModal('akun'));
+    }
+    if (btnAlertProfil && !btnAlertProfil.dataset.bound) {
+        btnAlertProfil.dataset.bound = '1';
+        btnAlertProfil.addEventListener('click', () => openProfileModal('profil'));
     }
 
-    btnPublishUnofficial.addEventListener('click', async () => {
-        const eventName = document.getElementById('inputEbnEventName').value.trim();
-        const eventDate = document.getElementById('inputEbnEventDate').value;
-        const lokasi = document.getElementById('inputEbnLokasi').value.trim();
-        const kota = document.getElementById('inputEbnKota').value.trim();
-        const provinsi = document.getElementById('inputEbnProvinsi').value.trim();
-        
-        if(!eventName || !eventDate) {
-            alert("Nama Lomba dan Tanggal wajib diisi!");
-            return;
+    // 2. Atur Tutorial 3 Langkah untuk Klub Baru
+    const tutorialCard = document.getElementById('newClubTutorialCard');
+    if (!tutorialCard) return;
+
+    const dismissedKey = `scs_tutorial_dismissed_${clubData.id}`;
+    const activeNewKey = `scs_new_club_tutorial_${clubData.id}`;
+    const isDismissed = localStorage.getItem(dismissedKey) === 'true';
+    const isNewlyJoined = localStorage.getItem(activeNewKey) === 'active' || !isProfileComplete || !isPasswordSet || !hasAthletes;
+
+    if (isDismissed || !isNewlyJoined) {
+        tutorialCard.classList.add('hidden');
+        return;
+    }
+
+    tutorialCard.classList.remove('hidden');
+
+    const completedCount = [isProfileComplete, isPasswordSet, hasAthletes].filter(Boolean).length;
+    const progressBadge = document.getElementById('tutorialProgressBadge');
+    if (progressBadge) {
+        progressBadge.innerText = completedCount === 3
+            ? '🎉 3 / 3 Semua Selesai!'
+            : `${completedCount} / 3 Selesai`;
+    }
+
+    const applyStepUI = (stepNum, done) => {
+        const btn = document.getElementById(`tutStep${stepNum}Btn`);
+        const icon = document.getElementById(`tutStep${stepNum}Icon`);
+        const status = document.getElementById(`tutStep${stepNum}Status`);
+        if (!btn || !icon || !status) return;
+
+        if (done) {
+            btn.className = 'text-left p-4 rounded-2xl border border-emerald-400/50 bg-emerald-500/20 hover:bg-emerald-500/30 transition-all flex items-start gap-3 cursor-pointer group';
+            icon.className = 'w-7 h-7 rounded-full bg-emerald-400 text-blue-950 font-black text-xs flex items-center justify-center shrink-0 mt-0.5';
+            icon.innerText = '✓';
+            status.className = 'text-[10px] font-black text-emerald-300 shrink-0';
+            status.innerText = '✅ Selesai';
+        } else {
+            btn.className = 'text-left p-4 rounded-2xl border border-white/20 bg-white/10 hover:bg-white/20 transition-all flex items-start gap-3 cursor-pointer group';
+            icon.className = 'w-7 h-7 rounded-full bg-white text-blue-900 font-black text-xs flex items-center justify-center shrink-0 mt-0.5';
+            icon.innerText = String(stepNum);
+            status.className = 'text-[10px] font-bold text-amber-300 shrink-0';
+            status.innerText = 'Belum';
         }
+    };
 
-        const checkedBoxes = ebnAthleteList.querySelectorAll('.ebn-checkbox:checked');
-        if (checkedBoxes.length === 0) {
-            return alert("Pilih minimal 1 atlet untuk diberangkatkan!");
-        }
+    applyStepUI(1, isProfileComplete);
+    applyStepUI(2, isPasswordSet);
+    applyStepUI(3, hasAthletes);
 
-        btnPublishUnofficial.innerHTML = `Menerbitkan Link... ⏳`;
-        btnPublishUnofficial.disabled = true;
+    const step1Btn = document.getElementById('tutStep1Btn');
+    const step2Btn = document.getElementById('tutStep2Btn');
+    const step3Btn = document.getElementById('tutStep3Btn');
+    const dismissBtn = document.getElementById('btnDismissTutorial');
 
-        const selectedF1Ids = Array.from(checkedBoxes).map(cb => cb.value);
-        
-        // Buat Array JSONB berisi snapshot data atlet terpilih
-        const pesertaArray = allAthletes
-            .filter(a => selectedF1Ids.includes(a.f1_id))
-            .map(a => ({
-                f1_id: a.f1_id,
-                nama: a.full_name,
-                gender: a.gender,
-                foto_url: a.foto_url // Bawa foto URL biar UI Kontingen-nya cantik
-            }));
-
-        try {
-            const { data, error } = await supabaseClient
-                .from('unofficial_events')
-                .insert([{
-                    club_id: currentClubId,
-                    nama_event: eventName,
-                    tanggal: eventDate,
-                    lokasi_kolam: lokasi || '-',
-                    kota: kota || '-',
-                    provinsi: provinsi || '-',
-                    peserta: pesertaArray
-                }])
-                .select('id')
-                .single();
-
-            if (error) throw error;
-
-            const publicUrl = `https://f1swimming.com/unofficial/?id=${data.id}`;
-            
-            // Tampilkan Link ke UI Modal
-            document.getElementById('ebnAthleteList').parentElement.classList.add('hidden'); // Sembunyiin list
-            ebnStatusMsg.classList.remove('hidden');
-            ebnStatusMsg.className = "text-sm font-bold text-center rounded-xl p-6 bg-emerald-50 border border-emerald-200 block";
-            ebnStatusMsg.innerHTML = `
-                <div class="text-4xl mb-2">🎉</div>
-                <h4 class="text-emerald-800 text-lg mb-2">Berhasil Diterbitkan!</h4>
-                <p class="text-emerald-600 text-xs mb-4 font-normal">Link kontingen Anda sudah aktif dan siap dibagikan ke orang tua atau sosial media.</p>
-                <input type="text" value="${publicUrl}" readonly class="w-full p-3 bg-white border border-emerald-300 rounded-lg text-emerald-900 font-mono text-xs mb-3 text-center outline-none">
-                <button onclick="navigator.clipboard.writeText('${publicUrl}'); alert('Link disalin!')" class="w-full bg-emerald-600 text-white py-2 rounded-lg text-sm shadow-sm hover:bg-emerald-700">Copy Link Kontingen</button>
-            `;
-            
-            btnPublishUnofficial.classList.add('hidden'); // Sembunyiin tombol terbit
-
-        } catch (err) {
-            console.error(err);
-            alert("Gagal menerbitkan: " + err.message);
-            btnPublishUnofficial.innerHTML = `Terbitkan Link Kontingen 🚀`;
-            btnPublishUnofficial.disabled = false;
-        }
-    });
+    if (step1Btn && !step1Btn.dataset.bound) {
+        step1Btn.dataset.bound = '1';
+        step1Btn.addEventListener('click', () => openProfileModal('profil'));
+    }
+    if (step2Btn && !step2Btn.dataset.bound) {
+        step2Btn.dataset.bound = '1';
+        step2Btn.addEventListener('click', () => openProfileModal('akun'));
+    }
+    if (step3Btn && !step3Btn.dataset.bound) {
+        step3Btn.dataset.bound = '1';
+        step3Btn.addEventListener('click', () => {
+            const addBtn = document.getElementById('btnAddAthlete');
+            if (addBtn) addBtn.click();
+        });
+    }
+    if (dismissBtn && !dismissBtn.dataset.bound) {
+        dismissBtn.dataset.bound = '1';
+        dismissBtn.addEventListener('click', () => {
+            localStorage.setItem(dismissedKey, 'true');
+            localStorage.removeItem(activeNewKey);
+            tutorialCard.classList.add('hidden');
+        });
+    }
 }
