@@ -138,37 +138,49 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // ==========================================
-    // LOGIKA LOGIN GOOGLE (TOMBOL STATIS ANTI-CACHE)
+    // LOGIKA LOGIN GOOGLE (DOMAIN f1swimming.com + TOMBOL STATIS)
     // ==========================================
     if (btnGoogleLogin) {
-        btnGoogleLogin.addEventListener('click', async () => {
-            const originalHtml = btnGoogleLogin.innerHTML;
-            btnGoogleLogin.innerHTML = '<span class="animate-spin text-base">↻</span> Menghubungkan ke Google...';
-            btnGoogleLogin.disabled = true;
+        const googleStatusEl = document.getElementById('googleAuthStatus');
 
-            try {
-                const pendingRedirect = new URLSearchParams(window.location.search).get('redirect');
-                if (pendingRedirect) {
-                    sessionStorage.setItem('scs_auth_redirect', pendingRedirect);
-                }
-
-                const { error } = await supabaseClient.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: {
-                        redirectTo: window.location.origin + '/auth.html',
-                        queryParams: {
-                            prompt: 'select_account'
-                        }
-                    }
-                });
-
-                if (error) throw error;
-            } catch (err) {
-                alert("Gagal login Google: " + translateAuthError(err));
-                btnGoogleLogin.innerHTML = originalHtml;
-                btnGoogleLogin.disabled = false;
+        const renderGoogleButton = () => {
+            if (typeof google === 'undefined' || !google.accounts) {
+                setTimeout(renderGoogleButton, 100);
+                return;
             }
-        });
+
+            google.accounts.id.initialize({
+                client_id: '1047924463495-3virdj082194chl013ia1js0ls8c99rv.apps.googleusercontent.com',
+                callback: async (response) => {
+                    if (googleStatusEl) googleStatusEl.classList.remove('hidden');
+                    try {
+                        const { data, error } = await supabaseClient.auth.signInWithIdToken({
+                            provider: 'google',
+                            token: response.credential,
+                        });
+
+                        if (error) throw error;
+                        redirectAfterAuth(data?.session);
+                    } catch (err) {
+                        if (googleStatusEl) googleStatusEl.classList.add('hidden');
+                        alert("Gagal login Google: " + translateAuthError(err));
+                    }
+                }
+            });
+
+            google.accounts.id.renderButton(
+                btnGoogleLogin,
+                {
+                    theme: "outline",
+                    size: "large",
+                    width: 400,
+                    text: "continue_with",
+                    shape: "rectangular"
+                }
+            );
+        };
+
+        renderGoogleButton();
     }
 
     // ==========================================
