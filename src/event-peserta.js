@@ -3,6 +3,7 @@ import { supabaseClient } from './supabase.js';
 let currentEventId = null;
 let currentEvent = null;
 let allRegistrations = [];
+let isEventMaker = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. Cek User Session
@@ -35,6 +36,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (eventErr || !eventData) throw new Error("Event tidak ditemukan.");
         currentEvent = eventData;
+        const currentUserId = sessionData.session.user.id;
+        if (String(eventData.owner_id) === String(currentUserId)) {
+            isEventMaker = true;
+        } else if (eventData.club_id) {
+            const { data: clubOwner } = await supabaseClient
+                .from('clubs')
+                .select('owner_id')
+                .eq('id', eventData.club_id)
+                .maybeSingle();
+            if (clubOwner && String(clubOwner.owner_id) === String(currentUserId)) {
+                isEventMaker = true;
+            }
+        }
         
         document.getElementById('adminEventName').innerText = eventData.event_name;
         fetchData();
@@ -200,6 +214,7 @@ function renderTable() {
                     <button onclick="window.openModalSeedTime('${item.id}')" class="bg-white hover:bg-blue-50 border border-slate-200 text-slate-400 hover:text-blue-600 px-2.5 py-1.5 rounded-lg text-xs transition-colors shadow-sm" title="Edit Seed Time">✏️</button>
                     
                     ${item.status_pembayaran !== 'Lunas' ? `<button onclick="window.verifikasiLunas('${item.id}', '${urlStruk}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg> Lunas</button>` : ''}
+                    ${isEventMaker ? `<button onclick="window.hapusPeserta('${item.id}')" class="bg-red-50 hover:bg-red-600 border border-red-200 text-red-600 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition-colors shadow-sm cursor-pointer" title="Hapus Peserta (Khusus Event Maker)">🗑️</button>` : ''}
                 </div>
             </td>
         `;
@@ -487,3 +502,40 @@ document.getElementById('btnSyncF1').addEventListener('click', async () => {
         fetchData();
     }
 });
+
+
+// ==========================================
+// FUNGSI HAPUS PESERTA (KHUSUS EVENT MAKER)
+// ==========================================
+window.hapusPeserta = async function(id) {
+    if (!isEventMaker) {
+        alert("🛑 Akses ditolak! Hanya pembuat event (Event Maker) yang dapat menghapus peserta.");
+        return;
+    }
+
+    const target = allRegistrations.find(r => String(r.id) === String(id));
+    const nama = target ? `${target.nama_peserta} (${target.klub_asal})` : 'peserta ini';
+
+    if (!confirm(`⚠️ HAPUS PESERTA?\n\nYakin ingin menghapus permanen data pendaftaran a.n. ${nama}?\nData yang dihapus tidak dapat dikembalikan.`)) {
+        return;
+    }
+
+    try {
+        const { data: deletedRows, error } = await supabaseClient
+            .from('event_registrations')
+            .delete()
+            .eq('id', id)
+            .eq('event_id', currentEventId)
+            .select('id');
+
+        if (error) throw error;
+        if (!deletedRows || deletedRows.length === 0) {
+            throw new Error("Data tidak terhapus. Pastikan policy DELETE di Supabase untuk tabel event_registrations sudah aktif.");
+        }
+
+        alert(`🗑️ Data peserta ${nama} berhasil dihapus.`);
+        fetchData();
+    } catch (err) {
+        alert("Gagal menghapus peserta: " + err.message);
+    }
+};
