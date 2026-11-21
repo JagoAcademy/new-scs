@@ -623,9 +623,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 alert("Akun berhasil masuk! Silakan lengkapi Profil Klub Anda terlebih dahulu di Dashboard utama.");
                 if (activeSess?.access_token && activeSess?.refresh_token) {
                     const hash = `access_token=${encodeURIComponent(activeSess.access_token)}&refresh_token=${encodeURIComponent(activeSess.refresh_token)}`;
-                    window.location.href = `https://f1swimming.com/dashboard.html#${hash}`;
+                    window.location.href = `https://f1swimming.com/dashboard.html?redirect=${encodeURIComponent(currentEventUrl)}#${hash}`;
                 } else {
-                    window.location.href = 'https://f1swimming.com/dashboard.html';
+                    window.location.href = `https://f1swimming.com/dashboard.html?redirect=${encodeURIComponent(currentEventUrl)}`;
                 }
                 return;
             }

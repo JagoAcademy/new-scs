@@ -23,10 +23,29 @@ function redirectAfterAuth(sessionObj) {
         window.location.replace(`${base}#${hash}`);
         return;
     }
-    redirectAfterAuth(data?.session);
+    window.location.replace('/dashboard.html');
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+
+    // ==========================================
+    // TOGGLE TAMPILKAN / SEMBUNYIKAN PASSWORD
+    // ==========================================
+    document.querySelectorAll('.btn-toggle-pw').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.getAttribute('data-toggle-pw');
+            const input = document.getElementById(targetId);
+            if (!input) return;
+            const isHidden = input.type === 'password';
+            input.type = isHidden ? 'text' : 'password';
+            btn.innerText = isHidden ? 'Sembunyikan' : 'Tampilkan';
+            btn.classList.toggle('bg-blue-100', isHidden);
+            btn.classList.toggle('text-blue-700', isHidden);
+            btn.classList.toggle('bg-slate-200/80', !isHidden);
+            btn.classList.toggle('text-slate-600', !isHidden);
+        });
+    });
+
     
     // 1. CEK SESSION: Lempar ke dashboard kalau udah login
     const { data: { session } } = await supabaseClient.auth.getSession();

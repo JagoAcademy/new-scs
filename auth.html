@@ -15,7 +15,7 @@
             <div class="absolute inset-0 bg-blue-900/60 backdrop-blur-sm"></div>
 
             <div class="relative z-10">
-                <img src="/images/scs.png" alt="SCS Logo" class="h-10 mb-8 bg-white p-1 rounded-lg w-max">
+                <img src="/images/scs.png" alt="SCS Logo" class="h-20 md:h-24 w-auto object-contain mb-8 bg-white px-4 py-2.5 rounded-2xl shadow-md">
                 <h1 class="text-3xl font-black mb-4 leading-tight tracking-tight">SCS COMMAND<br><span class="text-amber-400">CENTER</span></h1>
                 <p class="text-blue-100 text-sm leading-relaxed mb-6">
                     Sistem manajemen klub renang pro. Kelola pendaftaran atlet, buku acara, hingga live result kejuaraan dalam satu dasbor terpadu.
@@ -60,7 +60,10 @@
                             <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Kata Sandi</label>
                             <a href="#" id="btnLupaSandi" class="text-[10px] font-bold text-blue-600 hover:underline">Lupa Sandi?</a>
                         </div>
-                        <input type="password" id="loginPassword" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold" placeholder="••••••••">
+                        <div class="relative">
+                            <input type="password" id="loginPassword" required class="w-full px-4 py-3 pr-24 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold" placeholder="••••••••">
+                            <button type="button" data-toggle-pw="loginPassword" class="btn-toggle-pw absolute right-2.5 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-slate-200/80 hover:bg-blue-100 text-slate-600 hover:text-blue-700 text-[10px] font-extrabold uppercase tracking-wider transition-colors cursor-pointer select-none">Tampilkan</button>
+                        </div>
                     </div>
                     
                     <div id="loginErrorMsg" class="hidden bg-red-50 text-red-600 text-xs font-bold p-3 rounded-lg border border-red-100 text-center"></div>
@@ -87,11 +90,17 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Kata Sandi</label>
-                        <input type="password" id="regPassword" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold" placeholder="Minimal 6 karakter">
+                        <div class="relative">
+                            <input type="password" id="regPassword" required class="w-full px-4 py-3 pr-24 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold" placeholder="Minimal 6 karakter">
+                            <button type="button" data-toggle-pw="regPassword" class="btn-toggle-pw absolute right-2.5 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-slate-200/80 hover:bg-blue-100 text-slate-600 hover:text-blue-700 text-[10px] font-extrabold uppercase tracking-wider transition-colors cursor-pointer select-none">Tampilkan</button>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Ulangi Sandi</label>
-                        <input type="password" id="regConfirmPassword" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold" placeholder="Masukkan ulang sandi">
+                        <div class="relative">
+                            <input type="password" id="regConfirmPassword" required class="w-full px-4 py-3 pr-24 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold" placeholder="Masukkan ulang sandi">
+                            <button type="button" data-toggle-pw="regConfirmPassword" class="btn-toggle-pw absolute right-2.5 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-slate-200/80 hover:bg-blue-100 text-slate-600 hover:text-blue-700 text-[10px] font-extrabold uppercase tracking-wider transition-colors cursor-pointer select-none">Tampilkan</button>
+                        </div>
                     </div>
                     
                     <div id="regAlertMsg" class="hidden text-xs font-bold p-3 rounded-lg border text-center leading-relaxed"></div>

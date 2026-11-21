@@ -468,6 +468,30 @@ window.rejectAtlet = async function(inboxId) {
 
 async function fetchDashboardData() {
     try {
+        const dashParams = new URLSearchParams(window.location.search);
+        const rawDashRedirect = dashParams.get('redirect');
+        if (rawDashRedirect) {
+            try {
+                const parsed = new URL(rawDashRedirect);
+                const host = parsed.hostname.toLowerCase();
+                if (host === 'f1swimming.com' || host.endsWith('.f1swimming.com') || host === 'localhost') {
+                    sessionStorage.setItem('scs_onboard_redirect', parsed.toString());
+                }
+            } catch (e) {}
+        }
+
+        if (window.location.hash && window.location.hash.includes('access_token=')) {
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const accessToken = hashParams.get('access_token');
+            const refreshToken = hashParams.get('refresh_token');
+            if (accessToken && refreshToken) {
+                await supabaseClient.auth.setSession({
+                    access_token: accessToken,
+                    refresh_token: refreshToken
+                });
+                window.history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+        }
         const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
         
         if (sessionError || !session) {
@@ -521,6 +545,25 @@ async function fetchDashboardData() {
                         }]);
 
                     if (insertErr) throw insertErr;
+
+                    const returnEventUrl = sessionStorage.getItem('scs_onboard_redirect');
+                    if (returnEventUrl) {
+                        sessionStorage.removeItem('scs_onboard_redirect');
+                        onboardMsg.innerText = "✅ Klub berhasil dibangun! Mengembalikan Anda ke halaman lomba...";
+                        onboardMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-green-100 text-green-600 block";
+
+                        const { data: { session: activeSess } } = await supabaseClient.auth.getSession();
+                        setTimeout(() => {
+                            const base = returnEventUrl.split('#')[0];
+                            if (activeSess?.access_token && activeSess?.refresh_token) {
+                                const hash = `access_token=${encodeURIComponent(activeSess.access_token)}&refresh_token=${encodeURIComponent(activeSess.refresh_token)}`;
+                                window.location.replace(`${base}#${hash}`);
+                            } else {
+                                window.location.replace(base);
+                            }
+                        }, 1200);
+                        return;
+                    }
 
                     onboardMsg.innerText = "✅ Klub berhasil dibangun! Memuat Command Center...";
                     onboardMsg.className = "text-sm font-bold text-center rounded-lg p-3 bg-green-100 text-green-600 block";
