@@ -128,5 +128,172 @@
 
     <!-- Panggil Script Logika Dinamis -->
     <script type="module" src="/src/event.js"></script>
+    <!-- START FLOATING PRO EVENT -->
+    <div id="floatingProEventWrap" class="hidden fixed bottom-6 right-4 md:bottom-8 md:right-8 z-[105] w-[265px] sm:w-[305px] transition-all duration-300">
+        <!-- Mode Minimized -->
+        <button id="floatingProMiniBtn" type="button" class="hidden ml-auto bg-gradient-to-r from-blue-950 via-blue-900 to-slate-900 text-white border-2 border-amber-400 px-3.5 py-2.5 rounded-full shadow-2xl items-center gap-2 hover:scale-105 active:scale-95 transition-all cursor-pointer">
+            <span class="relative flex h-2.5 w-2.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+            </span>
+            <span class="text-[11px] font-black tracking-wide text-amber-300">👑 PRO EVENT</span>
+            <span id="floatingProCountBadge" class="bg-amber-400 text-blue-950 text-[10px] font-black px-1.5 rounded-full">1</span>
+        </button>
+
+        <!-- Mode Expanded Card -->
+        <div id="floatingProCard" class="bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 text-white rounded-2xl p-3.5 shadow-[0_15px_35px_rgba(15,23,42,0.5)] border-2 border-amber-400 relative overflow-hidden">
+            <div class="flex items-center justify-between gap-2 mb-1.5">
+                <span id="floatingProStatusTag" class="inline-flex items-center gap-1.5 bg-red-500/20 border border-red-400/40 text-red-200 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping"></span>
+                    PRO EVENT
+                </span>
+                <div class="flex items-center gap-1">
+                    <button id="floatingProSwitchBtn" type="button" class="hidden text-[9px] font-black bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-400/40 px-2 py-0.5 rounded-full transition cursor-pointer">
+                        +1 Lainnya
+                    </button>
+                    <button id="floatingProMinimizeBtn" type="button" class="text-slate-300 hover:text-white w-6 h-6 rounded-full hover:bg-white/10 flex items-center justify-center text-sm font-bold transition cursor-pointer" title="Perkecil">
+                        &minus;
+                    </button>
+                </div>
+            </div>
+
+            <div id="floatingProActiveBody"></div>
+
+            <div id="floatingProListDrawer" class="hidden mt-2.5 pt-2 border-t border-white/15 space-y-1.5 max-h-40 overflow-y-auto"></div>
+        </div>
+    </div>
+    <!-- END FLOATING PRO EVENT -->
+    <script type="module" id="scsFloatingProScript">
+        import { supabaseClient } from '/src/supabase.js';
+        document.addEventListener('DOMContentLoaded', async () => {
+            // === START FLOATING PRO EVENT ===
+            try {
+                const { data: allEventsRaw, error: proEvErr } = await supabaseClient
+                    .from('events')
+                    .select('*')
+                    .order('start_date', { ascending: true });
+
+                if (proEvErr) {
+                    console.warn('[SCS-PRO-FLOAT] Error query events:', proEvErr.message);
+                } else if (Array.isArray(allEventsRaw)) {
+                    const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+                    const proEvents = allEventsRaw.filter(ev => {
+                        if (!ev || !ev.subdomain) return false;
+                        const isPro = ev.is_pro === true || String(ev.is_pro).toLowerCase() === 'true';
+                        if (!isPro) return false;
+
+                        const sDate = ev.start_date ? String(ev.start_date).slice(0, 10) : '';
+                        const eDate = ev.end_date ? String(ev.end_date).slice(0, 10) : sDate;
+                        const isClosed = ev.is_closed === true || String(ev.is_closed).toLowerCase() === 'true';
+
+                        // Tetap tampil jika sedang berlangsung hari ini meski pendaftaran sudah ditutup
+                        const isHappeningToday = Boolean(sDate && eDate && sDate <= todayStr && eDate >= todayStr);
+                        const isUpcomingOpen = (!eDate || eDate >= todayStr) && !isClosed;
+
+                        return isHappeningToday || isUpcomingOpen;
+                    });
+
+                    proEvents.sort((a, b) => {
+                        const aStart = a.start_date ? String(a.start_date).slice(0, 10) : '9999-12-31';
+                        const bStart = b.start_date ? String(b.start_date).slice(0, 10) : '9999-12-31';
+                        const aLive = aStart <= todayStr ? 0 : 1;
+                        const bLive = bStart <= todayStr ? 0 : 1;
+                        return aLive - bLive || aStart.localeCompare(bStart);
+                    });
+
+                    if (proEvents.length > 0) {
+                        const { data: { session: activeSess } } = await supabaseClient.auth.getSession();
+                        const sessionHash = (activeSess?.access_token && activeSess?.refresh_token)
+                            ? `#access_token=${encodeURIComponent(activeSess.access_token)}&refresh_token=${encodeURIComponent(activeSess.refresh_token)}`
+                            : '';
+
+                        const wrap = document.getElementById('floatingProEventWrap');
+                        const activeBody = document.getElementById('floatingProActiveBody');
+                        const statusTag = document.getElementById('floatingProStatusTag');
+                        const switchBtn = document.getElementById('floatingProSwitchBtn');
+                        const listDrawer = document.getElementById('floatingProListDrawer');
+                        const miniBtn = document.getElementById('floatingProMiniBtn');
+                        const card = document.getElementById('floatingProCard');
+                        const minimizeBtn = document.getElementById('floatingProMinimizeBtn');
+                        const countBadge = document.getElementById('floatingProCountBadge');
+
+                        const renderSelectedEvent = (ev) => {
+                            const sDate = ev.start_date ? String(ev.start_date).slice(0, 10) : '';
+                            const eDate = ev.end_date ? String(ev.end_date).slice(0, 10) : sDate;
+                            const isClosed = ev.is_closed === true || String(ev.is_closed).toLowerCase() === 'true';
+                            const isLiveNow = Boolean(sDate && sDate <= todayStr && (!eDate || eDate >= todayStr));
+
+                            statusTag.innerHTML = isLiveNow
+                                ? '<span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping"></span> LIVE • PRO EVENT'
+                                : '👑 PRO EVENT';
+
+                            const lokasi = ev.location || ev.venue || ev.city || 'Indonesia';
+                            const tgl = sDate
+                                ? (eDate && eDate !== sDate ? `${sDate} s/d ${eDate}` : sDate)
+                                : 'Segera';
+                            const regUrl = `https://${ev.subdomain}.f1swimming.com${sessionHash}`;
+                            const resUrl = `https://${ev.subdomain}.f1swimming.com/result`;
+
+                            activeBody.innerHTML = `
+                                <h4 class="font-black text-xs sm:text-sm text-white leading-snug truncate" title="${ev.event_name}">${ev.event_name}</h4>
+                                <p class="text-[10px] text-blue-200 mt-0.5 truncate">📍 ${lokasi} &bull; 📅 ${tgl}</p>
+                                <div class="mt-2.5 grid grid-cols-2 gap-1.5">
+                                    <a href="${regUrl}" target="_blank" rel="noopener noreferrer" class="bg-amber-400 hover:bg-amber-300 text-blue-950 font-black text-[11px] py-1.5 px-2.5 rounded-xl text-center shadow transition">
+                                        ${isClosed ? 'Info Event' : 'Daftar'} &raquo;
+                                    </a>
+                                    <a href="${resUrl}" target="_blank" rel="noopener noreferrer" class="bg-red-600 hover:bg-red-500 text-white font-extrabold text-[11px] py-1.5 px-2.5 rounded-xl text-center shadow transition">
+                                        🏆 Live Result
+                                    </a>
+                                </div>
+                            `;
+                        };
+
+                        renderSelectedEvent(proEvents[0]);
+                        if (countBadge) countBadge.textContent = String(proEvents.length);
+
+                        if (proEvents.length > 1 && switchBtn && listDrawer) {
+                            switchBtn.classList.remove('hidden');
+                            switchBtn.textContent = `+${proEvents.length - 1} Lainnya`;
+                            listDrawer.innerHTML = proEvents.map((ev, idx) => `
+                                <button type="button" data-ev-idx="${idx}" class="w-full text-left px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 transition flex items-center justify-between gap-2 cursor-pointer">
+                                    <span class="text-[11px] font-bold text-white truncate">${ev.event_name}</span>
+                                    <span class="text-[9px] text-amber-300 font-black shrink-0">Pilih &rarr;</span>
+                                </button>
+                            `).join('');
+
+                            switchBtn.addEventListener('click', () => listDrawer.classList.toggle('hidden'));
+                            listDrawer.addEventListener('click', (e) => {
+                                const btn = e.target.closest('button[data-ev-idx]');
+                                if (!btn) return;
+                                const picked = proEvents[Number(btn.getAttribute('data-ev-idx'))];
+                                if (picked) {
+                                    renderSelectedEvent(picked);
+                                    listDrawer.classList.add('hidden');
+                                }
+                            });
+                        }
+
+                        if (minimizeBtn && miniBtn && card) {
+                            minimizeBtn.addEventListener('click', () => {
+                                card.classList.add('hidden');
+                                miniBtn.classList.remove('hidden');
+                                miniBtn.classList.add('flex');
+                            });
+                            miniBtn.addEventListener('click', () => {
+                                miniBtn.classList.add('hidden');
+                                miniBtn.classList.remove('flex');
+                                card.classList.remove('hidden');
+                            });
+                        }
+
+                        wrap.classList.remove('hidden');
+                    }
+                }
+            } catch (proErr) {
+                console.warn('[SCS-PRO-FLOAT] Gagal:', proErr);
+            }
+            // === END FLOATING PRO EVENT ===
+        });
+    </script>
 </body>
 </html>
