@@ -1,5 +1,53 @@
 import { supabaseClient } from './supabase.js';
 
+// ==========================================
+// HELPER: CARI ATAU TERBITKAN F1 ID OTOMATIS (ATLET TAMU)
+// ==========================================
+async function generateOrFindF1Id(supabase, { nama, dob, gender, aktaUrl = null }) {
+    const cleanName = (nama || '').trim();
+    const cleanDob = (dob || '').trim();
+
+    if (cleanName && cleanDob) {
+        const { data: existingList } = await supabase
+            .from('athletes')
+            .select('f1_id')
+            .ilike('full_name', cleanName)
+            .eq('dob', cleanDob)
+            .limit(1);
+
+        if (existingList && existingList.length > 0 && existingList[0].f1_id) {
+            return existingList[0].f1_id;
+        }
+    }
+
+    let yy = '00';
+    let mm = '00';
+    if (cleanDob) {
+        const parts = cleanDob.split('-');
+        if (parts.length >= 2) {
+            yy = parts[0].slice(-2);
+            mm = parts[1].padStart(2, '0');
+        }
+    }
+    const random3 = Math.floor(Math.random() * 900) + 100;
+    const newF1Id = `F1-${yy}${mm}${random3}`;
+
+    try {
+        await supabase.from('athletes').insert([{
+            f1_id: newF1Id,
+            full_name: cleanName,
+            dob: cleanDob || null,
+            gender: gender || null,
+            akta_url: aktaUrl || null
+        }]);
+    } catch (e) {
+        console.warn('[SCS-F1] Insert ke master athletes dilewati:', e?.message || e);
+    }
+
+    return newF1Id;
+}
+
+
 let currentEventId = null;
 let currentEvent = null;
 let allRegistrations = [];
@@ -132,10 +180,12 @@ function renderTable() {
         else statusBadge = `<span class="bg-slate-100 text-slate-500 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">Keranjang</span>`;
 
         let aktaBtn = '';
-        if (item.f1_id) {
+        if (item.akta_url) {
+            aktaBtn = `<button onclick="window.viewImage('${item.akta_url}', 'Akta: ${item.nama_peserta}')" class="text-blue-500 hover:text-blue-700 bg-blue-50 px-2 py-1.5 rounded text-xs font-bold transition-colors shadow-sm flex items-center gap-1 justify-center w-full border border-blue-200">📄 Cek Akta</button>`;
+        } else if (item.f1_id) {
             aktaBtn = `<span class="text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-1.5 rounded text-[9px] font-extrabold uppercase tracking-wider shadow-sm flex items-center gap-1 justify-center" title="Data privasi aman di sistem pusat SCS">✅ Terverifikasi</span>`;
         } else {
-            aktaBtn = item.akta_url ? `<button onclick="window.viewImage('${item.akta_url}', 'Akta: ${item.nama_peserta}')" class="text-blue-500 hover:text-blue-700 bg-blue-50 px-2 py-1.5 rounded text-xs font-bold transition-colors shadow-sm flex items-center gap-1 justify-center w-full border border-blue-200">📄 Cek Akta</button>` : `<span class="text-slate-300 text-xs">-</span>`;
+            aktaBtn = `<span class="text-slate-300 text-xs">-</span>`;
         }
 
         // ========================================================
@@ -188,7 +238,7 @@ function renderTable() {
             <td class="p-4 align-top">
                 <p class="font-bold text-slate-800">${item.nama_peserta}</p>
                 <div class="flex items-center gap-1.5 mt-1">
-                    <span class="bg-indigo-50 text-indigo-700 text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-widest">${item.f1_id ? 'VVIP' : 'TAMU'}</span>
+                    <span class="bg-indigo-50 text-indigo-700 text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-widest">${item.f1_id ? item.f1_id : 'TAMU'}</span>
                     <span class="text-[10px] text-slate-500 font-medium">${item.klub_asal}</span>
                 </div>
             </td>
@@ -257,6 +307,20 @@ window.verifikasiLunas = async function(id, strukUrl) {
     try {
         const { error } = await supabaseClient.from('event_registrations').update({ status_pembayaran: 'Lunas' }).in('id', targetIds);
         if (error) throw error;
+
+        // Auto-terbitkan F1 ID untuk peserta tamu yang baru dilunaskan
+        const targetRows = allRegistrations.filter(r => targetIds.includes(r.id) && !r.f1_id && r.gender !== 'Regu/Tim');
+        for (const row of targetRows) {
+            const assignedF1 = await generateOrFindF1Id(supabaseClient, {
+                nama: row.nama_peserta,
+                dob: row.tanggal_lahir,
+                gender: row.gender,
+                aktaUrl: row.akta_url
+            });
+            if (assignedF1) {
+                await supabaseClient.from('event_registrations').update({ f1_id: assignedF1 }).eq('id', row.id);
+            }
+        }
         
         if(isKolektif) {
             alert(`✅ BOOM! ${targetIds.length} Peserta kolektif berhasil dilunaskan sekaligus! Mantaaap!`);
@@ -539,3 +603,52 @@ window.hapusPeserta = async function(id) {
         alert("Gagal menghapus peserta: " + err.message);
     }
 };
+
+// ==========================================
+// TERBITKAN F1 ID MASSAL UNTUK PESERTA TAMU
+// ==========================================
+const btnGenerateGuestF1 = document.getElementById('btnGenerateGuestF1');
+if (btnGenerateGuestF1) {
+    btnGenerateGuestF1.addEventListener('click', async () => {
+        const guestRows = allRegistrations.filter(r => !r.f1_id && r.gender !== 'Regu/Tim');
+        if (guestRows.length === 0) {
+            alert("✅ Semua peserta individu di event ini sudah memiliki F1 ID!");
+            return;
+        }
+
+        if (!confirm(`Ditemukan ${guestRows.length} peserta tamu tanpa F1 ID.\n\nTerbitkan F1 ID otomatis untuk semua peserta tersebut sekarang?`)) {
+            return;
+        }
+
+        const origHtml = btnGenerateGuestF1.innerHTML;
+        btnGenerateGuestF1.innerHTML = '⏳ Memproses...';
+        btnGenerateGuestF1.disabled = true;
+
+        try {
+            let successCount = 0;
+            for (const row of guestRows) {
+                const assignedF1 = await generateOrFindF1Id(supabaseClient, {
+                    nama: row.nama_peserta,
+                    dob: row.tanggal_lahir,
+                    gender: row.gender,
+                    aktaUrl: row.akta_url
+                });
+                if (assignedF1) {
+                    const { error: upErr } = await supabaseClient
+                        .from('event_registrations')
+                        .update({ f1_id: assignedF1 })
+                        .eq('id', row.id);
+                    if (!upErr) successCount++;
+                }
+            }
+
+            alert(`✅ Selesai! ${successCount} dari ${guestRows.length} atlet klub tamu berhasil mendapatkan F1 ID.`);
+            fetchData();
+        } catch (err) {
+            alert("Gagal menerbitkan F1 ID tamu: " + err.message);
+        } finally {
+            btnGenerateGuestF1.innerHTML = origHtml;
+            btnGenerateGuestF1.disabled = false;
+        }
+    });
+}

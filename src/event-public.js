@@ -1,5 +1,53 @@
 import { supabaseClient } from './supabase.js';
 
+// ==========================================
+// HELPER: CARI ATAU TERBITKAN F1 ID OTOMATIS (ATLET TAMU)
+// ==========================================
+async function generateOrFindF1Id(supabase, { nama, dob, gender, aktaUrl = null }) {
+    const cleanName = (nama || '').trim();
+    const cleanDob = (dob || '').trim();
+
+    if (cleanName && cleanDob) {
+        const { data: existingList } = await supabase
+            .from('athletes')
+            .select('f1_id')
+            .ilike('full_name', cleanName)
+            .eq('dob', cleanDob)
+            .limit(1);
+
+        if (existingList && existingList.length > 0 && existingList[0].f1_id) {
+            return existingList[0].f1_id;
+        }
+    }
+
+    let yy = '00';
+    let mm = '00';
+    if (cleanDob) {
+        const parts = cleanDob.split('-');
+        if (parts.length >= 2) {
+            yy = parts[0].slice(-2);
+            mm = parts[1].padStart(2, '0');
+        }
+    }
+    const random3 = Math.floor(Math.random() * 900) + 100;
+    const newF1Id = `F1-${yy}${mm}${random3}`;
+
+    try {
+        await supabase.from('athletes').insert([{
+            f1_id: newF1Id,
+            full_name: cleanName,
+            dob: cleanDob || null,
+            gender: gender || null,
+            akta_url: aktaUrl || null
+        }]);
+    } catch (e) {
+        console.warn('[SCS-F1] Insert ke master athletes dilewati:', e?.message || e);
+    }
+
+    return newF1Id;
+}
+
+
 async function compressImageTo150KB(file, maxKB = 150) {
     if (!file || !file.type.startsWith("image/")) return file;
     const maxBytes = maxKB * 1024;
@@ -959,6 +1007,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (isKlubLoggedIn && f1_id) await supabaseClient.from('athletes').update({ akta_url: finalAktaUrl }).eq('f1_id', f1_id);
             } else if (isKlubLoggedIn) {
                 finalAktaUrl = dropdownAtlet.options[dropdownAtlet.selectedIndex].getAttribute('data-akta');
+            }
+
+            if (!isKlubLoggedIn && !f1_id) {
+                f1_id = await generateOrFindF1Id(supabaseClient, {
+                    nama: nama_peserta,
+                    dob: tanggal_lahir,
+                    gender: gender,
+                    aktaUrl: finalAktaUrl
+                });
             }
 
             const { data: insertedData, error: insertError } = await supabaseClient.from('event_registrations').insert([{
