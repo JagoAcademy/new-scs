@@ -55,6 +55,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         fetchMedals();
         fetchBestTimes();
+        fetchAthleteCertificates();
 
     } catch (err) {
         console.error("Gagal load profil:", err);
@@ -64,22 +65,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const tabPencapaian = document.getElementById('tabPencapaian');
     const tabBestTime = document.getElementById('tabBestTime');
+    const tabSertifikat = document.getElementById('tabSertifikat');
     const contentPencapaian = document.getElementById('contentPencapaian');
     const contentBestTime = document.getElementById('contentBestTime');
+    const contentSertifikat = document.getElementById('contentSertifikat');
 
-    tabPencapaian.addEventListener('click', () => {
-        tabPencapaian.className = "flex-1 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-bold text-sm transition-colors";
-        tabBestTime.className = "flex-1 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl font-bold text-sm transition-colors";
-        contentPencapaian.classList.remove('hidden');
-        contentBestTime.classList.add('hidden');
-    });
+    function activateF1Tab(activeName) {
+        const activeCls = "flex-1 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-bold text-sm transition-colors";
+        const inactiveCls = "flex-1 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl font-bold text-sm transition-colors";
+        if (tabPencapaian) tabPencapaian.className = activeName === 'pencapaian' ? activeCls : inactiveCls;
+        if (tabBestTime) tabBestTime.className = activeName === 'besttime' ? activeCls : inactiveCls;
+        if (tabSertifikat) tabSertifikat.className = activeName === 'sertifikat' ? activeCls : inactiveCls;
 
-    tabBestTime.addEventListener('click', () => {
-        tabBestTime.className = "flex-1 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-bold text-sm transition-colors";
-        tabPencapaian.className = "flex-1 py-2.5 text-slate-500 hover:bg-slate-50 rounded-xl font-bold text-sm transition-colors";
-        contentBestTime.classList.remove('hidden');
-        contentPencapaian.classList.add('hidden');
-    });
+        if (contentPencapaian) contentPencapaian.classList.toggle('hidden', activeName !== 'pencapaian');
+        if (contentBestTime) contentBestTime.classList.toggle('hidden', activeName !== 'besttime');
+        if (contentSertifikat) contentSertifikat.classList.toggle('hidden', activeName !== 'sertifikat');
+    }
+
+    tabPencapaian.addEventListener('click', () => activateF1Tab('pencapaian'));
+    tabBestTime.addEventListener('click', () => activateF1Tab('besttime'));
+    if (tabSertifikat) tabSertifikat.addEventListener('click', () => activateF1Tab('sertifikat'));
 
     // 🚀 FIX: FUNGSI DOWNLOAD CARD JADI FULL PAGE (DIJEPRET SEMUA + ANTI GEPENG)
     const btnDownload = document.getElementById('btnDownloadCard');
@@ -421,4 +426,370 @@ async function fetchBestTimes() {
         console.error("Gagal load best time:", err);
         listEl.innerHTML = `<p class="text-center py-6 text-sm text-red-500 font-bold">Gagal memuat catatan waktu.</p>`;
     }
+}
+
+
+// ============================================================================
+// KOLEKSI E-SERTIFIKAT MELEKAT DI HALAMAN F1 ID
+// ============================================================================
+let earnedF1Certificates = [];
+
+function computeF1DeterministicCode(seedStr) {
+    let hash = 2166136261;
+    for (let i = 0; i < seedStr.length; i++) {
+        hash ^= seedStr.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+    }
+    const num = (hash >>> 0) % 9000 + 1000;
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const c1 = chars[(hash >>> 4) % chars.length];
+    const c2 = chars[(hash >>> 12) % chars.length];
+    return `${num}-${c1}${c2}`;
+}
+
+function renderF1CustomFieldValue(eventId, certType, field, seedContext, seqIndex = 1) {
+    const tpl = (field.template || '').trim();
+    const yearStr = String(new Date().getFullYear());
+    const seqStr = String(seqIndex).padStart(3, '0');
+    const randStr = computeF1DeterministicCode(`${eventId}|${certType}|${seedContext}|${field.id}`);
+
+    if (field.mode === 'static_text') return tpl || field.label || '';
+    const baseTpl = tpl || (field.mode === 'auto_number' ? 'NO. {SEQ}/SCS/{YEAR}' : 'NO. {RAND}/SCS/{YEAR}');
+    return baseTpl
+        .replace(/\{RAND\}/gi, randStr)
+        .replace(/\{ACAK\}/gi, randStr)
+        .replace(/\{SEQ\}/gi, seqStr)
+        .replace(/\{YEAR\}/gi, yearStr);
+}
+
+function parseF1TimeToMs(timeStr) {
+    if (!timeStr || typeof timeStr !== 'string') return Infinity;
+    const clean = timeStr.trim().replace(/,/g, '.');
+    if (!/^\d{1,2}(:\d{2})?\.\d{1,3}$/.test(clean)) return Infinity;
+    let minutes = 0;
+    let secPart = clean;
+    if (clean.includes(':')) {
+        const p = clean.split(':');
+        minutes = parseInt(p[0], 10);
+        secPart = p[1];
+    }
+    const sp = secPart.split('.');
+    const seconds = parseInt(sp[0], 10);
+    const ms = parseInt(sp[1].padEnd(3, '0').slice(0, 3), 10);
+    const total = (minutes * 60000) + (seconds * 1000) + ms;
+    return total > 0 ? total : Infinity;
+}
+
+function toF1TitleCase(str) {
+    return (str || '').toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+async function fetchAthleteCertificates() {
+    const listEl = document.getElementById('sertifikatList');
+    const totalEl = document.getElementById('totalSertifikat');
+    if (!listEl) return;
+
+    try {
+        // 1. Cari semua event yang pernah diikuti atlet ini (via f1_id atau nama)
+        const { data: regsById } = await supabaseClient
+            .from('event_registrations')
+            .select('event_id, nama_peserta, klub_asal, f1_id, created_at, events (event_name, start_date)')
+            .eq('f1_id', targetF1Id);
+
+        const { data: regsByName } = await supabaseClient
+            .from('event_registrations')
+            .select('event_id, nama_peserta, klub_asal, f1_id, created_at, events (event_name, start_date)')
+            .ilike('nama_peserta', currentAthleteName.trim());
+
+        const allRegs = [...(regsById || []), ...(regsByName || [])];
+        const uniqueEventMap = new Map();
+        allRegs.forEach(r => {
+            if (r.event_id && !uniqueEventMap.has(r.event_id)) {
+                uniqueEventMap.set(r.event_id, r);
+            }
+        });
+
+        const eventIds = Array.from(uniqueEventMap.keys());
+        if (eventIds.length === 0) {
+            if (totalEl) totalEl.innerText = '0 Sertifikat';
+            listEl.innerHTML = `
+                <div class="text-center py-10">
+                    <span class="text-5xl block mb-3 grayscale opacity-30">📜</span>
+                    <p class="text-sm font-bold text-slate-500">Belum ada e-sertifikat resmi yang diterbitkan.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // 2. Tarik semua template sertifikat dari event-event tersebut
+        const { data: allCertTemplates } = await supabaseClient
+            .from('event_certificates')
+            .select('*')
+            .in('event_id', eventIds);
+
+        if (!allCertTemplates || allCertTemplates.length === 0) {
+            if (totalEl) totalEl.innerText = '0 Sertifikat';
+            listEl.innerHTML = `
+                <div class="text-center py-10">
+                    <span class="text-5xl block mb-3 grayscale opacity-30">📜</span>
+                    <p class="text-sm font-bold text-slate-500">Panitia event belum menerbitkan e-sertifikat.</p>
+                </div>
+            `;
+            return;
+        }
+
+        const certByEventAndType = {};
+        allCertTemplates.forEach(c => {
+            certByEventAndType[`${c.event_id}|${c.tipe}`] = c;
+        });
+
+        const collected = [];
+        const cleanTargetNameUpper = currentAthleteName.trim().toUpperCase();
+
+        // A. Sertifikat Peserta
+        uniqueEventMap.forEach((reg, evId) => {
+            const tpl = certByEventAndType[`${evId}|peserta`];
+            if (tpl) {
+                collected.push({
+                    certRow: tpl,
+                    tipe: 'peserta',
+                    badgeText: 'PESERTA',
+                    badgeClass: 'bg-blue-100 text-blue-700 border-blue-200',
+                    eventName: reg.events?.event_name || 'Kejuaraan SCS',
+                    title: 'Sertifikat Partisipasi Lomba',
+                    subtitle: reg.klub_asal || 'Atlet Resmi SCS',
+                    nama: currentAthleteName,
+                    predikat: '',
+                    nomor: '',
+                    ku: '',
+                    seedKey: `peserta|${cleanTargetNameUpper}`
+                });
+            }
+        });
+
+        // B. Sertifikat Pemenang (Juara 1, 2, 3)
+        const { data: winRows } = await supabaseClient
+            .from('event_leaderboard')
+            .select('*, events (event_name)')
+            .in('event_id', eventIds)
+            .ilike('nama_peserta', currentAthleteName.trim())
+            .lte('peringkat', 3);
+
+        (winRows || []).forEach((w, idx) => {
+            const tpl = certByEventAndType[`${w.event_id}|juara`];
+            if (tpl) {
+                collected.push({
+                    certRow: tpl,
+                    tipe: 'juara',
+                    badgeText: `JUARA ${w.peringkat}`,
+                    badgeClass: 'bg-amber-100 text-amber-800 border-amber-300',
+                    eventName: w.events?.event_name || uniqueEventMap.get(w.event_id)?.events?.event_name || 'Kejuaraan SCS',
+                    title: `Juara ${w.peringkat} — ${w.nomor_lomba}`,
+                    subtitle: `${w.kelompok_umur} ${w.gender} • ${w.catatan_waktu || ''}`.trim(),
+                    nama: w.nama_peserta,
+                    predikat: `JUARA ${w.peringkat}`,
+                    nomor: w.nomor_lomba,
+                    ku: `${w.kelompok_umur} ${w.gender} • ${w.catatan_waktu || ''}`.trim(),
+                    seedKey: `juara|${w.id || idx}|${w.nama_peserta}`
+                });
+            }
+        });
+
+        // C. Sertifikat Juara Seri/Heat
+        const seriEventIds = eventIds.filter(evId => Boolean(certByEventAndType[`${evId}|juara_seri`]));
+        if (seriEventIds.length > 0) {
+            const { data: heatRows } = await supabaseClient
+                .from('event_heats')
+                .select('*')
+                .in('event_id', seriEventIds);
+
+            (heatRows || []).forEach(h => {
+                if (!Array.isArray(h.lanes_data)) return;
+                const validSwimmers = h.lanes_data
+                    .filter(s => s && s.nama && parseF1TimeToMs(s.waktu_tempuh) < Infinity)
+                    .sort((a, b) => parseF1TimeToMs(a.waktu_tempuh) - parseF1TimeToMs(b.waktu_tempuh));
+
+                if (validSwimmers.length > 0) {
+                    const top = validSwimmers[0];
+                    const isMatch = (top.f1_id && top.f1_id === targetF1Id) ||
+                                    (top.nama && top.nama.trim().toUpperCase() === cleanTargetNameUpper);
+                    if (isMatch) {
+                        const tpl = certByEventAndType[`${h.event_id}|juara_seri`];
+                        collected.push({
+                            certRow: tpl,
+                            tipe: 'juara_seri',
+                            badgeText: `JUARA SERI ${h.heat_number}`,
+                            badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+                            eventName: uniqueEventMap.get(h.event_id)?.events?.event_name || 'Kejuaraan SCS',
+                            title: `Juara 1 Seri/Heat ${h.heat_number} — ${h.nomor_lomba}`,
+                            subtitle: `${h.kelompok_umur} ${h.gender} • ${top.waktu_tempuh}`,
+                            nama: top.nama,
+                            predikat: `JUARA 1 SERI/HEAT ${h.heat_number}`,
+                            nomor: h.nomor_lomba,
+                            ku: `${h.kelompok_umur} ${h.gender} • ${top.waktu_tempuh}`,
+                            seedKey: `seri|${h.event_number}|${h.heat_number}|${top.nama}`
+                        });
+                    }
+                }
+            });
+        }
+
+        // D. Sertifikat MVS
+        eventIds.forEach(evId => {
+            const tpl = certByEventAndType[`${evId}|mvs`];
+            if (!tpl) return;
+            const mvsList = Array.isArray(tpl.config_json?.mvsAthletes) ? tpl.config_json.mvsAthletes : [];
+            mvsList.forEach((m, idx) => {
+                const targetMvs = (m.nama || '').trim().toUpperCase();
+                if (targetMvs === cleanTargetNameUpper || targetMvs === targetF1Id) {
+                    collected.push({
+                        certRow: tpl,
+                        tipe: 'mvs',
+                        badgeText: '👑 MVS',
+                        badgeClass: 'bg-purple-100 text-purple-800 border-purple-300',
+                        eventName: uniqueEventMap.get(evId)?.events?.event_name || 'Kejuaraan SCS',
+                        title: `Most Valuable Swimmer (MVS)`,
+                        subtitle: `${m.kategori || 'Best Swimmer'} • ${m.poin || ''}`.trim(),
+                        nama: currentAthleteName,
+                        predikat: 'MOST VALUABLE SWIMMER (MVS)',
+                        nomor: m.kategori || 'Best Swimmer',
+                        ku: m.poin || '',
+                        seedKey: `mvs|${idx}|${m.nama}`
+                    });
+                }
+            });
+        });
+
+        earnedF1Certificates = collected;
+        if (totalEl) totalEl.innerText = `${collected.length} Sertifikat`;
+
+        if (collected.length === 0) {
+            listEl.innerHTML = `
+                <div class="text-center py-10">
+                    <span class="text-5xl block mb-3 grayscale opacity-30">📜</span>
+                    <p class="text-sm font-bold text-slate-500">Belum ada sertifikat tersedia untuk atlet ini.</p>
+                </div>
+            `;
+            return;
+        }
+
+        listEl.innerHTML = collected.map((item, idx) => {
+            const customFields = Array.isArray(item.certRow.config_json?.customFields) ? item.certRow.config_json.customFields : [];
+            const firstCf = customFields[0];
+            const certNumTxt = firstCf
+                ? renderF1CustomFieldValue(item.certRow.event_id, item.tipe, firstCf, item.seedKey, idx + 1)
+                : '';
+
+            return `
+                <div class="p-4 md:p-5 flex items-center justify-between gap-3 hover:bg-slate-50 transition-colors">
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2 mb-1 flex-wrap">
+                            <span class="text-[9px] font-black px-2 py-0.5 rounded border uppercase tracking-wider ${item.badgeClass}">${item.badgeText}</span>
+                            ${certNumTxt ? `<span class="text-[9px] font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">🔖 ${certNumTxt}</span>` : ''}
+                        </div>
+                        <h4 class="font-black text-slate-800 text-xs md:text-sm truncate">${item.title}</h4>
+                        <p class="text-[10px] md:text-xs text-slate-500 font-bold truncate mt-0.5">🏆 ${item.eventName}</p>
+                        <p class="text-[10px] text-slate-400 font-medium truncate">${item.subtitle}</p>
+                    </div>
+                    <button type="button" data-f1-cert-idx="${idx}" class="btn-f1-dl-cert shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold px-3.5 py-2.5 rounded-xl shadow-sm transition flex items-center gap-1.5 cursor-pointer">
+                        <span>⬇️</span>
+                        <span>Unduh</span>
+                    </button>
+                </div>
+            `;
+        }).join('');
+
+        listEl.querySelectorAll('.btn-f1-dl-cert').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const button = e.currentTarget;
+                const i = Number(button.getAttribute('data-f1-cert-idx'));
+                const item = earnedF1Certificates[i];
+                if (!item) return;
+
+                const origHtml = button.innerHTML;
+                button.innerHTML = '⏳...';
+                button.disabled = true;
+
+                try {
+                    await downloadF1Certificate(item, i + 1);
+                } catch (err) {
+                    alert('Gagal mengunduh sertifikat: ' + err.message);
+                } finally {
+                    button.innerHTML = origHtml;
+                    button.disabled = false;
+                }
+            });
+        });
+
+    } catch (err) {
+        console.error('Gagal memuat sertifikat F1 ID:', err);
+        listEl.innerHTML = `<p class="text-center py-6 text-sm text-red-500 font-bold">Gagal memuat koleksi sertifikat.</p>`;
+    }
+}
+
+async function downloadF1Certificate(item, seqIndex) {
+    const certRow = item.certRow;
+    const config = certRow.config_json || {};
+
+    const img = await new Promise((resolve, reject) => {
+        const image = new Image();
+        image.crossOrigin = 'anonymous';
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error('Gagal memuat gambar template sertifikat.'));
+        image.src = certRow.template_url + (certRow.template_url.includes('?') ? '&' : '?') + 't=' + Date.now();
+    });
+
+    await document.fonts.ready;
+
+    const canvas = document.getElementById('f1CertRenderCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = img.width;
+    canvas.height = img.height;
+
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    const fontName = config.sharedStyle?.font || config.nama?.font || "'Great Vibes', cursive";
+    const fontColor = config.sharedStyle?.color || config.nama?.color || '#1e293b';
+
+    const drawText = (text, fieldCfg) => {
+        if (!text || !fieldCfg) return;
+        ctx.textAlign = 'center';
+        const size = fieldCfg.size || 40;
+        ctx.font = fontName.includes('Great Vibes') ? `${size}px ${fontName}` : `bold ${size}px ${fontName}`;
+        ctx.fillStyle = fontColor;
+        ctx.fillText(text, parseInt(fieldCfg.x, 10), parseInt(fieldCfg.y, 10));
+    };
+
+    drawText(toF1TitleCase(item.nama), config.nama);
+
+    if (item.tipe !== 'peserta' && config.extra) {
+        drawText(item.predikat, config.extra.juara);
+        drawText(item.nomor, config.extra.nomorLomba);
+        drawText(item.ku, config.extra.kelompokUmur);
+    }
+
+    if (Array.isArray(config.customFields)) {
+        config.customFields.forEach(cf => {
+            const val = renderF1CustomFieldValue(certRow.event_id, item.tipe, cf, item.seedKey, seqIndex);
+            drawText(val, cf);
+        });
+    }
+
+    await new Promise((resolve, reject) => {
+        canvas.toBlob(blob => {
+            if (!blob) return reject(new Error('Gagal merender file gambar.'));
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.style.display = 'none';
+            link.href = url;
+            link.download = `Sertifikat_${item.tipe.toUpperCase()}_${targetF1Id}_${item.nama.replace(/\s+/g, '_')}.jpg`;
+            document.body.appendChild(link);
+            link.click();
+            setTimeout(() => {
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+                resolve();
+            }, 300);
+        }, 'image/jpeg', 0.92);
+    });
 }

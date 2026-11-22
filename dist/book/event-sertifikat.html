@@ -6,10 +6,10 @@
     <title>SCS PRO | Mesin Sertifikat</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/eventSertifikatSetup-63a5c1b2.js"></script>
+  <script type="module" crossorigin src="/assets/eventSertifikatSetup-9f6e487e.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-3cfb730f.js">
   <link rel="modulepreload" crossorigin href="/assets/supabase-e9059105.js">
-  <link rel="stylesheet" href="/assets/style-354accf9.css">
+  <link rel="stylesheet" href="/assets/style-f071618a.css">
 </head>
 <body class="bg-slate-50 min-h-screen font-sans text-slate-800 pb-20">
 
@@ -62,10 +62,34 @@
         </div>
 
 
-        <!-- TABS NAVIGASI -->
-        <div class="flex gap-2 mb-6 overflow-x-auto hide-scrollbar">
-            <button id="tabPeserta" class="px-6 py-2.5 rounded-full font-bold text-sm bg-blue-900 text-white shadow transition-all shrink-0">1. Sertifikat Peserta</button>
-            <button id="tabJuara" class="px-6 py-2.5 rounded-full font-bold text-sm bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 transition-all shrink-0">2. Sertifikat Juara</button>
+        <!-- TABS NAVIGASI (4 TIPE SERTIFIKAT) -->
+        <div class="flex gap-2 mb-6 overflow-x-auto hide-scrollbar pb-1">
+            <button id="tabPeserta" class="px-5 py-2.5 rounded-full font-bold text-xs md:text-sm bg-blue-900 text-white shadow transition-all shrink-0">1. Sertifikat Peserta</button>
+            <button id="tabJuara" class="px-5 py-2.5 rounded-full font-bold text-xs md:text-sm bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all shrink-0">2. Sertifikat Pemenang</button>
+            <button id="tabJuaraSeri" class="px-5 py-2.5 rounded-full font-bold text-xs md:text-sm bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all shrink-0">3. Sertifikat Juara Seri</button>
+            <button id="tabMvs" class="px-5 py-2.5 rounded-full font-bold text-xs md:text-sm bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all shrink-0">4. Sertifikat MVS</button>
+        </div>
+
+        <!-- PANEL KHUSUS PENERIMA MVS (MUNCUL SAAT TAB MVS AKTIF) -->
+        <div id="panelMvsConfig" class="hidden bg-purple-50 border border-purple-200 rounded-2xl p-4 md:p-5 mb-6 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                <div>
+                    <h3 class="font-black text-purple-900 text-sm flex items-center gap-1.5">👑 Daftar Peraih MVS (Most Valuable Swimmer)</h3>
+                    <p class="text-[11px] text-purple-700">Tarik otomatis berdasarkan poin medali tertinggi per KU & Gender, atau tambahkan manual.</p>
+                </div>
+                <button id="btnAutoCalcMvs" type="button" class="bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold px-4 py-2 rounded-xl shadow transition shrink-0">
+                    ⚡ Hitung Otomatis dari Klasemen
+                </button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+                <input type="text" id="mvsInputNama" placeholder="Nama Atlet / F1 ID" class="px-3 py-2 bg-white border border-purple-200 rounded-xl text-xs font-bold outline-none">
+                <input type="text" id="mvsInputKategori" placeholder="Kategori (Misal: KU C Putra)" class="px-3 py-2 bg-white border border-purple-200 rounded-xl text-xs font-bold outline-none">
+                <div class="flex gap-2">
+                    <input type="text" id="mvsInputPoin" placeholder="Info (Misal: 3 Emas, 1 Perak)" class="flex-1 px-3 py-2 bg-white border border-purple-200 rounded-xl text-xs font-bold outline-none">
+                    <button id="btnAddMvsManual" type="button" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-xl shrink-0">+ Add</button>
+                </div>
+            </div>
+            <div id="mvsListPreview" class="flex flex-wrap gap-2"></div>
         </div>
 
         <!-- AREA KERJA -->
@@ -121,7 +145,7 @@
                         <div id="winnerFieldsBox" class="space-y-4 hidden border-t-2 border-dashed border-blue-100 pt-4">
                             <!-- 2. JUARA (Default Y = 500) -->
                             <div class="field-box bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-                                <label class="block text-xs font-black text-slate-700 mb-3 border-b border-slate-200 pb-2">🥇 2. KOORDINAT JUARA</label>
+                                <label class="block text-xs font-black text-slate-700 mb-3 border-b border-slate-200 pb-2"><span id="lblField2Title">🥇 2. KOORDINAT PREDIKAT / JUARA</span></label>
                                 <div class="grid grid-cols-3 gap-3 mb-3">
                                     <div><span class="text-[10px] font-bold text-slate-500">Kiri-Kanan (X)</span><input type="number" id="coordPreddX" value="1000" class="w-full px-2 py-1.5 text-sm border border-slate-300 rounded"></div>
                                     <div><span class="text-[10px] font-bold text-slate-500">Atas-Bawah (Y)</span><input type="number" id="coordPreddY" value="500" class="w-full px-2 py-1.5 text-sm border border-slate-300 rounded"></div>
@@ -130,7 +154,7 @@
                             </div>
                             <!-- 3. NOMOR LOMBA (Default Y = 600) -->
                             <div class="field-box bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-                                <label class="block text-xs font-black text-slate-700 mb-3 border-b border-slate-200 pb-2">🏊 3. KOORDINAT NOMOR LOMBA</label>
+                                <label class="block text-xs font-black text-slate-700 mb-3 border-b border-slate-200 pb-2"><span id="lblField3Title">🏊 3. KOORDINAT NOMOR LOMBA / KATEGORI</span></label>
                                 <div class="grid grid-cols-3 gap-3 mb-3">
                                     <div><span class="text-[10px] font-bold text-slate-500">Kiri-Kanan (X)</span><input type="number" id="coordNomorX" value="1000" class="w-full px-2 py-1.5 text-sm border border-slate-300 rounded"></div>
                                     <div><span class="text-[10px] font-bold text-slate-500">Atas-Bawah (Y)</span><input type="number" id="coordNomorY" value="600" class="w-full px-2 py-1.5 text-sm border border-slate-300 rounded"></div>
@@ -139,7 +163,7 @@
                             </div>
                             <!-- 4. WAKTU/KU (Default Y = 700) -->
                             <div class="field-box bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-                                <label class="block text-xs font-black text-slate-700 mb-3 border-b border-slate-200 pb-2">⏱️ 4. KOORDINAT WAKTU / KU</label>
+                                <label class="block text-xs font-black text-slate-700 mb-3 border-b border-slate-200 pb-2"><span id="lblField4Title">⏱️ 4. KOORDINAT WAKTU / KU / POIN</span></label>
                                 <div class="grid grid-cols-3 gap-3 mb-3">
                                     <div><span class="text-[10px] font-bold text-slate-500">Kiri-Kanan (X)</span><input type="number" id="coordKUX" value="1000" class="w-full px-2 py-1.5 text-sm border border-slate-300 rounded"></div>
                                     <div><span class="text-[10px] font-bold text-slate-500">Atas-Bawah (Y)</span><input type="number" id="coordKUY" value="700" class="w-full px-2 py-1.5 text-sm border border-slate-300 rounded"></div>
@@ -149,6 +173,27 @@
                         </div>
 
                     </div>
+
+                    
+                        <!-- 5. CUSTOM FIELDS (NOMOR SERTIFIKAT / TEKS TAMBAHAN) -->
+                        <div class="bg-amber-50/70 p-4 rounded-xl border border-amber-200 shadow-sm space-y-3">
+                            <div class="flex items-center justify-between border-b border-amber-200 pb-2">
+                                <label class="text-xs font-black text-amber-900">➕ FIELD TAMBAHAN (NOMOR SERTIFIKAT)</label>
+                                <button type="button" id="btnAddCustomField" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-sm transition">
+                                    + Tambah Field
+                                </button>
+                            </div>
+                            <p class="text-[10px] text-amber-800 leading-relaxed">
+                                Tambahkan elemen seperti <strong>Nomor Sertifikat Acak/Urut</strong> atau teks kustom. Gunakan <code class="bg-white px-1 rounded font-bold">{RAND}</code> untuk kode acak unik, <code class="bg-white px-1 rounded font-bold">{SEQ}</code> untuk nomor urut, dan <code class="bg-white px-1 rounded font-bold">{YEAR}</code> untuk tahun.
+                            </p>
+                            <div id="customFieldsContainer" class="space-y-3"></div>
+                            <label class="flex items-start gap-2 pt-2 border-t border-amber-200/80 cursor-pointer">
+                                <input type="checkbox" id="chkSyncCustomAllTypes" checked class="mt-0.5 w-4 h-4 text-amber-600 rounded">
+                                <span class="text-[10px] font-bold text-amber-900 leading-snug">
+                                    Terapkan field tambahan ini ke tipe sertifikat lainnya (Peserta, Pemenang, Juara Seri, MVS) saat disimpan
+                                </span>
+                            </label>
+                        </div>
 
                     <button id="btnSaveConfig" class="w-full mt-6 bg-emerald-600 text-white font-bold py-3 rounded-xl hover:bg-emerald-700 transition shadow-lg flex items-center justify-center gap-2">
                         <span>💾</span> Simpan & Timpa Template

@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Download Sertifikat Lomba | SCS</title>
     <link rel="stylesheet" href="/src/style.css">
-    <!-- Load custom fonts just in case the template uses them -->
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+    <style>
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
 </head>
 <body class="bg-slate-50 min-h-screen font-sans text-slate-800 pb-20">
 
@@ -19,33 +22,38 @@
     </nav>
 
     <div class="max-w-3xl mx-auto px-4 py-6">
-        
+
+        <!-- TABS KATEGORI SERTIFIKAT -->
+        <div class="flex gap-2 mb-4 overflow-x-auto hide-scrollbar pb-1">
+            <button data-cert-tab="peserta" class="cert-tab-btn px-4 py-2 rounded-full font-extrabold text-xs bg-blue-900 text-white shadow shrink-0">🎓 Peserta</button>
+            <button data-cert-tab="juara" class="cert-tab-btn px-4 py-2 rounded-full font-extrabold text-xs bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 shrink-0">🏆 Pemenang</button>
+            <button data-cert-tab="juara_seri" class="cert-tab-btn px-4 py-2 rounded-full font-extrabold text-xs bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 shrink-0">⚡ Juara Seri/Heat</button>
+            <button data-cert-tab="mvs" class="cert-tab-btn px-4 py-2 rounded-full font-extrabold text-xs bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 shrink-0">👑 MVS</button>
+        </div>
+
         <!-- KOLOM PENCARIAN -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-6 sticky top-20 z-40">
             <label class="block text-xs font-bold text-slate-500 mb-2">Cari Nama Jagoan Anda:</label>
             <div class="relative">
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🔍</span>
-                <input type="text" id="searchInput" placeholder="Ketik nama lengkap..." class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition shadow-inner">
+                <input type="text" id="searchInput" placeholder="Ketik nama lengkap atau nomor lomba..." class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 transition shadow-inner">
             </div>
         </div>
 
-        <!-- DAFTAR PESERTA -->
+        <!-- DAFTAR PENERIMA SERTIFIKAT -->
         <div id="loadingIndicator" class="text-center py-10 text-slate-400 font-bold text-sm">
-            ⏳ Mencari data peserta dari server...
+            ⏳ Mencari data sertifikat dari server...
         </div>
 
-        <div id="pesertaList" class="space-y-3 hidden">
-            <!-- Card peserta akan di-generate oleh JS di sini -->
-        </div>
+        <div id="pesertaList" class="space-y-3 hidden"></div>
 
-        <div id="emptyState" class="hidden text-center py-10">
-            <span class="text-4xl block mb-2">🤷‍♂️</span>
-            <p class="text-slate-500 font-bold text-sm">Peserta tidak ditemukan.</p>
+        <div id="emptyState" class="hidden text-center py-10 bg-white rounded-2xl border border-slate-200 p-6">
+            <span class="text-4xl block mb-2">📜</span>
+            <p id="emptyStateText" class="text-slate-500 font-bold text-sm">Data sertifikat tidak ditemukan.</p>
         </div>
 
     </div>
 
-    <!-- CANVAS TERSEMBUNYI UNTUK MESIN RENDER PDF/IMG -->
     <canvas id="renderCanvas" class="hidden"></canvas>
 
     <script type="module" src="/src/cetak-sertifikat.js"></script>
