@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <script>
+        (function() {
+            const host = window.location.hostname;
+            if (host !== 'f1swimming.com' && host !== 'www.f1swimming.com' && host !== 'localhost' && !host.includes('vercel.app')) {
+                window.location.replace('/event-public.html' + window.location.search + window.location.hash);
+            }
+        })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCS - Swimming Competition System & F1 ID</title>
+    <meta name="description" content="SCS (Swimming Competition System) - Satu sistem untuk menjalankan kompetisi renang dari pendaftaran hingga hasil akhir.">
+    <meta name="keywords" content="Sistem kejuaraan renang, daftar lomba renang online, F1 ID renang, aplikasi pertandingan renang">
+    <meta name="author" content="Vanessa Angrita">
+    
+    <!-- TAG OPEN GRAPH STANDAR -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://f1swimming.com">
+    <meta property="og:title" content="SCS | Swimming Competition System & F1 ID">
+    <meta property="og:description" content="Satu sistem untuk menjalankan kompetisi renang dari pendaftaran hingga hasil akhir. Didesain oleh orang lapangan, untuk orang lapangan.">
+    <meta property="og:image" content="https://f1swimming.com/images/f1meta.jpg">
+    
+    <!-- INJEKSI LINK INSTAGRAM DI SINI -->
+    <meta property="og:see_also" content="https://instagram.com/f1swimming">
+    
+    <!-- TAG TWITTER -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SCS | Swimming Competition System & F1 ID">
+    <meta name="twitter:description" content="Satu sistem untuk menjalankan kompetisi renang dari pendaftaran hingga hasil akhir.">
+    <meta name="twitter:image" content="https://f1swimming.com/images/f1meta.jpg">
+    
+    <link rel="stylesheet" href="/src/style.css">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
+    <link rel="apple-touch-icon" href="/images/scs.png">
+    
+    <style>
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes neon-blue {
+            0% { box-shadow: 0 0 5px rgba(30, 58, 138, 0.4), 0 0 10px rgba(30, 58, 138, 0.2); }
+            50% { box-shadow: 0 0 15px rgba(30, 58, 138, 0.8), 0 0 35px rgba(30, 58, 138, 0.6); }
+            100% { box-shadow: 0 0 5px rgba(30, 58, 138, 0.4), 0 0 10px rgba(30, 58, 138, 0.2); }
+        }
+        @keyframes neon-red {
+            0% { box-shadow: 0 0 5px rgba(220, 38, 38, 0.4), 0 0 10px rgba(220, 38, 38, 0.2); }
+            50% { box-shadow: 0 0 15px rgba(220, 38, 38, 0.8), 0 0 35px rgba(220, 38, 38, 0.6); }
+            100% { box-shadow: 0 0 5px rgba(30, 58, 138, 0.4), 0 0 10px rgba(30, 58, 138, 0.2); }
+        }
+        .neon-glow-blue { animation: neon-blue 3s infinite ease-in-out; }
+        .neon-glow-red { animation: neon-red 3s infinite ease-in-out; }
+        @keyframes slideInfinte {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-slider {
+            display: flex;
+            width: max-content;
+            animation: slideInfinte 40s linear infinite;
+        }
+        .animate-slider:hover {
+            animation-play-state: paused;
+        }
+
+        /* ANIMASI RUNNING TEXT (HOOK) */
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .animate-marquee {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marquee 40s linear infinite;
+        }
+    </style>
+    
+    <!-- SCHEMA JSON-LD UNTUK GOOGLE AI -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "SCS - Swimming Competition System",
+      "description": "Aplikasi manajemen kompetisi renang otomatis dari pendaftaran, drawing heat, live result, hingga e-sertifikat untuk klub renang grassroot.",
+      "url": "https://f1swimming.com",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "All",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "IDR",
+        "description": "Skema Freemium dengan kuota admin maksimal 10 atlet per klub."
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Vanessa Angrita",
+        "url": "https://instagram.com/f1swimming"
+      }
+    }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased relative">
+    
+    <!-- CONTAINER NAVBAR AUTH BUTTONS -->
+    <div class="fixed top-3 right-12 md:top-4 md:right-6 z-[100] flex items-center gap-1.5 md:gap-2">
+        <!-- LOGOUT DI BIKIN BULAT KECIL DI MOBILE BIAR GAK NABRAK LOGO -->
+        <button id="floatingLogoutBtn" class="hidden bg-white text-red-500 font-extrabold w-8 h-8 md:w-auto md:px-4 md:py-1.5 text-xs md:text-sm rounded-full shadow-sm hover:bg-red-50 transition-all border border-red-100 items-center justify-center">
+            <svg class="w-4 h-4 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            <span class="hidden md:inline md:ml-1.5">Keluar</span>
+        </button>
+        <a href="/auth.html" id="floatingAuthBtn" class="bg-scsBlue text-white font-extrabold px-3.5 py-1.5 md:px-5 md:py-1.5 text-[11px] md:text-sm rounded-full shadow-md hover:bg-blue-900 transition-all border border-blue-900 flex items-center gap-1 md:gap-1.5">
+            <span id="floatingAuthText" class="whitespace-nowrap">Daftar / Login</span>
+            <svg id="authIcon" class="w-3.5 h-3.5 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </a>
+    </div>
+<a href="https://wa.me/6283146851999" target="_blank" rel="noopener noreferrer" class="fixed bottom-6 left-6 md:bottom-8 md:left-8 z-[100] bg-[#25D366] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-[0_10px_20px_rgba(37,211,102,0.4)] hover:bg-[#1ebd5a] hover:-translate-y-1 hover:scale-105 transition-all duration-300 group">
+        <svg class="w-8 h-8 fill-current" viewBox="0 0 24 24"><path d="M12.031 0C5.385 0 0 5.384 0 12.03c0 2.122.553 4.195 1.603 6.012L.266 23.36l5.474-1.44c1.764.954 3.738 1.458 5.753 1.458h.005c6.645 0 12.029-5.385 12.029-12.03S18.676 0 12.031 0zm.005 21.411c-1.785 0-3.528-.481-5.06-1.388l-.363-.214-3.766.988.997-3.673-.235-.375a10.052 10.052 0 01-1.542-5.35c0-5.556 4.524-10.08 10.086-10.08 2.693 0 5.221 1.05 7.121 2.956a10.06 10.06 0 012.952 7.119c0 5.555-4.523 10.075-10.08 10.075zm5.525-7.55c-.303-.152-1.792-.885-2.071-.987-.278-.1-.481-.152-.684.151-.202.304-.784.987-.96 1.189-.177.203-.355.228-.658.076-.303-.152-1.28-.472-2.438-1.332-.904-.672-1.512-1.503-1.69-1.807-.176-.303-.018-.467.133-.618.134-.135.303-.354.455-.53.152-.178.203-.304.304-.507.101-.203.05-.38-.025-.531-.076-.152-.684-1.644-.937-2.25-.246-.593-.496-.512-.684-.521-.176-.01-.38-.012-.583-.012-.202 0-.53.076-.809.38-.278.303-1.062 1.038-1.062 2.532s1.088 2.937 1.24 3.139c.152.203 2.14 3.272 5.185 4.536.724.3 1.288.479 1.728.613.725.23 1.385.197 1.905.12.583-.086 1.792-.733 2.044-1.442.253-.709.253-1.317.177-1.442-.076-.127-.279-.203-.583-.355z"/></svg>
+    </a>
+
+    <nav class="bg-white/90 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 h-14 md:h-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+            <div class="flex justify-between items-center h-full">
+                <div class="flex-shrink-0 flex items-center h-full py-1">
+                    <a href="/" class="flex items-center gap-2 md:gap-4 shrink-0">
+                        <img class="h-5 md:h-6 w-auto object-contain hover:scale-105 transition-transform duration-200 shrink-0" src="/images/logo.png" alt="SCS Logo">
+                        <div class="h-4 md:h-6 w-px bg-slate-300"></div>
+                        <img class="h-5 md:h-6 w-auto object-contain hover:scale-105 transition-transform duration-200 shrink-0" src="/images/f1logo.png" alt="F1 Logo">
+                    </a>
+                </div>
+                
+                <div class="hidden md:flex space-x-6 lg:space-x-8 items-center mr-32 md:mr-40">
+                    <a href="/event.html" class="text-gray-600 hover:text-scsBlue font-bold text-sm">Event</a>
+                    <a href="/rank.html" class="text-gray-600 hover:text-scsBlue font-bold text-sm flex items-center gap-1">
+                        Rank <span class="text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">HOT</span>
+                    </a>
+                    <a href="/promosi.html" class="text-gray-600 hover:text-scsBlue font-bold text-sm">Promosi</a>
+                    <a href="/f1-profile.html" class="text-gray-600 hover:text-scsBlue font-bold text-sm">F1 ID</a>
+                    <a href="javascript:void(0)" onclick="document.getElementById('modalVisiMisi').classList.remove('hidden')" class="text-gray-600 hover:text-scsBlue font-bold text-sm">Visi & Misi Kami</a>
+                    <a href="#fitur" class="text-gray-600 hover:text-scsBlue font-bold text-sm">Tentang SCS</a> 
+                </div>
+
+                <button id="mobileMenuBtn" class="md:hidden p-2 text-gray-600 hover:text-scsBlue focus:outline-none ml-auto mr-1">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- INJEKSI RUNNING TEXT (MARQUEE) HOOK DI SINI (100% AMAN DARI CSS MOBILE LU) -->
+    <div class="fixed top-14 md:top-16 w-full bg-blue-950 text-amber-400 z-40 border-b border-blue-900 overflow-hidden shadow-sm">
+        <div class="animate-marquee py-1.5">
+            <span class="text-[10px] md:text-xs font-black tracking-widest uppercase">
+                🚀 F1 Swimming: Pelopor Sistem Lomba Renang End-to-End Gratis Pertama di Indonesia 🚀
+            </span>
+            <span class="text-[10px] md:text-xs font-black tracking-widest uppercase ml-12">
+                🚀 F1 Swimming: Pelopor Sistem Lomba Renang End-to-End Gratis Pertama di Indonesia 🚀
+            </span>
+            <span class="text-[10px] md:text-xs font-black tracking-widest uppercase ml-12">
+                🚀 F1 Swimming: Pelopor Sistem Lomba Renang End-to-End Gratis Pertama di Indonesia 🚀
+            </span>
+        </div>
+    </div>
+
+    <div id="mobileMenu" class="fixed inset-0 bg-white z-[110] hidden flex-col pt-6 pb-8 px-6 transition-all duration-300">
+        <div class="flex justify-end items-center mb-6 border-b border-gray-100 pb-4">
+            <button id="closeMobileBtn" class="p-2 text-slate-400 hover:text-red-500 bg-slate-50 rounded-full transition-colors active:scale-95">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
+        <div class="flex flex-col gap-2 overflow-y-auto hide-scrollbar pb-20">
+            <a href="/event.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-700 font-black hover:bg-blue-50 hover:text-scsBlue transition-colors group">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 text-scsBlue flex items-center justify-center text-xl group-hover:scale-110 transition-transform">📅</div>
+                <span class="text-lg">Event</span>
+            </a>
+            <a href="/rank.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-700 font-black hover:bg-blue-50 hover:text-scsBlue transition-colors group">
+                <div class="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">🏆</div>
+                <span class="text-lg flex-1">Rank</span>
+                <span class="text-[10px] bg-red-500 text-white px-2 py-1 rounded-full animate-pulse tracking-widest uppercase">Hot</span>
+            </a>
+            <a href="/promosi.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-700 font-black hover:bg-blue-50 hover:text-scsBlue transition-colors group">
+                <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">📢</div>
+                <span class="text-lg">Promosi</span>
+            </a>
+            <a href="/f1-profile.html" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-emerald-700 font-black bg-emerald-50/60 hover:bg-emerald-100 border border-emerald-100 transition-colors group">
+                <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">🪪</div>
+                <span class="text-lg">F1 ID</span>
+            </a>
+            <a href="javascript:void(0)" onclick="document.getElementById('modalVisiMisi').classList.remove('hidden'); document.getElementById('mobileMenu').classList.add('hidden'); document.getElementById('mobileMenu').classList.remove('flex');" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-700 font-black hover:bg-blue-50 hover:text-scsBlue transition-colors group">
+                <div class="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">🎯</div>
+                <span class="text-lg">Visi & Misi Kami</span>
+            </a>
+            <a href="#fitur" class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-slate-700 font-black hover:bg-blue-50 hover:text-scsBlue transition-colors group" onclick="document.getElementById('mobileMenu').classList.add('hidden'); document.getElementById('mobileMenu').classList.remove('flex');">
+                <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">ℹ️</div>
+                <span class="text-lg">Tentang SCS</span>
+            </a>
+        </div>
+
+        <div class="mt-auto pt-6 border-t border-gray-100 flex flex-col gap-3 bg-white z-10">
+            <a href="/auth.html" id="mobileAuthBtn" class="w-full bg-scsBlue text-white font-extrabold px-6 py-4 rounded-2xl shadow-[0_10px_20px_rgba(30,58,138,0.2)] hover:bg-blue-900 active:scale-95 transition-all text-center flex items-center justify-center gap-2 text-lg">
+                <span id="mobileAuthText">Daftar / Login</span>
+                <svg id="mobileAuthIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </a>
+            <button id="mobileLogoutBtn" class="hidden w-full bg-red-50 text-red-600 font-extrabold px-6 py-3.5 rounded-2xl shadow-sm hover:bg-red-100 active:scale-95 transition-all text-center items-center justify-center gap-2 text-lg border border-red-100">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                <span>Keluar</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- PENGGESERAN KONTEN UTAMA AGAR TIDAK TERTUTUP RUNNING TEXT -->
+    <section class="relative w-full h-[calc(100vh-3.5rem)] md:h-screen pt-20 md:pt-24 flex max-md:block overflow-hidden">
+        
+        <div class="w-full md:w-1/2 h-full absolute md:relative inset-0 md:inset-auto bg-white z-20 flex flex-col max-md:justify-start max-md:items-start md:justify-center md:items-start p-8 md:p-16 lg:px-20 max-md:pt-[12vh] max-md:pl-6 max-md:pr-0 max-md:[clip-path:polygon(0_0,100%_0,0_100%)] md:border-r border-gray-200 transition-all duration-700 ease-in-out hover:md:w-[60%] group">
+            <div class="absolute inset-0 z-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+            
+            <div class="relative z-10 text-left flex flex-col items-start w-full max-md:max-w-full md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
+                
+                <div class="w-full max-md:mt-6">
+                    <div class="flex items-center gap-3 mb-1 md:mb-2">
+                        <h1 class="text-5xl md:text-6xl lg:text-7xl max-md:text-[45px] font-black text-blue-950 tracking-tight drop-shadow-sm leading-none">SCS</h1>
+                    </div>
+                    
+                    <h2 class="text-xl md:text-2xl max-md:text-[11px] font-bold text-slate-400 mb-4 max-md:mb-2 uppercase tracking-widest max-md:leading-tight">Swimming Competition<br class="hidden max-md:block">System</h2>
+                    
+                    <div class="md:hidden w-full max-w-[60%] pr-2 mb-6 max-md:mb-3">
+                        <p class="text-[10px] text-scsBlue font-bold mb-2 uppercase tracking-wide leading-tight">Event &bull; Registration &bull; Heat &bull; Result</p>
+                        <p class="text-[10px] text-slate-500 leading-relaxed font-medium">Satu sistem untuk menjalankan kompetisi renang dari pendaftaran hingga hasil akhir.</p>
+                    </div>
+                    
+                    <div class="hidden md:block mb-10 w-full pr-8 mt-2">
+                        <p class="text-sm font-bold text-scsBlue mb-3 tracking-wide uppercase">Event &bull; Registration &bull; Heat &bull; Live Result &bull; Certificate &bull; F1 ID</p>
+                        <p class="text-base text-slate-500 mb-6 leading-relaxed font-medium">
+                            Satu sistem untuk menjalankan kompetisi renang dari pendaftaran hingga hasil akhir.
+                        </p>
+                        <div class="flex flex-wrap gap-3 lg:gap-4 text-xs lg:text-sm text-slate-600 font-bold bg-slate-50 p-3 lg:p-4 rounded-xl border border-slate-100 w-max">
+                            <span class="flex items-center gap-1.5"><span class="text-scsGold text-lg lg:text-xl">🏊‍♂️</span> 3.500+ Atlet</span>
+                            <span class="text-slate-300">|</span>
+                            <span class="flex items-center gap-1.5"><span class="text-scsGold text-lg lg:text-xl">🏆</span> 40+ Event</span>
+                            <span class="text-slate-300">|</span>
+                            <span class="flex items-center gap-1.5"><span class="text-scsGold text-lg lg:text-xl">🏟️</span> 25 Klub</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TOMBOL BIRU DENGAN SUNTIKAN KHUSUS BIAR GESER KIRI & ATAS SESUAI PANAH -->
+                <div class="flex flex-col items-center w-[240px] mt-4 md:mt-8 relative z-20 max-md:-translate-x-3 max-md:-translate-y-3">
+                    <a href="/auth.html" class="bg-blue-900 text-white rounded-full font-black text-[13px] md:text-sm hover:bg-blue-800 transition hover:-translate-y-1 w-full h-[50px] flex items-center justify-center gap-2 neon-glow-blue shadow-xl">
+                        Login Club / EO <span>&raquo;</span>
+                    </a>
+                    <p class="text-[8px] md:text-[9px] font-bold text-slate-400 mt-2 tracking-widest uppercase text-center w-full">Systeming by : <span class="text-blue-900 font-black text-[9px] md:text-[10px]">SCS</span></p>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="w-full md:w-1/2 h-full absolute md:relative inset-0 md:inset-auto bg-blue-950 z-10 flex flex-col max-md:justify-end max-md:items-end md:justify-center md:items-end p-8 md:p-16 lg:px-20 max-md:pb-[12vh] max-md:pl-0 max-md:pr-6 max-md:[clip-path:polygon(100%_0,100%_100%,0_100%)] transition-all duration-700 ease-in-out hover:md:w-[60%] group">
+            <div class="absolute inset-0 z-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-red-900/40 to-transparent z-0"></div>
+            
+            <div class="relative z-10 text-right flex flex-col items-end w-full max-md:max-w-full md:max-w-xl lg:max-w-2xl transition-transform duration-500 group-hover:scale-105">
+                <span class="max-md:hidden inline-block bg-red-500/20 border border-red-500/50 text-red-300 px-5 py-1.5 rounded-full text-xs font-black tracking-wide shadow-sm mb-6">
+                    🪪 Infrastruktur Data Atlet
+                </span>
+                
+                <div class="flex flex-col items-center w-[240px] max-md:self-end max-md:order-1 relative z-20 max-md:-translate-y-10 md:mb-4">
+                    <p class="text-[8px] md:text-[9px] font-bold text-red-300 mb-2 tracking-widest uppercase text-center w-full">Presented by : <span class="text-white font-black text-[9px] md:text-[10px]">OG</span></p>
+                    <a href="/f1-profile.html" class="bg-red-600 text-white rounded-full font-black text-[13px] md:text-sm hover:bg-red-500 transition hover:-translate-y-1 w-full h-[50px] flex items-center justify-center gap-2 neon-glow-red shadow-xl">
+                        Cek F1 ID Saya <span>&raquo;</span>
+                    </a>
+                </div>
+                
+                <h2 class="max-md:order-2 text-xl md:text-2xl max-md:text-[11px] font-bold text-red-400 mb-6 max-md:mb-1 uppercase tracking-widest drop-shadow-md max-md:leading-tight">Identitas Digital <br class="hidden max-md:block">Perenang</h2>
+                <h1 class="max-md:order-3 text-5xl md:text-6xl lg:text-7xl max-md:text-[45px] font-black text-white tracking-tight mb-2 max-md:mb-0 drop-shadow-lg">F1 ID</h1>
+                
+                <div class="md:hidden w-full max-w-[60%] mt-4 max-md:order-4">
+                    <p class="text-[10px] text-slate-300 leading-relaxed font-medium">Satu identitas untuk seluruh perjalanan kompetisi atlet.</p>
+                </div>
+
+                <div class="hidden md:block mb-10 w-full pl-8 max-md:order-4 mt-3">
+                    <h3 class="text-3xl font-extrabold text-white mb-4">Satu <span class="text-red-400">Identitas.</span></h3>
+                    <p class="text-base text-slate-300 leading-relaxed font-medium mb-2">
+                        Daftar → Bertanding → Dapat Hasil → Simpan Sertifikat → Bangun Rekam Jejak.<br>
+                        Tidak perlu membuat identitas baru di setiap event.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="hidden md:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-white rounded-full z-30 items-center justify-center shadow-2xl border-4 border-gray-100 text-slate-400 font-black text-[10px] tracking-widest pointer-events-none mt-6">
+            ATAU
+        </div>
+    </section>
+
+    <div class="bg-blue-900 border-t border-b border-blue-950 py-4 w-full relative z-30">
+        <div class="max-w-7xl mx-auto px-4 flex flex-wrap justify-center items-center gap-4 md:gap-8 text-xs md:text-sm font-bold tracking-widest uppercase">
+            <span class="text-white drop-shadow-md">Built for Competitive Swimming</span>
+            <span class="text-blue-500 hidden md:inline">•</span>
+            <span class="text-blue-200">SCS</span>
+            <span class="text-blue-500">•</span>
+            <span class="text-blue-200">F1 ID</span>
+            <span class="text-blue-500">•</span>
+            <span class="text-blue-200">Live Result</span>
+        </div>
+    </div>
+
+    <section id="testi-section" class="pt-16 pb-8 bg-white overflow-hidden" style="display: none;">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-8">
+            <h2 class="text-2xl md:text-3xl font-extrabold text-blue-900 mb-2">Dipercaya Klub & EO</h2>
+            <p class="text-slate-500 text-sm font-medium">Review jujur dari pahlawan lapangan yang telah beralih ke digital.</p>
+        </div>
+        <div class="relative w-full overflow-hidden flex flex-col justify-center items-center py-6">
+            <div class="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
+            <div class="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+            <div id="dynamicTestiTrack" class="flex gap-6 w-max animate-slider"></div>
+        </div>
+    </section>
+
+    <section id="pro-clubs-section" class="pb-16 bg-white overflow-hidden border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 text-center mb-6 mt-4">
+            <span class="inline-block bg-yellow-50 text-yellow-700 font-black px-4 py-1.5 rounded-full text-[10px] tracking-widest uppercase mb-3 border border-yellow-200 shadow-sm">SCS PRO Members</span>
+            <h3 class="text-xl md:text-2xl font-black text-blue-950">Jajaran Klub Elit & Profesional</h3>
+            <p class="text-xs md:text-sm text-slate-500 mt-1 font-medium">Bergabung bersama klub-klub yang telah memaksimalkan efisiensi dengan fitur PRO SCS.</p>
+        </div>
+        <div class="relative w-full overflow-hidden flex items-center py-4">
+            <div class="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
+            <div class="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+            <div id="dynamicProTrack" class="flex gap-4 md:gap-5 w-max animate-slider" style="animation-duration: 35s;">
+                <p class="text-sm text-slate-400 italic px-4">Memuat data klub elit...</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-16 md:py-24 bg-gray-50 border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl md:text-4xl font-black text-slate-800 mb-4 tracking-tight">Dari Event Dibuat hingga Prestasi Tercatat</h2>
+            <p class="text-slate-500 text-lg mb-16 font-medium">SCS bukan sekadar fitur, melainkan satu alur kerja yang terhubung sepenuhnya.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 relative text-left">
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-xl mb-6 text-scsBlue font-black border border-blue-100">1</div>
+                    <h4 class="font-bold text-slate-800 text-xl mb-3">Buat Event</h4>
+                    <p class="text-sm text-slate-500 leading-relaxed font-medium">EO menyiapkan detail event dan nomor lomba di dalam dashboard terpusat.</p>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-xl mb-6 text-scsBlue font-black border border-blue-100">2</div>
+                    <h4 class="font-bold text-slate-800 text-xl mb-3">Klub & Atlet Mendaftar</h4>
+                    <p class="text-sm text-slate-500 leading-relaxed font-medium">Pendaftaran terhubung langsung dengan F1 ID. Tidak perlu ketik data manual berulang.</p>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-xl mb-6 text-scsBlue font-black border border-blue-100">3</div>
+                    <h4 class="font-bold text-slate-800 text-xl mb-3">Pembayaran Terverifikasi</h4>
+                    <p class="text-sm text-slate-500 leading-relaxed font-medium">Administrasi peserta lebih mudah dikontrol dengan sistem verifikasi yang transparan.</p>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-xl mb-6 text-scsBlue font-black border border-blue-100">4</div>
+                    <h4 class="font-bold text-slate-800 text-xl mb-3">Heat & Lane Otomatis</h4>
+                    <p class="text-sm text-slate-500 leading-relaxed font-medium">Drawing dan penyusunan seri (Seed) dilakukan sistem tanpa pekerjaan manual yang rawan error.</p>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-xl mb-6 text-scsBlue font-black border border-blue-100">5</div>
+                    <h4 class="font-bold text-slate-800 text-xl mb-3">Live Result</h4>
+                    <p class="text-sm text-slate-500 leading-relaxed font-medium">Hasil pertandingan dapat dipantau secara real-time dari tribun oleh pelatih dan orang tua.</p>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow bg-gradient-to-br from-white to-blue-50/50">
+                    <div class="w-12 h-12 bg-scsBlue rounded-xl flex items-center justify-center text-xl mb-6 text-white font-black shadow-md">6</div>
+                    <h4 class="font-bold text-slate-800 text-xl mb-3">Prestasi Tersimpan</h4>
+                    <p class="text-sm text-slate-500 leading-relaxed font-medium">E-Certificate dan catatan waktu langsung terhubung ke profil F1 ID atlet secara permanen.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 md:py-28 bg-blue-950 text-white relative overflow-hidden">
+        <div class="absolute inset-0 z-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+        <div class="absolute right-0 top-0 w-96 h-96 bg-red-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-30 translate-x-1/2 -translate-y-1/2"></div>
+        
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <span class="inline-block bg-white/10 text-red-300 font-bold uppercase tracking-widest text-xs px-4 py-1.5 rounded-full mb-6 border border-white/20">Identitas Digital Perenang</span>
+            <h2 class="text-4xl md:text-6xl font-black mb-6 tracking-tight drop-shadow-lg">F1 ID</h2>
+            <p class="text-xl md:text-2xl text-blue-200 mb-12 font-medium max-w-3xl mx-auto leading-relaxed">
+                Satu identitas untuk perjalanan kompetisi seorang perenang. Tidak perlu lagi membuat identitas baru di setiap event.
+            </p>
+            
+            <div class="flex flex-wrap justify-center items-center gap-4 md:gap-6 text-sm md:text-base font-bold text-white/90">
+                <span class="bg-white/5 px-4 py-2 rounded-lg border border-white/10">Daftar</span>
+                <span class="text-red-400">→</span>
+                <span class="bg-white/5 px-4 py-2 rounded-lg border border-white/10">Bertanding</span>
+                <span class="text-red-400">→</span>
+                <span class="bg-white/5 px-4 py-2 rounded-lg border border-white/10">Dapat Hasil</span>
+                <span class="text-red-400">→</span>
+                <span class="bg-white/5 px-4 py-2 rounded-lg border border-white/10">Simpan Sertifikat</span>
+                <span class="text-red-400">→</span>
+                <span class="bg-white/10 px-4 py-2 rounded-lg border border-white/20 text-scsGold">Bangun Rekam Jejak</span>
+            </div>
+            
+            <div class="mt-16">
+                <a href="/f1-profile.html" class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold px-8 py-4 rounded-full transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)]">
+                    Cek F1 ID Sekarang <span class="text-xl">→</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-16 md:py-24 bg-white border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <span class="text-red-500 font-bold tracking-widest text-xs md:text-sm mb-3 block uppercase">Dibangun dari Masalah Nyata di Lapangan</span>
+            <h2 class="text-3xl md:text-4xl font-extrabold text-slate-800 mb-16 max-w-4xl mx-auto leading-tight">
+                Kompetisi renang tidak seharusnya menghabiskan waktu panitia untuk pekerjaan administratif yang berulang.
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 text-left relative">
+                <div class="hidden md:block absolute top-8 left-[15%] right-[15%] h-0.5 bg-gray-100 -z-10"></div>
+                
+                <div>
+                    <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-2xl mx-auto mb-6 shadow-sm border border-red-100">❌</div>
+                    <h4 class="font-bold text-center text-slate-800 text-lg mb-3">Pendaftaran Berantakan</h4>
+                    <p class="text-sm text-slate-500 text-center leading-relaxed font-medium">Data peserta tersebar di Excel, salah ketik nama, hingga sulitnya mengontrol verifikasi pembayaran.</p>
+                </div>
+                <div>
+                    <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-2xl mx-auto mb-6 shadow-sm border border-red-100">⏳</div>
+                    <h4 class="font-bold text-center text-slate-800 text-lg mb-3">Drawing & Administrasi Lama</h4>
+                    <p class="text-sm text-slate-500 text-center leading-relaxed font-medium">Pekerjaan yang sama (menyusun heat, membuat buku acara) harus dilakukan berulang kali secara manual.</p>
+                </div>
+                <div>
+                    <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-2xl mx-auto mb-6 shadow-sm border border-red-100">🕳️</div>
+                    <h4 class="font-bold text-center text-slate-800 text-lg mb-3">Hasil Tidak Berkelanjutan</h4>
+                    <p class="text-sm text-slate-500 text-center leading-relaxed font-medium">Setelah event selesai, data prestasi sering berhenti dan hilang sebagai tumpukan kertas atau file PDF.</p>
+                </div>
+            </div>
+            
+            <div class="mt-16 bg-blue-50 border border-blue-100 rounded-3xl p-8 max-w-3xl mx-auto">
+                <p class="text-lg md:text-xl font-bold text-scsBlue">SCS mengubahnya menjadi satu alur digital yang rapi, transparan, dan permanen.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="fitur" class="pt-20 pb-24 bg-gray-50 border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-scsBlue mb-4 tracking-tight">Kenapa SCS?</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 border-t-4 border-t-red-500 hover:-translate-y-2 hover:shadow-xl transition duration-300">
+                    <div class="w-14 h-14 bg-red-50 rounded-xl flex items-center justify-center mb-6 text-2xl shadow-inner border border-red-100">🪪</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">F1 ID Terverifikasi</h3>
+                    <p class="text-gray-600 leading-relaxed font-medium text-sm">Identitas atlet tunggal yang terhubung langsung dengan database nasional SCS. Selamat tinggal pemalsuan data.</p>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 border-t-4 border-t-scsBlue hover:-translate-y-2 hover:shadow-xl transition duration-300">
+                    <div class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mb-6 text-2xl shadow-inner border border-blue-100">🚀</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Kompetisi Lebih Otomatis</h3>
+                    <p class="text-gray-600 leading-relaxed font-medium text-sm">Dari pendaftaran, drawing seri, hingga cetak sertifikat. Lakukan semuanya tanpa pekerjaan manual berulang.</p>
+                </div>
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 border-t-4 border-t-scsGold hover:-translate-y-2 hover:shadow-xl transition duration-300">
+                    <div class="w-14 h-14 bg-yellow-50 rounded-xl flex items-center justify-center mb-6 text-2xl shadow-inner border border-yellow-100">⏱️</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Live Result & Rekam Jejak</h3>
+                    <p class="text-gray-600 leading-relaxed font-medium text-sm">Hasil pertandingan dapat dipantau seketika dan tersimpan permanen sebagai bagian dari perjalanan karier atlet.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="py-20 bg-white">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <span class="text-4xl mb-4 block">🤝</span>
+            <h2 class="text-3xl font-extrabold text-slate-800 mb-4">Berikan Brand Anda Ruang di Dalam Kompetisi</h2>
+            <p class="text-lg text-slate-500 mb-8 font-medium">Bukan sekadar spanduk di pinggir kolam. Sponsor Dashboard SCS memungkinkan brand hadir secara digital di halaman Live Result, KTP F1 ID, dan e-certificate yang dilihat ribuan pasang mata orang tua.</p>
+            <a href="/promosi.html" class="text-scsBlue font-bold hover:underline">Pelajari Solusi Promosi SCS &rarr;</a>
+        </div>
+    </section>
+
+    <section class="py-24 bg-gradient-to-b from-blue-900 to-blue-950 text-center px-4">
+        <h2 class="text-4xl md:text-5xl font-black text-white mb-6">Siap Menjalankan Event Berikutnya?</h2>
+        <p class="text-blue-200 text-lg mb-10 font-medium">Bergabung dengan ekosistem kompetisi renang paling modern.</p>
+        <a href="/auth.html" class="inline-block bg-white text-blue-900 font-black px-10 py-4 rounded-full text-lg hover:bg-slate-100 transition-all hover:scale-105 shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+            Mulai Buat Event Sekarang
+        </a>
+    </section>
+
+    <footer class="bg-gray-950 text-gray-400 pt-16 pb-28 md:pb-16 border-t border-gray-900 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <div class="flex justify-center items-center gap-4 mb-8 opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0 cursor-pointer">
+                <img src="/images/logo.png" alt="SCS Logo" class="max-h-10 md:max-h-12 w-auto object-contain shrink-0">
+                <div class="h-8 w-px bg-slate-600"></div>
+                <img src="/images/f1logo.png" alt="F1 Logo" class="max-h-10 md:max-h-12 w-auto object-contain shrink-0">
+            </div>
+
+            <p class="text-xs text-slate-400 font-bold mb-2 uppercase tracking-widest">PT. Teknologi Prestasi Indonesia</p>
+            <p class="font-medium text-slate-500 text-sm md:text-base mb-8">&copy; 2026 F1 Swimming - F1 ID. All rights reserved.</p>
+            
+            <div class="mb-10">
+                <button onclick="document.getElementById('modalVisiMisi').classList.remove('hidden')" class="text-scsBlue hover:text-white font-bold transition-colors underline decoration-dashed underline-offset-4 cursor-pointer">Lihat Visi & Misi Kami</button>
+            </div>
+
+            <div class="inline-block bg-white/5 border border-white/10 px-6 py-3 rounded-xl">
+                <p class="text-xs md:text-sm text-slate-300 font-black tracking-widest uppercase">Didesain oleh orang lapangan, untuk orang lapangan.</p>
+            </div>
+        </div>
+    </footer>
+
+    <div id="modalVisiMisi" class="fixed inset-0 z-[150] bg-blue-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white rounded-3xl w-full max-w-2xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
+            <button onclick="document.getElementById('modalVisiMisi').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 font-bold text-3xl transition-colors z-30 bg-white/80 rounded-full w-10 h-10 flex items-center justify-center leading-none shadow-sm">&times;</button>
+            <div class="p-6 md:p-10 overflow-y-auto hide-scrollbar relative z-10 w-full text-center">
+                <h2 class="text-2xl md:text-3xl font-black text-blue-900 mb-6 md:mb-8 tracking-tight">Visi & Misi Kami</h2>
+                <div class="text-left mb-6 bg-red-50/50 p-5 md:p-6 rounded-2xl border border-red-100 shadow-sm">
+                    <h3 class="font-extrabold text-lg text-red-600 mb-2 border-b border-red-200 pb-2 flex items-center gap-2"><span>🎯</span> Visi</h3>
+                    <p class="text-sm font-bold text-slate-700 italic leading-relaxed">"Menjadi infrastruktur digital utama yang menghubungkan, mengotomatisasi, dan memajukan seluruh ekosistem olahraga renang di Indonesia, dari akar rumput hingga podium tertinggi."</p>
+                </div>
+
+                <div class="text-left space-y-4 bg-blue-50/50 p-5 md:p-6 rounded-2xl border border-blue-100 shadow-sm">
+                    <h3 class="font-extrabold text-lg text-scsBlue mb-3 border-b border-blue-200 pb-2 flex items-center gap-2"><span>🚀</span> Misi</h3>
+                    <p class="text-sm font-medium text-slate-700 leading-relaxed"><strong class="text-blue-900 font-black">1. Mendisrupsi Birokrasi:</strong> Menghapus proses manual yang membebani penyelenggara event (EO) dan klub melalui otomasi sistem terpadu.</p>
+                    <p class="text-sm font-medium text-slate-700 leading-relaxed"><strong class="text-blue-900 font-black">2. Identitas Tunggal:</strong> Menghadirkan F1 ID sebagai paspor digital abadi, mengeliminasi manipulasi data umur.</p>
+                    <p class="text-sm font-medium text-slate-700 leading-relaxed"><strong class="text-blue-900 font-black">3. Keamanan Big Data:</strong> Menjaga privasi infrastruktur data atlet tingkat nasional secara legal dan profesional.</p>
+                    <p class="text-sm font-medium text-slate-700 leading-relaxed"><strong class="text-blue-900 font-black">4. Ekosistem Ekonomi:</strong> Membuka peluang komersial bagi klub, penyelenggara, dan sponsor.</p>
+                    <p class="text-sm font-medium text-slate-700 leading-relaxed"><strong class="text-blue-900 font-black">5. Memberdayakan Akar Rumput:</strong> Memberikan akses teknologi kelas dunia kepada seluruh klub dan atlet di daerah.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT PEMANGGIL SERVICE WORKER (WAJIB ADA BIAR BISA DI-INSTALL) -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('Service Worker Active! Scope:', reg.scope))
+            .catch(err => console.error('Service Worker Gagal:', err));
+        });
+      }
+    </script>
+
+    <script type="module">
+        import { supabaseClient } from '/src/supabase.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            const closeMobileBtn = document.getElementById('closeMobileBtn');
+            
+            function toggleMobile() {
+                if (mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.remove('hidden');
+                    mobileMenu.classList.add('flex');
+                } else {
+                    mobileMenu.classList.add('hidden');
+                    mobileMenu.classList.remove('flex');
+                }
+            }
+            if(mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMobile);
+            if(closeMobileBtn) closeMobileBtn.addEventListener('click', toggleMobile);
+
+            let currentSession = null;
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                currentSession = session;
+                
+                const floatBtn = document.getElementById('floatingAuthBtn');
+                const floatText = document.getElementById('floatingAuthText');
+                const floatingLogoutBtn = document.getElementById('floatingLogoutBtn');
+
+                if (session && floatBtn) {
+                    floatBtn.href = '/dashboard.html';
+                    floatBtn.className = "bg-emerald-600 text-white font-extrabold px-3.5 py-1.5 md:px-5 md:py-1.5 text-[11px] md:text-sm rounded-full shadow-md hover:bg-emerald-700 transition-all border border-emerald-700 flex items-center gap-1.5";
+                    floatText.innerHTML = '<span class="md:hidden">Dashboard</span><span class="hidden md:inline">Ke Dashboard</span> &rarr;';
+                    if(document.getElementById('authIcon')) document.getElementById('authIcon').style.display = 'none';
+                    if(floatingLogoutBtn) {
+                        floatingLogoutBtn.classList.remove('hidden');
+                        floatingLogoutBtn.classList.add('flex');
+                    }
+                }
+
+                const mobileAuthBtn = document.getElementById('mobileAuthBtn');
+                const mobileAuthText = document.getElementById('mobileAuthText');
+                const mobileLogoutBtn = document.getElementById('mobileLogoutBtn');
+
+                if (session && mobileAuthBtn) {
+                    mobileAuthBtn.href = '/dashboard.html';
+                    mobileAuthBtn.className = "w-full bg-emerald-600 text-white font-extrabold px-6 py-4 rounded-2xl shadow-lg hover:bg-emerald-700 active:scale-95 transition-all text-center flex items-center justify-center gap-2 text-lg";
+                    mobileAuthText.innerHTML = 'Ke Dashboard &rarr;';
+                    if(document.getElementById('mobileAuthIcon')) document.getElementById('mobileAuthIcon').style.display = 'none';
+                    if(mobileLogoutBtn) {
+                        mobileLogoutBtn.classList.remove('hidden');
+                        mobileLogoutBtn.classList.add('flex');
+                    }
+                }
+
+                // Handle Logout Action
+                const handleLogout = async () => {
+                    await supabaseClient.auth.signOut();
+                    window.location.reload();
+                };
+                if(floatingLogoutBtn) floatingLogoutBtn.addEventListener('click', handleLogout);
+                if(mobileLogoutBtn) mobileLogoutBtn.addEventListener('click', handleLogout);
+
+            } catch (err) {}
+
+            try {
+                const { data: clubsData, error } = await supabaseClient
+                    .from('clubs')
+                    .select('id, club_name, logo_url, is_pro, testimony');
+
+                if (error) throw error;
+
+                let allTestimonials = [];
+                if (clubsData && clubsData.length > 0) {
+                    clubsData.forEach(c => {
+                        let testiList = c.testimony;
+                        if (!testiList) return; 
+                        if (typeof testiList === 'string') {
+                            try { testiList = JSON.parse(testiList); } catch(e) { return; }
+                        }
+                        if (Array.isArray(testiList)) {
+                            testiList.forEach(t => {
+                                if (t && (t.isPublished === true || String(t.isPublished) === 'true')) {
+                                    allTestimonials.push(t);
+                                }
+                            });
+                        }
+                    });
+                }
+
+                allTestimonials.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+                const track = document.getElementById('dynamicTestiTrack');
+                const section = document.getElementById('testi-section');
+
+                if (allTestimonials.length > 0) {
+                    section.style.display = 'block';
+                    let displayTestimonials = [...allTestimonials];
+                    while (displayTestimonials.length < 6) {
+                        displayTestimonials = displayTestimonials.concat(allTestimonials);
+                    }
+
+                    const generateCardsHTML = (testiArray) => {
+                        return testiArray.map(t => `
+                            <div class="bg-gradient-to-br from-blue-900 via-blue-950 to-slate-900 rounded-3xl p-8 w-[320px] md:w-[450px] shadow-xl shrink-0 flex flex-col justify-between relative overflow-hidden group">
+                                <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] group-hover:opacity-20 transition-opacity"></div>
+                                <span class="text-3xl text-scsGold mb-4 relative z-10 block">⭐⭐⭐⭐⭐</span>
+                                <p class="text-sm md:text-base font-medium mb-6 italic text-slate-200 relative z-10 leading-relaxed">"${t.text}"</p>
+                                <div class="flex items-center gap-3 relative z-10 border-t border-white/10 pt-4 mt-auto">
+                                    <div class="w-10 h-10 bg-white text-blue-900 rounded-full flex items-center justify-center font-black shadow-inner">
+                                        ${t.name ? t.name.charAt(0).toUpperCase() : 'U'}
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-scsGold text-sm">${t.name || 'User'}</p>
+                                        <p class="text-slate-400 text-[10px] uppercase tracking-wider">${t.role || ''}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+                    };
+                    track.innerHTML = generateCardsHTML(displayTestimonials) + generateCardsHTML(displayTestimonials);
+                }
+
+                const proClubsData = clubsData.filter(c => c.is_pro === true || String(c.is_pro) === 'true');
+                const proTrack = document.getElementById('dynamicProTrack');
+
+                if (proClubsData && proClubsData.length > 0) {
+                    let proHtml = proClubsData.map(club => {
+                        let logoContent = `<div class="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white flex items-center justify-center text-scsGold text-xl md:text-2xl shadow-sm border-2 border-slate-100 group-hover:border-scsGold group-hover:bg-yellow-50 group-hover:-translate-y-1 transition-all shrink-0 cursor-pointer" title="${club.club_name}">👑</div>`;
+                        if (club.logo_url) {
+                            logoContent = `<img src="${club.logo_url}" alt="${club.club_name}" title="${club.club_name}" class="w-14 h-14 md:w-16 md:h-16 rounded-full object-cover border-2 border-slate-100 bg-white shrink-0 shadow-sm group-hover:border-scsGold group-hover:-translate-y-1 transition-all cursor-pointer">`;
+                        }
+                        return `<div class="shrink-0 group mx-2 md:mx-3">${logoContent}</div>`;
+                    }).join('');
+                    proTrack.innerHTML = proHtml + proHtml + proHtml + proHtml + proHtml; 
+                } else {
+                    proTrack.innerHTML = `<p class="text-sm text-slate-400 italic px-4 w-full text-center">Belum ada klub elit yang tayang.</p>`;
+                }
+
+            } catch (err) {
+                console.error("Gagal memuat data:", err);
+            }
+
+            // === START FLOATING PRO EVENT ===
+            try {
+                const { data: allEventsRaw, error: proEvErr } = await supabaseClient
+                    .from('events')
+                    .select('*')
+                    .order('start_date', { ascending: true });
+
+                if (proEvErr) {
+                    console.warn('[SCS-PRO-FLOAT] Error query events:', proEvErr.message);
+                } else if (Array.isArray(allEventsRaw)) {
+                    const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+                    const proEvents = allEventsRaw.filter(ev => {
+                        if (!ev || !ev.subdomain) return false;
+                        const isPro = ev.is_pro === true || String(ev.is_pro).toLowerCase() === 'true';
+                        if (!isPro) return false;
+
+                        const sDate = ev.start_date ? String(ev.start_date).slice(0, 10) : '';
+                        const eDate = ev.end_date ? String(ev.end_date).slice(0, 10) : sDate;
+                        const isClosed = ev.is_closed === true || String(ev.is_closed).toLowerCase() === 'true';
+
+                        // Tetap tampil jika sedang berlangsung hari ini meski pendaftaran sudah ditutup
+                        const isHappeningToday = Boolean(sDate && eDate && sDate <= todayStr && eDate >= todayStr);
+                        const isUpcomingOpen = (!eDate || eDate >= todayStr) && !isClosed;
+
+                        return isHappeningToday || isUpcomingOpen;
+                    });
+
+                    proEvents.sort((a, b) => {
+                        const aStart = a.start_date ? String(a.start_date).slice(0, 10) : '9999-12-31';
+                        const bStart = b.start_date ? String(b.start_date).slice(0, 10) : '9999-12-31';
+                        const aLive = aStart <= todayStr ? 0 : 1;
+                        const bLive = bStart <= todayStr ? 0 : 1;
+                        return aLive - bLive || aStart.localeCompare(bStart);
+                    });
+
+                    if (proEvents.length > 0) {
+                        const { data: { session: activeSess } } = await supabaseClient.auth.getSession();
+                        const sessionHash = (activeSess?.access_token && activeSess?.refresh_token)
+                            ? `#access_token=${encodeURIComponent(activeSess.access_token)}&refresh_token=${encodeURIComponent(activeSess.refresh_token)}`
+                            : '';
+
+                        const wrap = document.getElementById('floatingProEventWrap');
+                        const activeBody = document.getElementById('floatingProActiveBody');
+                        const statusTag = document.getElementById('floatingProStatusTag');
+                        const switchBtn = document.getElementById('floatingProSwitchBtn');
+                        const listDrawer = document.getElementById('floatingProListDrawer');
+                        const miniBtn = document.getElementById('floatingProMiniBtn');
+                        const card = document.getElementById('floatingProCard');
+                        const minimizeBtn = document.getElementById('floatingProMinimizeBtn');
+                        const countBadge = document.getElementById('floatingProCountBadge');
+
+                        const renderSelectedEvent = (ev) => {
+                            const sDate = ev.start_date ? String(ev.start_date).slice(0, 10) : '';
+                            const eDate = ev.end_date ? String(ev.end_date).slice(0, 10) : sDate;
+                            const isClosed = ev.is_closed === true || String(ev.is_closed).toLowerCase() === 'true';
+                            const isLiveNow = Boolean(sDate && sDate <= todayStr && (!eDate || eDate >= todayStr));
+
+                            statusTag.innerHTML = isLiveNow
+                                ? '<span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping"></span> LIVE • PRO EVENT'
+                                : '👑 PRO EVENT';
+
+                            const lokasi = ev.location || ev.venue || ev.city || 'Indonesia';
+                            const tgl = sDate
+                                ? (eDate && eDate !== sDate ? `${sDate} s/d ${eDate}` : sDate)
+                                : 'Segera';
+                            const regUrl = `https://${ev.subdomain}.f1swimming.com${sessionHash}`;
+                            const resUrl = `https://${ev.subdomain}.f1swimming.com/result`;
+
+                            activeBody.innerHTML = `
+                                <h4 class="font-black text-xs sm:text-sm text-white leading-snug truncate" title="${ev.event_name}">${ev.event_name}</h4>
+                                <p class="text-[10px] text-blue-200 mt-0.5 truncate">📍 ${lokasi} &bull; 📅 ${tgl}</p>
+                                <div class="mt-2.5 grid grid-cols-2 gap-1.5">
+                                    <a href="${regUrl}" target="_blank" rel="noopener noreferrer" class="bg-amber-400 hover:bg-amber-300 text-blue-950 font-black text-[11px] py-1.5 px-2.5 rounded-xl text-center shadow transition">
+                                        ${isClosed ? 'Info Event' : 'Daftar'} &raquo;
+                                    </a>
+                                    <a href="${resUrl}" target="_blank" rel="noopener noreferrer" class="bg-red-600 hover:bg-red-500 text-white font-extrabold text-[11px] py-1.5 px-2.5 rounded-xl text-center shadow transition">
+                                        🏆 Live Result
+                                    </a>
+                                </div>
+                            `;
+                        };
+
+                        renderSelectedEvent(proEvents[0]);
+                        if (countBadge) countBadge.textContent = String(proEvents.length);
+
+                        if (proEvents.length > 1 && switchBtn && listDrawer) {
+                            switchBtn.classList.remove('hidden');
+                            switchBtn.textContent = `+${proEvents.length - 1} Lainnya`;
+                            listDrawer.innerHTML = proEvents.map((ev, idx) => `
+                                <button type="button" data-ev-idx="${idx}" class="w-full text-left px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 transition flex items-center justify-between gap-2 cursor-pointer">
+                                    <span class="text-[11px] font-bold text-white truncate">${ev.event_name}</span>
+                                    <span class="text-[9px] text-amber-300 font-black shrink-0">Pilih &rarr;</span>
+                                </button>
+                            `).join('');
+
+                            switchBtn.addEventListener('click', () => listDrawer.classList.toggle('hidden'));
+                            listDrawer.addEventListener('click', (e) => {
+                                const btn = e.target.closest('button[data-ev-idx]');
+                                if (!btn) return;
+                                const picked = proEvents[Number(btn.getAttribute('data-ev-idx'))];
+                                if (picked) {
+                                    renderSelectedEvent(picked);
+                                    listDrawer.classList.add('hidden');
+                                }
+                            });
+                        }
+
+                        if (minimizeBtn && miniBtn && card) {
+                            minimizeBtn.addEventListener('click', () => {
+                                card.classList.add('hidden');
+                                miniBtn.classList.remove('hidden');
+                                miniBtn.classList.add('flex');
+                            });
+                            miniBtn.addEventListener('click', () => {
+                                miniBtn.classList.add('hidden');
+                                miniBtn.classList.remove('flex');
+                                card.classList.remove('hidden');
+                            });
+                        }
+
+                        wrap.classList.remove('hidden');
+                    }
+                }
+            } catch (proErr) {
+                console.warn('[SCS-PRO-FLOAT] Gagal:', proErr);
+            }
+            // === END FLOATING PRO EVENT ===
+        });
+    </script>
+    <!-- START FLOATING PRO EVENT -->
+    <div id="floatingProEventWrap" class="hidden fixed bottom-6 right-4 md:bottom-8 md:right-8 z-[105] w-[265px] sm:w-[305px] transition-all duration-300">
+        <!-- Mode Minimized -->
+        <button id="floatingProMiniBtn" type="button" class="hidden ml-auto bg-gradient-to-r from-blue-950 via-blue-900 to-slate-900 text-white border-2 border-amber-400 px-3.5 py-2.5 rounded-full shadow-2xl items-center gap-2 hover:scale-105 active:scale-95 transition-all cursor-pointer">
+            <span class="relative flex h-2.5 w-2.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+            </span>
+            <span class="text-[11px] font-black tracking-wide text-amber-300">👑 PRO EVENT</span>
+            <span id="floatingProCountBadge" class="bg-amber-400 text-blue-950 text-[10px] font-black px-1.5 rounded-full">1</span>
+        </button>
+
+        <!-- Mode Expanded Card -->
+        <div id="floatingProCard" class="bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 text-white rounded-2xl p-3.5 shadow-[0_15px_35px_rgba(15,23,42,0.5)] border-2 border-amber-400 relative overflow-hidden">
+            <div class="flex items-center justify-between gap-2 mb-1.5">
+                <span id="floatingProStatusTag" class="inline-flex items-center gap-1.5 bg-red-500/20 border border-red-400/40 text-red-200 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping"></span>
+                    PRO EVENT
+                </span>
+                <div class="flex items-center gap-1">
+                    <button id="floatingProSwitchBtn" type="button" class="hidden text-[9px] font-black bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-400/40 px-2 py-0.5 rounded-full transition cursor-pointer">
+                        +1 Lainnya
+                    </button>
+                    <button id="floatingProMinimizeBtn" type="button" class="text-slate-300 hover:text-white w-6 h-6 rounded-full hover:bg-white/10 flex items-center justify-center text-sm font-bold transition cursor-pointer" title="Perkecil">
+                        &minus;
+                    </button>
+                </div>
+            </div>
+
+            <div id="floatingProActiveBody"></div>
+
+            <div id="floatingProListDrawer" class="hidden mt-2.5 pt-2 border-t border-white/15 space-y-1.5 max-h-40 overflow-y-auto"></div>
+        </div>
+    </div>
+    <!-- END FLOATING PRO EVENT -->
+</body>
+</html>

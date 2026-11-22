@@ -26,7 +26,7 @@ import"./modulepreload-polyfill-3cfb730f.js";/* empty css              */import{
             <div class="flex justify-between items-end mb-4 border-b border-slate-200 pb-4">
                 <div>
                     <h2 class="text-lg font-black text-slate-900 uppercase">Event #${e.event_number}: ${e.nomor_lomba} - ${e.kelompok_umur} - ${e.gender}</h2>
-                    <p class="text-sm font-bold text-red-600 mt-1">HEAT ${e.heat_number} (Dari ${e.total_heats})</p>
+                    <p class="text-sm font-bold text-red-600 mt-1">SERI/HEAT ${e.heat_number} (Dari ${e.total_heats})</p>
                 </div>
             </div>
             <div class="space-y-3 mb-4">

@@ -22,10 +22,10 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
-  <script type="module" crossorigin src="/assets/event-df8c49d8.js"></script>
+  <script type="module" crossorigin src="/assets/event-5ebbb757.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-3cfb730f.js">
   <link rel="modulepreload" crossorigin href="/assets/supabase-e9059105.js">
-  <link rel="stylesheet" href="/assets/style-d2da6887.css">
+  <link rel="stylesheet" href="/assets/style-354accf9.css">
 </head>
 <body class="bg-slate-50 antialiased font-sans pt-24 pb-20 text-slate-800 relative">
     
@@ -131,6 +131,42 @@
     </div>
 
     <!-- Panggil Script Logika Dinamis -->
+    
+    <!-- START FLOATING PRO EVENT -->
+    <div id="floatingProEventWrap" class="hidden fixed bottom-6 right-4 md:bottom-8 md:right-8 z-[105] w-[265px] sm:w-[305px] transition-all duration-300">
+        <!-- Mode Minimized -->
+        <button id="floatingProMiniBtn" type="button" class="hidden ml-auto bg-gradient-to-r from-blue-950 via-blue-900 to-slate-900 text-white border-2 border-amber-400 px-3.5 py-2.5 rounded-full shadow-2xl items-center gap-2 hover:scale-105 active:scale-95 transition-all cursor-pointer">
+            <span class="relative flex h-2.5 w-2.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+            </span>
+            <span class="text-[11px] font-black tracking-wide text-amber-300">👑 PRO EVENT</span>
+            <span id="floatingProCountBadge" class="bg-amber-400 text-blue-950 text-[10px] font-black px-1.5 rounded-full">1</span>
+        </button>
+
+        <!-- Mode Expanded Card -->
+        <div id="floatingProCard" class="bg-gradient-to-br from-blue-950 via-blue-900 to-slate-900 text-white rounded-2xl p-3.5 shadow-[0_15px_35px_rgba(15,23,42,0.5)] border-2 border-amber-400 relative overflow-hidden">
+            <div class="flex items-center justify-between gap-2 mb-1.5">
+                <span id="floatingProStatusTag" class="inline-flex items-center gap-1.5 bg-red-500/20 border border-red-400/40 text-red-200 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping"></span>
+                    PRO EVENT
+                </span>
+                <div class="flex items-center gap-1">
+                    <button id="floatingProSwitchBtn" type="button" class="hidden text-[9px] font-black bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 border border-amber-400/40 px-2 py-0.5 rounded-full transition cursor-pointer">
+                        +1 Lainnya
+                    </button>
+                    <button id="floatingProMinimizeBtn" type="button" class="text-slate-300 hover:text-white w-6 h-6 rounded-full hover:bg-white/10 flex items-center justify-center text-sm font-bold transition cursor-pointer" title="Perkecil">
+                        &minus;
+                    </button>
+                </div>
+            </div>
+
+            <div id="floatingProActiveBody"></div>
+
+            <div id="floatingProListDrawer" class="hidden mt-2.5 pt-2 border-t border-white/15 space-y-1.5 max-h-40 overflow-y-auto"></div>
+        </div>
+    </div>
+    <!-- END FLOATING PRO EVENT -->
     
 </body>
 </html>

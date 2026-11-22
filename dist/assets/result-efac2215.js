@@ -40,7 +40,7 @@ import"./modulepreload-polyfill-3cfb730f.js";/* empty css              */import{
                         ${d}
                     </span>
                 </div>
-            </div>`}),(s.lanes_data.length===0||!s.lanes_data.some(l=>l.nama))&&(p+='<p class="text-[10px] text-slate-400 italic text-center py-3">Tidak ada data atlet di Heat ini.</p>');let o="";if(x.length>0){const l=s.gender.toUpperCase(),d=s.kelompok_umur.toUpperCase();let i=x.filter(a=>{let _=!1,h=!1;return!a.target_gender||a.target_gender==="ALL"?_=!0:_=l.includes(a.target_gender.toUpperCase()),!a.target_umur||a.target_umur==="ALL"?h=!0:a.target_umur==="KIDS"?h=["PEMULA","TAHUN","THN","SD","TK","GRUP","GROUP","KIDS","UMUR","YOUTH"].some(w=>d.includes(w)):a.target_umur==="ADULT"&&(h=["OPEN","SENIOR","DEWASA","MAHASISWA","MASTER","BEBAS"].some(w=>d.includes(w))),_&&h});i.length===0&&(i=x.filter(a=>(!a.target_gender||a.target_gender==="ALL")&&(!a.target_umur||a.target_umur==="ALL"))),i.length===0&&(i=x);const $=m%i.length,u=i[$],I=u.logo_url||"/images/logo.png",T=u.link_url||"#";o=`
+            </div>`}),(s.lanes_data.length===0||!s.lanes_data.some(l=>l.nama))&&(p+='<p class="text-[10px] text-slate-400 italic text-center py-3">Tidak ada data atlet di Seri/Heat ini.</p>');let o="";if(x.length>0){const l=s.gender.toUpperCase(),d=s.kelompok_umur.toUpperCase();let i=x.filter(a=>{let _=!1,h=!1;return!a.target_gender||a.target_gender==="ALL"?_=!0:_=l.includes(a.target_gender.toUpperCase()),!a.target_umur||a.target_umur==="ALL"?h=!0:a.target_umur==="KIDS"?h=["PEMULA","TAHUN","THN","SD","TK","GRUP","GROUP","KIDS","UMUR","YOUTH"].some(w=>d.includes(w)):a.target_umur==="ADULT"&&(h=["OPEN","SENIOR","DEWASA","MAHASISWA","MASTER","BEBAS"].some(w=>d.includes(w))),_&&h});i.length===0&&(i=x.filter(a=>(!a.target_gender||a.target_gender==="ALL")&&(!a.target_umur||a.target_umur==="ALL"))),i.length===0&&(i=x);const $=m%i.length,u=i[$],I=u.logo_url||"/images/logo.png",T=u.link_url||"#";o=`
                 <button onclick="trackSponsorClick(${u.id}, '${T}')" class="w-full outline-none focus:outline-none cursor-pointer flex items-center justify-between bg-slate-50 hover:bg-amber-50/80 transition-colors border-b border-slate-200 px-4 py-3 -mx-3 -mt-3 md:-mx-4 md:-mt-4 mb-3 rounded-t-xl group">
                     <div class="flex flex-col md:flex-row md:items-center gap-0.5 md:gap-2 flex-1 min-w-0 pr-4 text-left">
                         <span class="text-[9px] md:text-[10px] font-black text-slate-400 group-hover:text-amber-500 uppercase tracking-widest transition-colors shrink-0">
@@ -65,7 +65,7 @@ import"./modulepreload-polyfill-3cfb730f.js";/* empty css              */import{
             ${o}
             <div class="pl-2 mb-3">
                 <h3 class="text-xs font-black text-slate-800 uppercase leading-tight">Event #${s.event_number}: ${s.nomor_lomba} - ${s.gender}</h3>
-                <p class="text-[9px] text-slate-400 font-bold mt-0.5 uppercase tracking-wider">HEAT ${s.heat_number} <span class="text-slate-300 mx-1">|</span> Dari ${s.total_heats}</p>
+                <p class="text-[9px] text-slate-400 font-bold mt-0.5 uppercase tracking-wider">SERI/HEAT ${s.heat_number} <span class="text-slate-300 mx-1">|</span> Dari ${s.total_heats}</p>
             </div>
             <div class="bg-slate-50/50 rounded-lg p-2 border border-slate-100">
                 ${p}

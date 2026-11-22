@@ -157,7 +157,7 @@ function renderTable(leaderboard, headerInfo) {
                     <th style="text-align: center;">Rank</th>
                     <th>Nama Perenang</th>
                     <th>Klub</th>
-                    <th style="text-align: center;">Heat / Lane</th>
+                    <th style="text-align: center;">Seri/Heat / Lane</th>
                     <th style="text-align: center;">Catatan Waktu</th>
                 </tr>
             </thead>

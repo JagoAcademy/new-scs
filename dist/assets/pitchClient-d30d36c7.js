@@ -73,7 +73,7 @@ Pendapatan Ekstra dari Ads`),d&&(d.innerHTML=`<p class="mb-4">Berikut adalah sim
             ${o}
             <div class="pl-1 mb-2">
                 <h3 class="text-[10px] font-black text-slate-800 uppercase leading-tight">Event #${e+1}: ${s[e]}</h3>
-                <p class="text-[7px] text-slate-400 font-bold mt-0.5 uppercase tracking-wider">HEAT 1 <span class="text-slate-300 mx-1">|</span> Dari 3</p>
+                <p class="text-[7px] text-slate-400 font-bold mt-0.5 uppercase tracking-wider">SERI/HEAT 1 <span class="text-slate-300 mx-1">|</span> Dari 3</p>
             </div>
             
             <div class="bg-slate-50/50 rounded-lg p-1.5 border border-slate-100">

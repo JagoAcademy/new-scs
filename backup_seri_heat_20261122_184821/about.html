@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- MASTER SEO TITLE -->
+    <title>SCS: Software & Start Up Manajemen Lomba Renang Terdepan</title>
+    
+    <!-- META DESCRIPTION DENGAN TARGET KEYWORD -->
+    <meta name="description" content="SCS adalah start up lomba renang yang menyediakan software lomba renang terintegrasi. Solusi modern untuk manajemen lomba renang dari pendaftaran hingga live result.">
+    <meta name="keywords" content="Lomba Renang, Manajemen lomba renang, Start up lomba renang, Software lomba renang, Sistem Kejuaraan Renang, SCS, F1 ID">
+    <meta name="author" content="Vanessa Angrita">
+    
+    <!-- OPEN GRAPH (SOSMED) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://f1swimming.com/about.html">
+    <meta property="og:title" content="SCS: Software Manajemen Lomba Renang Terdepan di Indonesia">
+    <meta property="og:description" content="Tinggalkan cara manual. SCS hadir sebagai start up lomba renang yang mendisrupsi manajemen lomba renang menjadi 100% digital, cepat, dan akurat.">
+    <meta property="og:image" content="https://f1swimming.com/images/f1meta.jpg">
+    <meta property="og:see_also" content="https://instagram.com/f1swimming">
+    
+    <link rel="stylesheet" href="/src/style.css">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+
+    <!-- JSON-LD SCHEMA KHUSUS ABOUT PAGE & ORGANIZATION -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "AboutPage",
+      "mainEntity": {
+        "@type": "Organization",
+        "name": "SCS - Swimming Competition System",
+        "url": "https://f1swimming.com",
+        "logo": "https://f1swimming.com/images/logo.png",
+        "description": "SCS adalah start up lomba renang inovatif di Indonesia yang fokus mengembangkan software lomba renang untuk mempermudah manajemen lomba renang secara end-to-end.",
+        "foundingDate": "2024",
+        "sameAs": [
+          "https://instagram.com/f1swimming"
+        ]
+      }
+    }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased relative pb-20 pt-14 md:pt-16">
+
+    <!-- FLOATING AUTH BUTTONS -->
+    <div class="fixed top-3 right-12 md:top-4 md:right-6 z-[100] flex items-center gap-1.5 md:gap-2">
+        <button id="floatingLogoutBtn" class="hidden bg-white text-red-500 font-extrabold w-8 h-8 md:w-auto md:px-4 md:py-1.5 text-xs md:text-sm rounded-full shadow-sm hover:bg-red-50 transition-all border border-red-100 items-center justify-center">
+            <svg class="w-4 h-4 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            <span class="hidden md:inline md:ml-1.5">Keluar</span>
+        </button>
+        <a href="/auth.html" id="floatingAuthBtn" class="bg-blue-700 text-white font-extrabold px-3.5 py-1.5 md:px-5 md:py-1.5 text-[11px] md:text-sm rounded-full shadow-md hover:bg-blue-800 transition-all border border-blue-800 flex items-center gap-1 md:gap-1.5">
+            <span id="floatingAuthText" class="whitespace-nowrap">Daftar / Login</span>
+            <svg id="authIcon" class="w-3.5 h-3.5 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </a>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="bg-white/90 backdrop-blur-md shadow-sm fixed w-full z-50 top-0 h-14 md:h-16 border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+            <div class="flex justify-between items-center h-full">
+                <div class="flex-shrink-0 flex items-center h-full py-1">
+                    <a href="/" class="flex items-center gap-2 md:gap-4 shrink-0">
+                        <img class="h-5 md:h-6 w-auto object-contain hover:scale-105 transition-transform duration-200 shrink-0" src="/images/logo.png" alt="SCS Logo">
+                        <div class="h-4 md:h-6 w-px bg-slate-300"></div>
+                        <img class="h-5 md:h-6 w-auto object-contain hover:scale-105 transition-transform duration-200 shrink-0" src="/images/f1logo.png" alt="F1 Logo">
+                    </a>
+                </div>
+                
+                <div class="hidden md:flex space-x-6 lg:space-x-8 items-center mr-32 md:mr-40">
+                    <a href="/event.html" class="text-gray-600 hover:text-blue-700 font-bold text-sm">Event</a>
+                    <a href="/rank.html" class="text-gray-600 hover:text-blue-700 font-bold text-sm flex items-center gap-1">
+                        Rank <span class="text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">HOT</span>
+                    </a>
+                    <a href="/promosi.html" class="text-gray-600 hover:text-blue-700 font-bold text-sm">Promosi</a>
+                    <a href="/f1-profile.html" class="text-gray-600 hover:text-blue-700 font-bold text-sm">F1 ID</a>
+                    <a href="/about.html" class="text-blue-700 font-extrabold text-sm border-b-2 border-blue-700 pb-1">Tentang Kami</a> 
+                </div>
+
+                <button id="mobileMenuBtn" class="md:hidden p-2 text-gray-600 hover:text-blue-700 focus:outline-none ml-auto mr-1">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MOBILE MENU -->
+    <div id="mobileMenu" class="fixed inset-0 bg-white z-[90] hidden flex-col pt-16 px-6">
+        <div class="flex flex-col gap-6 text-center mt-10">
+            <a href="/event.html" class="text-2xl font-black text-slate-800 border-b border-gray-100 pb-4">Kalender Event</a>
+            <a href="/rank.html" class="text-2xl font-black text-slate-800 border-b border-gray-100 pb-4 flex items-center justify-center gap-2">Leaderboard <span class="text-xs bg-red-500 text-white px-2 py-1 rounded-full animate-pulse">HOT</span></a>
+            <a href="/promosi.html" class="text-2xl font-black text-slate-800 border-b border-gray-100 pb-4">Promosi Bisnis</a>
+            <a href="/f1-profile.html" class="text-2xl font-black text-slate-800 border-b border-gray-100 pb-4">Cek F1 ID</a>
+            <a href="/about.html" class="text-2xl font-black text-blue-700">Tentang SCS</a>
+        </div>
+        <button id="closeMobileBtn" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-red-500 font-bold text-3xl">&times;</button>
+    </div>
+
+    <!-- HERO SECTION (Targeting "Start up lomba renang" & "Software lomba renang") -->
+    <section class="bg-blue-950 text-white py-20 md:py-28 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+        <div class="absolute top-0 right-0 w-96 h-96 bg-red-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-30 translate-x-1/2 -translate-y-1/2"></div>
+        
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <span class="inline-block bg-white/10 text-red-300 font-bold uppercase tracking-widest text-[10px] md:text-xs px-4 py-1.5 rounded-full mb-6 border border-white/20">
+                Pionir Start Up Lomba Renang Indonesia
+            </span>
+            <h1 class="text-4xl md:text-6xl font-black mb-6 tracking-tight drop-shadow-lg leading-tight">
+                Revolusi Digital <br class="hidden md:block"> <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-emerald-300">Manajemen Lomba Renang</span>
+            </h1>
+            <p class="text-lg md:text-xl text-blue-200 mb-10 font-medium max-w-3xl mx-auto leading-relaxed">
+                Kami adalah <strong>start up lomba renang</strong> yang mendesain <strong>software lomba renang</strong> komprehensif. Diciptakan oleh orang lapangan untuk mengotomatisasi setiap detik penyelenggaraan kejuaraan.
+            </p>
+        </div>
+    </section>
+
+    <!-- PROBLEM & SOLUTION SECTION (Targeting "Manajemen lomba renang") -->
+    <section class="py-16 md:py-24 bg-white border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+                
+                <div>
+                    <h2 class="text-3xl md:text-4xl font-black text-slate-800 mb-6 leading-tight">Selamat Tinggal <span class="text-red-500">Manajemen Lomba Renang</span> Konvensional</h2>
+                    <p class="text-slate-500 text-lg mb-6 leading-relaxed">
+                        Mengelola <strong>lomba renang</strong> seringkali menjadi mimpi buruk administratif bagi Event Organizer (EO) dan panitia. Mulai dari tumpukan file Excel pendaftaran, penyusunan buku acara (Heat/Lane) yang rawan human-error, hingga rekapitulasi waktu yang lambat.
+                    </p>
+                    <p class="text-slate-500 text-lg mb-8 leading-relaxed">
+                        Sebagai <strong>software lomba renang</strong> terintegrasi, SCS Command Center merombak total birokrasi tersebut. Sistem kami mengotomatisasi pendaftaran via F1 ID, mengatur *seeding* lintasan cerdas, dan menampilkan *Live Result* langsung ke layar *smartphone* penonton di tribun.
+                    </p>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-xl font-black">✓</div>
+                        <p class="font-bold text-slate-800">Hemat waktu panitia hingga 80%</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 relative">
+                    <div class="bg-slate-50 border border-slate-100 p-8 rounded-3xl shadow-sm hover:shadow-md transition-shadow translate-y-0 sm:translate-y-8">
+                        <div class="text-4xl mb-4">🪪</div>
+                        <h3 class="text-xl font-bold text-blue-900 mb-2">F1 ID Atlet</h3>
+                        <p class="text-sm text-slate-500 leading-relaxed">Database tunggal atlet. Mencegah manipulasi umur dan pencurian data antar klub renang.</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-100 p-8 rounded-3xl shadow-sm hover:shadow-md transition-shadow">
+                        <div class="text-4xl mb-4">⚙️</div>
+                        <h3 class="text-xl font-bold text-blue-900 mb-2">Auto Heat Builder</h3>
+                        <p class="text-sm text-slate-500 leading-relaxed">Penyusunan seri dan lintasan (Lane) dilakukan oleh algoritma hanya dalam hitungan detik.</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-100 p-8 rounded-3xl shadow-sm hover:shadow-md transition-shadow translate-y-0 sm:translate-y-8">
+                        <div class="text-4xl mb-4">⏱️</div>
+                        <h3 class="text-xl font-bold text-blue-900 mb-2">Live Result</h3>
+                        <p class="text-sm text-slate-500 leading-relaxed">Pantau klasemen juara dan catatan waktu perenang secara *real-time* tanpa menunggu kertas hasil.</p>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-100 p-8 rounded-3xl shadow-sm hover:shadow-md transition-shadow">
+                        <div class="text-4xl mb-4">📜</div>
+                        <h3 class="text-xl font-bold text-blue-900 mb-2">E-Certificate Mesin</h3>
+                        <p class="text-sm text-slate-500 leading-relaxed">Sertifikat digital ter-*generate* otomatis usai perlombaan dan tersimpan abadi di profil atlet.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- VISI & MISI (Menyerap Kata Kunci Lomba Renang) -->
+    <section class="py-20 bg-gray-50 border-b border-gray-200 text-center">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <span class="text-blue-600 font-bold uppercase tracking-widest text-xs mb-3 block">Mengapa Kami Membangun Ini?</span>
+            <h2 class="text-3xl md:text-4xl font-extrabold text-slate-800 mb-10">Didesain oleh Orang Lapangan, <br class="hidden md:block"> Untuk Orang Lapangan</h2>
+            
+            <div class="bg-white p-8 md:p-12 rounded-3xl border border-slate-200 shadow-sm text-left mb-8">
+                <h3 class="text-2xl font-black text-red-600 mb-4 border-b border-slate-100 pb-4">🎯 Visi Kami</h3>
+                <p class="text-slate-600 font-medium leading-relaxed italic">
+                    "Menjadi infrastruktur <strong>start up lomba renang</strong> digital utama yang menghubungkan, mengotomatisasi, dan memajukan seluruh ekosistem olahraga renang di Indonesia, dari kejuaraan tingkat akar rumput (grassroot) hingga level nasional."
+                </p>
+            </div>
+
+            <div class="bg-white p-8 md:p-12 rounded-3xl border border-slate-200 shadow-sm text-left">
+                <h3 class="text-2xl font-black text-blue-700 mb-4 border-b border-slate-100 pb-4">🚀 Misi Ekosistem</h3>
+                <ul class="space-y-4">
+                    <li class="flex items-start gap-3">
+                        <span class="text-emerald-500 mt-1">✓</span>
+                        <p class="text-slate-600 text-sm md:text-base leading-relaxed"><strong>Mendisrupsi Birokrasi Lomba Renang:</strong> Menghapus proses manual yang membebani panitia dan EO menggunakan <strong>software lomba renang</strong> terpadu.</p>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-emerald-500 mt-1">✓</span>
+                        <p class="text-slate-600 text-sm md:text-base leading-relaxed"><strong>Identitas Tunggal:</strong> Menghadirkan F1 ID sebagai paspor digital abadi, mengeliminasi kecurangan data umur perenang.</p>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="text-emerald-500 mt-1">✓</span>
+                        <p class="text-slate-600 text-sm md:text-base leading-relaxed"><strong>Ekosistem Ekonomi:</strong> Membuka ruang dan peluang komersial (Sponsorship) bagi penyelenggara <strong>manajemen lomba renang</strong> lokal.</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- CALL TO ACTION -->
+    <section class="py-24 bg-gradient-to-br from-blue-900 via-blue-950 to-slate-900 text-center px-4 relative">
+        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
+        <div class="relative z-10 max-w-3xl mx-auto">
+            <h2 class="text-4xl md:text-5xl font-black text-white mb-6 leading-tight">Jadikan Lomba Renang Anda Lebih Profesional</h2>
+            <p class="text-blue-200 text-lg mb-10 font-medium">Beralih ke SCS Command Center hari ini. Software manajemen lomba renang yang mengerti kebutuhan kepanitiaan Anda.</p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="/auth.html" class="w-full sm:w-auto bg-white text-blue-900 font-black px-10 py-4 rounded-full text-lg hover:bg-slate-100 transition-all hover:-translate-y-1 shadow-xl">
+                    Buat Event Sekarang
+                </a>
+                <a href="/pricing.html" class="w-full sm:w-auto bg-transparent border border-white/30 text-white font-bold px-10 py-4 rounded-full text-lg hover:bg-white/10 transition-all">
+                    Lihat Skema Harga
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER STANDAR -->
+    <footer class="bg-gray-950 text-gray-400 pt-16 pb-28 md:pb-16 border-t border-gray-900 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <div class="flex justify-center items-center gap-4 mb-8 opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0 cursor-pointer">
+                <img src="/images/logo.png" alt="SCS Logo" class="max-h-10 md:max-h-12 w-auto object-contain shrink-0">
+                <div class="h-8 w-px bg-slate-600"></div>
+                <img src="/images/f1logo.png" alt="F1 Logo" class="max-h-10 md:max-h-12 w-auto object-contain shrink-0">
+            </div>
+
+            <p class="text-xs text-slate-400 font-bold mb-2 uppercase tracking-widest">PT. Teknologi Prestasi Indonesia</p>
+            <p class="font-medium text-slate-500 text-sm md:text-base mb-8">&copy; 2026 F1 Swimming - F1 ID. All rights reserved.</p>
+
+            <div class="inline-block bg-white/5 border border-white/10 px-6 py-3 rounded-xl">
+                <p class="text-xs md:text-sm text-slate-300 font-black tracking-widest uppercase">Didesain oleh orang lapangan, untuk orang lapangan.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- SCRIPTS UNTUK NAVBAR & LOGIC AUTH (Vanilla JS) -->
+    <script type="module">
+        import { supabaseClient } from '/src/supabase.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Logic Mobile Menu
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            const closeMobileBtn = document.getElementById('closeMobileBtn');
+            
+            function toggleMobile() {
+                if (mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.remove('hidden');
+                    mobileMenu.classList.add('flex');
+                } else {
+                    mobileMenu.classList.add('hidden');
+                    mobileMenu.classList.remove('flex');
+                }
+            }
+            if(mobileMenuBtn) mobileMenuBtn.addEventListener('click', toggleMobile);
+            if(closeMobileBtn) closeMobileBtn.addEventListener('click', toggleMobile);
+
+            // Logic Supabase Session Auth
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                
+                const floatBtn = document.getElementById('floatingAuthBtn');
+                const floatText = document.getElementById('floatingAuthText');
+                const floatingLogoutBtn = document.getElementById('floatingLogoutBtn');
+
+                if (session && floatBtn) {
+                    floatBtn.href = '/dashboard.html';
+                    floatBtn.className = "bg-emerald-600 text-white font-extrabold px-3.5 py-1.5 md:px-5 md:py-1.5 text-[11px] md:text-sm rounded-full shadow-md hover:bg-emerald-700 transition-all border border-emerald-700 flex items-center gap-1.5";
+                    floatText.innerHTML = '<span class="md:hidden">Dashboard</span><span class="hidden md:inline">Ke Dashboard</span> &rarr;';
+                    if(document.getElementById('authIcon')) document.getElementById('authIcon').style.display = 'none';
+                    if(floatingLogoutBtn) {
+                        floatingLogoutBtn.classList.remove('hidden');
+                        floatingLogoutBtn.classList.add('flex');
+                    }
+                }
+
+                const handleLogout = async () => {
+                    await supabaseClient.auth.signOut();
+                    window.location.reload();
+                };
+                if(floatingLogoutBtn) floatingLogoutBtn.addEventListener('click', handleLogout);
+
+            } catch (err) {
+                console.error("Gagal verifikasi sesi", err);
+            }
+        });
+    </script>
+</body>
+</html>

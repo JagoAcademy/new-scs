@@ -177,7 +177,7 @@ function renderAllHeats(eventNumber) {
             <div class="flex justify-between items-end mb-4 border-b border-slate-200 pb-4">
                 <div>
                     <h2 class="text-lg font-black text-slate-900 uppercase">Event #${heat.event_number}: ${heat.nomor_lomba} - ${heat.kelompok_umur} - ${heat.gender}</h2>
-                    <p class="text-sm font-bold text-red-600 mt-1">HEAT ${heat.heat_number} (Dari ${heat.total_heats})</p>
+                    <p class="text-sm font-bold text-red-600 mt-1">SERI/HEAT ${heat.heat_number} (Dari ${heat.total_heats})</p>
                 </div>
             </div>
             <div class="space-y-3 mb-4">

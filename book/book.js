@@ -524,7 +524,7 @@ function renderKertasA4() {
                 <div class="avoid-break mb-6 mt-4">
                     <div class="flex justify-between items-end border-b-2 border-slate-700 pb-1 mb-1">
                         <h3 class="font-extrabold text-[11px] uppercase text-slate-900">Event #${ev.eventNumber}: ${ev.nomor} - ${ev.gender} - ${ev.ku}</h3>
-                        <span class="font-bold text-[10px] text-slate-600 uppercase">HEAT ${heatNumber} of ${totalHeats}</span>
+                        <span class="font-bold text-[10px] text-slate-600 uppercase">SERI/HEAT ${heatNumber} of ${totalHeats}</span>
                     </div>
                     <table class="w-full text-left border-collapse table-fixed">
                         <thead>
@@ -637,7 +637,7 @@ window.simpanKeDatabase = async function() {
         const { error: insertErr } = await supabaseClient.from('event_heats').insert(dataToInsert);
         if (insertErr) throw insertErr;
 
-        alert("✅ Start List berhasil dikunci dan disimpan ke Database! Lanjutkan ke Heat Builder jika ada perubahan lintasan lapangan.");
+        alert("✅ Start List berhasil dikunci dan disimpan ke Database! Lanjutkan ke Seri/Heat Builder jika ada perubahan lintasan lapangan.");
 
     } catch (err) {
         console.error("Gagal simpan:", err);

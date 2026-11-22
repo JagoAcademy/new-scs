@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="avoid-break mb-8 mt-6">
                     <div class="flex justify-between items-end border-b-2 border-slate-700 pb-2 mb-2 bg-slate-50/50 print:bg-transparent px-1">
                         <h3 class="font-extrabold text-[12px] uppercase text-slate-900 tracking-tight">Event #${heat.event_number}: ${heat.nomor_lomba} - ${heat.gender} - ${heat.kelompok_umur}</h3>
-                        <span class="font-black text-[11px] text-slate-600 uppercase tracking-widest bg-slate-200 print:bg-transparent px-2 py-0.5 rounded">HEAT ${heat.heat_number} of ${heat.total_heats}</span>
+                        <span class="font-black text-[11px] text-slate-600 uppercase tracking-widest bg-slate-200 print:bg-transparent px-2 py-0.5 rounded">SERI/HEAT ${heat.heat_number} of ${heat.total_heats}</span>
                     </div>
                     <table class="w-full text-left border-collapse table-fixed mt-1">
                         <thead>

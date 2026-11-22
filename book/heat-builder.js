@@ -64,7 +64,7 @@ async function renderAllDynamicHeats() {
         if (error) throw error;
 
         if(!data || data.length === 0) {
-            container.innerHTML = `<p class="text-slate-500 p-5 text-center bg-white rounded-xl shadow-sm border border-slate-200">Belum ada heat yang di-generate. Silakan 'Simpan & Kunci Start List' dari halaman Buku Acara terlebih dahulu.</p>`;
+            container.innerHTML = `<p class="text-slate-500 p-5 text-center bg-white rounded-xl shadow-sm border border-slate-200">Belum ada seri/heat yang di-generate. Silakan 'Simpan & Kunci Start List' dari halaman Buku Acara terlebih dahulu.</p>`;
             loading.classList.add('hidden');
             return;
         }
@@ -99,7 +99,7 @@ async function renderAllDynamicHeats() {
                         <p class="text-xs md:text-sm font-bold text-slate-300 mt-1">${heatsInEvent[0].nomor_lomba} • ${heatsInEvent[0].gender} • ${heatsInEvent[0].kelompok_umur}</p>
                     </div>
                     <div class="text-right">
-                        <span class="bg-slate-700 px-3 py-1 rounded-lg text-xs font-bold font-mono">${heatsInEvent.length} Heats</span>
+                        <span class="bg-slate-700 px-3 py-1 rounded-lg text-xs font-bold font-mono">${heatsInEvent.length} Seri/Heat</span>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
@@ -133,7 +133,7 @@ async function renderAllDynamicHeats() {
         recalculateLanes();
 
     } catch (err) {
-        alert("Gagal memuat formasi Heat: " + err.message);
+        alert("Gagal memuat formasi Seri/Heat: " + err.message);
     } finally {
         loading.classList.add('hidden');
     }
@@ -188,7 +188,7 @@ function generateHeatHTML(dbId, heatNum, lanesDataArr, maxLanes) {
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-5 relative" data-db-id="${dbId}">
         <div class="absolute -top-3 -left-3 w-8 h-8 bg-amber-400 text-white rounded-full flex items-center justify-center font-black text-sm border-2 border-white shadow-sm">${heatNum}</div>
         <h3 class="text-xs font-black text-slate-700 border-b border-slate-100 pb-2 mb-4 pl-6 uppercase tracking-widest flex justify-between items-center">
-            Heat ${heatNum}
+            Seri/Heat ${heatNum}
         </h3>
         <div class="heat-sortable-list min-h-[50px]" data-heat-number="${heatNum}">
             ${listHTML}

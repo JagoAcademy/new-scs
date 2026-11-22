@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 title.innerText = "Simulasi: 1 Brand Placement";
                 htmlSimulation = `
                     <div class="bg-blue-950/40 text-blue-300 p-4 rounded-2xl border border-blue-500/30 text-xs leading-relaxed mb-5 text-left">
-                        🚀 <strong>The Power of Multi-Heat:</strong> 1 Nomor Lomba terdiri dari 8 hingga 15 seri (Heat). Setiap berganti seri, penonton me-refresh halaman Live Result. Logo Anda akan <strong>tayang berulang kali di seluruh Heat</strong> sepanjang nomor lomba berlangsung!
+                        🚀 <strong>The Power of Multi-Heat:</strong> 1 Nomor Lomba terdiri dari 8 hingga 15 seri (Seri/Heat). Setiap berganti seri, penonton me-refresh halaman Live Result. Logo Anda akan <strong>tayang berulang kali di seluruh Seri/Heat</strong> sepanjang nomor lomba berlangsung!
                     </div>
                     <div class="space-y-2.5 text-left">
                         <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[10px] text-slate-500 font-bold flex justify-between items-center">
@@ -122,16 +122,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                             
                             <div class="flex flex-col gap-1.5 pt-1">
                                 <div class="bg-blue-900/30 border border-blue-500/20 p-2.5 rounded-xl text-[10px] text-blue-200 font-semibold flex justify-between items-center">
-                                    <span>🔥 HEAT 1 dari 8</span> <span class="bg-blue-600 text-white text-[8px] px-2 py-0.5 rounded font-bold uppercase">BRAND ANDA</span>
+                                    <span>🔥 SERI/HEAT 1 dari 8</span> <span class="bg-blue-600 text-white text-[8px] px-2 py-0.5 rounded font-bold uppercase">BRAND ANDA</span>
                                 </div>
                                 <div class="bg-blue-900/30 border border-blue-500/20 p-2.5 rounded-xl text-[10px] text-blue-200 font-semibold flex justify-between items-center">
-                                    <span>🔥 HEAT 2 dari 8</span> <span class="bg-blue-600 text-white text-[8px] px-2 py-0.5 rounded font-bold uppercase">BRAND ANDA</span>
+                                    <span>🔥 SERI/HEAT 2 dari 8</span> <span class="bg-blue-600 text-white text-[8px] px-2 py-0.5 rounded font-bold uppercase">BRAND ANDA</span>
                                 </div>
                                 <div class="bg-blue-900/30 border border-blue-500/20 p-2.5 rounded-xl text-[10px] text-blue-200 font-semibold flex justify-between items-center">
-                                    <span>🔥 HEAT 3 dari 8</span> <span class="bg-blue-600 text-white text-[8px] px-2 py-0.5 rounded font-bold uppercase">BRAND ANDA</span>
+                                    <span>🔥 SERI/HEAT 3 dari 8</span> <span class="bg-blue-600 text-white text-[8px] px-2 py-0.5 rounded font-bold uppercase">BRAND ANDA</span>
                                 </div>
                                 <div class="text-[9px] text-slate-400 text-center font-bold py-1 bg-slate-900/60 rounded-lg border border-slate-800">
-                                    ...dan berlanjut otomatis tayang eksklusif hingga HEAT 8
+                                    ...dan berlanjut otomatis tayang eksklusif hingga SERI/HEAT 8
                                 </div>
                             </div>
                         </div>
@@ -157,16 +157,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                             
                             <div class="flex flex-col gap-1.5 pt-1">
                                 <div class="bg-blue-900/30 border border-blue-500/20 p-2.5 rounded-xl text-[10px] text-blue-200 font-semibold flex justify-between items-center">
-                                    <span>🔥 HEAT 1</span> <span class="bg-amber-500 text-slate-950 text-[8px] px-2 py-0.5 rounded font-bold uppercase">BRAND A (Produk 1)</span>
+                                    <span>🔥 SERI/HEAT 1</span> <span class="bg-amber-500 text-slate-950 text-[8px] px-2 py-0.5 rounded font-bold uppercase">BRAND A (Produk 1)</span>
                                 </div>
                                 <div class="bg-blue-900/30 border border-blue-500/20 p-2.5 rounded-xl text-[10px] text-blue-200 font-semibold flex justify-between items-center">
-                                    <span>🔥 HEAT 2</span> <span class="bg-emerald-500 text-slate-950 text-[8px] px-2 py-0.5 rounded font-bold uppercase">BRAND B (Produk 2)</span>
+                                    <span>🔥 SERI/HEAT 2</span> <span class="bg-emerald-500 text-slate-950 text-[8px] px-2 py-0.5 rounded font-bold uppercase">BRAND B (Produk 2)</span>
                                 </div>
                                 <div class="bg-blue-900/30 border border-blue-500/20 p-2.5 rounded-xl text-[10px] text-blue-200 font-semibold flex justify-between items-center">
-                                    <span>🔥 HEAT 3</span> <span class="bg-amber-500 text-slate-950 text-[8px] px-2 py-0.5 rounded font-bold uppercase">BRAND A (Produk 1)</span>
+                                    <span>🔥 SERI/HEAT 3</span> <span class="bg-amber-500 text-slate-950 text-[8px] px-2 py-0.5 rounded font-bold uppercase">BRAND A (Produk 1)</span>
                                 </div>
                                 <div class="bg-blue-900/30 border border-blue-500/20 p-2.5 rounded-xl text-[10px] text-blue-200 font-semibold flex justify-between items-center">
-                                    <span>🔥 HEAT 4</span> <span class="bg-emerald-500 text-slate-950 text-[8px] px-2 py-0.5 rounded font-bold uppercase">BRAND B (Produk 2)</span>
+                                    <span>🔥 SERI/HEAT 4</span> <span class="bg-emerald-500 text-slate-950 text-[8px] px-2 py-0.5 rounded font-bold uppercase">BRAND B (Produk 2)</span>
                                 </div>
                                 <div class="text-[9px] text-slate-400 text-center font-bold py-1 bg-slate-900/60 rounded-lg border border-slate-800">
                                     Kedua brand berbagi porsi tayang secara adil di seluruh seri lomba
@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 title.innerText = "Simulasi: 3 Brand Mix";
                 htmlSimulation = `
                     <div class="bg-blue-950/40 text-blue-300 p-4 rounded-2xl border border-blue-500/30 text-xs leading-relaxed mb-5 text-left">
-                        🌐 <strong>Eksposur Multi-Brand:</strong> Distribusi 3 portofolio produk sekaligus secara dinamis di sepanjang 8 hingga 15 seri heat pertandingan.
+                        🌐 <strong>Eksposur Multi-Brand:</strong> Distribusi 3 portofolio produk sekaligus secara dinamis di sepanjang 8 hingga 15 seri seri/heat pertandingan.
                     </div>
                     <div class="space-y-2.5 text-left">
                         <div class="bg-gradient-to-b from-blue-950 to-slate-950 p-4 rounded-2xl border-2 border-blue-500 shadow-xl space-y-2.5">
@@ -190,16 +190,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                             
                             <div class="flex flex-col gap-1.5 pt-1">
                                 <div class="bg-blue-900/30 border border-blue-500/20 p-2.5 rounded-xl text-[10px] text-blue-200 font-semibold flex justify-between items-center">
-                                    <span>🔥 HEAT 1</span> <span class="bg-amber-500 text-slate-950 text-[8px] px-2 py-0.5 rounded font-bold uppercase">BRAND A</span>
+                                    <span>🔥 SERI/HEAT 1</span> <span class="bg-amber-500 text-slate-950 text-[8px] px-2 py-0.5 rounded font-bold uppercase">BRAND A</span>
                                 </div>
                                 <div class="bg-blue-900/30 border border-blue-500/20 p-2.5 rounded-xl text-[10px] text-blue-200 font-semibold flex justify-between items-center">
-                                    <span>🔥 HEAT 2</span> <span class="bg-emerald-500 text-slate-950 text-[8px] px-2 py-0.5 rounded font-bold uppercase">BRAND B</span>
+                                    <span>🔥 SERI/HEAT 2</span> <span class="bg-emerald-500 text-slate-950 text-[8px] px-2 py-0.5 rounded font-bold uppercase">BRAND B</span>
                                 </div>
                                 <div class="bg-blue-900/30 border border-blue-500/20 p-2.5 rounded-xl text-[10px] text-blue-200 font-semibold flex justify-between items-center">
-                                    <span>🔥 HEAT 3</span> <span class="bg-purple-500 text-white text-[8px] px-2 py-0.5 rounded font-bold uppercase">BRAND C</span>
+                                    <span>🔥 SERI/HEAT 3</span> <span class="bg-purple-500 text-white text-[8px] px-2 py-0.5 rounded font-bold uppercase">BRAND C</span>
                                 </div>
                                 <div class="text-[9px] text-slate-400 text-center font-bold py-1 bg-slate-900/60 rounded-lg border border-slate-800">
-                                    Sistem secara cerdas merotasi ketiga brand sepanjang seluruh Heat
+                                    Sistem secara cerdas merotasi ketiga brand sepanjang seluruh Seri/Heat
                                 </div>
                             </div>
                         </div>

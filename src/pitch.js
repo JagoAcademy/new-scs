@@ -284,7 +284,7 @@ function renderSimulation(brandsArray) {
             <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 mb-3 opacity-80">
                 <div class="pl-1 mb-2">
                     <h3 class="text-[10px] font-black text-slate-800 uppercase">Event #${i+1}: ${dummyEvents[i]}</h3>
-                    <p class="text-[7px] text-slate-400 font-bold mt-0.5 uppercase tracking-wider">HEAT 1 | Dari 3</p>
+                    <p class="text-[7px] text-slate-400 font-bold mt-0.5 uppercase tracking-wider">SERI/HEAT 1 | Dari 3</p>
                 </div>
                 <div class="bg-slate-50 rounded-lg p-1.5 border border-slate-100 text-center py-4">
                     <span class="text-[8px] font-bold text-slate-400">Data hasil dari event <br><strong class="text-slate-600">${companyName}</strong> akan tampil di sini secara real-time.</span>
@@ -328,7 +328,7 @@ function renderSimulation(brandsArray) {
             ${sponsorHeader}
             <div class="pl-1 mb-2">
                 <h3 class="text-[10px] font-black text-slate-800 uppercase leading-tight">Event #${i+1}: ${dummyEvents[i]}</h3>
-                <p class="text-[7px] text-slate-400 font-bold mt-0.5 uppercase tracking-wider">HEAT 1 <span class="text-slate-300 mx-1">|</span> Dari 3</p>
+                <p class="text-[7px] text-slate-400 font-bold mt-0.5 uppercase tracking-wider">SERI/HEAT 1 <span class="text-slate-300 mx-1">|</span> Dari 3</p>
             </div>
             
             <div class="bg-slate-50/50 rounded-lg p-1.5 border border-slate-100">

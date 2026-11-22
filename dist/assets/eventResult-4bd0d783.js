@@ -21,7 +21,7 @@ import"./modulepreload-polyfill-3cfb730f.js";/* empty css              */import{
                     <th style="text-align: center;">Rank</th>
                     <th>Nama Perenang</th>
                     <th>Klub</th>
-                    <th style="text-align: center;">Heat / Lane</th>
+                    <th style="text-align: center;">Seri/Heat / Lane</th>
                     <th style="text-align: center;">Catatan Waktu</th>
                 </tr>
             </thead>

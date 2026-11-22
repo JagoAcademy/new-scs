@@ -274,7 +274,7 @@ function renderResults(eventNumber) {
         });
 
         if (heat.lanes_data.length === 0 || !heat.lanes_data.some(a => a.nama)) {
-            lanesHtml += `<p class="text-[10px] text-slate-400 italic text-center py-3">Tidak ada data atlet di Heat ini.</p>`;
+            lanesHtml += `<p class="text-[10px] text-slate-400 italic text-center py-3">Tidak ada data atlet di Seri/Heat ini.</p>`;
         }
 
         let eventSponsorHeader = '';
@@ -348,7 +348,7 @@ function renderResults(eventNumber) {
             ${eventSponsorHeader}
             <div class="pl-2 mb-3">
                 <h3 class="text-xs font-black text-slate-800 uppercase leading-tight">Event #${heat.event_number}: ${heat.nomor_lomba} - ${heat.gender}</h3>
-                <p class="text-[9px] text-slate-400 font-bold mt-0.5 uppercase tracking-wider">HEAT ${heat.heat_number} <span class="text-slate-300 mx-1">|</span> Dari ${heat.total_heats}</p>
+                <p class="text-[9px] text-slate-400 font-bold mt-0.5 uppercase tracking-wider">SERI/HEAT ${heat.heat_number} <span class="text-slate-300 mx-1">|</span> Dari ${heat.total_heats}</p>
             </div>
             <div class="bg-slate-50/50 rounded-lg p-2 border border-slate-100">
                 ${lanesHtml}

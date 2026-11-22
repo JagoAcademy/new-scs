@@ -1,24 +1,110 @@
-import"./modulepreload-polyfill-3cfb730f.js";import{s as p}from"./supabase-e9059105.js";document.addEventListener("DOMContentLoaded",async()=>{try{const{data:{session:e}}=await p.auth.getSession();if(e){const t=document.getElementById("navLoginBtn");t&&(t.href="/sponsor.html",t.innerHTML="Dashboard Saya &rarr;",t.classList.replace("text-slate-300","text-amber-400"),t.classList.replace("hover:text-white","hover:text-amber-300"))}}catch(e){console.error("Session check failed",e)}let r="";const a=document.getElementById("contactChoiceModal"),i=()=>{a.classList.add("hidden"),a.classList.remove("flex")};document.querySelectorAll(".btn-pilih-paket").forEach(e=>{e.addEventListener("click",t=>{r=t.target.getAttribute("data-paket"),document.getElementById("contactPaketName").innerText=r,a.classList.remove("hidden"),a.classList.add("flex")})}),document.getElementById("btnCloseContact").addEventListener("click",i),document.getElementById("btnContactWa").addEventListener("click",()=>{const e="6283146851999",t=`Halo tim F1 Swimming (Vanessa), saya tertarik untuk mendiskusikan penawaran *${r}*. Mohon info lebih lanjut mengenai proses penempatan Ad-Tech ini.`;window.open(`https://wa.me/${e}?text=${encodeURIComponent(t)}`,"_blank"),i()}),document.getElementById("btnContactEmail").addEventListener("click",()=>{const e=`Pengajuan Sponsorship - ${r}`,t=`Halo Tim Kemitraan F1 Swimming,
+import { supabaseClient } from './supabase.js';
 
-Kami tertarik untuk mendiskusikan penawaran ${r}.
+document.addEventListener('DOMContentLoaded', async () => {
+    
+    // ==========================================
+    // 1. CEK SESSION (UBAH TOMBOL NAVBAR JIKA LOGIN)
+    // ==========================================
+    try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) {
+            const navLoginBtn = document.getElementById('navLoginBtn');
+            if (navLoginBtn) {
+                navLoginBtn.href = '/sponsor.html';
+                navLoginBtn.innerHTML = 'Dashboard Saya &rarr;';
+                navLoginBtn.classList.replace('text-slate-300', 'text-amber-400');
+                navLoginBtn.classList.replace('hover:text-white', 'hover:text-amber-300');
+            }
+        }
+    } catch (err) { console.error("Session check failed", err); }
 
-Mohon informasi lebih lanjut terkait prosedur kerja sama dan ketersediaan slot penayangan.
+    // ==========================================
+    // 2. MODAL CONTACT CHOICE (TIER 1 & 2)
+    // ==========================================
+    let selectedPaket = "";
+    const contactModal = document.getElementById('contactChoiceModal');
+    
+    const closeContactChoice = () => {
+        contactModal.classList.add('hidden');
+        contactModal.classList.remove('flex');
+    };
 
-Terima kasih.`;window.location.href=`mailto:support@f1swimming.com?subject=${encodeURIComponent(e)}&body=${encodeURIComponent(t)}`,i()}),a.addEventListener("click",e=>{e.target===a&&i()}),document.querySelectorAll(".btn-email").forEach(e=>{e.addEventListener("click",t=>{const b=`Pengajuan Kolaborasi - ${t.target.getAttribute("data-paket")}`,d=`Halo Tim Kemitraan F1 Swimming,
+    document.querySelectorAll('.btn-pilih-paket').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            selectedPaket = e.target.getAttribute('data-paket');
+            document.getElementById('contactPaketName').innerText = selectedPaket;
+            contactModal.classList.remove('hidden');
+            contactModal.classList.add('flex');
+        });
+    });
 
-Kami tertarik untuk mendaftarkan Brand kami sebagai bagian dari ekosistem SCS Partner (Tier 0).
+    document.getElementById('btnCloseContact').addEventListener('click', closeContactChoice);
+    
+    // Aksi Klik WA
+    document.getElementById('btnContactWa').addEventListener('click', () => {
+        const phone = "6283146851999"; 
+        const text = `Halo tim F1 Swimming (Vanessa), saya tertarik untuk mendiskusikan penawaran *${selectedPaket}*. Mohon info lebih lanjut mengenai proses penempatan Ad-Tech ini.`;
+        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+        closeContactChoice();
+    });
 
-Mohon informasi mengenai persyaratan dan kelengkapan dokumen yang dibutuhkan untuk bergabung ke dalam Master Katalog Anda.
+    // Aksi Klik Email Support
+    document.getElementById('btnContactEmail').addEventListener('click', () => {
+        const subject = `Pengajuan Sponsorship - ${selectedPaket}`;
+        const body = `Halo Tim Kemitraan F1 Swimming,\n\nKami tertarik untuk mendiskusikan penawaran ${selectedPaket}.\n\nMohon informasi lebih lanjut terkait prosedur kerja sama dan ketersediaan slot penayangan.\n\nTerima kasih.`;
+        window.location.href = `mailto:support@f1swimming.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        closeContactChoice();
+    });
 
-Terima kasih.`;window.location.href=`mailto:support@f1swimming.com?subject=${encodeURIComponent(b)}&body=${encodeURIComponent(d)}`})}),document.querySelectorAll(".btn-akuisisi").forEach(e=>{e.addEventListener("click",()=>{const t="Pengajuan Ultimate Acquisition - F1 ID Naming Rights",s=`Halo Mas Fajar Aditya,
+    // Menutup Contact Modal jika background hitam diklik
+    contactModal.addEventListener('click', (e) => {
+        if (e.target === contactModal) closeContactChoice();
+    });
 
-Kami mewakili perusahaan/brand kami sangat tertarik dengan penawaran Naming Rights F1 ID senilai Rp 10 Miliar.
+    // ==========================================
+    // 3. LOGIKA ROUTING EMAIL TIER 0
+    // ==========================================
+    document.querySelectorAll('.btn-email').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const paket = e.target.getAttribute('data-paket');
+            const subject = `Pengajuan Kolaborasi - ${paket}`;
+            const body = `Halo Tim Kemitraan F1 Swimming,\n\nKami tertarik untuk mendaftarkan Brand kami sebagai bagian dari ekosistem SCS Partner (Tier 0).\n\nMohon informasi mengenai persyaratan dan kelengkapan dokumen yang dibutuhkan untuk bergabung ke dalam Master Katalog Anda.\n\nTerima kasih.`;
+            window.location.href = `mailto:support@f1swimming.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        });
+    });
 
-Kami ingin mengatur jadwal meeting untuk mendiskusikan Terms & Conditions serta roadmap akuisisi ekosistem Live Result ini selama 5 tahun ke depan.
+    // ==========================================
+    // 4. LOGIKA AKUISISI TIER 3 (MAILTO: FAJAR ADITYA)
+    // ==========================================
+    document.querySelectorAll('.btn-akuisisi').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const subject = "Pengajuan Ultimate Acquisition - F1 ID Naming Rights";
+            const body = "Halo Mas Fajar Aditya,\n\nKami mewakili perusahaan/brand kami sangat tertarik dengan penawaran Naming Rights F1 ID senilai Rp 10 Miliar.\n\nKami ingin mengatur jadwal meeting untuk mendiskusikan Terms & Conditions serta roadmap akuisisi ekosistem Live Result ini selama 5 tahun ke depan.\n\nMohon arahannya untuk langkah selanjutnya.\n\nSalam hormat.";
+            window.location.href = `mailto:fajar@f1swimming.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        });
+    });
 
-Mohon arahannya untuk langkah selanjutnya.
+    // ==========================================
+    // 5. MODAL PREVIEW SIMULASI MULTI-HEAT
+    // ==========================================
+    const previewModal = document.getElementById('previewModal');
+    
+    const closePreviewSimulasi = () => {
+        previewModal.classList.add('hidden');
+        previewModal.classList.remove('flex');
+    };
 
-Salam hormat.`;window.location.href=`mailto:fajar@f1swimming.com?subject=${encodeURIComponent(t)}&body=${encodeURIComponent(s)}`})});const n=document.getElementById("previewModal"),l=()=>{n.classList.add("hidden"),n.classList.remove("flex")};document.querySelectorAll(".btn-preview").forEach(e=>{e.addEventListener("click",t=>{const s=t.currentTarget.getAttribute("data-tipe"),b=document.getElementById("modalSimulationContent"),d=document.getElementById("modalSimulationTitle");let o="";s==="single"?(d.innerText="Simulasi: 1 Brand Placement",o=`
+    document.querySelectorAll('.btn-preview').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const tipePaket = e.currentTarget.getAttribute('data-tipe');
+            const content = document.getElementById('modalSimulationContent');
+            const title = document.getElementById('modalSimulationTitle');
+            
+            let htmlSimulation = '';
+
+            if (tipePaket === 'single') {
+                title.innerText = "Simulasi: 1 Brand Placement";
+                htmlSimulation = `
                     <div class="bg-blue-950/40 text-blue-300 p-4 rounded-2xl border border-blue-500/30 text-xs leading-relaxed mb-5 text-left">
                         🚀 <strong>The Power of Multi-Heat:</strong> 1 Nomor Lomba terdiri dari 8 hingga 15 seri (Heat). Setiap berganti seri, penonton me-refresh halaman Live Result. Logo Anda akan <strong>tayang berulang kali di seluruh Heat</strong> sepanjang nomor lomba berlangsung!
                     </div>
@@ -55,7 +141,10 @@ Salam hormat.`;window.location.href=`mailto:fajar@f1swimming.com?subject=${encod
                             <span class="text-[9px] text-slate-600 uppercase">Slot Klien Lain</span>
                         </div>
                     </div>
-                `):s==="dual"?(d.innerText="Simulasi: 2 Brand Mix",o=`
+                `;
+            } else if (tipePaket === 'dual') {
+                title.innerText = "Simulasi: 2 Brand Mix";
+                htmlSimulation = `
                     <div class="bg-blue-950/40 text-blue-300 p-4 rounded-2xl border border-blue-500/30 text-xs leading-relaxed mb-5 text-left">
                         🔄 <strong>Rotasi Seimbang Multi-Heat:</strong> Menayangkan 2 produk atau lini bisnis berbeda dari korporat Anda secara bergantian di setiap seri lomba.
                     </div>
@@ -85,7 +174,10 @@ Salam hormat.`;window.location.href=`mailto:fajar@f1swimming.com?subject=${encod
                             </div>
                         </div>
                     </div>
-                `):s==="triple"&&(d.innerText="Simulasi: 3 Brand Mix",o=`
+                `;
+            } else if (tipePaket === 'triple') {
+                title.innerText = "Simulasi: 3 Brand Mix";
+                htmlSimulation = `
                     <div class="bg-blue-950/40 text-blue-300 p-4 rounded-2xl border border-blue-500/30 text-xs leading-relaxed mb-5 text-left">
                         🌐 <strong>Eksposur Multi-Brand:</strong> Distribusi 3 portofolio produk sekaligus secara dinamis di sepanjang 8 hingga 15 seri heat pertandingan.
                     </div>
@@ -112,4 +204,19 @@ Salam hormat.`;window.location.href=`mailto:fajar@f1swimming.com?subject=${encod
                             </div>
                         </div>
                     </div>
-                `),b.innerHTML=o,n.classList.remove("hidden"),n.classList.add("flex")})}),document.getElementById("btnClosePreview").addEventListener("click",l),document.getElementById("btnClosePreviewBtn").addEventListener("click",l),n.addEventListener("click",e=>{e.target===n&&l()})});
+                `;
+            }
+
+            content.innerHTML = htmlSimulation;
+            previewModal.classList.remove('hidden');
+            previewModal.classList.add('flex');
+        });
+    });
+
+    document.getElementById('btnClosePreview').addEventListener('click', closePreviewSimulasi);
+    document.getElementById('btnClosePreviewBtn').addEventListener('click', closePreviewSimulasi);
+
+    previewModal.addEventListener('click', (e) => {
+        if (e.target === previewModal) closePreviewSimulasi();
+    });
+});
