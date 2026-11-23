@@ -48,22 +48,84 @@ async function generateOrFindF1Id(supabase, { nama, dob, gender, aktaUrl = null 
 }
 
 
-async function compressImageTo150KB(file, maxKB = 150) {
-    if (!file || !file.type.startsWith("image/")) return file;
-    const maxBytes = maxKB * 1024;
-    if (file.size <= maxBytes) return file;
+async function decodeImageSource(file) {
+    // Lapis 1: createImageBitmap (decoder native Android/iOS, aman untuk content:// Photo Picker)
+    if (typeof createImageBitmap === 'function') {
+        try {
+            const bmp = await createImageBitmap(file);
+            return {
+                source: bmp,
+                width: bmp.width,
+                height: bmp.height,
+                cleanup: () => { if (typeof bmp.close === 'function') bmp.close(); }
+            };
+        } catch (e) {
+            console.warn('[SCS-IMG] createImageBitmap dilewati:', e?.message || e);
+        }
+    }
 
+    // Lapis 2: FileReader DataURL + HTMLImageElement
+    try {
+        const dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(new Error('FileReader gagal'));
+            reader.readAsDataURL(file);
+        });
+        const img = await new Promise((resolve, reject) => {
+            const image = new Image();
+            image.onload = () => resolve(image);
+            image.onerror = () => reject(new Error('DataURL Image gagal'));
+            image.src = dataUrl;
+        });
+        return {
+            source: img,
+            width: img.naturalWidth || img.width,
+            height: img.naturalHeight || img.height,
+            cleanup: () => {}
+        };
+    } catch (e) {
+        console.warn('[SCS-IMG] FileReader fallback dilewati:', e?.message || e);
+    }
+
+    // Lapis 3: ObjectURL + HTMLImageElement
     const objectUrl = URL.createObjectURL(file);
     try {
         const img = await new Promise((resolve, reject) => {
             const image = new Image();
             image.onload = () => resolve(image);
-            image.onerror = () => reject(new Error("File foto Akta tidak dapat dibaca. Gunakan foto format JPG/PNG yang tersimpan di galeri HP."));
+            image.onerror = () => reject(new Error('ObjectURL Image gagal'));
             image.src = objectUrl;
         });
+        return {
+            source: img,
+            width: img.naturalWidth || img.width,
+            height: img.naturalHeight || img.height,
+            cleanup: () => URL.revokeObjectURL(objectUrl)
+        };
+    } catch (err) {
+        URL.revokeObjectURL(objectUrl);
+        throw err;
+    }
+}
 
-        let width = img.naturalWidth || img.width;
-        let height = img.naturalHeight || img.height;
+async function compressImageTo150KB(file, maxKB = 180) {
+    if (!file) return file;
+    const maxBytes = maxKB * 1024;
+    const maxDirectUploadBytes = 8 * 1024 * 1024; // 8 MB batas aman upload langsung tanpa kompresi
+
+    // Jika file sudah ringan (<= maxKB) atau bukan gambar (misal PDF hasil scan), langsung pakai file asli
+    if (!file.type || !file.type.startsWith("image/") || file.size <= maxBytes) {
+        return file;
+    }
+
+    let decoded = null;
+    try {
+        decoded = await decodeImageSource(file);
+        let width = decoded.width;
+        let height = decoded.height;
+        if (!width || !height) return file;
+
         const maxDim = 1600;
         if (width > maxDim || height > maxDim) {
             const ratio = Math.min(maxDim / width, maxDim / height);
@@ -73,14 +135,15 @@ async function compressImageTo150KB(file, maxKB = 150) {
 
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
-        let blob = null;
+        if (!ctx) return file;
 
-        while (width >= 400) {
+        let blob = null;
+        while (width >= 400 && height >= 200) {
             canvas.width = width;
             canvas.height = height;
             ctx.fillStyle = "#FFFFFF";
             ctx.fillRect(0, 0, width, height);
-            ctx.drawImage(img, 0, 0, width, height);
+            ctx.drawImage(decoded.source, 0, 0, width, height);
 
             for (let q = 0.85; q >= 0.45; q -= 0.1) {
                 blob = await new Promise(res => canvas.toBlob(res, "image/jpeg", Number(q.toFixed(2))));
@@ -93,11 +156,39 @@ async function compressImageTo150KB(file, maxKB = 150) {
         }
 
         if (!blob || blob.size >= file.size) return file;
-        const baseName = file.name.replace(/\.[^/.]+$/, "");
+        const baseName = (file.name || "dokumen").replace(/\.[^/.]+$/, "");
         return new File([blob], baseName + ".jpg", { type: "image/jpeg", lastModified: Date.now() });
+    } catch (err) {
+        // JANGAN PERNAH MEMBLOKIR PENDAFTARAN JIKA KOMPRESI BROWSER GAGAL
+        console.warn("[SCS-IMG] Kompresi dilewati, memakai file asli:", err?.message || err);
+        if (file.size <= maxDirectUploadBytes) {
+            return file;
+        }
+        throw new Error("Ukuran file terlalu besar (> 8 MB) dan gagal dikompres otomatis. Perkecil ukuran foto terlebih dahulu.");
     } finally {
-        URL.revokeObjectURL(objectUrl);
+        if (decoded && typeof decoded.cleanup === "function") {
+            decoded.cleanup();
+        }
     }
+}
+
+function buildSafeStorageUploadMeta(file, prefix) {
+    const mimeMap = {
+        "image/jpeg": "jpg",
+        "image/jpg": "jpg",
+        "image/png": "png",
+        "image/webp": "webp",
+        "image/heic": "heic",
+        "image/heif": "heif",
+        "application/pdf": "pdf"
+    };
+    const rawExt = (file.name && file.name.includes("."))
+        ? file.name.split(".").pop().toLowerCase().replace(/[^a-z0-9]/g, "")
+        : "";
+    const fileExt = mimeMap[file.type] || (rawExt && rawExt.length <= 5 ? rawExt : "jpg");
+    const contentType = file.type || (fileExt === "pdf" ? "application/pdf" : "image/jpeg");
+    const fileName = `${prefix}_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+    return { fileName, contentType };
 }
 
 let currentEvent = null; 
@@ -997,10 +1088,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             let finalAktaUrl = null;
             if (requiresAktaUpload && fileAkta) {
-                const readyAkta = await compressImageTo150KB(fileAkta, 150);
-                const fileExt = readyAkta.name.split('.').pop();
-                const fileName = `akta_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-                const { error: uploadError } = await supabaseClient.storage.from('verifikasi-akta').upload(fileName, readyAkta);
+                if (fileAkta.size === 0) throw new Error("File Akta kosong (0 KB). Pilih ulang file dari galeri HP.");
+                const readyAkta = await compressImageTo150KB(fileAkta, 180);
+                const { fileName, contentType } = buildSafeStorageUploadMeta(readyAkta, 'akta');
+                const { error: uploadError } = await supabaseClient.storage.from('verifikasi-akta').upload(fileName, readyAkta, { contentType, upsert: false });
                 if (uploadError) throw uploadError;
                 const { data: urlData } = supabaseClient.storage.from('verifikasi-akta').getPublicUrl(fileName);
                 finalAktaUrl = urlData.publicUrl;
@@ -1326,10 +1417,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (total > 0) {
                 statusBayar = 'Menunggu Konfirmasi';
-                const readyStruk = await compressImageTo150KB(fileStruk, 150);
-                const fileExt = readyStruk.name.split('.').pop();
-                const fileName = `struk_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-                const { error: uploadError } = await supabaseClient.storage.from('bukti-transfer').upload(fileName, readyStruk);
+                if (fileStruk.size === 0) throw new Error("File Bukti Transfer kosong (0 KB). Pilih ulang file dari galeri HP.");
+                const readyStruk = await compressImageTo150KB(fileStruk, 180);
+                const { fileName, contentType } = buildSafeStorageUploadMeta(readyStruk, 'struk');
+                const { error: uploadError } = await supabaseClient.storage.from('bukti-transfer').upload(fileName, readyStruk, { contentType, upsert: false });
                 if (uploadError) throw uploadError;
                 const { data: urlData } = supabaseClient.storage.from('bukti-transfer').getPublicUrl(fileName);
                 strukUrl = urlData.publicUrl;
