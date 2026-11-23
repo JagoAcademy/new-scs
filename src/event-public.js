@@ -58,7 +58,7 @@ async function compressImageTo150KB(file, maxKB = 150) {
         const img = await new Promise((resolve, reject) => {
             const image = new Image();
             image.onload = () => resolve(image);
-            image.onerror = reject;
+            image.onerror = () => reject(new Error("File foto Akta tidak dapat dibaca. Gunakan foto format JPG/PNG yang tersimpan di galeri HP."));
             image.src = objectUrl;
         });
 
@@ -1049,7 +1049,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             loadTagihan();
 
         } catch (err) {
-            alert("Terjadi kesalahan sistem: " + err.message);
+            const detailErr = err?.message || err?.error_description || err?.details || "Koneksi internet terputus atau file gagal diunggah. Coba lagi.";
+            alert("Terjadi kesalahan sistem: " + detailErr);
         } finally {
             btn.innerHTML = "Daftar Individu, Masuk Antrian"; 
             btn.disabled = false;
