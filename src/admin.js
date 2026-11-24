@@ -10,6 +10,24 @@ let currentUnboundPage = 1;
 const unboundPerPage = 10;
 let filteredUnboundAthletes = [];
 
+// Variabel Global untuk Pagination Events (God Mode)
+let currentEventsGodPage = 1;
+const eventsGodPerPage = 10;
+let filteredEventsGod = [];
+
+// State Modal God Mode Club
+let activeGodClub = null;
+let activeGodClubAthletes = [];
+
+function escapeHtml(str) {
+    return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     // ==========================================
     // 🪤 1. THE AZTEC SECRET (JEBAKAN BATMAN)
@@ -134,6 +152,136 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
+
+    // ==========================================
+    // 🏆 5. EVENT LISTENER SEARCH & PAGINATION ALL EVENTS (GOD MODE)
+    // ==========================================
+    const searchEventGodInput = document.getElementById('searchEventGod');
+    if (searchEventGodInput) {
+        searchEventGodInput.addEventListener('input', (e) => {
+            const kw = e.target.value.toLowerCase();
+            if (!window.allEventsGod) return;
+            filteredEventsGod = window.allEventsGod.filter(ev =>
+                (ev.event_name && ev.event_name.toLowerCase().includes(kw)) ||
+                (ev.subdomain && ev.subdomain.toLowerCase().includes(kw)) ||
+                (ev.kota && ev.kota.toLowerCase().includes(kw))
+            );
+            currentEventsGodPage = 1;
+            renderEventsGod(filteredEventsGod);
+        });
+    }
+
+    const btnPrevEv = document.getElementById('btnPrevEventsGod');
+    const btnNextEv = document.getElementById('btnNextEventsGod');
+    if (btnPrevEv) {
+        btnPrevEv.addEventListener('click', () => {
+            if (currentEventsGodPage > 1) {
+                currentEventsGodPage--;
+                renderEventsGod(filteredEventsGod);
+            }
+        });
+    }
+    if (btnNextEv) {
+        btnNextEv.addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredEventsGod.length / eventsGodPerPage);
+            if (currentEventsGodPage < totalPages) {
+                currentEventsGodPage++;
+                renderEventsGod(filteredEventsGod);
+            }
+        });
+    }
+
+    // ==========================================
+    // ⚡ 6. EVENT LISTENER MODAL GOD MODE CLUB
+    // ==========================================
+    const btnCloseModal = document.getElementById('btnCloseGodClubModal');
+    const modalGodClub = document.getElementById('modalGodClub');
+    if (btnCloseModal && modalGodClub) {
+        btnCloseModal.addEventListener('click', () => {
+            modalGodClub.classList.add('hidden');
+            activeGodClub = null;
+        });
+    }
+
+    const btnOpenDashModal = document.getElementById('btnGodOpenDashboardFromModal');
+    if (btnOpenDashModal) {
+        btnOpenDashModal.addEventListener('click', () => {
+            if (activeGodClub) window.openClubDashboardGodMode(activeGodClub.id);
+        });
+    }
+
+    const btnToggleTier = document.getElementById('btnGodToggleClubTier');
+    if (btnToggleTier) {
+        btnToggleTier.addEventListener('click', async () => {
+            if (!activeGodClub) return;
+            const currentIsPro = activeGodClub.event_tier === 'PRO';
+            const nextTier = currentIsPro ? 'BASIC' : 'PRO';
+            if (!confirm(`Ubah kasta klub "${activeGodClub.club_name}" menjadi ${nextTier}?`)) return;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('clubs')
+                    .update({ event_tier: nextTier })
+                    .eq('id', activeGodClub.id);
+                if (error) throw error;
+
+                activeGodClub.event_tier = nextTier;
+                updateGodModalTierButton();
+                await loadAdminData();
+                alert(`✅ Kasta klub berhasil diubah menjadi ${nextTier}!`);
+            } catch (err) {
+                alert("Gagal ubah tier klub: " + err.message);
+            }
+        });
+    }
+
+    const btnSaveClubInfo = document.getElementById('btnGodSaveClubInfo');
+    if (btnSaveClubInfo) {
+        btnSaveClubInfo.addEventListener('click', async () => {
+            if (!activeGodClub) return;
+            const payload = {
+                club_name: document.getElementById('godEditClubName').value.trim(),
+                short_name: document.getElementById('godEditShortName').value.trim(),
+                coach_name: document.getElementById('godEditCoachName').value.trim(),
+                contact_wa: document.getElementById('godEditContactWa').value.trim(),
+                kota_asal: document.getElementById('godEditKota').value.trim(),
+                provinsi: document.getElementById('godEditProvinsi').value.trim()
+            };
+            if (!payload.club_name) return alert("Nama klub wajib diisi!");
+
+            btnSaveClubInfo.disabled = true;
+            btnSaveClubInfo.innerText = "⏳ Menyimpan...";
+            try {
+                const { error } = await supabaseClient
+                    .from('clubs')
+                    .update(payload)
+                    .eq('id', activeGodClub.id);
+                if (error) throw error;
+
+                Object.assign(activeGodClub, payload);
+                document.getElementById('godModalClubTitle').innerText = payload.club_name;
+                await loadAdminData();
+                alert("✅ Profil klub berhasil diperbarui!");
+            } catch (err) {
+                alert("Gagal menyimpan profil klub: " + err.message);
+            } finally {
+                btnSaveClubInfo.disabled = false;
+                btnSaveClubInfo.innerText = "💾 Simpan Perubahan Klub";
+            }
+        });
+    }
+
+    const inputSearchClubAthlete = document.getElementById('godSearchClubAthlete');
+    if (inputSearchClubAthlete) {
+        inputSearchClubAthlete.addEventListener('input', (e) => {
+            const kw = e.target.value.toLowerCase();
+            const filtered = activeGodClubAthletes.filter(a =>
+                (a.full_name && a.full_name.toLowerCase().includes(kw)) ||
+                (a.f1_id && a.f1_id.toLowerCase().includes(kw))
+            );
+            renderGodClubAthletes(filtered);
+        });
+    }
 });
 
 function tendangUserAsing(email) {
@@ -215,6 +363,17 @@ async function loadAdminData() {
         filteredUnboundAthletes = [...window.allUnboundAthletes];
         currentUnboundPage = 1;
         renderUnboundAthletes(filteredUnboundAthletes);
+
+        // --- E. TARIK DATA ALL EVENTS (GOD MODE) ---
+        const { data: allEvents, error: errEvents } = await supabaseClient
+            .from('events')
+            .select('*')
+            .order('id', { ascending: false });
+        if (!errEvents) {
+            window.allEventsGod = allEvents || [];
+            filteredEventsGod = [...window.allEventsGod];
+            renderEventsGod(filteredEventsGod);
+        }
 
     } catch (error) {
         console.error("Gagal memuat admin:", error);
@@ -535,7 +694,7 @@ function renderClubs(clubsArray) {
     const pageInfo = document.getElementById('pageInfoClub');
     
     if (!clubsArray || clubsArray.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500 font-bold">Tidak ada klub ditemukan.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500 font-bold">Tidak ada klub ditemukan.</td></tr>`;
         if (infoCount) infoCount.innerText = "Menampilkan 0 klub.";
         if (btnPrev) btnPrev.disabled = true;
         if (btnNext) btnNext.disabled = true;
@@ -554,7 +713,7 @@ function renderClubs(clubsArray) {
     let html = '';
     displayClubs.forEach((c, index) => {
         const actualIndex = startIndex + index + 1; 
-        const location = c.kota_asal ? `${c.kota_asal}, ${c.provinsi || ''}` : (c.provinsi || 'Belum diatur');
+        const location = c.kota_asal ? `${escapeHtml(c.kota_asal)}, ${escapeHtml(c.provinsi || '')}` : (escapeHtml(c.provinsi) || 'Belum diatur');
         const athleteCount = c.athlete_count || 0; 
         
         const isPro = c.event_tier === 'PRO';
@@ -566,15 +725,25 @@ function renderClubs(clubsArray) {
             <tr class="hover:bg-slate-700/50 transition-colors">
                 <td class="p-4 text-center text-slate-500 font-bold">${actualIndex}</td>
                 <td class="p-4">
-                    <p class="font-extrabold text-white">${c.club_name}</p>
-                    <p class="text-[10px] text-slate-400 uppercase tracking-widest mt-0.5">${c.short_name || 'NO-TAG'}</p>
+                    <p class="font-extrabold text-white">${escapeHtml(c.club_name)}</p>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-widest mt-0.5">${escapeHtml(c.short_name) || 'NO-TAG'} • ID #${c.id}</p>
                 </td>
                 <td class="p-4 text-center font-mono font-bold text-emerald-400">${athleteCount} Atlet</td>
                 <td class="p-4 text-slate-400 text-xs">${location}</td>
                 <td class="p-4 text-slate-300 font-bold flex items-center gap-2">
-                    <span class="text-lg">👤</span> ${c.coach_name || 'Belum diisi'}
+                    <span class="text-lg">👤</span> ${escapeHtml(c.coach_name) || 'Belum diisi'}
                 </td>
                 <td class="p-4 text-center">${badgeAkun}</td>
+                <td class="p-4 text-center">
+                    <div class="inline-flex items-center gap-1.5">
+                        <button onclick="openGodClubModal('${c.id}')" class="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 border border-amber-500/40 font-black rounded-lg text-xs transition">
+                            ⚡ Kelola
+                        </button>
+                        <button onclick="openClubDashboardGodMode('${c.id}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-lg text-xs shadow transition">
+                            👁️ Dashboard
+                        </button>
+                    </div>
+                </td>
             </tr>
         `;
     });
@@ -658,3 +827,230 @@ window.rejectEdit = async (id) => {
         alert("Gagal menolak: " + err.message);
     }
 }
+
+
+// ==========================================
+// ⚡ GOD MODE FUNCTIONS (CLUB & EVENTS)
+// ==========================================
+window.openClubDashboardGodMode = (clubId) => {
+    const club = (window.allClubsAdmin || []).find(c => String(c.id) === String(clubId));
+    if (!club) return alert("Data klub tidak ditemukan.");
+
+    sessionStorage.setItem('scs_god_club_id', String(club.id));
+    sessionStorage.setItem('aztec_key', 'buka_sesame');
+    window.open(`/dashboard.html?god_club_id=${encodeURIComponent(club.id)}`, '_blank');
+};
+
+function updateGodModalTierButton() {
+    const btn = document.getElementById('btnGodToggleClubTier');
+    if (!btn || !activeGodClub) return;
+    const isPro = activeGodClub.event_tier === 'PRO';
+    if (isPro) {
+        btn.className = "px-4 py-2 bg-slate-700 hover:bg-slate-600 text-amber-300 border border-amber-500/40 font-black rounded-xl text-xs shadow transition";
+        btn.innerText = "Status: PRO 👑 (Klik ubah ke BASIC)";
+    } else {
+        btn.className = "px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs shadow transition";
+        btn.innerText = "Status: BASIC (Klik Upgrade PRO ⚡)";
+    }
+}
+
+window.openGodClubModal = async (clubId) => {
+    const club = (window.allClubsAdmin || []).find(c => String(c.id) === String(clubId));
+    if (!club) return alert("Data klub tidak ditemukan.");
+
+    activeGodClub = { ...club };
+    const modal = document.getElementById('modalGodClub');
+    if (!modal) return;
+
+    document.getElementById('godModalClubIdTag').innerText = `ID #${club.id}`;
+    document.getElementById('godModalClubTitle').innerText = club.club_name || 'Detail Klub';
+    document.getElementById('godEditClubName').value = club.club_name || '';
+    document.getElementById('godEditShortName').value = club.short_name || '';
+    document.getElementById('godEditCoachName').value = club.coach_name || '';
+    document.getElementById('godEditContactWa').value = club.contact_wa || '';
+    document.getElementById('godEditKota').value = club.kota_asal || '';
+    document.getElementById('godEditProvinsi').value = club.provinsi || '';
+    document.getElementById('godSearchClubAthlete').value = '';
+    updateGodModalTierButton();
+
+    const listEl = document.getElementById('godClubAthletesList');
+    listEl.innerHTML = '<p class="p-4 text-center text-xs text-slate-400">Memuat atlet klub...</p>';
+    modal.classList.remove('hidden');
+
+    try {
+        const { data: athletes, error } = await supabaseClient
+            .from('athletes')
+            .select('*')
+            .eq('club_id', club.id)
+            .order('full_name', { ascending: true });
+
+        if (error) throw error;
+        activeGodClubAthletes = athletes || [];
+        document.getElementById('godModalAthleteCount').innerText = activeGodClubAthletes.length;
+        renderGodClubAthletes(activeGodClubAthletes);
+    } catch (err) {
+        listEl.innerHTML = `<p class="p-4 text-center text-xs text-red-400">Gagal memuat atlet: ${escapeHtml(err.message)}</p>`;
+    }
+};
+
+function renderGodClubAthletes(list) {
+    const listEl = document.getElementById('godClubAthletesList');
+    if (!listEl) return;
+
+    if (!list || list.length === 0) {
+        listEl.innerHTML = '<p class="p-4 text-center text-xs text-slate-500">Belum ada atlet terdaftar di klub ini.</p>';
+        return;
+    }
+
+    listEl.innerHTML = list.map(a => {
+        const verBadge = a.is_verified
+            ? '<span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded text-[10px] font-bold">✅ Verified</span>'
+            : `<button onclick="godQuickVerifyAthlete('${a.f1_id}')" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded text-[10px] font-black transition">⚡ ACC Verify</button>`;
+
+        return `
+            <div class="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-900/80">
+                <div>
+                    <a href="/f1-id.html?id=${a.f1_id}" target="_blank" class="text-xs font-extrabold text-white hover:text-cyan-400">${escapeHtml(a.full_name)}</a>
+                    <p class="text-[11px] font-mono text-slate-400">${a.f1_id} • ${a.gender || '-'} • ${a.dob || '-'}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    ${verBadge}
+                    <button onclick="godUnlinkAthlete('${a.f1_id}')" class="px-2.5 py-1 bg-red-500/20 hover:bg-red-600 text-red-300 hover:text-white rounded text-[10px] font-bold transition">
+                        Lepas Klub
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+window.godQuickVerifyAthlete = async (f1Id) => {
+    try {
+        const { error } = await supabaseClient
+            .from('athletes')
+            .update({ is_verified: true })
+            .eq('f1_id', f1Id);
+        if (error) throw error;
+
+        const target = activeGodClubAthletes.find(a => a.f1_id === f1Id);
+        if (target) target.is_verified = true;
+        renderGodClubAthletes(activeGodClubAthletes);
+        loadAdminData();
+    } catch (err) {
+        alert("Gagal verifikasi atlet: " + err.message);
+    }
+};
+
+window.godUnlinkAthlete = async (f1Id) => {
+    if (!confirm(`Lepaskan atlet ${f1Id} dari klub ini? Atlet akan masuk ke daftar "Atlet Belum Terikat Club".`)) return;
+    try {
+        const { error } = await supabaseClient
+            .from('athletes')
+            .update({ club_id: null, owner_id: null })
+            .eq('f1_id', f1Id);
+        if (error) throw error;
+
+        activeGodClubAthletes = activeGodClubAthletes.filter(a => a.f1_id !== f1Id);
+        document.getElementById('godModalAthleteCount').innerText = activeGodClubAthletes.length;
+        renderGodClubAthletes(activeGodClubAthletes);
+        loadAdminData();
+    } catch (err) {
+        alert("Gagal melepas atlet: " + err.message);
+    }
+};
+
+function renderEventsGod(eventsArray) {
+    const tbody = document.getElementById('eventsGodTableBody');
+    const infoCount = document.getElementById('eventsGodCountInfo');
+    const btnPrev = document.getElementById('btnPrevEventsGod');
+    const btnNext = document.getElementById('btnNextEventsGod');
+    const pageInfo = document.getElementById('pageInfoEventsGod');
+    if (!tbody) return;
+
+    if (!eventsArray || eventsArray.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-500 font-bold">Tidak ada event ditemukan.</td></tr>';
+        if (infoCount) infoCount.innerText = "Menampilkan 0 event.";
+        if (btnPrev) btnPrev.disabled = true;
+        if (btnNext) btnNext.disabled = true;
+        if (pageInfo) pageInfo.innerText = "Page 1 of 1";
+        return;
+    }
+
+    const totalPages = Math.ceil(eventsArray.length / eventsGodPerPage);
+    if (currentEventsGodPage > totalPages) currentEventsGodPage = totalPages;
+    if (currentEventsGodPage < 1) currentEventsGodPage = 1;
+
+    const startIndex = (currentEventsGodPage - 1) * eventsGodPerPage;
+    const endIndex = startIndex + eventsGodPerPage;
+    const displayEvents = eventsArray.slice(startIndex, endIndex);
+
+    tbody.innerHTML = displayEvents.map((ev, idx) => {
+        const no = startIndex + idx + 1;
+        const isPro = ev.event_tier === 'PRO';
+        const isClosed = Boolean(ev.is_closed);
+        const subUrl = ev.subdomain ? `https://${ev.subdomain}.f1swimming.com` : '#';
+
+        const tierBtn = isPro
+            ? `<button onclick="godToggleEventTier('${ev.id}', 'BASIC')" class="px-2.5 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/50 rounded text-[10px] font-black uppercase hover:bg-amber-500 hover:text-slate-950 transition">PRO 👑</button>`
+            : `<button onclick="godToggleEventTier('${ev.id}', 'PRO')" class="px-2.5 py-1 bg-slate-700/60 text-slate-300 border border-slate-600 rounded text-[10px] font-bold uppercase hover:bg-amber-500 hover:text-slate-950 transition">BASIC</button>`;
+
+        const statusBtn = isClosed
+            ? `<button onclick="godToggleEventClosed('${ev.id}', false)" class="px-2.5 py-1 bg-red-500/20 text-red-400 border border-red-500/40 rounded text-[10px] font-black uppercase hover:bg-emerald-600 hover:text-white transition">⛔ TUTUP</button>`
+            : `<button onclick="godToggleEventClosed('${ev.id}', true)" class="px-2.5 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded text-[10px] font-black uppercase hover:bg-red-600 hover:text-white transition">🟢 BUKA</button>`;
+
+        return `
+            <tr class="hover:bg-slate-700/40 transition-colors">
+                <td class="p-4 text-center text-slate-500 font-bold">${no}</td>
+                <td class="p-4">
+                    <p class="font-extrabold text-white">${escapeHtml(ev.event_name)}</p>
+                    <a href="${subUrl}" target="_blank" class="text-[11px] font-mono text-cyan-400 hover:underline">${escapeHtml(ev.subdomain || '-')}.f1swimming.com</a>
+                </td>
+                <td class="p-4 text-center">${tierBtn}</td>
+                <td class="p-4 text-center">${statusBtn}</td>
+                <td class="p-4 text-center">
+                    <div class="inline-flex items-center gap-1.5">
+                        <a href="/event-dashboard.html?id=${ev.id}" target="_blank" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg text-[11px] transition">Panel Event</a>
+                        <a href="/event-peserta.html?id=${ev.id}" target="_blank" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold rounded-lg text-[11px] transition">Peserta</a>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    if (infoCount) {
+        const endDisplay = Math.min(endIndex, eventsArray.length);
+        infoCount.innerText = `Menampilkan ${startIndex + 1}-${endDisplay} dari total ${eventsArray.length} event.`;
+    }
+    if (pageInfo) pageInfo.innerText = `Page ${currentEventsGodPage} of ${totalPages}`;
+    if (btnPrev) btnPrev.disabled = currentEventsGodPage === 1;
+    if (btnNext) btnNext.disabled = currentEventsGodPage === totalPages;
+}
+
+window.godToggleEventTier = async (eventId, nextTier) => {
+    if (!confirm(`Ubah kasta event ID #${eventId} menjadi ${nextTier}?`)) return;
+    try {
+        const { error } = await supabaseClient
+            .from('events')
+            .update({ event_tier: nextTier })
+            .eq('id', eventId);
+        if (error) throw error;
+        loadAdminData();
+    } catch (err) {
+        alert("Gagal ubah kasta event: " + err.message);
+    }
+};
+
+window.godToggleEventClosed = async (eventId, nextClosed) => {
+    const label = nextClosed ? 'MENUTUP' : 'MEMBUKA KEMBALI';
+    if (!confirm(`Yakin ingin ${label} pendaftaran event ID #${eventId}?`)) return;
+    try {
+        const { error } = await supabaseClient
+            .from('events')
+            .update({ is_closed: nextClosed })
+            .eq('id', eventId);
+        if (error) throw error;
+        loadAdminData();
+    } catch (err) {
+        alert("Gagal ubah status pendaftaran event: " + err.message);
+    }
+};

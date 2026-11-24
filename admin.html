@@ -206,10 +206,11 @@
                             <th class="p-4 font-bold">Asal</th>
                             <th class="p-4 font-bold">Coach</th>
                             <th class="p-4 font-bold text-center">Akun</th>
+                            <th class="p-4 font-bold text-center">Aksi Dewa</th>
                         </tr>
                     </thead>
                     <tbody id="clubTableBody" class="divide-y divide-slate-700/50">
-                        <tr><td colspan="6" class="p-8 text-center text-slate-500">Memuat database klub...</td></tr>
+                        <tr><td colspan="7" class="p-8 text-center text-slate-500">Memuat database klub...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -225,6 +226,133 @@
             </div>
         </div>
 
+        <!-- SECTION 3: ALL EVENTS GOD MANAGER -->
+        <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden border-l-4 border-l-amber-400">
+            <div class="p-5 border-b border-slate-700 bg-slate-800/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-extrabold text-white flex items-center gap-2">
+                        <span>🏆</span> All Events God Manager
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">Kontrol penuh kasta PRO, status pendaftaran, dan akses cepat seluruh event.</p>
+                </div>
+                <div class="relative w-full md:w-72">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <input type="text" id="searchEventGod" class="bg-slate-900 border border-slate-700 text-sm rounded-lg focus:ring-amber-500 focus:border-amber-500 block w-full pl-10 p-2.5 text-white placeholder-slate-400" placeholder="Cari nama event, subdomain, kota...">
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm whitespace-nowrap">
+                    <thead class="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider">
+                        <tr>
+                            <th class="p-4 font-bold w-12 text-center">No</th>
+                            <th class="p-4 font-bold">Nama Event & Subdomain</th>
+                            <th class="p-4 font-bold text-center">Kasta</th>
+                            <th class="p-4 font-bold text-center">Pendaftaran</th>
+                            <th class="p-4 font-bold text-center">Aksi Dewa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="eventsGodTableBody" class="divide-y divide-slate-700/50">
+                        <tr><td colspan="5" class="p-8 text-center text-slate-500">Memuat daftar seluruh event...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="p-4 border-t border-slate-700 bg-slate-800/50 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p id="eventsGodCountInfo" class="text-xs text-slate-400 font-medium">Menampilkan 0 event.</p>
+                <div class="flex items-center gap-2">
+                    <button id="btnPrevEventsGod" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded text-xs font-bold transition disabled:opacity-50 disabled:cursor-not-allowed">&laquo; Prev</button>
+                    <span id="pageInfoEventsGod" class="text-xs font-bold text-slate-300">Page 1</span>
+                    <button id="btnNextEventsGod" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-slate-950 rounded text-xs font-bold transition disabled:opacity-50 disabled:cursor-not-allowed">Next &raquo;</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL GOD MODE: KONTROL KLUB TERDAFTAR -->
+    <div id="modalGodClub" class="fixed inset-0 bg-black/80 z-[120] hidden flex items-center justify-center p-3 md:p-6 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <!-- Header Modal -->
+            <div class="p-5 bg-slate-950 border-b border-slate-800 flex justify-between items-center gap-3">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 bg-amber-500/20 text-amber-400 border border-amber-500/40 rounded text-[10px] font-black uppercase tracking-widest">⚡ GOD MODE</span>
+                        <span id="godModalClubIdTag" class="text-[11px] font-mono text-slate-400">#0</span>
+                    </div>
+                    <h3 id="godModalClubTitle" class="text-lg md:text-xl font-black text-white mt-1">Detail Klub</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="btnGodOpenDashboardFromModal" type="button" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl text-xs shadow-lg transition flex items-center gap-1.5">
+                        <span>👁️</span> Buka Dashboard
+                    </button>
+                    <button id="btnCloseGodClubModal" type="button" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white font-bold text-xl flex items-center justify-center transition">&times;</button>
+                </div>
+            </div>
+
+            <!-- Body Modal (Scrollable) -->
+            <div class="p-5 overflow-y-auto space-y-6">
+                <!-- Quick Tier Switcher -->
+                <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                        <p class="text-xs font-extrabold text-white">Status Kasta Akun Klub</p>
+                        <p class="text-[11px] text-slate-400">Ubah status PRO / BASIC klub secara instan tanpa antrian.</p>
+                    </div>
+                    <button id="btnGodToggleClubTier" type="button" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs shadow transition">
+                        Toggle Tier
+                    </button>
+                </div>
+
+                <!-- Form Edit Profil Klub -->
+                <div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-4 space-y-3">
+                    <h4 class="text-xs font-black text-amber-400 uppercase tracking-wider">✏️ Edit Profil Klub</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 mb-1">Nama Klub</label>
+                            <input type="text" id="godEditClubName" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs font-bold text-white">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 mb-1">Singkatan / Tag</label>
+                            <input type="text" id="godEditShortName" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs font-bold text-white">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 mb-1">Nama Pelatih (Coach)</label>
+                            <input type="text" id="godEditCoachName" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs font-bold text-white">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 mb-1">No. WhatsApp PIC</label>
+                            <input type="text" id="godEditContactWa" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs font-bold text-white">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 mb-1">Kota Asal</label>
+                            <input type="text" id="godEditKota" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs font-bold text-white">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 mb-1">Provinsi</label>
+                            <input type="text" id="godEditProvinsi" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs font-bold text-white">
+                        </div>
+                    </div>
+                    <div class="pt-1 flex justify-end">
+                        <button id="btnGodSaveClubInfo" type="button" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-xl text-xs shadow transition">
+                            💾 Simpan Perubahan Klub
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Daftar Atlet Milik Klub -->
+                <div class="bg-slate-800/50 border border-slate-700 rounded-2xl p-4 space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <h4 class="text-xs font-black text-cyan-400 uppercase tracking-wider">🏊 Daftar Atlet Klub (<span id="godModalAthleteCount">0</span>)</h4>
+                        <input type="text" id="godSearchClubAthlete" placeholder="Cari atlet di klub ini..." class="px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500">
+                    </div>
+                    <div id="godClubAthletesList" class="divide-y divide-slate-800 max-h-64 overflow-y-auto bg-slate-950/60 rounded-xl border border-slate-800">
+                        <p class="p-4 text-center text-xs text-slate-500">Memuat daftar atlet...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Panggil JS -->
