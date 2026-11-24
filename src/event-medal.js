@@ -1,9 +1,12 @@
 import { supabaseClient } from './supabase.js';
 
 let rawMedals = [];
+let rawRegistrations = [];
 let kontingenList = [];
 let individuList = [];
 let activeTab = 'kontingen';
+let idleSortMode = 'participants'; // 'participants' | 'random'
+let randomSeedMap = new Map();
 let resolvedEventId = null;
 
 function escapeHtml(str) {
@@ -33,11 +36,49 @@ function normalizeKontingenLabel(rawClub) {
     };
 }
 
-function sortMedalStandings(a, b) {
+function getRandomWeight(key) {
+    if (!randomSeedMap.has(key)) {
+        randomSeedMap.set(key, Math.random());
+    }
+    return randomSeedMap.get(key);
+}
+
+function reshuffleRandomWeights() {
+    randomSeedMap.clear();
+    kontingenList.forEach(k => randomSeedMap.set(k.key, Math.random()));
+    individuList.forEach(ind => randomSeedMap.set(ind.key, Math.random()));
+}
+
+function sortStandings(a, b) {
+    // Prioritas utama standar Olympic / Asian Games: Emas -> Perak -> Perunggu
     if (b.emas !== a.emas) return b.emas - a.emas;
     if (b.perak !== a.perak) return b.perak - a.perak;
     if (b.perunggu !== a.perunggu) return b.perunggu - a.perunggu;
+
+    // Tie-breaker saat perolehan medali sama (termasuk 0 - 0 - 0 saat idle)
+    if (idleSortMode === 'random') {
+        return getRandomWeight(a.key) - getRandomWeight(b.key);
+    }
+
+    if ((b.athleteCount || 0) !== (a.athleteCount || 0)) {
+        return (b.athleteCount || 0) - (a.athleteCount || 0);
+    }
+    if ((b.entryCount || 0) !== (a.entryCount || 0)) {
+        return (b.entryCount || 0) - (a.entryCount || 0);
+    }
     return a.label.localeCompare(b.label, 'id');
+}
+
+function countNomorLomba(nomorField) {
+    if (Array.isArray(nomorField)) return Math.max(1, nomorField.length);
+    if (typeof nomorField === 'string' && nomorField.trim()) {
+        try {
+            const parsed = JSON.parse(nomorField);
+            if (Array.isArray(parsed)) return Math.max(1, parsed.length);
+        } catch (_) {}
+        return 1;
+    }
+    return 1;
 }
 
 async function resolveEventIdFromContext() {
@@ -80,7 +121,7 @@ async function fetchAndRenderSponsors(eventId) {
         const wrapper = document.getElementById('partnerWrapper');
         if (wrapper) {
             let html = `
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 text-center mb-6">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 text-center mb-5">
                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Official Event Partners</span>
                     <div class="flex items-center justify-center gap-4 flex-wrap w-full">
             `;
@@ -100,16 +141,31 @@ async function fetchAndRenderSponsors(eventId) {
     }
 }
 
-function buildAggregations(medals) {
-    // 1. Agregasi per Klub / Sekolah / Kontingen
+function buildAggregations(medals, registrations) {
     const kontingenMap = new Map();
-    medals.forEach(m => {
-        const info = normalizeKontingenLabel(m.klub_asal);
-        if (!kontingenMap.has(info.key)) {
-            kontingenMap.set(info.key, {
-                key: info.key,
-                label: info.label,
-                isIndividuGroup: info.isIndividuGroup,
+    const individuMap = new Map();
+    const uniqueGlobalAthletes = new Set();
+
+    // 1. Seed dari daftar peserta terdaftar agar saat idle tidak kosong melompong
+    registrations.forEach(reg => {
+        const klubInfo = normalizeKontingenLabel(reg.klub_asal);
+        const nama = String(reg.nama_peserta || 'Tanpa Nama').trim();
+        const athleteUid = reg.f1_id
+            ? `f1_${String(reg.f1_id).trim().toLowerCase()}`
+            : `nm_${nama.toLowerCase()}__${klubInfo.key}`;
+        const entries = countNomorLomba(reg.nomor_lomba);
+
+        uniqueGlobalAthletes.add(athleteUid);
+
+        if (!kontingenMap.has(klubInfo.key)) {
+            kontingenMap.set(klubInfo.key, {
+                key: klubInfo.key,
+                label: klubInfo.label,
+                isIndividuGroup: klubInfo.isIndividuGroup,
+                athleteSet: new Set(),
+                athleteNames: new Set(),
+                athleteCount: 0,
+                entryCount: 0,
                 emas: 0,
                 perak: 0,
                 perunggu: 0,
@@ -117,28 +173,22 @@ function buildAggregations(medals) {
                 items: []
             });
         }
-        const entry = kontingenMap.get(info.key);
-        if (m.peringkat === 1) entry.emas++;
-        else if (m.peringkat === 2) entry.perak++;
-        else if (m.peringkat === 3) entry.perunggu++;
-        entry.total++;
-        entry.items.push(m);
-    });
+        const kEntry = kontingenMap.get(klubInfo.key);
+        kEntry.athleteSet.add(athleteUid);
+        kEntry.athleteNames.add(nama);
+        kEntry.athleteCount = kEntry.athleteSet.size;
+        kEntry.entryCount += entries;
 
-    kontingenList = Array.from(kontingenMap.values()).sort(sortMedalStandings);
-
-    // 2. Agregasi per Individu / Atlet
-    const individuMap = new Map();
-    medals.forEach(m => {
-        const nama = String(m.nama_peserta || 'Tanpa Nama').trim();
-        const klubInfo = normalizeKontingenLabel(m.klub_asal);
         const indKey = `${nama.toLowerCase()}__${klubInfo.key}`;
-
         if (!individuMap.has(indKey)) {
             individuMap.set(indKey, {
                 key: indKey,
                 label: nama,
                 klubLabel: klubInfo.label,
+                kelompokUmur: reg.kelompok_umur || '',
+                gender: reg.gender || '',
+                athleteCount: 1,
+                entryCount: 0,
                 emas: 0,
                 perak: 0,
                 perunggu: 0,
@@ -146,17 +196,67 @@ function buildAggregations(medals) {
                 items: []
             });
         }
-        const entry = individuMap.get(indKey);
-        if (m.peringkat === 1) entry.emas++;
-        else if (m.peringkat === 2) entry.perak++;
-        else if (m.peringkat === 3) entry.perunggu++;
-        entry.total++;
-        entry.items.push(m);
+        const iEntry = individuMap.get(indKey);
+        iEntry.entryCount += entries;
     });
 
-    individuList = Array.from(individuMap.values()).sort(sortMedalStandings);
+    // 2. Gabungkan perolehan medali resmi dari event_leaderboard
+    medals.forEach(m => {
+        const klubInfo = normalizeKontingenLabel(m.klub_asal);
+        const nama = String(m.nama_peserta || 'Tanpa Nama').trim();
 
-    // Update Summary Stats
+        if (!kontingenMap.has(klubInfo.key)) {
+            kontingenMap.set(klubInfo.key, {
+                key: klubInfo.key,
+                label: klubInfo.label,
+                isIndividuGroup: klubInfo.isIndividuGroup,
+                athleteSet: new Set([`lb_${nama.toLowerCase()}`]),
+                athleteNames: new Set([nama]),
+                athleteCount: 1,
+                entryCount: 1,
+                emas: 0,
+                perak: 0,
+                perunggu: 0,
+                total: 0,
+                items: []
+            });
+        }
+        const kEntry = kontingenMap.get(klubInfo.key);
+        if (m.peringkat === 1) kEntry.emas++;
+        else if (m.peringkat === 2) kEntry.perak++;
+        else if (m.peringkat === 3) kEntry.perunggu++;
+        kEntry.total++;
+        kEntry.items.push(m);
+
+        const indKey = `${nama.toLowerCase()}__${klubInfo.key}`;
+        if (!individuMap.has(indKey)) {
+            individuMap.set(indKey, {
+                key: indKey,
+                label: nama,
+                klubLabel: klubInfo.label,
+                kelompokUmur: m.kelompok_umur || '',
+                gender: m.gender || '',
+                athleteCount: 1,
+                entryCount: 1,
+                emas: 0,
+                perak: 0,
+                perunggu: 0,
+                total: 0,
+                items: []
+            });
+        }
+        const iEntry = individuMap.get(indKey);
+        if (m.peringkat === 1) iEntry.emas++;
+        else if (m.peringkat === 2) iEntry.perak++;
+        else if (m.peringkat === 3) iEntry.perunggu++;
+        iEntry.total++;
+        iEntry.items.push(m);
+    });
+
+    kontingenList = Array.from(kontingenMap.values());
+    individuList = Array.from(individuMap.values());
+
+    // Update Summary Stats & Status Banner
     const totalGold = medals.filter(m => m.peringkat === 1).length;
     const totalSilver = medals.filter(m => m.peringkat === 2).length;
     const totalBronze = medals.filter(m => m.peringkat === 3).length;
@@ -164,10 +264,27 @@ function buildAggregations(medals) {
     document.getElementById('statTotalGold').innerText = totalGold;
     document.getElementById('statTotalSilver').innerText = totalSilver;
     document.getElementById('statTotalBronze').innerText = totalBronze;
-    document.getElementById('statTotalAll').innerText = medals.length;
+    document.getElementById('statTotalKontingen').innerText = kontingenList.length;
+    document.getElementById('statTotalAtlet').innerText = Math.max(uniqueGlobalAthletes.size, individuList.length);
 
     document.getElementById('countKontingen').innerText = kontingenList.length;
     document.getElementById('countIndividu').innerText = individuList.length;
+
+    const idleBanner = document.getElementById('idleNoticeBanner');
+    const statusPill = document.getElementById('liveStatusPill');
+    if (medals.length === 0) {
+        if (idleBanner) idleBanner.classList.remove('hidden');
+        if (statusPill) {
+            statusPill.innerText = '⏳ Pre-Race / Idle Lineup';
+            statusPill.className = 'inline-flex items-center gap-1.5 bg-blue-500/25 text-blue-100 border border-blue-400/30 text-[10px] font-bold px-2.5 py-0.5 rounded uppercase tracking-wider';
+        }
+    } else {
+        if (idleBanner) idleBanner.classList.add('hidden');
+        if (statusPill) {
+            statusPill.innerText = `🟢 Live Standings • ${medals.length} Medali`;
+            statusPill.className = 'inline-flex items-center gap-1.5 bg-emerald-500/25 text-emerald-200 border border-emerald-400/30 text-[10px] font-bold px-2.5 py-0.5 rounded uppercase tracking-wider';
+        }
+    }
 }
 
 function getMedalIcon(rank) {
@@ -177,14 +294,47 @@ function getMedalIcon(rank) {
     return `#${rank}`;
 }
 
+function computeOlympicRanks(sortedItems) {
+    let currentRank = 0;
+    return sortedItems.map((item, idx) => {
+        if (item.total === 0) {
+            return { ...item, displayRank: '-', isTied: false };
+        }
+        if (idx === 0) {
+            currentRank = 1;
+            return { ...item, displayRank: '1', isTied: false };
+        }
+        const prev = sortedItems[idx - 1];
+        const sameMedals = prev.emas === item.emas && prev.perak === item.perak && prev.perunggu === item.perunggu;
+        if (sameMedals) {
+            return { ...item, displayRank: `=${currentRank}`, isTied: true };
+        }
+        currentRank = idx + 1;
+        return { ...item, displayRank: String(currentRank), isTied: false };
+    });
+}
+
 function renderAllViews() {
     const query = (document.getElementById('searchMedalInput')?.value || '').trim().toLowerCase();
 
-    // Render Panel 1: Kontingen
+    // Update label tombol sort
+    const sortLabel = idleSortMode === 'random' ? '🎲 Urut: Posisi Acak' : '👥 Urut: Peserta Terbanyak';
+    const btnToolbar = document.getElementById('btnSortToolbar');
+    const btnIdleBanner = document.getElementById('btnToggleIdleSort');
+    if (btnToolbar) btnToolbar.innerText = sortLabel;
+    if (btnIdleBanner) {
+        btnIdleBanner.innerText = idleSortMode === 'random' ? '👥 Urut Peserta Terbanyak' : '🎲 Acak Posisi';
+    }
+
+    // =========================================================================
+    // PANEL 1: KLASEMEN KLUB / SEKOLAH (OLYMPIC / ASIAN GAMES STANDINGS)
+    // =========================================================================
     const tbodyKontingen = document.getElementById('tbodyKontingen');
-    const filteredKontingen = kontingenList.filter(k => {
+    const sortedKontingen = computeOlympicRanks([...kontingenList].sort(sortStandings));
+    const filteredKontingen = sortedKontingen.filter(k => {
         if (!query) return true;
         if (k.label.toLowerCase().includes(query)) return true;
+        if (Array.from(k.athleteNames || []).some(nm => nm.toLowerCase().includes(query))) return true;
         return k.items.some(it =>
             String(it.nama_peserta || '').toLowerCase().includes(query) ||
             String(it.nomor_lomba || '').toLowerCase().includes(query)
@@ -192,46 +342,72 @@ function renderAllViews() {
     });
 
     if (filteredKontingen.length === 0) {
-        tbodyKontingen.innerHTML = `<tr><td colspan="6" class="py-8 px-4 text-center text-slate-400 font-bold">Belum ada perolehan medali yang sesuai filter.</td></tr>`;
+        tbodyKontingen.innerHTML = `<tr><td colspan="7" class="py-10 px-4 text-center text-slate-400 font-bold">Belum ada data kontingen yang terdaftar pada event ini.</td></tr>`;
     } else {
         let html = '';
         filteredKontingen.forEach((k, idx) => {
-            const rank = idx + 1;
-            const rankDisplay = rank === 1 ? '👑 1' : (rank === 2 ? '🥈 2' : (rank === 3 ? '🥉 3' : rank));
-            const rowHighlight = rank === 1 ? 'bg-amber-50/60' : '';
             const detailId = `detail_kontingen_${idx}`;
+            const hasMedals = k.total > 0;
+            const isTop1 = hasMedals && (k.displayRank === '1' || k.displayRank === '=1');
 
-            const detailRows = k.items
-                .sort((a, b) => a.peringkat - b.peringkat)
-                .map(it => `
-                    <div class="flex flex-wrap items-center justify-between gap-2 py-1.5 px-3 bg-white rounded-lg border border-slate-200/80 text-xs">
-                        <div class="flex items-center gap-2">
-                            <span class="text-base">${getMedalIcon(it.peringkat)}</span>
-                            <span class="font-extrabold text-slate-800 uppercase">${escapeHtml(it.nama_peserta)}</span>
-                            <span class="text-slate-500 font-semibold">• ${escapeHtml(it.nomor_lomba)} (${escapeHtml(it.kelompok_umur || '')} ${escapeHtml(it.gender || '')})</span>
+            let rankBadgeHtml = `<span class="font-black text-slate-400">-</span>`;
+            if (hasMedals) {
+                if (k.displayRank === '1' || k.displayRank === '=1') {
+                    rankBadgeHtml = `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-md bg-amber-400 text-slate-950 font-black text-xs shadow-xs">${k.displayRank}</span>`;
+                } else if (k.displayRank === '2' || k.displayRank === '=2') {
+                    rankBadgeHtml = `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-md bg-slate-200 text-slate-900 font-black text-xs">${k.displayRank}</span>`;
+                } else if (k.displayRank === '3' || k.displayRank === '=3') {
+                    rankBadgeHtml = `<span class="inline-flex items-center justify-center px-2 py-0.5 rounded-md bg-orange-200 text-orange-950 font-black text-xs">${k.displayRank}</span>`;
+                } else {
+                    rankBadgeHtml = `<span class="font-black text-slate-700">${k.displayRank}</span>`;
+                }
+            }
+
+            let detailContentHtml = '';
+            if (k.items.length > 0) {
+                detailContentHtml = k.items
+                    .sort((a, b) => a.peringkat - b.peringkat)
+                    .map(it => `
+                        <div class="flex flex-wrap items-center justify-between gap-2 py-1.5 px-3 bg-white rounded-lg border border-slate-200/80 text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="text-base">${getMedalIcon(it.peringkat)}</span>
+                                <span class="font-extrabold text-slate-800 uppercase">${escapeHtml(it.nama_peserta)}</span>
+                                <span class="text-slate-500 font-semibold">• ${escapeHtml(it.nomor_lomba)} (${escapeHtml(it.kelompok_umur || '')} ${escapeHtml(it.gender || '')})</span>
+                            </div>
+                            <span class="font-mono font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded">⏱️ ${escapeHtml(it.catatan_waktu || '-')}</span>
                         </div>
-                        <span class="font-mono font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded">⏱️ ${escapeHtml(it.catatan_waktu || '-')}</span>
+                    `).join('');
+            } else {
+                const namesList = Array.from(k.athleteNames || []).sort((a, b) => a.localeCompare(b, 'id'));
+                detailContentHtml = `
+                    <div class="bg-white rounded-lg border border-slate-200/80 p-3 text-xs">
+                        <p class="font-bold text-slate-500 mb-1.5">🏊‍♂️ Daftar Atlet Terdaftar (${namesList.length} Atlet • ${k.entryCount} Nomor):</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            ${namesList.map(nm => `<span class="bg-slate-100 text-slate-700 font-bold px-2.5 py-1 rounded-md uppercase text-[11px]">${escapeHtml(nm)}</span>`).join('')}
+                        </div>
                     </div>
-                `).join('');
+                `;
+            }
 
             html += `
-                <tr class="hover:bg-slate-50 transition cursor-pointer ${rowHighlight}" onclick="document.getElementById('${detailId}').classList.toggle('hidden')">
-                    <td class="py-3.5 px-3 text-center font-black ${rank <= 3 ? 'text-amber-600' : 'text-slate-500'}">${rankDisplay}</td>
+                <tr class="hover:bg-blue-50/40 transition cursor-pointer ${isTop1 ? 'bg-amber-50/50' : ''}" onclick="document.getElementById('${detailId}').classList.toggle('hidden')">
+                    <td class="py-3.5 px-3 text-center">${rankBadgeHtml}</td>
                     <td class="py-3.5 px-3">
                         <div class="flex items-center gap-2 flex-wrap">
                             <span class="font-black text-slate-900 uppercase">${escapeHtml(k.label)}</span>
                             ${k.isIndividuGroup ? '<span class="text-[9px] font-black bg-purple-100 text-purple-700 px-2 py-0.5 rounded uppercase">Individu</span>' : ''}
-                            <span class="text-[10px] text-blue-600 font-bold underline">Rincian ▾</span>
+                            <span class="text-[10px] text-blue-600 font-bold">▾</span>
                         </div>
                     </td>
-                    <td class="py-3.5 px-2 text-center font-black text-amber-600">${k.emas}</td>
-                    <td class="py-3.5 px-2 text-center font-black text-slate-600">${k.perak}</td>
-                    <td class="py-3.5 px-2 text-center font-black text-orange-700">${k.perunggu}</td>
-                    <td class="py-3.5 px-3 text-center font-black text-blue-950 bg-slate-50">${k.total}</td>
+                    <td class="py-3.5 px-2 text-center font-bold text-slate-500">${k.athleteCount}</td>
+                    <td class="py-3.5 px-2 text-center font-black ${k.emas > 0 ? 'text-amber-600' : 'text-slate-300'}">${k.emas}</td>
+                    <td class="py-3.5 px-2 text-center font-black ${k.perak > 0 ? 'text-slate-700' : 'text-slate-300'}">${k.perak}</td>
+                    <td class="py-3.5 px-2 text-center font-black ${k.perunggu > 0 ? 'text-orange-700' : 'text-slate-300'}">${k.perunggu}</td>
+                    <td class="py-3.5 px-3 text-center font-black ${hasMedals ? 'text-blue-950 bg-slate-100/80' : 'text-slate-400 bg-slate-50'}">${k.total}</td>
                 </tr>
-                <tr id="${detailId}" class="hidden bg-slate-50/90">
-                    <td colspan="6" class="p-3">
-                        <div class="space-y-1.5">${detailRows}</div>
+                <tr id="${detailId}" class="hidden bg-slate-50">
+                    <td colspan="7" class="p-3">
+                        <div class="space-y-1.5">${detailContentHtml}</div>
                     </td>
                 </tr>
             `;
@@ -239,9 +415,12 @@ function renderAllViews() {
         tbodyKontingen.innerHTML = html;
     }
 
-    // Render Panel 2: Individu
+    // =========================================================================
+    // PANEL 2: KLASEMEN INDIVIDU / ATLET
+    // =========================================================================
     const tbodyIndividu = document.getElementById('tbodyIndividu');
-    const filteredIndividu = individuList.filter(ind => {
+    const sortedIndividu = computeOlympicRanks([...individuList].sort(sortStandings));
+    const filteredIndividu = sortedIndividu.filter(ind => {
         if (!query) return true;
         return ind.label.toLowerCase().includes(query) ||
             ind.klubLabel.toLowerCase().includes(query) ||
@@ -249,36 +428,42 @@ function renderAllViews() {
     });
 
     if (filteredIndividu.length === 0) {
-        tbodyIndividu.innerHTML = `<tr><td colspan="6" class="py-8 px-4 text-center text-slate-400 font-bold">Belum ada perolehan medali individu yang sesuai filter.</td></tr>`;
+        tbodyIndividu.innerHTML = `<tr><td colspan="7" class="py-10 px-4 text-center text-slate-400 font-bold">Belum ada data atlet terdaftar yang sesuai filter.</td></tr>`;
     } else {
         let html = '';
-        filteredIndividu.forEach((ind, idx) => {
-            const rank = idx + 1;
-            const rankDisplay = rank === 1 ? '👑 1' : (rank === 2 ? '🥈 2' : (rank === 3 ? '🥉 3' : rank));
-            const badgesNomor = ind.items
-                .sort((a, b) => a.peringkat - b.peringkat)
-                .map(it => `<span class="inline-flex items-center gap-1 text-[10px] font-bold bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md mr-1 mt-1">${getMedalIcon(it.peringkat)} ${escapeHtml(it.nomor_lomba)} (${escapeHtml(it.catatan_waktu || '-')})</span>`)
-                .join('');
+        filteredIndividu.forEach(ind => {
+            const hasMedals = ind.total > 0;
+            const isTop1 = hasMedals && (ind.displayRank === '1' || ind.displayRank === '=1');
+
+            const badgesNomor = ind.items.length > 0
+                ? ind.items
+                    .sort((a, b) => a.peringkat - b.peringkat)
+                    .map(it => `<span class="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-50 border border-amber-200 text-slate-800 px-2 py-0.5 rounded-md mr-1 mt-1">${getMedalIcon(it.peringkat)} ${escapeHtml(it.nomor_lomba)} (${escapeHtml(it.catatan_waktu || '-')})</span>`)
+                    .join('')
+                : `<span class="inline-block text-[10px] font-semibold text-slate-400 mt-0.5">${escapeHtml([ind.kelompokUmur, ind.gender].filter(Boolean).join(' • ') || 'Terdaftar')}</span>`;
 
             html += `
-                <tr class="hover:bg-slate-50 transition ${rank === 1 ? 'bg-amber-50/60' : ''}">
-                    <td class="py-3.5 px-3 text-center font-black ${rank <= 3 ? 'text-amber-600' : 'text-slate-500'}">${rankDisplay}</td>
+                <tr class="hover:bg-blue-50/40 transition ${isTop1 ? 'bg-amber-50/50' : ''}">
+                    <td class="py-3.5 px-3 text-center font-black ${hasMedals ? 'text-amber-600' : 'text-slate-400'}">${ind.displayRank}</td>
                     <td class="py-3.5 px-3">
                         <p class="font-black text-slate-900 uppercase">${escapeHtml(ind.label)}</p>
                         <p class="text-[11px] font-bold text-slate-500">🏠 ${escapeHtml(ind.klubLabel)}</p>
-                        <div class="mt-1">${badgesNomor}</div>
+                        <div>${badgesNomor}</div>
                     </td>
-                    <td class="py-3.5 px-2 text-center font-black text-amber-600">${ind.emas}</td>
-                    <td class="py-3.5 px-2 text-center font-black text-slate-600">${ind.perak}</td>
-                    <td class="py-3.5 px-2 text-center font-black text-orange-700">${ind.perunggu}</td>
-                    <td class="py-3.5 px-3 text-center font-black text-blue-950 bg-slate-50">${ind.total}</td>
+                    <td class="py-3.5 px-2 text-center font-bold text-slate-500">${ind.entryCount}</td>
+                    <td class="py-3.5 px-2 text-center font-black ${ind.emas > 0 ? 'text-amber-600' : 'text-slate-300'}">${ind.emas}</td>
+                    <td class="py-3.5 px-2 text-center font-black ${ind.perak > 0 ? 'text-slate-700' : 'text-slate-300'}">${ind.perak}</td>
+                    <td class="py-3.5 px-2 text-center font-black ${ind.perunggu > 0 ? 'text-orange-700' : 'text-slate-300'}">${ind.perunggu}</td>
+                    <td class="py-3.5 px-3 text-center font-black ${hasMedals ? 'text-blue-950 bg-slate-100/80' : 'text-slate-400 bg-slate-50'}">${ind.total}</td>
                 </tr>
             `;
         });
         tbodyIndividu.innerHTML = html;
     }
 
-    // Render Panel 3: Audit Rincian Semua Nomor
+    // =========================================================================
+    // PANEL 3: AUDIT RINCIAN SEMUA NOMOR
+    // =========================================================================
     const panelRincian = document.getElementById('panelRincian');
     const filteredRincian = rawMedals.filter(m => {
         if (!query) return true;
@@ -288,7 +473,12 @@ function renderAllViews() {
     });
 
     if (filteredRincian.length === 0) {
-        panelRincian.innerHTML = `<div class="bg-white rounded-2xl p-8 border border-slate-200 text-center text-slate-400 font-bold text-sm">Belum ada data medali resmi yang dipublish.</div>`;
+        panelRincian.innerHTML = `
+            <div class="bg-white rounded-2xl p-8 border border-slate-200 text-center">
+                <span class="text-4xl block mb-2">⏱️</span>
+                <p class="text-slate-700 font-black text-sm">Belum Ada Nomor Lomba yang Selesai / Dipublish Wasit</p>
+                <p class="text-xs text-slate-400 mt-1">Rincian medali per nomor lomba akan muncul otomatis di tab ini setelah hasil dipublish.</p>
+            </div>`;
     } else {
         const groupedByNomor = filteredRincian.reduce((acc, cur) => {
             const key = `${cur.nomor_lomba} ${cur.gender || ''} ${cur.kelompok_umur || ''}`.trim();
@@ -364,13 +554,27 @@ async function loadMedalData() {
             btnToLeaderboard.href = `/event-leaderboard.html?id=${resolvedEventId}`;
         }
 
-        const { data: ev } = await supabaseClient
-            .from('events')
-            .select('event_name, event_date, end_date, kota, provinsi')
-            .eq('id', resolvedEventId)
-            .single();
+        const [evRes, regRes, lbRes] = await Promise.all([
+            supabaseClient
+                .from('events')
+                .select('event_name, event_date, end_date, kota, provinsi')
+                .eq('id', resolvedEventId)
+                .single(),
+            supabaseClient
+                .from('event_registrations')
+                .select('f1_id, nama_peserta, klub_asal, gender, kelompok_umur, nomor_lomba, status_pembayaran')
+                .eq('event_id', resolvedEventId),
+            supabaseClient
+                .from('event_leaderboard')
+                .select('*')
+                .eq('event_id', resolvedEventId)
+                .in('peringkat', [1, 2, 3])
+                .order('nomor_lomba', { ascending: true })
+                .order('peringkat', { ascending: true })
+        ]);
 
-        if (ev) {
+        if (evRes.data) {
+            const ev = evRes.data;
             document.getElementById('eventName').innerText = ev.event_name;
             const lokasi = [ev.kota, ev.provinsi].filter(Boolean).join(', ');
             const tgl = ev.event_date ? (ev.end_date && ev.end_date !== ev.event_date ? `${ev.event_date} s/d ${ev.end_date}` : ev.event_date) : '';
@@ -378,18 +582,14 @@ async function loadMedalData() {
             await fetchAndRenderSponsors(resolvedEventId);
         }
 
-        const { data: leaderboardRows, error } = await supabaseClient
-            .from('event_leaderboard')
-            .select('*')
-            .eq('event_id', resolvedEventId)
-            .in('peringkat', [1, 2, 3])
-            .order('nomor_lomba', { ascending: true })
-            .order('peringkat', { ascending: true });
+        if (lbRes.error) throw lbRes.error;
 
-        if (error) throw error;
+        const allRegs = regRes.data || [];
+        const paidRegs = allRegs.filter(r => String(r.status_pembayaran || '').toLowerCase() === 'lunas');
+        rawRegistrations = paidRegs.length > 0 ? paidRegs : allRegs;
+        rawMedals = lbRes.data || [];
 
-        rawMedals = leaderboardRows || [];
-        buildAggregations(rawMedals);
+        buildAggregations(rawMedals, rawRegistrations);
 
         loadingEl.classList.add('hidden');
         switchTab(activeTab);
@@ -407,12 +607,25 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('searchMedalInput')?.addEventListener('input', renderAllViews);
     document.getElementById('btnRefreshMedal')?.addEventListener('click', loadMedalData);
 
+    const toggleSortMode = () => {
+        if (idleSortMode === 'participants') {
+            idleSortMode = 'random';
+            reshuffleRandomWeights();
+        } else {
+            idleSortMode = 'participants';
+        }
+        renderAllViews();
+    };
+
+    document.getElementById('btnSortToolbar')?.addEventListener('click', toggleSortMode);
+    document.getElementById('btnToggleIdleSort')?.addEventListener('click', toggleSortMode);
+
     document.getElementById('btnShareMedal')?.addEventListener('click', async () => {
         const shareUrl = window.location.href;
-        const title = `Klasemen Medali - ${document.getElementById('eventName')?.innerText || 'SCS'}`;
+        const title = `Medal Standings - ${document.getElementById('eventName')?.innerText || 'SCS'}`;
         if (navigator.share) {
             try {
-                await navigator.share({ title, text: `Cek perolehan medali resmi klub/sekolah & individu di sini:`, url: shareUrl });
+                await navigator.share({ title, text: `Pantau klasemen perolehan medali klub/sekolah & individu di sini:`, url: shareUrl });
                 return;
             } catch (_) {}
         }
