@@ -195,7 +195,12 @@ let currentEvent = null;
 let isKlubLoggedIn = false; 
 let loggedInClubData = null; 
 let dataTagihan = []; 
-let selectedTagihanIds = new Set(); 
+let selectedTagihanIds = new Set();
+const CART_PAGE_SIZE = 5;
+let activeCartTab = 'belum'; // 'belum' | 'sudah'
+let pageBelumBayar = 1;
+let pageSudahBayar = 1;
+let keywordSudahBayar = '';
 
 // Peta Counter Kuota Real-Time
 let kuotaMapSpecific = {}; // Key: "NamaNomor|||KU|||Gender" -> jumlah terisi
@@ -1136,6 +1141,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             checkboxesNomor.forEach(cb => cb.checked = false);
             alert("✅ Individu berhasil dimasukkan ke Daftar Tagihan!");
             
+            activeCartTab = 'belum';
+            pageBelumBayar = 1;
             await refreshKuotaCounter();
             loadTagihan();
 
@@ -1192,6 +1199,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('inputNomorEstafet').value = "";
                 document.getElementById('inputKUEstafet').value = "";
                 
+                activeCartTab = 'belum';
+                pageBelumBayar = 1;
                 await refreshKuotaCounter();
                 loadTagihan();
 
@@ -1227,8 +1236,338 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ==========================================
-    // SISTEM KERANJANG & PEMBAYARAN KOLEKTIF
+    // SISTEM KERANJANG & PEMBAYARAN KOLEKTIF (PAGE 5-5 + TAB SUDAH BAYAR)
     // ==========================================
+    const tabBelumBtn = document.getElementById('tabKeranjangBelumBayar');
+    const tabSudahBtn = document.getElementById('tabRiwayatSudahBayar');
+    const panelBelum = document.getElementById('panelBelumBayar');
+    const panelSudah = document.getElementById('panelSudahBayar');
+
+    function setActiveCartTab(tabName) {
+        activeCartTab = tabName;
+        const countBelumEl = document.getElementById('countBelumBayar');
+        const countSudahEl = document.getElementById('countSudahBayar');
+
+        if (tabName === 'belum') {
+            if (tabBelumBtn) tabBelumBtn.className = "py-2.5 px-3 rounded-xl font-extrabold text-xs md:text-sm bg-blue-900 text-white shadow transition-all flex items-center justify-center gap-1.5 cursor-pointer";
+            if (tabSudahBtn) tabSudahBtn.className = "py-2.5 px-3 rounded-xl font-extrabold text-xs md:text-sm text-slate-600 hover:bg-white/70 transition-all flex items-center justify-center gap-1.5 cursor-pointer";
+            if (countBelumEl) countBelumEl.className = "bg-white/20 text-white text-[10px] font-black px-2 py-0.5 rounded-full";
+            if (countSudahEl) countSudahEl.className = "bg-slate-200 text-slate-700 text-[10px] font-black px-2 py-0.5 rounded-full";
+            if (panelBelum) panelBelum.classList.remove('hidden');
+            if (panelSudah) panelSudah.classList.add('hidden');
+        } else {
+            if (tabSudahBtn) tabSudahBtn.className = "py-2.5 px-3 rounded-xl font-extrabold text-xs md:text-sm bg-emerald-700 text-white shadow transition-all flex items-center justify-center gap-1.5 cursor-pointer";
+            if (tabBelumBtn) tabBelumBtn.className = "py-2.5 px-3 rounded-xl font-extrabold text-xs md:text-sm text-slate-600 hover:bg-white/70 transition-all flex items-center justify-center gap-1.5 cursor-pointer";
+            if (countSudahEl) countSudahEl.className = "bg-white/20 text-white text-[10px] font-black px-2 py-0.5 rounded-full";
+            if (countBelumEl) countBelumEl.className = "bg-slate-200 text-slate-700 text-[10px] font-black px-2 py-0.5 rounded-full";
+            if (panelSudah) panelSudah.classList.remove('hidden');
+            if (panelBelum) panelBelum.classList.add('hidden');
+        }
+    }
+
+    if (tabBelumBtn) tabBelumBtn.addEventListener('click', () => setActiveCartTab('belum'));
+    if (tabSudahBtn) tabSudahBtn.addEventListener('click', () => setActiveCartTab('sudah'));
+
+    const btnPrevBelum = document.getElementById('btnPrevBelumBayar');
+    const btnNextBelum = document.getElementById('btnNextBelumBayar');
+    if (btnPrevBelum) {
+        btnPrevBelum.addEventListener('click', () => {
+            if (pageBelumBayar > 1) {
+                pageBelumBayar--;
+                renderSectionBelumBayar();
+            }
+        });
+    }
+    if (btnNextBelum) {
+        btnNextBelum.addEventListener('click', () => {
+            const unpaidCount = dataTagihan.filter(i => i.status_pembayaran === 'Belum Bayar').length;
+            const maxPage = Math.max(1, Math.ceil(unpaidCount / CART_PAGE_SIZE));
+            if (pageBelumBayar < maxPage) {
+                pageBelumBayar++;
+                renderSectionBelumBayar();
+            }
+        });
+    }
+
+    const btnPrevSudah = document.getElementById('btnPrevSudahBayar');
+    const btnNextSudah = document.getElementById('btnNextSudahBayar');
+    if (btnPrevSudah) {
+        btnPrevSudah.addEventListener('click', () => {
+            if (pageSudahBayar > 1) {
+                pageSudahBayar--;
+                renderSectionSudahBayar();
+            }
+        });
+    }
+    if (btnNextSudah) {
+        btnNextSudah.addEventListener('click', () => {
+            const paidFiltered = getFilteredSudahBayar();
+            const maxPage = Math.max(1, Math.ceil(paidFiltered.length / CART_PAGE_SIZE));
+            if (pageSudahBayar < maxPage) {
+                pageSudahBayar++;
+                renderSectionSudahBayar();
+            }
+        });
+    }
+
+    const inputSearchSudah = document.getElementById('searchSudahBayar');
+    if (inputSearchSudah) {
+        inputSearchSudah.addEventListener('input', (e) => {
+            keywordSudahBayar = e.target.value.trim().toLowerCase();
+            pageSudahBayar = 1;
+            renderSectionSudahBayar();
+        });
+    }
+
+    const btnCheckAll = document.getElementById('checkAllTagihan');
+    if (btnCheckAll) {
+        btnCheckAll.addEventListener('change', (e) => {
+            const unpaidList = dataTagihan.filter(i => i.status_pembayaran === 'Belum Bayar');
+            if (e.target.checked) {
+                unpaidList.forEach(item => selectedTagihanIds.add(String(item.id)));
+            } else {
+                selectedTagihanIds.clear();
+            }
+            renderSectionBelumBayar();
+            kalkulasiTotalBayar();
+        });
+    }
+
+    function getFilteredSudahBayar() {
+        const paidList = dataTagihan.filter(i => i.status_pembayaran !== 'Belum Bayar');
+        if (!keywordSudahBayar) return paidList;
+        return paidList.filter(item =>
+            (item.nama_peserta || '').toLowerCase().includes(keywordSudahBayar) ||
+            (item.kelompok_umur || '').toLowerCase().includes(keywordSudahBayar)
+        );
+    }
+
+    function buildTagihanCardElement(item) {
+        const card = document.createElement('div');
+        card.className = "card-tagihan bg-white border border-slate-200 rounded-2xl p-4 flex gap-3 items-start shadow-sm transition-all hover:border-blue-300";
+
+        const arrayNomor = item.nomor_lomba || [];
+        const listNomor = arrayNomor.map(n => typeof n === 'object' ? n.gaya : n).join(', ');
+
+        const isBelumBayar = item.status_pembayaran === 'Belum Bayar';
+        const isLunas = item.status_pembayaran === 'Lunas';
+        const isMenunggu = item.status_pembayaran === 'Menunggu Konfirmasi';
+
+        let checkboxHtml = '';
+        let statusBadge = '';
+        let aksiHtml = '';
+
+        if (isBelumBayar) {
+            const isChecked = selectedTagihanIds.has(String(item.id)) ? 'checked' : '';
+            checkboxHtml = `<input type="checkbox" value="${item.id}" ${isChecked} class="chk-tagihan w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer mt-0.5">`;
+            aksiHtml = `<button data-id="${item.id}" class="btn-hapus-tagihan text-red-500 hover:text-white hover:bg-red-500 bg-red-50 px-3 py-1.5 rounded-lg text-[10px] font-bold transition flex items-center gap-1 shadow-sm"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>Hapus</button>`;
+        } else if (isLunas) {
+            checkboxHtml = `<div class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-[10px] mt-0.5">✓</div>`;
+            statusBadge = `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[9px] font-extrabold ml-1 uppercase tracking-wider">LUNAS</span>`;
+        } else if (isMenunggu) {
+            checkboxHtml = `<div class="w-5 h-5 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-[10px] mt-0.5">⏳</div>`;
+            statusBadge = `<span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-[9px] font-extrabold ml-1 uppercase tracking-wider">PROSES</span>`;
+        }
+
+        const badgeTipe = item.gender === 'Regu/Tim' ? `<span class="bg-purple-100 text-purple-800 text-[9px] font-bold px-2 py-0.5 rounded">REGU</span>` : '';
+
+        card.innerHTML = `
+            <div class="shrink-0 pt-0.5">
+                ${checkboxHtml}
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex justify-between items-start gap-3">
+                    <div>
+                        <h3 class="font-extrabold text-slate-800 text-sm leading-tight flex items-center flex-wrap gap-1">${item.nama_peserta} ${statusBadge}</h3>
+                        <p class="text-[10px] text-slate-500 font-medium mt-1 truncate">${item.klub_asal} • KU ${item.kelompok_umur}</p>
+                    </div>
+                    <div class="text-right shrink-0 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                        <p class="text-[9px] font-bold text-blue-500 uppercase tracking-widest mb-0.5">Biaya</p>
+                        <p class="font-black text-blue-800 text-sm leading-none">Rp ${Number(item.total_biaya).toLocaleString('id-ID')}</p>
+                    </div>
+                </div>
+                
+                <div class="mt-3 bg-slate-50/80 rounded-xl p-3 border border-slate-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-1.5">
+                            ${badgeTipe}
+                            <span class="bg-slate-200 text-slate-700 text-[9px] font-bold px-2 py-0.5 rounded">${arrayNomor.length} Nomor</span>
+                        </div>
+                        ${aksiHtml}
+                    </div>
+                    <p class="text-[10px] text-slate-600 font-medium leading-relaxed">${listNomor}</p>
+                </div>
+            </div>
+        `;
+        return card;
+    }
+
+    function syncCheckAllState(unpaidList) {
+        const chkAll = document.getElementById('checkAllTagihan');
+        const lblAll = document.getElementById('labelCheckAllTagihan');
+        if (lblAll) lblAll.innerText = `Pilih Semua (${unpaidList.length})`;
+        if (!chkAll) return;
+
+        if (unpaidList.length === 0) {
+            chkAll.checked = false;
+            chkAll.indeterminate = false;
+            return;
+        }
+        const selectedCount = unpaidList.filter(i => selectedTagihanIds.has(String(i.id))).length;
+        chkAll.checked = selectedCount === unpaidList.length;
+        chkAll.indeterminate = selectedCount > 0 && selectedCount < unpaidList.length;
+    }
+
+    function renderSectionBelumBayar() {
+        const container = document.getElementById('listTagihanContainer');
+        const paginationBox = document.getElementById('paginationBelumBayar');
+        const toolbarBox = document.getElementById('toolbarBelumBayar');
+        const checkoutBox = document.getElementById('boxCheckoutKolektif');
+        if (!container) return;
+
+        const unpaidList = dataTagihan.filter(i => i.status_pembayaran === 'Belum Bayar');
+        syncCheckAllState(unpaidList);
+
+        if (unpaidList.length === 0) {
+            if (toolbarBox) toolbarBox.classList.add('hidden');
+            if (paginationBox) paginationBox.classList.add('hidden');
+            if (checkoutBox) checkoutBox.classList.add('hidden');
+            container.innerHTML = `
+                <div class="text-center py-8 bg-slate-50 rounded-2xl border border-dashed border-slate-200 px-4">
+                    <span class="text-3xl block mb-2">🎉</span>
+                    <p class="text-xs md:text-sm font-extrabold text-slate-700">Tidak ada antrian yang belum dibayar.</p>
+                    <p class="text-[11px] text-slate-500 mt-1">Semua pendaftaran Anda sudah masuk ke tab <strong>Sudah Bayar</strong>.</p>
+                </div>
+            `;
+            return;
+        }
+
+        if (toolbarBox) toolbarBox.classList.remove('hidden');
+        if (checkoutBox) checkoutBox.classList.remove('hidden');
+
+        const totalPages = Math.max(1, Math.ceil(unpaidList.length / CART_PAGE_SIZE));
+        if (pageBelumBayar > totalPages) pageBelumBayar = totalPages;
+        if (pageBelumBayar < 1) pageBelumBayar = 1;
+
+        const startIdx = (pageBelumBayar - 1) * CART_PAGE_SIZE;
+        const pageItems = unpaidList.slice(startIdx, startIdx + CART_PAGE_SIZE);
+
+        container.innerHTML = '';
+        pageItems.forEach(item => {
+            container.appendChild(buildTagihanCardElement(item));
+        });
+
+        // Pagination controls (muncul jika > 5 item)
+        if (paginationBox) {
+            if (unpaidList.length > CART_PAGE_SIZE) {
+                paginationBox.classList.remove('hidden');
+                const infoEl = document.getElementById('infoPageBelumBayar');
+                if (infoEl) infoEl.innerText = `Hal ${pageBelumBayar} / ${totalPages} (${unpaidList.length} antrian)`;
+                if (btnPrevBelum) btnPrevBelum.disabled = pageBelumBayar <= 1;
+                if (btnNextBelum) btnNextBelum.disabled = pageBelumBayar >= totalPages;
+            } else {
+                paginationBox.classList.add('hidden');
+            }
+        }
+
+        // Event listener checkbox per item (menyimpan state lintas halaman)
+        container.querySelectorAll('.chk-tagihan').forEach(chk => {
+            chk.addEventListener('change', (e) => {
+                const idStr = String(e.target.value);
+                if (e.target.checked) selectedTagihanIds.add(idStr);
+                else selectedTagihanIds.delete(idStr);
+                syncCheckAllState(unpaidList);
+                kalkulasiTotalBayar();
+            });
+        });
+
+        // Event listener hapus antrian
+        container.querySelectorAll('.btn-hapus-tagihan').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = String(e.currentTarget.getAttribute('data-id'));
+                if (!confirm("Yakin ingin menghapus antrian ini dari keranjang?")) return;
+
+                const cardNode = e.currentTarget.closest('.card-tagihan');
+                cardNode.style.opacity = '0.4';
+                cardNode.style.pointerEvents = 'none';
+
+                try {
+                    const { error } = await supabaseClient.from('event_registrations').delete().eq('id', id);
+                    if (error) throw error;
+
+                    selectedTagihanIds.delete(id);
+
+                    if (!isKlubLoggedIn) {
+                        let guestIds = JSON.parse(localStorage.getItem(`scs_guest_${currentEvent.id}`) || '[]');
+                        guestIds = guestIds.filter(gId => String(gId) !== id);
+                        localStorage.setItem(`scs_guest_${currentEvent.id}`, JSON.stringify(guestIds));
+                    }
+                    await loadTagihan();
+                    await refreshKuotaCounter();
+
+                } catch (err) {
+                    alert("Gagal menghapus data: " + err.message);
+                    cardNode.style.opacity = '1';
+                    cardNode.style.pointerEvents = 'auto';
+                }
+            });
+        });
+    }
+
+    function renderSectionSudahBayar() {
+        const container = document.getElementById('listSudahBayarContainer');
+        const paginationBox = document.getElementById('paginationSudahBayar');
+        const summaryEl = document.getElementById('ringkasanSudahBayar');
+        if (!container) return;
+
+        const allPaid = dataTagihan.filter(i => i.status_pembayaran !== 'Belum Bayar');
+        const lunasCount = allPaid.filter(i => i.status_pembayaran === 'Lunas').length;
+        const prosesCount = allPaid.filter(i => i.status_pembayaran === 'Menunggu Konfirmasi').length;
+
+        if (summaryEl) {
+            summaryEl.innerText = `Total ${allPaid.length} peserta (${lunasCount} Lunas • ${prosesCount} Menunggu Konfirmasi)`;
+        }
+
+        const filteredList = getFilteredSudahBayar();
+
+        if (filteredList.length === 0) {
+            if (paginationBox) paginationBox.classList.add('hidden');
+            container.innerHTML = `
+                <div class="text-center py-8 bg-slate-50 rounded-2xl border border-dashed border-slate-200 px-4">
+                    <span class="text-3xl block mb-2">🧾</span>
+                    <p class="text-xs md:text-sm font-bold text-slate-600">
+                        ${allPaid.length === 0 ? 'Belum ada riwayat pembayaran pada event ini.' : 'Nama peserta tidak ditemukan.'}
+                    </p>
+                </div>
+            `;
+            return;
+        }
+
+        const totalPages = Math.max(1, Math.ceil(filteredList.length / CART_PAGE_SIZE));
+        if (pageSudahBayar > totalPages) pageSudahBayar = totalPages;
+        if (pageSudahBayar < 1) pageSudahBayar = 1;
+
+        const startIdx = (pageSudahBayar - 1) * CART_PAGE_SIZE;
+        const pageItems = filteredList.slice(startIdx, startIdx + CART_PAGE_SIZE);
+
+        container.innerHTML = '';
+        pageItems.forEach(item => {
+            container.appendChild(buildTagihanCardElement(item));
+        });
+
+        if (paginationBox) {
+            if (filteredList.length > CART_PAGE_SIZE) {
+                paginationBox.classList.remove('hidden');
+                const infoEl = document.getElementById('infoPageSudahBayar');
+                if (infoEl) infoEl.innerText = `Hal ${pageSudahBayar} / ${totalPages} (${filteredList.length} data)`;
+                if (btnPrevSudah) btnPrevSudah.disabled = pageSudahBayar <= 1;
+                if (btnNextSudah) btnNextSudah.disabled = pageSudahBayar >= totalPages;
+            } else {
+                paginationBox.classList.add('hidden');
+            }
+        }
+    }
+
     async function loadTagihan() {
         if (!currentEvent) return;
 
@@ -1255,141 +1594,70 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function renderDaftarTagihan() {
         const area = document.getElementById('areaPembayaran');
-        const container = document.getElementById('listTagihanContainer');
-        container.innerHTML = '';
-        selectedTagihanIds.clear(); 
-        kalkulasiTotalBayar();
-
         if (dataTagihan.length === 0) {
+            selectedTagihanIds.clear();
             area.classList.add('hidden'); 
             return;
         }
 
         area.classList.remove('hidden');
 
-        dataTagihan.forEach(item => {
-            const card = document.createElement('div');
-            card.className = "card-tagihan bg-white border border-slate-200 rounded-2xl p-4 flex gap-3 items-start shadow-sm transition-all hover:border-blue-300";
-            
-            let arrayNomor = item.nomor_lomba || [];
-            let listNomor = arrayNomor.map(n => typeof n === 'object' ? n.gaya : n).join(', ');
+        const unpaidList = dataTagihan.filter(i => i.status_pembayaran === 'Belum Bayar');
+        const paidList = dataTagihan.filter(i => i.status_pembayaran !== 'Belum Bayar');
 
-            const isBelumBayar = item.status_pembayaran === 'Belum Bayar';
-            const isLunas = item.status_pembayaran === 'Lunas';
-            const isMenunggu = item.status_pembayaran === 'Menunggu Konfirmasi';
-
-            let checkboxHtml = '';
-            let statusBadge = '';
-            let aksiHtml = '';
-
-            if (isBelumBayar) {
-                checkboxHtml = `<input type="checkbox" value="${item.id}" class="chk-tagihan w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer mt-0.5">`;
-                aksiHtml = `<button data-id="${item.id}" class="btn-hapus-tagihan text-red-500 hover:text-white hover:bg-red-500 bg-red-50 px-3 py-1.5 rounded-lg text-[10px] font-bold transition flex items-center gap-1 shadow-sm"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>Hapus</button>`;
-            } else if (isLunas) {
-                checkboxHtml = `<div class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-[10px] mt-0.5">✓</div>`;
-                statusBadge = `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[9px] font-extrabold ml-2 uppercase tracking-wider">LUNAS</span>`;
-            } else if (isMenunggu) {
-                checkboxHtml = `<div class="w-5 h-5 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-[10px] mt-0.5">⏳</div>`;
-                statusBadge = `<span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-[9px] font-extrabold ml-2 uppercase tracking-wider">PROSES</span>`;
+        // Pertahankan centang yang masih valid di antrian Belum Bayar
+        const validUnpaidIdSet = new Set(unpaidList.map(i => String(i.id)));
+        Array.from(selectedTagihanIds).forEach(id => {
+            if (!validUnpaidIdSet.has(String(id))) {
+                selectedTagihanIds.delete(id);
             }
-
-            let badgeTipe = item.gender === 'Regu/Tim' ? `<span class="bg-purple-100 text-purple-800 text-[9px] font-bold px-2 py-0.5 rounded">REGU</span>` : '';
-
-            card.innerHTML = `
-                <div class="shrink-0 pt-0.5">
-                    ${checkboxHtml}
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex justify-between items-start gap-3">
-                        <div>
-                            <h3 class="font-extrabold text-slate-800 text-sm leading-tight flex items-center flex-wrap gap-1">${item.nama_peserta} ${statusBadge}</h3>
-                            <p class="text-[10px] text-slate-500 font-medium mt-1 truncate">${item.klub_asal} • KU ${item.kelompok_umur}</p>
-                        </div>
-                        <div class="text-right shrink-0 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
-                            <p class="text-[9px] font-bold text-blue-500 uppercase tracking-widest mb-0.5">Biaya</p>
-                            <p class="font-black text-blue-800 text-sm leading-none">Rp ${Number(item.total_biaya).toLocaleString('id-ID')}</p>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-3 bg-slate-50/80 rounded-xl p-3 border border-slate-100">
-                        <div class="flex items-center justify-between mb-2">
-                            <div class="flex items-center gap-1.5">
-                                ${badgeTipe}
-                                <span class="bg-slate-200 text-slate-700 text-[9px] font-bold px-2 py-0.5 rounded">${arrayNomor.length} Nomor</span>
-                            </div>
-                            ${aksiHtml}
-                        </div>
-                        <p class="text-[10px] text-slate-600 font-medium leading-relaxed">${listNomor}</p>
-                    </div>
-                </div>
-            `;
-            container.appendChild(card);
         });
 
-        document.querySelectorAll('.chk-tagihan').forEach(chk => {
-            chk.addEventListener('change', (e) => {
-                if(e.target.checked) selectedTagihanIds.add(e.target.value);
-                else selectedTagihanIds.delete(e.target.value);
-                kalkulasiTotalBayar();
-            });
-        });
+        const countBelumEl = document.getElementById('countBelumBayar');
+        const countSudahEl = document.getElementById('countSudahBayar');
+        if (countBelumEl) countBelumEl.innerText = unpaidList.length;
+        if (countSudahEl) countSudahEl.innerText = paidList.length;
 
-        const btnCheckAll = document.getElementById('checkAllTagihan');
-        if(btnCheckAll) {
-            btnCheckAll.checked = false;
-            btnCheckAll.addEventListener('change', (e) => {
-                const isChecked = e.target.checked;
-                document.querySelectorAll('.chk-tagihan').forEach(chk => {
-                    chk.checked = isChecked;
-                    if(isChecked) selectedTagihanIds.add(chk.value);
-                    else selectedTagihanIds.delete(chk.value);
-                });
-                kalkulasiTotalBayar();
-            });
+        // Jika belum bayar kosong tapi sudah ada yang bayar, otomatis arahkan ke tab Sudah Bayar
+        if (unpaidList.length === 0 && paidList.length > 0 && activeCartTab === 'belum') {
+            activeCartTab = 'sudah';
         }
 
-        document.querySelectorAll('.btn-hapus-tagihan').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const id = e.currentTarget.getAttribute('data-id');
-                if(!confirm("Yakin ingin menghapus antrian ini dari keranjang?")) return;
-                
-                const cardNode = e.currentTarget.closest('.card-tagihan');
-                cardNode.style.opacity = '0.4';
-                cardNode.style.pointerEvents = 'none';
-
-                try {
-                    const { error } = await supabaseClient.from('event_registrations').delete().eq('id', id);
-                    if (error) throw error;
-                    
-                    if (!isKlubLoggedIn) {
-                        let guestIds = JSON.parse(localStorage.getItem(`scs_guest_${currentEvent.id}`) || '[]');
-                        guestIds = guestIds.filter(gId => gId !== id);
-                        localStorage.setItem(`scs_guest_${currentEvent.id}`, JSON.stringify(guestIds));
-                    }
-                    loadTagihan(); 
-                    await refreshKuotaCounter();
-
-                } catch (err) {
-                    alert("Gagal menghapus data: " + err.message);
-                    cardNode.style.opacity = '1';
-                    cardNode.style.pointerEvents = 'auto';
-                }
-            });
-        });
+        setActiveCartTab(activeCartTab);
+        renderSectionBelumBayar();
+        renderSectionSudahBayar();
+        kalkulasiTotalBayar();
     }
 
     function kalkulasiTotalBayar() {
         let total = 0;
+        let selectedCount = 0;
         dataTagihan.forEach(item => {
-            if (selectedTagihanIds.has(item.id)) total += Number(item.total_biaya);
+            if (item.status_pembayaran === 'Belum Bayar' && selectedTagihanIds.has(String(item.id))) {
+                total += Number(item.total_biaya);
+                selectedCount++;
+            }
         });
         document.getElementById('teksTotalTagihan').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+
+        const subInfoEl = document.getElementById('subInfoTerpilih');
+        if (subInfoEl) subInfoEl.innerText = `${selectedCount} peserta dicentang`;
+
+        const badgeEl = document.getElementById('badgeSelectedCount');
+        if (badgeEl) {
+            if (selectedCount > 0) {
+                badgeEl.innerText = `${selectedCount} dipilih`;
+                badgeEl.classList.remove('hidden');
+            } else {
+                badgeEl.classList.add('hidden');
+            }
+        }
         
         const btnKonfirmasi = document.getElementById('btnKonfirmasiBayar');
-        btnKonfirmasi.disabled = selectedTagihanIds.size === 0;
+        btnKonfirmasi.disabled = selectedCount === 0;
 
         const inputBuktiContainer = document.getElementById('inputBuktiTransfer').parentElement;
-        if (total === 0 && selectedTagihanIds.size > 0) {
+        if (total === 0 && selectedCount > 0) {
             btnKonfirmasi.innerText = "Konfirmasi Pendaftaran (Gratis)";
             inputBuktiContainer.classList.add('hidden'); 
         } else {
@@ -1400,9 +1668,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('btnKonfirmasiBayar').addEventListener('click', async () => {
         let total = 0;
+        const listIds = [];
         dataTagihan.forEach(item => {
-            if (selectedTagihanIds.has(item.id)) total += Number(item.total_biaya);
+            if (item.status_pembayaran === 'Belum Bayar' && selectedTagihanIds.has(String(item.id))) {
+                total += Number(item.total_biaya);
+                listIds.push(item.id);
+            }
         });
+
+        if (listIds.length === 0) return alert("Pilih minimal 1 peserta terlebih dahulu!");
 
         const fileStruk = document.getElementById('inputBuktiTransfer').files[0];
         if (total > 0 && !fileStruk) return alert("Wajib mengunggah foto Bukti Transfer!");
@@ -1426,15 +1700,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 strukUrl = urlData.publicUrl;
             }
 
-            const listIds = Array.from(selectedTagihanIds);
             const { error: updateError } = await supabaseClient.from('event_registrations').update({ status_pembayaran: statusBayar, bukti_transfer_url: strukUrl }).in('id', listIds);
             if (updateError) throw updateError;
 
             if (total === 0) alert("✅ Pendaftaran berhasil! Status langsung Lunas (Gratis).");
             else alert("✅ Pembayaran berhasil dikirim! Silakan tunggu konfirmasi panitia.");
             
+            selectedTagihanIds.clear();
             document.getElementById('inputBuktiTransfer').value = "";
-            loadTagihan(); 
+            activeCartTab = 'sudah';
+            pageSudahBayar = 1;
+            await loadTagihan(); 
 
         } catch (err) {
             alert("Gagal memproses: " + err.message);

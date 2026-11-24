@@ -215,52 +215,111 @@
         </div>
 
         <!-- SECTION PEMBAYARAN KOLEKTIF -->
-        <div id="areaPembayaran" class="bg-white/95 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-2xl border border-slate-200 hidden mb-10">
+        <div id="areaPembayaran" class="bg-white/95 backdrop-blur-md rounded-3xl p-5 md:p-8 shadow-2xl border border-slate-200 hidden mb-10">
             <h2 class="text-xl md:text-2xl font-extrabold text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2">
                 💳 Keranjang & Riwayat Pendaftaran
             </h2>
-            <p class="text-xs text-slate-500 mb-5 leading-relaxed">Centang peserta yang ingin dibayar. Anda bisa membayar sekaligus (kolektif) dengan 1 struk transfer. <strong class="text-red-500">Tombol hapus tersedia untuk membatalkan antrian.</strong></p>
-            
-            <div class="mb-5 flex justify-between items-center bg-blue-50/50 p-3 rounded-xl border border-blue-100 shadow-sm">
-                <label class="flex items-center gap-2 text-sm font-black text-blue-900 cursor-pointer">
-                    <input type="checkbox" id="checkAllTagihan" class="w-5 h-5 rounded border-blue-300 text-blue-600 focus:ring-blue-500">
-                    Pilih Semua Peserta
-                </label>
-            </div>
 
-            <div id="listTagihanContainer" class="space-y-4 mb-8">
-                <!-- Diinjeksi via JS (Cards) -->
-            </div>
-
-            <!-- KOTAK TOTAL & INFO PEMBAYARAN -->
-            <div class="bg-slate-50 p-5 md:p-6 rounded-2xl border border-slate-200 flex flex-col gap-4">
-                <div class="flex justify-between items-end border-b border-slate-200 pb-3">
-                    <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Total Terpilih</p>
-                    <p id="teksTotalTagihan" class="text-2xl md:text-4xl font-black text-blue-900 tracking-tight">Rp 0</p>
-                </div>
-
-                <div id="boxInfoPembayaran" class="hidden bg-white p-4 md:p-5 rounded-xl border border-blue-100 shadow-sm">
-                    <h3 class="text-xs md:text-sm font-bold text-blue-800 mb-2 flex items-center gap-2 border-b border-slate-100 pb-2">
-                        🏦 Info Pembayaran / Transfer
-                    </h3>
-                    <p id="teksInfoPembayaran" class="text-[11px] md:text-xs text-slate-700 font-medium whitespace-pre-wrap leading-relaxed mb-3"></p>
-                    
-                    <div id="boxQris" class="hidden flex-col items-center justify-center pt-3 border-t border-slate-100">
-                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Atau Scan QRIS</span>
-                        <img id="imgQris" src="" class="w-32 h-32 md:w-48 md:h-48 object-contain rounded-lg border border-slate-200 p-1 shadow-sm bg-white">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-2">Upload Bukti Transfer</label>
-                    <input type="file" id="inputBuktiTransfer" accept="image/*" class="w-full text-sm file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 mb-3 cursor-pointer outline-none">
-                </div>
-                <button id="btnKonfirmasiBayar" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-4 rounded-xl shadow-lg transition-all text-sm md:text-lg disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02]" disabled>
-                    Konfirmasi Pembayaran
+            <!-- TAB NAVIGASI KERANJANG (BELUM BAYAR VS SUDAH BAYAR) -->
+            <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1.5 rounded-2xl mb-5">
+                <button type="button" id="tabKeranjangBelumBayar" class="py-2.5 px-3 rounded-xl font-extrabold text-xs md:text-sm bg-blue-900 text-white shadow transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                    <span>🛒 Belum Bayar</span>
+                    <span id="countBelumBayar" class="bg-white/20 text-white text-[10px] font-black px-2 py-0.5 rounded-full">0</span>
+                </button>
+                <button type="button" id="tabRiwayatSudahBayar" class="py-2.5 px-3 rounded-xl font-extrabold text-xs md:text-sm text-slate-600 hover:bg-white/70 transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                    <span>✅ Sudah Bayar</span>
+                    <span id="countSudahBayar" class="bg-slate-200 text-slate-700 text-[10px] font-black px-2 py-0.5 rounded-full">0</span>
                 </button>
             </div>
-        </div>
 
+            <!-- PANEL 1: ANTRIAN BELUM BAYAR (5 PER HALAMAN, CENTANG LINTAS HALAMAN) -->
+            <div id="panelBelumBayar">
+                <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+                    Centang peserta yang ingin dibayar (pilihan centang tetap tersimpan meski pindah halaman). <strong class="text-red-500">Tombol hapus tersedia untuk membatalkan antrian.</strong>
+                </p>
+
+                <div id="toolbarBelumBayar" class="mb-4 flex justify-between items-center bg-blue-50/70 p-3 rounded-xl border border-blue-100 shadow-sm">
+                    <label class="flex items-center gap-2 text-xs md:text-sm font-black text-blue-900 cursor-pointer">
+                        <input type="checkbox" id="checkAllTagihan" class="w-5 h-5 rounded border-blue-300 text-blue-600 focus:ring-blue-500">
+                        <span id="labelCheckAllTagihan">Pilih Semua (0)</span>
+                    </label>
+                    <span id="badgeSelectedCount" class="hidden text-[11px] font-extrabold bg-blue-600 text-white px-2.5 py-1 rounded-full shadow-sm">
+                        0 dipilih
+                    </span>
+                </div>
+
+                <div id="listTagihanContainer" class="space-y-3.5 mb-4">
+                    <!-- Diinjeksi via JS (5 card per halaman) -->
+                </div>
+
+                <!-- PAGINATION BELUM BAYAR -->
+                <div id="paginationBelumBayar" class="hidden flex items-center justify-between gap-2 bg-slate-50 border border-slate-200 rounded-xl p-2.5 mb-6">
+                    <button type="button" id="btnPrevBelumBayar" class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-extrabold text-slate-700 hover:bg-blue-50 disabled:opacity-40 disabled:cursor-not-allowed">
+                        ◀ Sebelumnya
+                    </button>
+                    <span id="infoPageBelumBayar" class="text-xs font-black text-slate-600">Halaman 1 / 1</span>
+                    <button type="button" id="btnNextBelumBayar" class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-extrabold text-slate-700 hover:bg-blue-50 disabled:opacity-40 disabled:cursor-not-allowed">
+                        Berikutnya ▶
+                    </button>
+                </div>
+
+                <!-- KOTAK TOTAL & INFO PEMBAYARAN -->
+                <div id="boxCheckoutKolektif" class="bg-slate-50 p-5 md:p-6 rounded-2xl border border-slate-200 flex flex-col gap-4">
+                    <div class="flex justify-between items-end border-b border-slate-200 pb-3">
+                        <div>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Total Terpilih</p>
+                            <p id="subInfoTerpilih" class="text-[11px] font-bold text-blue-600 mt-0.5">0 peserta dicentang</p>
+                        </div>
+                        <p id="teksTotalTagihan" class="text-2xl md:text-4xl font-black text-blue-900 tracking-tight">Rp 0</p>
+                    </div>
+
+                    <div id="boxInfoPembayaran" class="hidden bg-white p-4 md:p-5 rounded-xl border border-blue-100 shadow-sm">
+                        <h3 class="text-xs md:text-sm font-bold text-blue-800 mb-2 flex items-center gap-2 border-b border-slate-100 pb-2">
+                            🏦 Info Pembayaran / Transfer
+                        </h3>
+                        <p id="teksInfoPembayaran" class="text-[11px] md:text-xs text-slate-700 font-medium whitespace-pre-wrap leading-relaxed mb-3"></p>
+                        
+                        <div id="boxQris" class="hidden flex-col items-center justify-center pt-3 border-t border-slate-100">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Atau Scan QRIS</span>
+                            <img id="imgQris" src="" class="w-32 h-32 md:w-48 md:h-48 object-contain rounded-lg border border-slate-200 p-1 shadow-sm bg-white">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-2">Upload Bukti Transfer</label>
+                        <input type="file" id="inputBuktiTransfer" accept="image/*" class="w-full text-sm file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 mb-3 cursor-pointer outline-none">
+                    </div>
+                    <button id="btnKonfirmasiBayar" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-4 rounded-xl shadow-lg transition-all text-sm md:text-lg disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02]" disabled>
+                        Konfirmasi Pembayaran
+                    </button>
+                </div>
+            </div>
+
+            <!-- PANEL 2: RIWAYAT SUDAH BAYAR (PROSES & LUNAS) -->
+            <div id="panelSudahBayar" class="hidden">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-emerald-50/70 border border-emerald-200 rounded-xl p-3 mb-4">
+                    <p id="ringkasanSudahBayar" class="text-xs font-bold text-emerald-900">
+                        Menampilkan peserta dengan status Menunggu Konfirmasi & Lunas.
+                    </p>
+                    <input type="text" id="searchSudahBayar" placeholder="🔍 Cari nama atlet..." class="px-3 py-1.5 bg-white border border-emerald-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div id="listSudahBayarContainer" class="space-y-3.5 mb-4">
+                    <!-- Diinjeksi via JS (5 card per halaman) -->
+                </div>
+
+                <!-- PAGINATION SUDAH BAYAR -->
+                <div id="paginationSudahBayar" class="hidden flex items-center justify-between gap-2 bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+                    <button type="button" id="btnPrevSudahBayar" class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-extrabold text-slate-700 hover:bg-emerald-50 disabled:opacity-40 disabled:cursor-not-allowed">
+                        ◀ Sebelumnya
+                    </button>
+                    <span id="infoPageSudahBayar" class="text-xs font-black text-slate-600">Halaman 1 / 1</span>
+                    <button type="button" id="btnNextSudahBayar" class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-extrabold text-slate-700 hover:bg-emerald-50 disabled:opacity-40 disabled:cursor-not-allowed">
+                        Berikutnya ▶
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- MODAL TAMBAH ATLET CEPAT (ON-THE-FLY) -->
