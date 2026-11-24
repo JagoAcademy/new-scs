@@ -7,6 +7,14 @@ const itemsPerPage = 10;
 let currentClubId = null; 
 let currentClubData = null;
 let currentAuthSession = null;
+let isGodModeImpersonation = false;
+const SUPER_ADMIN_EMAILS = [
+    'radityaraja@gmail.com',
+    'fajar@f1swimming.com',
+    'jagorenangakademi@gmail.com',
+    'indra@f1swimming.com',
+    'donybaktiar.me@gmail.com'
+];
 
 // ==============================================================
 // 🖼️ AUTO-COMPRESS GAMBAR KE TARGET 150 KB - 200 KB (BY JS)
@@ -473,8 +481,11 @@ window.approveAtlet = async function(inboxId, f1Id) {
     
     const { data: userData } = await supabaseClient.auth.getUser();
     const currentUserIdGlobal = userData?.user?.id;
+    const targetOwnerId = (isGodModeImpersonation && currentClubData?.owner_id)
+        ? currentClubData.owner_id
+        : currentUserIdGlobal;
 
-    const { error: err1 } = await supabaseClient.from('athletes').update({ club_id: currentClubId, owner_id: currentUserIdGlobal }).eq('f1_id', f1Id);
+    const { error: err1 } = await supabaseClient.from('athletes').update({ club_id: currentClubId, owner_id: targetOwnerId }).eq('f1_id', f1Id);
     
     if (!err1) {
         await supabaseClient.from('club_inbox').update({ is_actioned: true, is_read: true }).eq('id', inboxId);
@@ -524,13 +535,45 @@ async function fetchDashboardData() {
 
         currentAuthSession = session;
         const userId = session.user.id; 
-        const userEmail = session.user.email;
+        const userEmail = (session.user.email || '').toLowerCase();
 
-        const { data: clubData, error: clubError } = await supabaseClient
-            .from('clubs')
-            .select('*')
-            .eq('owner_id', userId)
-            .single();
+        const godClubIdParam = dashParams.get('god_club_id');
+        let clubData = null;
+        let clubError = null;
+        isGodModeImpersonation = false;
+
+        if (godClubIdParam && SUPER_ADMIN_EMAILS.includes(userEmail)) {
+            const resGod = await supabaseClient
+                .from('clubs')
+                .select('*')
+                .eq('id', godClubIdParam)
+                .single();
+            clubData = resGod.data;
+            clubError = resGod.error;
+
+            if (clubData) {
+                isGodModeImpersonation = true;
+                sessionStorage.setItem('aztec_key', 'buka_sesame');
+                const godBanner = document.getElementById('godModeBanner');
+                const godClubLabel = document.getElementById('godModeBannerClubName');
+                const godClubMeta = document.getElementById('godModeBannerMeta');
+                if (godBanner) godBanner.classList.remove('hidden');
+                if (godClubLabel) godClubLabel.innerText = `${clubData.club_name} (ID #${clubData.id})`;
+                if (godClubMeta) godClubMeta.innerText = `Owner: ${clubData.admin_email || '-'} • Coach: ${clubData.coach_name || '-'}`;
+            } else {
+                alert(`⚠️ Klub dengan ID #${godClubIdParam} tidak ditemukan.`);
+            }
+        }
+
+        if (!isGodModeImpersonation) {
+            const resOwn = await supabaseClient
+                .from('clubs')
+                .select('*')
+                .eq('owner_id', userId)
+                .single();
+            clubData = resOwn.data;
+            clubError = resOwn.error;
+        }
 
         if (clubError || !clubData) {
             const modalOnboard = document.getElementById('modalOnboarding');
@@ -649,10 +692,11 @@ async function fetchDashboardData() {
             .select('*')
             .eq('club_id', currentClubId);
             
+        const targetCollabUserId = (isGodModeImpersonation && clubData.owner_id) ? clubData.owner_id : userId;
         const { data: collabData, error: collabErr } = await supabaseClient
             .from('event_collaborators')
             .select('role, events(*)')
-            .eq('user_id', userId);
+            .eq('user_id', targetCollabUserId);
 
         let allEventsToDisplay = [];
 
@@ -1160,9 +1204,19 @@ function openProfileModal(defaultTab = 'profil') {
         document.getElementById('editKota').disabled = false;
     }
     
-    supabaseClient.auth.getUser().then(({data}) => {
-        if(data.user) document.getElementById('editAuthEmail').value = data.user.email;
-    });
+    if (isGodModeImpersonation) {
+        document.getElementById('editAuthEmail').value = currentClubData.admin_email || '(Email Pemilik Klub)';
+        const btnAuth = document.getElementById('btnSaveAuthInfo');
+        if (btnAuth) {
+            btnAuth.disabled = true;
+            btnAuth.innerText = '🔒 Dinonaktifkan saat God Mode';
+            btnAuth.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+    } else {
+        supabaseClient.auth.getUser().then(({data}) => {
+            if(data.user) document.getElementById('editAuthEmail').value = data.user.email;
+        });
+    }
 
     const missingPassNote = document.getElementById('akunPasswordMissingNote');
     if (missingPassNote) {
@@ -1651,6 +1705,7 @@ if (btnSaveEvent) {
 // ==============================================================
 function updateOnboardingAndAlerts(session, clubData, athletesList) {
     if (!clubData) return;
+    if (isGodModeImpersonation) return;
 
     const isProfileComplete = Boolean(
         clubData.club_name &&

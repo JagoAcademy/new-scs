@@ -100,6 +100,28 @@
 
     <!-- CONTENT -->
     <div class="p-4 md:p-6 max-w-7xl mx-auto mt-2">
+        <!-- BANNER GOD MODE (MUNCUL SAAT SUPER ADMIN MEMBUKA DASHBOARD KLUB) -->
+        <div id="godModeBanner" class="hidden mb-6 bg-slate-950 text-white border-2 border-amber-400 rounded-2xl p-4 md:p-5 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="flex items-start gap-3">
+                <span class="text-2xl shrink-0">⚡</span>
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="bg-amber-400 text-slate-950 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-widest">GOD MODE ACTIVE</span>
+                        <span id="godModeBannerClubName" class="font-extrabold text-amber-300 text-sm md:text-base">Memuat Klub...</span>
+                    </div>
+                    <p id="godModeBannerMeta" class="text-xs text-slate-300 mt-1 font-mono">Anda sedang mengakses Command Center atas nama klub ini.</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                <a href="/admin.html" class="flex-1 sm:flex-none text-center bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black px-4 py-2.5 rounded-xl shadow transition">
+                    👑 Kembali ke Super Admin
+                </a>
+                <a href="/dashboard.html" class="flex-1 sm:flex-none text-center bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold px-3.5 py-2.5 rounded-xl transition">
+                    Keluar God Mode
+                </a>
+            </div>
+        </div>
+
         <!-- NOTE LENGKAPI PROFIL & PASSWORD -->
         <div id="incompleteAccountAlert" class="hidden mb-6 bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 md:p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div class="flex items-start gap-3">
