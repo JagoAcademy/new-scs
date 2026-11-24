@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Klasemen Perolehan Medali | SCS</title>
+    <link rel="stylesheet" href="/src/style.css">
+</head>
+<body class="bg-slate-50 min-h-screen font-sans text-slate-800 pb-24">
+
+    <!-- NAVBAR -->
+    <nav class="bg-slate-900 text-white shadow-md px-4 py-4 sticky top-0 z-50 border-b-2 border-amber-500">
+        <div class="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-extrabold text-amber-400 uppercase tracking-wider">🏅 Klasemen Perolehan Medali Resmi</span>
+                </div>
+                <h1 id="eventName" class="text-lg md:text-xl font-black tracking-tight truncate">Memuat Nama Event...</h1>
+                <p id="eventMeta" class="text-[11px] text-slate-400 font-medium mt-0.5">Rekapitulasi medali klub, sekolah & individu</p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <a id="btnToLeaderboard" href="/event-leaderboard.html" class="bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl transition">
+                    🏆 Daftar Juara
+                </a>
+                <button id="btnShareMedal" type="button" class="bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black px-3.5 py-2 rounded-xl shadow transition cursor-pointer">
+                    🔗 Bagikan
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-5xl mx-auto px-4 py-6">
+
+        <!-- WADAH BANNER SPONSOR -->
+        <div id="partnerWrapper"></div>
+
+        <!-- RINGKASAN TOTAL MEDALI KELUAR DI EVENT -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            <div class="bg-white rounded-2xl p-4 border border-amber-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-black text-amber-600 uppercase tracking-wider">Total Emas</p>
+                    <p id="statTotalGold" class="text-2xl md:text-3xl font-black text-slate-900 mt-0.5">0</p>
+                </div>
+                <span class="text-3xl">🥇</span>
+            </div>
+            <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Total Perak</p>
+                    <p id="statTotalSilver" class="text-2xl md:text-3xl font-black text-slate-900 mt-0.5">0</p>
+                </div>
+                <span class="text-3xl">🥈</span>
+            </div>
+            <div class="bg-white rounded-2xl p-4 border border-orange-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-black text-orange-700 uppercase tracking-wider">Total Perunggu</p>
+                    <p id="statTotalBronze" class="text-2xl md:text-3xl font-black text-slate-900 mt-0.5">0</p>
+                </div>
+                <span class="text-3xl">🥉</span>
+            </div>
+            <div class="bg-gradient-to-br from-blue-900 to-slate-900 text-white rounded-2xl p-4 border border-blue-800 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-black text-blue-200 uppercase tracking-wider">Total Medali Deal</p>
+                    <p id="statTotalAll" class="text-2xl md:text-3xl font-black text-amber-400 mt-0.5">0</p>
+                </div>
+                <span class="text-3xl">🎖️</span>
+            </div>
+        </div>
+
+        <!-- KONTROL TAB & PENCARIAN -->
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm mb-6 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex bg-slate-100 p-1 rounded-xl gap-1">
+                    <button id="tabKontingen" type="button" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-black bg-white text-blue-950 shadow-sm transition cursor-pointer">
+                        🏛️ Klub / Sekolah (<span id="countKontingen">0</span>)
+                    </button>
+                    <button id="tabIndividu" type="button" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-slate-800 transition cursor-pointer">
+                        🏊 Individu / Atlet (<span id="countIndividu">0</span>)
+                    </button>
+                    <button id="tabRincian" type="button" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-slate-800 transition cursor-pointer">
+                        📋 Semua Nomor
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button id="btnRefreshMedal" type="button" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-xs font-bold border border-slate-200 transition cursor-pointer">
+                        🔄 Refresh
+                    </button>
+                </div>
+            </div>
+
+            <div class="relative">
+                <input type="text" id="searchMedalInput" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500" placeholder="🔍 Cari nama klub, sekolah, nama atlet, atau nomor lomba...">
+                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔎</span>
+            </div>
+        </div>
+
+        <!-- LOADING -->
+        <div id="loadingIndicator" class="text-center py-12 text-slate-400 font-bold text-sm">
+            ⏳ Menghitung perolehan medali dari hasil resmi wasit...
+        </div>
+
+        <!-- PANEL 1: KLASEMEN KLUB / SEKOLAH -->
+        <div id="panelKontingen" class="hidden">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="px-4 py-3 bg-slate-900 text-white flex items-center justify-between">
+                    <span class="text-xs font-black uppercase tracking-wider text-amber-400">Klasemen Kontingen (Klub / Sekolah)</span>
+                    <span class="text-[10px] text-slate-300">Klik baris untuk detail atlet</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-wider">
+                                <th class="py-3 px-3 text-center w-12">Rank</th>
+                                <th class="py-3 px-3">Klub / Sekolah / Kontingen</th>
+                                <th class="py-3 px-2 text-center w-16">🥇 Emas</th>
+                                <th class="py-3 px-2 text-center w-16">🥈 Perak</th>
+                                <th class="py-3 px-2 text-center w-16">🥉 Prg</th>
+                                <th class="py-3 px-3 text-center w-20 bg-slate-100">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyKontingen" class="divide-y divide-slate-100 text-xs md:text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL 2: KLASEMEN INDIVIDU / ATLET -->
+        <div id="panelIndividu" class="hidden">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="px-4 py-3 bg-slate-900 text-white flex items-center justify-between">
+                    <span class="text-xs font-black uppercase tracking-wider text-amber-400">Perolehan Medali Individu (Atlet)</span>
+                    <span class="text-[10px] text-slate-300">Urut Emas → Perak → Perunggu</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-wider">
+                                <th class="py-3 px-3 text-center w-12">Rank</th>
+                                <th class="py-3 px-3">Nama Atlet & Kontingen</th>
+                                <th class="py-3 px-2 text-center w-16">🥇 Emas</th>
+                                <th class="py-3 px-2 text-center w-16">🥈 Perak</th>
+                                <th class="py-3 px-2 text-center w-16">🥉 Prg</th>
+                                <th class="py-3 px-3 text-center w-20 bg-slate-100">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyIndividu" class="divide-y divide-slate-100 text-xs md:text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL 3: AUDIT RINCIAN SEMUA NOMOR -->
+        <div id="panelRincian" class="hidden space-y-3"></div>
+
+    </div>
+
+    <script type="module" src="/src/event-medal.js"></script>
+</body>
+</html>

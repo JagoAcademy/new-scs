@@ -413,6 +413,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             btnEventCashflow.onclick = () => window.location.href = `/event-cashflow.html?id=${currentEventId}`;
         }
         document.getElementById('btnLiveResult').onclick = () => window.location.href = `/live-result.html?id=${currentEventId}`;
+        const btnKlasemenMedali = document.getElementById('btnKlasemenMedali');
+        if (btnKlasemenMedali) {
+            btnKlasemenMedali.onclick = () => window.location.href = `/event-medal.html?id=${currentEventId}`;
+        }
         document.getElementById('btnDataPeserta').onclick = () => window.location.href = `/event-peserta.html?id=${currentEventId}`;
 
         document.getElementById('btnPusatCetak').onclick = () => {
