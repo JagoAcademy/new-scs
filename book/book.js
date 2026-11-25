@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if(iconDesktop) iconDesktop.classList.add('hidden');
             if(iconMobile) iconMobile.classList.remove('hidden');
         } else {
-            viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0');
+            viewportMeta.setAttribute('content', 'width=1280');
             // Ganti icon jadi Desktop (buat tombol ngubah)
             if(iconDesktop) iconDesktop.classList.remove('hidden');
             if(iconMobile) iconMobile.classList.add('hidden');
