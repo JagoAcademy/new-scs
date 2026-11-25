@@ -14,29 +14,32 @@
 
     <!-- HEADER ADMIN -->
     <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 md:px-8 py-4 flex justify-between items-center">
+        <div class="max-w-7xl mx-auto px-4 md:px-8 py-4 flex flex-wrap justify-between items-center gap-3">
             <div class="flex items-center gap-3">
                 <a id="btnBack" href="/dashboard.html" class="text-slate-400 hover:text-slate-600 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 </a>
                 <div>
                     <h1 class="text-lg font-black text-slate-800 flex items-center gap-2">
-                        🏆 Admin Data Peserta
+                        🏊 Admin Data Peserta
                     </h1>
                     <p id="adminEventName" class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Memuat Event...</p>
                 </div>
             </div>
-            <div class="flex gap-2">
-                <button id="btnSyncF1" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 shadow-sm">
+            <div class="flex flex-wrap gap-2">
+                <button onclick="openModalRenameKlub()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer">
+                    🏷️ Rename Klub
+                </button>
+                <button id="btnSyncF1" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 shadow-sm cursor-pointer">
                     🔄 Auto-Sync F1
                 </button>
-                <button id="btnGenerateGuestF1" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 shadow-sm">
+                <button id="btnGenerateGuestF1" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 shadow-sm cursor-pointer">
                     🆔 Terbitkan F1 ID Tamu
                 </button>
-                <button onclick="bukaModalBukuAcara()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 shadow-sm">
-                    📕 Generate Buku Acara
+                <button onclick="bukaModalBukuAcara()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 shadow-sm cursor-pointer">
+                    📖 Generate Buku Acara
                 </button>
-                <button onclick="window.location.reload()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2">
+                <button onclick="window.location.reload()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer">
                     🔄 Refresh
                 </button>
             </div>
@@ -113,7 +116,7 @@
         </div>
     </div>
     
-    <!-- MODAL EDIT SEED TIME MULTIPLE (BARU) -->
+    <!-- MODAL EDIT SEED TIME MULTIPLE -->
     <div id="modalSeedTime" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-2xl max-h-[90vh] flex flex-col">
             <h3 class="font-black text-slate-800 text-lg mb-1">Edit Seed Time</h3>
@@ -121,7 +124,6 @@
             
             <input type="hidden" id="editRegId">
             
-            <!-- Container dinamis dari JS untuk nampilin form tiap gaya renang -->
             <div id="seedTimeListContainer" class="flex-1 overflow-y-auto hide-scrollbar space-y-3 mb-5 border-t border-b border-slate-100 py-4">
                 <!-- Injeksi JS -->
             </div>
@@ -129,6 +131,40 @@
             <div class="flex gap-2 mt-auto">
                 <button onclick="document.getElementById('modalSeedTime').classList.add('hidden')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl text-sm transition-colors">Batal</button>
                 <button id="btnSaveSeedTime" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition-colors">Simpan Waktu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL RENAME NAMA KLUB (MASSAL PER EVENT) -->
+    <div id="modalRenameKlub" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-2xl">
+            <div class="flex items-center justify-between mb-1">
+                <h3 class="font-black text-slate-800 text-lg">🏷️ Rename Nama Klub</h3>
+                <button type="button" onclick="closeModalRenameKlub()" class="text-slate-400 hover:text-slate-600 text-2xl font-black leading-none cursor-pointer">&times;</button>
+            </div>
+            <p class="text-xs text-slate-500 mb-5">Ubah nama klub/sekolah secara massal untuk seluruh atlet yang terdaftar di event ini.</p>
+
+            <div class="space-y-4 mb-5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Pilih Klub Saat Ini</label>
+                    <select id="selectOldKlub" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-bold text-slate-800 bg-slate-50 focus:ring-2 focus:ring-amber-500 outline-none"></select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Nama Klub Baru</label>
+                    <input type="text" id="inputNewKlub" placeholder="Ketik nama klub baru..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-bold text-slate-800 bg-white focus:ring-2 focus:ring-amber-500 outline-none">
+                </div>
+
+                <div class="p-3 bg-amber-50 rounded-xl border border-amber-200">
+                    <p class="text-[11px] text-amber-800 font-medium leading-relaxed">
+                        <span class="font-bold">Sinkronisasi Otomatis:</span> Perubahan nama klub akan langsung memperbarui <strong>Data Peserta</strong>, <strong>Buku Acara (Start List)</strong>, <strong>Live Result</strong>, dan <strong>Klasemen Medali</strong> pada event ini.
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <button type="button" onclick="closeModalRenameKlub()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl text-sm transition-colors cursor-pointer">Batal</button>
+                <button type="button" id="btnSaveRenameKlub" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-xl text-sm shadow-md transition-colors cursor-pointer">Simpan Nama Baru</button>
             </div>
         </div>
     </div>

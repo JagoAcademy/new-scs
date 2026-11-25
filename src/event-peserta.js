@@ -111,6 +111,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btnCloseModal').addEventListener('click', () => {
         document.getElementById('imageModal').classList.add('hidden');
     });
+
+    const selectOldKlub = document.getElementById('selectOldKlub');
+    if (selectOldKlub) {
+        selectOldKlub.addEventListener('change', () => {
+            const inputNew = document.getElementById('inputNewKlub');
+            if (inputNew) inputNew.value = selectOldKlub.value;
+        });
+    }
 });
 
 async function fetchData() {
@@ -228,6 +236,8 @@ function renderTable() {
             });
         }
 
+        const encodedKlub = encodeURIComponent(item.klub_asal || '');
+
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50/80 transition-colors group";
         tr.innerHTML = `
@@ -237,9 +247,10 @@ function renderTable() {
             </td>
             <td class="p-4 align-top">
                 <p class="font-bold text-slate-800">${item.nama_peserta}</p>
-                <div class="flex items-center gap-1.5 mt-1">
+                <div class="flex items-center gap-1.5 mt-1 flex-wrap">
                     <span class="bg-indigo-50 text-indigo-700 text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-widest">${item.f1_id ? item.f1_id : 'TAMU'}</span>
                     <span class="text-[10px] text-slate-500 font-medium">${item.klub_asal}</span>
+                    <button type="button" onclick="window.openModalRenameKlub(decodeURIComponent('${encodedKlub}'))" class="text-[10px] text-amber-600 hover:text-amber-800 hover:bg-amber-50 px-1 py-0.5 rounded transition-colors cursor-pointer" title="Rename Nama Klub Ini">🏷️</button>
                 </div>
             </td>
             <td class="p-4 align-top">
@@ -281,6 +292,188 @@ window.viewImage = function(url, title) {
     document.getElementById('btnDownloadImage').href = url;
     document.getElementById('imageModal').classList.remove('hidden');
 }
+
+// ==========================================
+// RENAME NAMA KLUB MASSAL & SYNC STARTLIST / MEDAL
+// ==========================================
+window.openModalRenameKlub = function(prefillClub = '') {
+    if (!allRegistrations || allRegistrations.length === 0) {
+        alert("Belum ada data peserta di event ini.");
+        return;
+    }
+
+    const clubMap = new Map();
+    allRegistrations.forEach(r => {
+        const raw = String(r.klub_asal || '').trim();
+        if (!raw) return;
+        const key = raw.toLowerCase();
+        if (!clubMap.has(key)) {
+            clubMap.set(key, { label: raw, count: 0 });
+        }
+        clubMap.get(key).count += 1;
+    });
+
+    if (clubMap.size === 0) {
+        alert("Tidak ditemukan nama klub pada data peserta.");
+        return;
+    }
+
+    const sortedClubs = Array.from(clubMap.values()).sort((a, b) => a.label.localeCompare(b.label, 'id'));
+    const selectEl = document.getElementById('selectOldKlub');
+    const inputNewEl = document.getElementById('inputNewKlub');
+
+    selectEl.innerHTML = '';
+    sortedClubs.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.label;
+        opt.textContent = `${c.label} (${c.count} Peserta)`;
+        selectEl.appendChild(opt);
+    });
+
+    if (prefillClub) {
+        const matched = sortedClubs.find(c => c.label.toLowerCase() === String(prefillClub).trim().toLowerCase());
+        if (matched) {
+            selectEl.value = matched.label;
+        }
+    }
+
+    inputNewEl.value = selectEl.value || '';
+    document.getElementById('modalRenameKlub').classList.remove('hidden');
+    setTimeout(() => {
+        inputNewEl.focus();
+        inputNewEl.select();
+    }, 50);
+};
+
+window.closeModalRenameKlub = function() {
+    document.getElementById('modalRenameKlub').classList.add('hidden');
+};
+
+document.getElementById('btnSaveRenameKlub')?.addEventListener('click', async () => {
+    const oldKlub = (document.getElementById('selectOldKlub')?.value || '').trim();
+    const newKlub = (document.getElementById('inputNewKlub')?.value || '').trim();
+
+    if (!oldKlub) {
+        alert("Pilih klub yang ingin diubah terlebih dahulu.");
+        return;
+    }
+    if (!newKlub) {
+        alert("Nama klub baru tidak boleh kosong.");
+        return;
+    }
+    if (oldKlub === newKlub) {
+        alert("Nama klub baru masih sama persis dengan nama lama.");
+        return;
+    }
+
+    const oldLower = oldKlub.toLowerCase();
+    const targetRegs = allRegistrations.filter(r => String(r.klub_asal || '').trim().toLowerCase() === oldLower);
+
+    if (targetRegs.length === 0) {
+        alert("Data pendaftaran untuk klub tersebut tidak ditemukan.");
+        return;
+    }
+
+    if (!confirm(`Ubah nama klub "${oldKlub}" menjadi "${newKlub}" untuk ${targetRegs.length} peserta di event ini?`)) {
+        return;
+    }
+
+    const btn = document.getElementById('btnSaveRenameKlub');
+    const origText = btn.innerText;
+    btn.innerText = 'Menyimpan... ⏳';
+    btn.disabled = true;
+
+    try {
+        // 1. Update event_registrations
+        const targetRegIds = targetRegs.map(r => r.id);
+        const { error: regErr } = await supabaseClient
+            .from('event_registrations')
+            .update({ klub_asal: newKlub })
+            .in('id', targetRegIds)
+            .eq('event_id', currentEventId);
+
+        if (regErr) throw regErr;
+
+        // 2. Sinkronkan ke event_heats (Start List / Buku Acara)
+        let updatedHeatsCount = 0;
+        const { data: heatsData, error: heatsErr } = await supabaseClient
+            .from('event_heats')
+            .select('id, lanes_data')
+            .eq('event_id', currentEventId);
+
+        if (!heatsErr && Array.isArray(heatsData)) {
+            for (const heat of heatsData) {
+                if (!Array.isArray(heat.lanes_data)) continue;
+                let changed = false;
+                const updatedLanes = heat.lanes_data.map(lane => {
+                    if (lane && lane.klub && String(lane.klub).trim().toLowerCase() === oldLower) {
+                        changed = true;
+                        return { ...lane, klub: newKlub };
+                    }
+                    return lane;
+                });
+
+                if (changed) {
+                    const { error: upHeatErr } = await supabaseClient
+                        .from('event_heats')
+                        .update({ lanes_data: updatedLanes })
+                        .eq('id', heat.id);
+                    if (!upHeatErr) updatedHeatsCount++;
+                }
+            }
+        }
+
+        // 3. Sinkronkan ke event_leaderboard (Klasemen Medali) jika sudah ada data
+        const { data: lbRows } = await supabaseClient
+            .from('event_leaderboard')
+            .select('id, klub_asal')
+            .eq('event_id', currentEventId);
+
+        if (Array.isArray(lbRows) && lbRows.length > 0) {
+            const matchingLbIds = lbRows
+                .filter(row => String(row.klub_asal || '').trim().toLowerCase() === oldLower)
+                .map(row => row.id);
+
+            if (matchingLbIds.length > 0) {
+                await supabaseClient
+                    .from('event_leaderboard')
+                    .update({ klub_asal: newKlub })
+                    .in('id', matchingLbIds);
+            }
+        }
+
+        // 4. Sinkronkan ke race_results jika sudah ada catatan waktu
+        try {
+            const { data: resRows } = await supabaseClient
+                .from('race_results')
+                .select('id, klub_asal')
+                .eq('event_id', currentEventId);
+
+            if (Array.isArray(resRows) && resRows.length > 0) {
+                const matchingResIds = resRows
+                    .filter(row => String(row.klub_asal || '').trim().toLowerCase() === oldLower)
+                    .map(row => row.id);
+
+                if (matchingResIds.length > 0) {
+                    await supabaseClient
+                        .from('race_results')
+                        .update({ klub_asal: newKlub })
+                        .in('id', matchingResIds);
+                }
+            }
+        } catch (_) {}
+
+        window.closeModalRenameKlub();
+        await fetchData();
+        alert(`✅ Nama klub berhasil diubah!\n\n"${oldKlub}" ➔ "${newKlub}"\n• ${targetRegs.length} data peserta diperbarui\n• ${updatedHeatsCount} seri/heat Start List disinkronkan`);
+    } catch (err) {
+        console.error(err);
+        alert("Gagal mengubah nama klub: " + err.message);
+    } finally {
+        btn.innerText = origText;
+        btn.disabled = false;
+    }
+});
 
 // ==========================================
 // FUNGSI ACC LUNAS DENGAN FITUR MULTI-UPDATE KOLEKTIF
@@ -406,7 +599,6 @@ document.getElementById('btnSaveSeedTime').addEventListener('click', async () =>
     updatedNomorLomba.forEach((nomor, index) => {
         const inputEl = document.getElementById(`seed_time_${index}`);
         if (inputEl) {
-            // Normalisasi koma menjadi titik otomatis agar standar startlist tidak rusak
             let inputVal = inputEl.value.trim().replace(/,/g, '.');
             
             if (typeof nomor === 'string') {
@@ -482,7 +674,6 @@ document.getElementById('btnSyncF1').addEventListener('click', async () => {
     btn.disabled = true;
 
     try {
-        // Kumpulkan semua nomor lomba yang diikuti peserta F1 di event ini
         const targetEventsSet = new Set();
         f1Registrations.forEach(reg => {
             reg.nomor_lomba.forEach(n => {
@@ -491,7 +682,6 @@ document.getElementById('btnSyncF1').addEventListener('click', async () => {
             });
         });
 
-        // Tarik riwayat hasil lomba resmi dari event-event sebelumnya
         const { data: historyData, error: histErr } = await supabaseClient
             .from('event_leaderboard')
             .select('nama_peserta, nomor_lomba, catatan_waktu')
@@ -499,8 +689,7 @@ document.getElementById('btnSyncF1').addEventListener('click', async () => {
 
         if (histErr) throw histErr;
 
-        // Petakan Personal Best (waktu tercepat) per Nama Atlet + Nomor Lomba
-        const pbMap = {}; // key: "nama_peserta|nomor_lomba" -> { timeStr, ms }
+        const pbMap = {};
         (historyData || []).forEach(row => {
             if (!row.nama_peserta || !row.nomor_lomba || !row.catatan_waktu) return;
             const ms = parseTimeToMs(row.catatan_waktu);
@@ -530,7 +719,6 @@ document.getElementById('btnSyncF1').addEventListener('click', async () => {
 
                 if (pbRecord) {
                     const currentMs = parseTimeToMs(existingST);
-                    // Isi seed_time jika masih kosong/NT atau jika PB di database lebih cepat
                     if (!existingST || pbRecord.ms < currentMs) {
                         hasChange = true;
                         updatedEventsCount++;
