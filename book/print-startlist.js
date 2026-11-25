@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const evName = eventData.event_name || 'EVENT TANPA NAMA';
             document.getElementById('coverTitle').innerText = evName;
             document.getElementById('contentTitle').innerText = evName;
-            document.getElementById('repeatTitle').innerText = evName; // Untuk header ngulang saat print
+            document.getElementById('repeatTitle').innerText = evName;
             
             let formattedDate = 'Jadwal belum dikonfirmasi';
             const rawDate = eventData.start_date || eventData.event_date || eventData.tanggal; 
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             container.innerHTML = `
             <div class="text-center p-10 border-2 border-dashed border-red-300 rounded-2xl bg-red-50">
                 <h3 class="text-red-600 font-black text-lg">⚠️ Buku Acara Kosong!</h3>
-                <p class="text-slate-600 text-sm mt-2">Anda belum meng-generate Start List. Harap masuk ke menu "Pusat Cetak > Buku Acara" lalu klik Simpan.</p>
+                <p class="text-slate-600 text-sm mt-2">Anda belum meng-generate Start List. Harap masuk ke menu "Pusat Cetak > Buku Acara" lalu klik Kunci Start List.</p>
             </div>`;
             return;
         }
@@ -78,11 +78,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             groupedBySesi[sesi].push(heat);
         });
 
-        // 4. Render ke Kertas A4 (DENGAN SPACING LEBIH LONGGAR ANTI-SPECTRA)
+        // 4. Render ke Kertas A4 (Aturan kolom identik mutlak dengan book.js)
         Object.keys(groupedBySesi).forEach(sesiName => {
             
             container.innerHTML += `
-            <div class="bg-slate-800 text-white py-3 text-center font-black uppercase tracking-widest text-sm mb-8 mt-10 print:mt-6 rounded-md print:rounded-none print:border-y-[3px] print:border-black print:bg-transparent print:text-black">
+            <div class="bg-slate-800 text-white p-2 text-center font-black uppercase tracking-widest text-sm mb-4 mt-8 print:mt-4 rounded-md print:rounded-none print:border-y-2 print:border-black print:bg-transparent print:text-black">
                 --- ${sesiName} ---
             </div>`;
 
@@ -90,45 +90,45 @@ document.addEventListener('DOMContentLoaded', async () => {
             groupedBySesi[sesiName].forEach(heat => {
                 let tbodyHtml = '';
                 
-                heat.lanes_data.sort((a,b) => a.lane - b.lane);
-                const maxLanes = heat.lanes_data.length;
+                const lanesSorted = [...(heat.lanes_data || [])].sort((a, b) => a.lane - b.lane);
+                const maxLanes = lanesSorted.length;
 
                 for (let i = 0; i < maxLanes; i++) {
-                    const swimmer = heat.lanes_data[i];
-                    // CSS py-2 & text-[13px] biar spasi baris lebih bernapas
-                    if (swimmer && swimmer.f1_id && swimmer.nama) {
+                    const swimmer = lanesSorted[i];
+                    if (swimmer && swimmer.nama) {
+                        const namaUpper = String(swimmer.nama).toUpperCase();
+                        const klubText = swimmer.klub || 'Individu';
                         tbodyHtml += `
-                        <tr class="border-b border-slate-200 text-[13px] text-slate-800">
-                            <td class="py-2 px-3 text-center font-bold">${swimmer.lane}</td>
-                            <td class="py-2 px-3 font-bold truncate max-w-0" title="${swimmer.nama.toUpperCase()}">${swimmer.nama.toUpperCase()}</td>
-                            <td class="py-2 px-3 font-medium text-slate-600 truncate max-w-0 uppercase" title="${swimmer.klub}">${swimmer.klub}</td>
-                            <td class="py-2 px-3 text-center font-mono font-bold text-slate-500">${swimmer.seed_time || 'NT'}</td>
+                        <tr class="border-b border-slate-200 text-xs text-slate-800">
+                            <td class="py-1.5 px-2 text-center font-bold">${swimmer.lane}</td>
+                            <td class="py-1.5 px-2 font-bold truncate max-w-0" title="${namaUpper}">${namaUpper}</td>
+                            <td class="py-1.5 px-2 font-medium text-slate-600 truncate max-w-0 uppercase" title="${klubText}">${klubText}</td>
+                            <td class="py-1.5 px-2 text-center font-mono text-slate-500">${swimmer.seed_time || 'NT'}</td>
                         </tr>`;
                     } else {
                         tbodyHtml += `
-                        <tr class="border-b border-slate-200 text-[13px] text-slate-300">
-                            <td class="py-2 px-3 text-center">${swimmer ? swimmer.lane : (i+1)}</td>
-                            <td class="py-2 px-3 italic truncate max-w-0">--- Kosong ---</td>
-                            <td class="py-2 px-3 truncate max-w-0"></td>
-                            <td class="py-2 px-3"></td>
+                        <tr class="border-b border-slate-200 text-xs text-slate-300">
+                            <td class="py-1.5 px-2 text-center">${swimmer ? swimmer.lane : (i + 1)}</td>
+                            <td class="py-1.5 px-2 italic truncate max-w-0">--- Kosong ---</td>
+                            <td class="py-1.5 px-2 truncate max-w-0"></td>
+                            <td class="py-1.5 px-2"></td>
                         </tr>`;
                     }
                 }
 
-                // mb-8 biar antar Heat jauh lebih lega
                 html += `
-                <div class="avoid-break mb-8 mt-6">
-                    <div class="flex justify-between items-end border-b-2 border-slate-700 pb-2 mb-2 bg-slate-50/50 print:bg-transparent px-1">
-                        <h3 class="font-extrabold text-[12px] uppercase text-slate-900 tracking-tight">Event #${heat.event_number}: ${heat.nomor_lomba} - ${heat.gender} - ${heat.kelompok_umur}</h3>
-                        <span class="font-black text-[11px] text-slate-600 uppercase tracking-widest bg-slate-200 print:bg-transparent px-2 py-0.5 rounded">SERI/HEAT ${heat.heat_number} of ${heat.total_heats}</span>
+                <div class="avoid-break mb-6 mt-4">
+                    <div class="flex justify-between items-end border-b-2 border-slate-700 pb-1 mb-1">
+                        <h3 class="font-extrabold text-[11px] uppercase text-slate-900">Event #${heat.event_number}: ${heat.nomor_lomba} - ${heat.gender} - ${heat.kelompok_umur}</h3>
+                        <span class="font-bold text-[10px] text-slate-600 uppercase">SERI/HEAT ${heat.heat_number} of ${heat.total_heats}</span>
                     </div>
-                    <table class="w-full text-left border-collapse table-fixed mt-1">
+                    <table class="w-full text-left border-collapse table-fixed">
                         <thead>
-                            <tr class="text-[10px] text-slate-400 uppercase tracking-widest border-b-[2px] border-slate-300">
-                                <th class="py-2 px-3 w-12 text-center font-black">LINT</th>
-                                <th class="py-2 px-3 w-[45%] font-black">NAMA ATLET</th>
-                                <th class="py-2 px-3 w-[35%] font-black">KLUB / SEKOLAH</th>
-                                <th class="py-2 px-3 text-center font-black">SEED TIME</th>
+                            <tr class="text-[9px] text-slate-400 uppercase tracking-widest border-b border-slate-200 bg-slate-50/50 print:bg-transparent">
+                                <th class="py-1.5 px-2 w-10 text-center font-bold">LINT</th>
+                                <th class="py-1.5 px-2 w-1/2 font-bold">NAMA ATLET</th>
+                                <th class="py-1.5 px-2 w-1/3 font-bold">KLUB / SEKOLAH</th>
+                                <th class="py-1.5 px-2 text-center font-bold">SEED TIME</th>
                             </tr>
                         </thead>
                         <tbody>${tbodyHtml}</tbody>
@@ -160,10 +160,8 @@ async function renderCoverSponsors(eventId) {
             return;
         }
 
-        const platinumSponsors = sponsors.slice(0, 3);
         let spHtml = '';
-
-        platinumSponsors.forEach(sp => {
+        sponsors.forEach(sp => {
             spHtml += `
                 <img src="${sp.logo_url}" 
                      alt="${sp.sponsor_name}" 
