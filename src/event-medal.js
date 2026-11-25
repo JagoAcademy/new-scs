@@ -83,7 +83,7 @@ function countNomorLomba(nomorField) {
 
 async function resolveEventIdFromContext() {
     const urlParams = new URLSearchParams(window.location.search);
-    const paramId = urlParams.get('id');
+    const paramId = urlParams.get('id') || urlParams.get('event_id');
     if (paramId) return paramId;
 
     const host = window.location.hostname.toLowerCase();
@@ -141,12 +141,131 @@ async function fetchAndRenderSponsors(eventId) {
     }
 }
 
+/**
+ * Ambil lineup klub & atlet terdaftar dengan fallback berantai:
+ * 1. RPC Publik `get_public_event_contingents` (bypass RLS dengan aman)
+ * 2. Tabel `event_registrations` (jika sesi login / policy mengizinkan)
+ * 3. Tabel `event_heats` (Start List resmi yang selalu terbuka untuk publik)
+ * 4. Tabel `race_results` (jika hasil seri sudah masuk)
+ */
+async function fetchParticipantLineup(eventId) {
+    // 1. Coba RPC publik khusus kontingen
+    try {
+        const { data: rpcRows, error: rpcErr } = await supabaseClient
+            .rpc('get_public_event_contingents', { p_event_id: String(eventId) });
+
+        if (!rpcErr && Array.isArray(rpcRows) && rpcRows.length > 0) {
+            const paid = rpcRows.filter(r => String(r.status_pembayaran || '').toLowerCase() === 'lunas');
+            return paid.length > 0 ? paid : rpcRows;
+        }
+    } catch (_) {}
+
+    // 2. Coba baca langsung dari event_registrations
+    try {
+        const { data: regRows, error: regErr } = await supabaseClient
+            .from('event_registrations')
+            .select('f1_id, nama_peserta, klub_asal, gender, kelompok_umur, nomor_lomba, status_pembayaran')
+            .eq('event_id', eventId);
+
+        if (!regErr && Array.isArray(regRows) && regRows.length > 0) {
+            const paid = regRows.filter(r => String(r.status_pembayaran || '').toLowerCase() === 'lunas');
+            return paid.length > 0 ? paid : regRows;
+        }
+    } catch (_) {}
+
+    // 3. Fallback ke Start List (event_heats) yang terbuka untuk publik
+    try {
+        const { data: heatRows, error: heatErr } = await supabaseClient
+            .from('event_heats')
+            .select('event_number, nomor_lomba, kelompok_umur, gender, lanes_data')
+            .eq('event_id', eventId);
+
+        if (!heatErr && Array.isArray(heatRows) && heatRows.length > 0) {
+            const athleteMap = new Map();
+
+            heatRows.forEach(heat => {
+                const lanes = Array.isArray(heat.lanes_data) ? heat.lanes_data : [];
+                lanes.forEach(sw => {
+                    if (!sw || !sw.nama) return;
+                    const nama = String(sw.nama).trim();
+                    const klub = String(sw.klub || '').trim();
+                    const f1 = sw.f1_id ? String(sw.f1_id).trim() : '';
+                    const uid = f1
+                        ? `f1_${f1.toLowerCase()}`
+                        : `nm_${nama.toLowerCase()}__${klub.toLowerCase()}`;
+
+                    if (!athleteMap.has(uid)) {
+                        athleteMap.set(uid, {
+                            f1_id: f1 || null,
+                            nama_peserta: nama,
+                            klub_asal: klub,
+                            gender: heat.gender || '',
+                            kelompok_umur: heat.kelompok_umur || '',
+                            nomor_lomba: [],
+                            status_pembayaran: 'Lunas',
+                            _seenEvents: new Set()
+                        });
+                    }
+
+                    const entry = athleteMap.get(uid);
+                    const evKey = `${heat.event_number || ''}__${heat.nomor_lomba || ''}`;
+                    if (!entry._seenEvents.has(evKey)) {
+                        entry._seenEvents.add(evKey);
+                        entry.nomor_lomba.push(heat.nomor_lomba || 'Nomor Lomba');
+                    }
+                });
+            });
+
+            if (athleteMap.size > 0) {
+                return Array.from(athleteMap.values());
+            }
+        }
+    } catch (_) {}
+
+    // 4. Fallback terakhir ke race_results jika sudah ada catatan waktu
+    try {
+        const { data: resRows, error: resErr } = await supabaseClient
+            .from('race_results')
+            .select('athlete_f1_id, nama_peserta, klub_asal, gender, kelompok_umur, nomor_lomba')
+            .eq('event_id', eventId);
+
+        if (!resErr && Array.isArray(resRows) && resRows.length > 0) {
+            const athleteMap = new Map();
+            resRows.forEach(r => {
+                if (!r || !r.nama_peserta) return;
+                const nama = String(r.nama_peserta).trim();
+                const klub = String(r.klub_asal || '').trim();
+                const f1 = r.athlete_f1_id ? String(r.athlete_f1_id).trim() : '';
+                const uid = f1
+                    ? `f1_${f1.toLowerCase()}`
+                    : `nm_${nama.toLowerCase()}__${klub.toLowerCase()}`;
+
+                if (!athleteMap.has(uid)) {
+                    athleteMap.set(uid, {
+                        f1_id: f1 || null,
+                        nama_peserta: nama,
+                        klub_asal: klub,
+                        gender: r.gender || '',
+                        kelompok_umur: r.kelompok_umur || '',
+                        nomor_lomba: [],
+                        status_pembayaran: 'Lunas'
+                    });
+                }
+                athleteMap.get(uid).nomor_lomba.push(r.nomor_lomba || 'Nomor Lomba');
+            });
+            return Array.from(athleteMap.values());
+        }
+    } catch (_) {}
+
+    return [];
+}
+
 function buildAggregations(medals, registrations) {
     const kontingenMap = new Map();
     const individuMap = new Map();
     const uniqueGlobalAthletes = new Set();
 
-    // 1. Seed dari daftar peserta terdaftar agar saat idle tidak kosong melompong
+    // 1. Seed dari daftar peserta terdaftar agar saat idle langsung muncul lengkap
     registrations.forEach(reg => {
         const klubInfo = normalizeKontingenLabel(reg.klub_asal);
         const nama = String(reg.nama_peserta || 'Tanpa Nama').trim();
@@ -317,7 +436,6 @@ function computeOlympicRanks(sortedItems) {
 function renderAllViews() {
     const query = (document.getElementById('searchMedalInput')?.value || '').trim().toLowerCase();
 
-    // Update label tombol sort
     const sortLabel = idleSortMode === 'random' ? '🎲 Urut: Posisi Acak' : '👥 Urut: Peserta Terbanyak';
     const btnToolbar = document.getElementById('btnSortToolbar');
     const btnIdleBanner = document.getElementById('btnToggleIdleSort');
@@ -554,16 +672,13 @@ async function loadMedalData() {
             btnToLeaderboard.href = `/event-leaderboard.html?id=${resolvedEventId}`;
         }
 
-        const [evRes, regRes, lbRes] = await Promise.all([
+        const [evRes, lineupRows, lbRes] = await Promise.all([
             supabaseClient
                 .from('events')
                 .select('event_name, event_date, end_date, kota, provinsi')
                 .eq('id', resolvedEventId)
                 .single(),
-            supabaseClient
-                .from('event_registrations')
-                .select('f1_id, nama_peserta, klub_asal, gender, kelompok_umur, nomor_lomba, status_pembayaran')
-                .eq('event_id', resolvedEventId),
+            fetchParticipantLineup(resolvedEventId),
             supabaseClient
                 .from('event_leaderboard')
                 .select('*')
@@ -582,12 +697,8 @@ async function loadMedalData() {
             await fetchAndRenderSponsors(resolvedEventId);
         }
 
-        if (lbRes.error) throw lbRes.error;
-
-        const allRegs = regRes.data || [];
-        const paidRegs = allRegs.filter(r => String(r.status_pembayaran || '').toLowerCase() === 'lunas');
-        rawRegistrations = paidRegs.length > 0 ? paidRegs : allRegs;
-        rawMedals = lbRes.data || [];
+        rawRegistrations = Array.isArray(lineupRows) ? lineupRows : [];
+        rawMedals = (!lbRes.error && Array.isArray(lbRes.data)) ? lbRes.data : [];
 
         buildAggregations(rawMedals, rawRegistrations);
 
