@@ -768,7 +768,7 @@ window.hapusPeserta = async function(id) {
     const target = allRegistrations.find(r => String(r.id) === String(id));
     const nama = target ? `${target.nama_peserta} (${target.klub_asal})` : 'peserta ini';
 
-    if (!confirm(`⚠️ HAPUS PESERTA?\n\nYakin ingin menghapus permanen data pendaftaran a.n. ${nama}?\nData yang dihapus tidak dapat dikembalikan.`)) {
+    if (!confirm(`⚠️ HAPUS PESERTA?\n\nYakin ingin menghapus permanen data pendaftaran a.n. ${nama}?\nData akan dihapus dari Pendaftaran, Start List, dan Hasil Lomba.`)) {
         return;
     }
 
@@ -785,7 +785,58 @@ window.hapusPeserta = async function(id) {
             throw new Error("Data tidak terhapus. Pastikan policy DELETE di Supabase untuk tabel event_registrations sudah aktif.");
         }
 
-        alert(`🗑️ Data peserta ${nama} berhasil dihapus.`);
+        // Bersihkan juga dari event_heats (lanes_data), event_leaderboard, dan race_results
+        const targetNameLower = target?.nama_peserta ? String(target.nama_peserta).trim().toLowerCase() : '';
+        const targetF1Lower = target?.f1_id ? String(target.f1_id).trim().toLowerCase() : '';
+
+        const { data: heatsData } = await supabaseClient
+            .from('event_heats')
+            .select('id, lanes_data')
+            .eq('event_id', currentEventId);
+
+        if (Array.isArray(heatsData)) {
+            for (const heat of heatsData) {
+                if (!Array.isArray(heat.lanes_data)) continue;
+                let changed = false;
+                const cleanedLanes = heat.lanes_data.map(lane => {
+                    if (!lane || !lane.nama) return lane;
+                    const matchById = String(lane.id_pendaftaran || '') === String(id);
+                    const matchByF1 = targetF1Lower && String(lane.f1_id || '').trim().toLowerCase() === targetF1Lower;
+                    const matchByName = targetNameLower && String(lane.nama).trim().toLowerCase() === targetNameLower;
+
+                    if (matchById || matchByF1 || matchByName) {
+                        changed = true;
+                        return { lane: lane.lane, nama: null };
+                    }
+                    return lane;
+                });
+
+                if (changed) {
+                    await supabaseClient
+                        .from('event_heats')
+                        .update({ lanes_data: cleanedLanes })
+                        .eq('id', heat.id);
+                }
+            }
+        }
+
+        if (target?.nama_peserta) {
+            await supabaseClient
+                .from('event_leaderboard')
+                .delete()
+                .eq('event_id', currentEventId)
+                .ilike('nama_peserta', target.nama_peserta.trim());
+
+            try {
+                await supabaseClient
+                    .from('race_results')
+                    .delete()
+                    .eq('event_id', currentEventId)
+                    .ilike('nama_peserta', target.nama_peserta.trim());
+            } catch (_) {}
+        }
+
+        alert(`🗑️ Data peserta ${nama} berhasil dihapus bersih dari seluruh sistem event.`);
         fetchData();
     } catch (err) {
         alert("Gagal menghapus peserta: " + err.message);
