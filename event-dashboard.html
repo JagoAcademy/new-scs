@@ -396,6 +396,14 @@
                         <p class="text-[10px] text-emerald-700/70 dark:text-emerald-500 mt-0.5">Export data event_register format XLS.</p>
                     </div>
                 </button>
+
+                <button id="btnMenuCetakRekapTiket" class="w-full bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 hover:border-amber-400 rounded-xl p-4 text-left transition-colors flex items-center gap-4 group cursor-pointer">
+                    <div class="text-2xl group-hover:scale-110 transition-transform">🎟️</div>
+                    <div>
+                        <h4 class="font-bold text-amber-900 dark:text-amber-300 text-sm">Cetak Rekap Tiket per Klub</h4>
+                        <p class="text-[10px] text-amber-700/80 dark:text-amber-400 mt-0.5">Print / PDF daftar jatah tiket gelang tiap klub.</p>
+                    </div>
+                </button>
             </div>
         </div>
     </div>
@@ -566,6 +574,22 @@
                     <button type="button" id="btnSimpanSettingHtm" class="w-full bg-slate-900 dark:bg-amber-500 dark:text-slate-900 text-white font-black py-2.5 px-4 rounded-xl text-xs hover:opacity-90 transition cursor-pointer">
                         💾 Simpan Pengaturan Tiket
                     </button>
+                </div>
+
+                <!-- Rekap Per Klub / Sekolah (Siap Cetak Meja Registrasi) -->
+                <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 space-y-3">
+                    <div class="flex flex-wrap justify-between items-center gap-2">
+                        <div>
+                            <h4 class="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">📊 Rekap Tiket Gelang per Klub / Sekolah</h4>
+                            <p class="text-[10px] text-slate-500">Pegangan loket pengambilan gelang kontingen</p>
+                        </div>
+                        <button type="button" id="btnCetakRekapTiketKlub" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-black px-3.5 py-2 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5 cursor-pointer">
+                            <span>🖨️</span> Cetak Rekap per Klub
+                        </button>
+                    </div>
+                    <div id="rekapKlubTiketContainer" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+                        <p class="text-xs text-slate-400 text-center py-3">Menghitung rekap per klub...</p>
+                    </div>
                 </div>
 
                 <!-- Daftar Pemesanan Masuk -->

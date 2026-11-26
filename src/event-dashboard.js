@@ -451,6 +451,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             btnKelolaTiketHtm.addEventListener('click', () => openModalKelolaTiket());
         }
 
+        const btnCetakRekapModal = document.getElementById('btnCetakRekapTiketKlub');
+        if (btnCetakRekapModal) {
+            btnCetakRekapModal.addEventListener('click', () => window.cetakRekapTiketPerKlub());
+        }
+
+        const btnMenuCetakRekapTiket = document.getElementById('btnMenuCetakRekapTiket');
+        if (btnMenuCetakRekapTiket) {
+            btnMenuCetakRekapTiket.addEventListener('click', () => window.cetakRekapTiketPerKlub());
+        }
+
         const btnAddTicketType = document.getElementById('btnAddTicketType');
         if (btnAddTicketType) {
             btnAddTicketType.addEventListener('click', () => {
@@ -996,34 +1006,136 @@ async function openModalKelolaTiket() {
     await loadTransaksiTiketHtm();
 }
 
+let cachedClubTicketRecap = [];
+
+async function buildClubTicketRecapData() {
+    const [regRes, tixRes] = await Promise.all([
+        supabaseClient
+            .from('event_registrations')
+            .select('id, klub_asal, nama_peserta, status_pembayaran')
+            .eq('event_id', currentEventId),
+        supabaseClient
+            .from('event_tickets')
+            .select('*')
+            .eq('event_id', currentEventId)
+            .order('created_at', { ascending: true })
+    ]);
+
+    if (tixRes.error) throw tixRes.error;
+    const regRows = (!regRes.error && Array.isArray(regRes.data)) ? regRes.data : [];
+    const tixRows = Array.isArray(tixRes.data) ? tixRes.data : [];
+
+    const clubMap = new Map();
+    const ensureClub = (rawName) => {
+        const clean = (rawName || 'Individu').trim() || 'Individu';
+        const key = clean.toUpperCase();
+        if (!clubMap.has(key)) {
+            clubMap.set(key, {
+                klub: clean,
+                pesertaCount: 0,
+                tiketLunas: 0,
+                tiketPending: 0,
+                totalNominalLunas: 0,
+                typeBreakdown: new Map(),
+                orders: []
+            });
+        }
+        return clubMap.get(key);
+    };
+
+    regRows.forEach(r => {
+        if (String(r.status_pembayaran || '').toLowerCase() === 'lunas') {
+            ensureClub(r.klub_asal).pesertaCount += 1;
+        }
+    });
+
+    tixRows.forEach(t => {
+        const entry = ensureClub(t.klub_asal);
+        const st = String(t.status_pembayaran || 'Pending').toLowerCase();
+        const qty = Number(t.jumlah_tiket || 0);
+        const tipe = (t.tipe_tiket || 'Tiket Gelang').trim();
+
+        if (st === 'lunas') {
+            entry.tiketLunas += qty;
+            entry.totalNominalLunas += Number(t.total_harga || 0);
+            entry.typeBreakdown.set(tipe, (entry.typeBreakdown.get(tipe) || 0) + qty);
+        } else if (st === 'pending') {
+            entry.tiketPending += qty;
+        }
+
+        if (st !== 'ditolak') {
+            entry.orders.push({
+                kode: t.kode_tiket,
+                pemesan: t.nama_pembeli,
+                atlet: t.nama_atlet || '',
+                tipe,
+                qty,
+                status: st === 'lunas' ? 'TERVERIFIKASI' : 'PENDING'
+            });
+        }
+    });
+
+    const recapList = Array.from(clubMap.values())
+        .filter(c => c.tiketLunas > 0 || c.tiketPending > 0 || c.pesertaCount > 0)
+        .sort((a, b) => a.klub.localeCompare(b.klub, 'id'));
+
+    cachedClubTicketRecap = recapList;
+    return { tixRows, recapList };
+}
+
 async function loadTransaksiTiketHtm() {
     const container = document.getElementById('listTransaksiTiketContainer');
+    const rekapBox = document.getElementById('rekapKlubTiketContainer');
     const badge = document.getElementById('badgeRingkasanTiket');
     if (!container) return;
 
     container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">Memuat daftar pemesanan...</p>';
+    if (rekapBox) rekapBox.innerHTML = '<p class="text-xs text-slate-400 text-center py-3">Menghitung rekap per klub...</p>';
 
     try {
-        const { data, error } = await supabaseClient
-            .from('event_tickets')
-            .select('*')
-            .eq('event_id', currentEventId)
-            .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        const rows = data || [];
+        const { tixRows: rows, recapList } = await buildClubTicketRecapData();
 
         const totalLunas = rows
             .filter(r => String(r.status_pembayaran || '').toLowerCase() === 'lunas')
             .reduce((acc, r) => acc + Number(r.jumlah_tiket || 0), 0);
         if (badge) badge.innerText = `${totalLunas} Tiket Terverifikasi`;
 
+        if (rekapBox) {
+            const clubsWithTickets = recapList.filter(c => c.tiketLunas > 0 || c.tiketPending > 0);
+            if (clubsWithTickets.length === 0) {
+                rekapBox.innerHTML = '<p class="text-xs text-slate-400 text-center py-3">Belum ada data pembelian tiket pada klub manapun.</p>';
+            } else {
+                rekapBox.innerHTML = clubsWithTickets.map(c => {
+                    const breakdownText = Array.from(c.typeBreakdown.entries())
+                        .map(([tp, q]) => `${tp}: ${q}`)
+                        .join(', ');
+                    return `
+                        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-3 text-xs">
+                            <div class="min-w-0">
+                                <p class="font-black text-slate-800 dark:text-white uppercase truncate">${c.klub}</p>
+                                <p class="text-[11px] text-slate-500 truncate">
+                                    ${c.pesertaCount} Peserta ${breakdownText ? `• ${breakdownText}` : ''}
+                                </p>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <span class="inline-block bg-emerald-100 text-emerald-800 font-black px-2.5 py-1 rounded-lg text-xs">
+                                    ${c.tiketLunas} Tiket
+                                </span>
+                                ${c.tiketPending > 0 ? `<span class="block text-[10px] font-bold text-amber-600 mt-0.5">+${c.tiketPending} pending</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
         if (rows.length === 0) {
             container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6 border border-dashed border-slate-200 rounded-xl">Belum ada pemesanan tiket masuk.</p>';
             return;
         }
 
-        container.innerHTML = rows.map(r => {
+        const sortedRows = [...rows].reverse();
+        container.innerHTML = sortedRows.map(r => {
             const st = String(r.status_pembayaran || 'Pending');
             const isLunas = st.toLowerCase() === 'lunas';
             const isDitolak = st.toLowerCase() === 'ditolak';
@@ -1067,5 +1179,113 @@ window.verifTiketHtm = async function(ticketId, newStatus) {
         await loadTransaksiTiketHtm();
     } catch (err) {
         alert("Gagal memperbarui status pemesanan: " + err.message);
+    }
+};
+
+window.cetakRekapTiketPerKlub = async function() {
+    try {
+        const { recapList } = await buildClubTicketRecapData();
+        const rowsToPrint = recapList.filter(c => c.tiketLunas > 0 || c.tiketPending > 0);
+
+        if (rowsToPrint.length === 0) {
+            alert("Belum ada data pemesanan tiket masuk untuk dicetak.");
+            return;
+        }
+
+        let totalAtlet = 0;
+        let totalLunas = 0;
+        let totalPending = 0;
+
+        const tableRowsHtml = rowsToPrint.map((c, idx) => {
+            totalAtlet += c.pesertaCount;
+            totalLunas += c.tiketLunas;
+            totalPending += c.tiketPending;
+
+            const detailOrders = c.orders.map(o =>
+                `<div>• <strong>${o.pemesan}</strong> (${o.kode}): ${o.qty} ${o.tipe} ${o.atlet ? `- ${o.atlet}` : ''} <em>[${o.status}]</em></div>`
+            ).join('');
+
+            return `
+                <tr>
+                    <td style="text-align:center;">${idx + 1}</td>
+                    <td><strong>${c.klub}</strong></td>
+                    <td style="text-align:center;">${c.pesertaCount}</td>
+                    <td style="text-align:center; font-size:14px;"><strong>${c.tiketLunas}</strong></td>
+                    <td style="text-align:center;">${c.tiketPending > 0 ? c.tiketPending : '-'}</td>
+                    <td style="font-size:11px; line-height:1.4;">${detailOrders || '-'}</td>
+                    <td style="text-align:center;">[ &nbsp;&nbsp; ] Sudah Diambil</td>
+                </tr>
+            `;
+        }).join('');
+
+        const printWin = window.open('', '_blank');
+        if (!printWin) {
+            alert("Popup diblokir browser. Izinkan pop-up untuk mencetak rekap tiket.");
+            return;
+        }
+
+        printWin.document.write(`<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Rekap Tiket Gelang per Klub - ${eventTitle}</title>
+    <style>
+        @page { size: A4 portrait; margin: 14mm; }
+        body { font-family: Arial, Helvetica, sans-serif; color: #0f172a; margin: 0; padding: 0; }
+        .header { border-bottom: 3px solid #0f172a; padding-bottom: 10px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .header h1 { margin: 0; font-size: 18px; text-transform: uppercase; }
+        .header p { margin: 4px 0 0; font-size: 12px; color: #475569; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th, td { border: 1px solid #94a3b8; padding: 8px 7px; vertical-align: top; }
+        th { background: #f1f5f9; font-weight: bold; text-transform: uppercase; font-size: 11px; }
+        tfoot td { background: #f8fafc; font-weight: bold; }
+        .no-print { margin-bottom: 14px; text-align: right; }
+        @media print { .no-print { display: none; } }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <button onclick="window.print()" style="padding:8px 16px; background:#0f172a; color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">🖨️ Print / Simpan PDF</button>
+    </div>
+    <div class="header">
+        <div>
+            <h1>REKAP PENGAMBILAN TIKET GELANG PER KLUB</h1>
+            <p><strong>${eventTitle}</strong></p>
+        </div>
+        <div style="text-align:right; font-size:11px; color:#475569;">
+            Dicetak: ${new Date().toLocaleString('id-ID')}
+        </div>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th style="width:32px;">No</th>
+                <th>Klub / Sekolah Asal</th>
+                <th style="width:65px;">Peserta</th>
+                <th style="width:85px;">Tiket ACC</th>
+                <th style="width:65px;">Pending</th>
+                <th>Rincian Pemesan & Tipe Tiket</th>
+                <th style="width:125px;">Checklist Loket</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${tableRowsHtml}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="2" style="text-align:right;">TOTAL KESELURUHAN</td>
+                <td style="text-align:center;">${totalAtlet}</td>
+                <td style="text-align:center; font-size:14px;">${totalLunas}</td>
+                <td style="text-align:center;">${totalPending}</td>
+                <td colspan="2"></td>
+            </tr>
+        </tfoot>
+    </table>
+    <script>window.onload = () => setTimeout(() => window.print(), 300);</script>
+</body>
+</html>`);
+        printWin.document.close();
+    } catch (err) {
+        alert("Gagal menyiapkan halaman cetak rekap tiket: " + err.message);
     }
 };
