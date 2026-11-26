@@ -675,6 +675,12 @@ window.linkAthleteToClub = async (f1Id) => {
 
         if (error) throw error;
 
+        await supabaseClient
+            .from('event_registrations')
+            .update({ klub_asal: targetClub.club_name })
+            .eq('f1_id', f1Id)
+            .eq('status_pembayaran', 'Belum Bayar');
+
         alert(`✅ Berhasil! ${athleteLabel} kini resmi terdaftar di ${targetClub.club_name}.`);
         loadAdminData();
     } catch (err) {

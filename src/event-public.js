@@ -754,6 +754,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             .order('full_name', { ascending: true });
             
         if (athErr) throw athErr;
+        window.clubAthleteF1Ids = (athletes || []).map(a => a.f1_id).filter(Boolean);
 
         const dropdown = document.getElementById('dropdownAtlet');
         dropdown.innerHTML = '<option value="">-- Pilih Peserta dari Data Kamu --</option>';
@@ -1575,7 +1576,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         if (isKlubLoggedIn) {
             const namaKlub = loggedInClubData.club_name || loggedInClubData.nama_klub;
-            query = query.eq('klub_asal', namaKlub);
+            let clubF1Ids = Array.isArray(window.clubAthleteF1Ids) ? window.clubAthleteF1Ids : null;
+            if (!clubF1Ids && loggedInClubData?.id) {
+                const { data: athRows } = await supabaseClient
+                    .from('athletes')
+                    .select('f1_id')
+                    .eq('club_id', loggedInClubData.id);
+                clubF1Ids = (athRows || []).map(a => a.f1_id).filter(Boolean);
+                window.clubAthleteF1Ids = clubF1Ids;
+            }
+
+            const reqByClubName = supabaseClient
+                .from('event_registrations')
+                .select('*')
+                .eq('event_id', currentEvent.id)
+                .eq('klub_asal', namaKlub);
+
+            const reqByF1Ids = (clubF1Ids && clubF1Ids.length > 0)
+                ? supabaseClient
+                    .from('event_registrations')
+                    .select('*')
+                    .eq('event_id', currentEvent.id)
+                    .in('f1_id', clubF1Ids)
+                : Promise.resolve({ data: [], error: null });
+
+            const [resClub, resF1] = await Promise.all([reqByClubName, reqByF1Ids]);
+            if (resClub.error) return console.error(resClub.error);
+            if (resF1.error) return console.error(resF1.error);
+
+            const mergedMap = new Map();
+            [...(resClub.data || []), ...(resF1.data || [])].forEach(row => {
+                mergedMap.set(row.id, row);
+            });
+            dataTagihan = Array.from(mergedMap.values()).sort(
+                (a, b) => new Date(b.created_at) - new Date(a.created_at)
+            );
+            renderDaftarTagihan();
+            return;
         } else {
             const guestIds = JSON.parse(localStorage.getItem(`scs_guest_${currentEvent.id}`) || '[]');
             if (guestIds.length === 0) {
@@ -1700,7 +1737,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 strukUrl = urlData.publicUrl;
             }
 
-            const { error: updateError } = await supabaseClient.from('event_registrations').update({ status_pembayaran: statusBayar, bukti_transfer_url: strukUrl }).in('id', listIds);
+            const updatePayload = { status_pembayaran: statusBayar, bukti_transfer_url: strukUrl };
+            if (isKlubLoggedIn && loggedInClubData) {
+                updatePayload.klub_asal = loggedInClubData.club_name || loggedInClubData.nama_klub;
+            }
+            const { error: updateError } = await supabaseClient.from('event_registrations').update(updatePayload).in('id', listIds);
             if (updateError) throw updateError;
 
             if (total === 0) alert("✅ Pendaftaran berhasil! Status langsung Lunas (Gratis).");
