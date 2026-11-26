@@ -363,9 +363,40 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('publicEventName').innerText = eventData.event_name;
         
         // =========================================================
-        // CEK STATUS PENDAFTARAN (IS_CLOSED)
+        // CEK STATUS TUTUP SEMENTARA / UNDER MAINTENANCE & IS_CLOSED
         // =========================================================
-        if (eventData.is_closed) {
+        const isMaintenanceMode = Boolean(config.is_maintenance);
+        if (isMaintenanceMode) {
+            const formPeserta = document.querySelector('.bg-white\\/95.backdrop-blur-md');
+            const boxBiaya = document.querySelector('.bg-blue-900.border.border-blue-800');
+            const sectionAksesCepat = document.getElementById('sectionAksesCepat');
+            const areaEstafet = document.getElementById('areaEstafetVVIP');
+            const areaPembayaran = document.getElementById('areaPembayaran');
+
+            if (formPeserta) formPeserta.classList.add('hidden');
+            if (boxBiaya) boxBiaya.classList.add('hidden');
+            if (sectionAksesCepat) sectionAksesCepat.classList.add('hidden');
+            if (areaEstafet) areaEstafet.classList.add('hidden');
+            if (areaPembayaran) areaPembayaran.classList.add('hidden');
+
+            const maintHtml = `
+                <div class="bg-amber-50 border-2 border-amber-300 rounded-3xl p-7 md:p-9 text-center shadow-lg mt-6">
+                    <div class="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 border-4 border-white shadow-sm">🛠️</div>
+                    <span class="inline-block bg-amber-200/80 text-amber-900 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest mb-2">Under Maintenance</span>
+                    <h2 class="text-2xl font-black text-amber-900 mb-2 tracking-tight">Pendaftaran Ditutup Sementara</h2>
+                    <p class="text-slate-700 text-sm font-medium mb-6 leading-relaxed max-w-md mx-auto">
+                        Mohon maaf, formulir pendaftaran untuk event <strong>${eventData.event_name}</strong> sedang ditutup sementara untuk pemeliharaan sistem.
+                    </p>
+                    <button type="button" id="btnFokusWAUnderMaintenance" class="inline-flex items-center justify-center gap-2.5 bg-green-500 hover:bg-green-600 text-white font-extrabold py-3.5 px-7 rounded-2xl transition-all hover:scale-105 shadow-md cursor-pointer">
+                        <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                        <span>Klik Hubungi Admin di Logo WhatsApp Bawah</span>
+                    </button>
+                </div>
+            `;
+
+            const mainContainer = document.querySelector('.max-w-3xl.mx-auto.px-4.mt-6');
+            if (mainContainer) mainContainer.insertAdjacentHTML('afterbegin', maintHtml);
+        } else if (eventData.is_closed) {
             const formPeserta = document.querySelector('.bg-white\\/95.backdrop-blur-md');
             const boxBiaya = document.querySelector('.bg-blue-900.border.border-blue-800');
             const sectionAksesCepat = document.getElementById('sectionAksesCepat');
@@ -540,6 +571,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (hasWA && btnToggleMenu) {
             btnToggleMenu.classList.remove('hidden');
+            if (config.is_maintenance) {
+                const pesanMaint = encodeURIComponent(`Halo Admin ${eventData.event_name}, pendaftaran sedang tutup sementara (Under Maintenance), saya mau konfirmasi...`);
+                if (config.admin_wa_1) btnWA1.href = `https://wa.me/${formatWANumber(config.admin_wa_1)}?text=${pesanMaint}`;
+                if (config.admin_wa_2) btnWA2.href = `https://wa.me/${formatWANumber(config.admin_wa_2)}?text=${pesanMaint}`;
+
+                const lblWA = document.getElementById('labelToggleWAMenu');
+                const tipWA = document.getElementById('tooltipToggleWAMenu');
+                if (lblWA) lblWA.classList.remove('hidden');
+                if (tipWA) tipWA.classList.add('hidden');
+                btnToggleMenu.classList.add('px-4', 'gap-2.5');
+
+                const btnFokusWA = document.getElementById('btnFokusWAUnderMaintenance');
+                if (btnFokusWA) {
+                    btnFokusWA.addEventListener('click', () => {
+                        waMenuOptions.classList.remove('hidden');
+                        waMenuOptions.classList.add('flex');
+                        btnToggleMenu.classList.add('ring-4', 'ring-green-300');
+                        setTimeout(() => btnToggleMenu.classList.remove('ring-4', 'ring-green-300'), 1800);
+                    });
+                }
+            }
             btnToggleMenu.addEventListener('click', (e) => {
                 e.preventDefault();
                 waMenuOptions.classList.toggle('hidden');
@@ -815,7 +867,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             
             const areaEstafet = document.getElementById('areaEstafetVVIP');
-            if(areaEstafet) areaEstafet.classList.remove('hidden');
+            if(areaEstafet && !currentEvent?.config?.is_maintenance && !currentEvent?.is_closed) areaEstafet.classList.remove('hidden');
             
             document.getElementById('inputCariAtlet').classList.add('hidden');
             const dropdown = document.getElementById('dropdownAtlet');
@@ -1569,7 +1621,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function loadTagihan() {
-        if (!currentEvent) return;
+        if (!currentEvent || currentEvent?.config?.is_maintenance) return;
 
         let query = supabaseClient.from('event_registrations').select('*').eq('event_id', currentEvent.id).order('created_at', { ascending: false }); 
         

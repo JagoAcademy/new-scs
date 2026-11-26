@@ -137,6 +137,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                 : 'text-xs font-black text-red-600 bg-red-100 px-2.5 py-1 rounded-md uppercase tracking-widest';
         });
 
+        const toggleMaintenance = document.getElementById('toggleMaintenanceEvent');
+        const labelMaintenance = document.getElementById('labelMaintenanceEvent');
+        if (toggleMaintenance && labelMaintenance) {
+            toggleMaintenance.checked = Boolean(config.is_maintenance);
+            const syncMaintenanceLabel = (aktif) => {
+                labelMaintenance.innerText = aktif ? 'UNDER MAINTENANCE' : 'NONAKTIF';
+                labelMaintenance.className = aktif
+                    ? 'text-xs font-black text-amber-700 bg-amber-100 px-2.5 py-1 rounded-md uppercase tracking-widest'
+                    : 'text-xs font-black text-slate-500 bg-slate-200 px-2.5 py-1 rounded-md uppercase tracking-widest';
+            };
+            syncMaintenanceLabel(toggleMaintenance.checked);
+            toggleMaintenance.addEventListener('change', (e) => {
+                syncMaintenanceLabel(e.target.checked);
+            });
+        }
+
         // Basic Config (Baca tarif_tambahan dengan fallback biaya_normal)
         document.getElementById('inputTarifTambahan').value = config.tarif_tambahan ?? config.biaya_normal ?? '';
         document.getElementById('inputBiayaEstafet').value = config.biaya_estafet !== undefined ? config.biaya_estafet : '';
@@ -747,7 +763,8 @@ window.simpanKeDatabase = async () => {
             bg_url: finalBgUrl,
             qris_url: finalQrisUrl,
             tarif_individu: window.tarifIndividu,
-            tautan_ekstra: window.tautanEkstra
+            tautan_ekstra: window.tautanEkstra,
+            is_maintenance: Boolean(document.getElementById('toggleMaintenanceEvent')?.checked)
         };
 
         const isRegistrationOpen = document.getElementById('toggleStatusEvent').checked;
