@@ -235,8 +235,6 @@ async function refreshKuotaCounter() {
 
     if (!error && data) {
         hitungUlangPetaKuota(data);
-        const stripEl = document.getElementById('stripPeserta');
-        if (stripEl) stripEl.innerText = `${data.length} Terdaftar`;
         updateStatusNomorLomba();
         return data;
     }
