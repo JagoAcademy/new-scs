@@ -5,6 +5,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
+        tiket: 'tiket.html',
         'event-medal': resolve(__dirname, 'event-medal.html'),
         // --- 1. MAIN & PUBLIC PAGES (Akses Tanpa Login) ---
         main: resolve(__dirname, 'index.html'),

@@ -3,6 +3,10 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/tiket",
+      "destination": "/tiket.html"
+    },
+    {
       "source": "/pitch/:brand",
       "destination": "/pitch-client?brand=:brand"
     },

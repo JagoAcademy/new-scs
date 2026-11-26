@@ -2,7 +2,8 @@ import { supabaseClient } from './supabase.js';
 
 let currentEventId = null;
 let currentPayMethod = 'transfer';
-let eventTitle = ''; 
+let eventTitle = '';
+let currentEventData = null; 
 
 // ==========================================
 // FUNGSI NATIVE SHARE (WEB SHARE API)
@@ -144,6 +145,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        currentEventData = eventData;
         eventTitle = eventData.event_name;
         document.getElementById('headerEventName').innerText = eventData.event_name;
         document.getElementById('headerSubdomain').innerText = `${eventData.subdomain}.f1swimming.com`;
@@ -406,6 +408,82 @@ document.addEventListener('DOMContentLoaded', async () => {
             generateFramedQR(publicResultLink, `QR_LiveResult_${eventTitle.replace(/\s+/g, '_')}.png`, eventTitle, "Scan Untuk Live Result");
         });
 
+        // LINK TIKET HTM PENONTON
+        const publicTicketLink = `https://${eventData.subdomain}.f1swimming.com/tiket?id=${currentEventId}`;
+        const ticketLinkInput = document.getElementById('publicTicketLinkInput');
+        if (ticketLinkInput) ticketLinkInput.value = publicTicketLink;
+
+        const btnCopyTicket = document.getElementById('btnCopyTicketLink');
+        if (btnCopyTicket && ticketLinkInput) {
+            btnCopyTicket.addEventListener('click', () => {
+                ticketLinkInput.select();
+                document.execCommand('copy');
+                const orig = btnCopyTicket.innerText;
+                btnCopyTicket.innerText = "Tersalin!";
+                btnCopyTicket.classList.replace('bg-amber-600', 'bg-green-500');
+                setTimeout(() => {
+                    btnCopyTicket.innerText = orig;
+                    btnCopyTicket.classList.replace('bg-green-500', 'bg-amber-600');
+                }, 2000);
+            });
+        }
+
+        const btnOpenTicket = document.getElementById('btnOpenTicketLink');
+        if (btnOpenTicket) {
+            btnOpenTicket.addEventListener('click', () => window.open(publicTicketLink, '_blank'));
+        }
+
+        const btnShareTix = document.getElementById('btnShareNative_Tix');
+        if (btnShareTix) {
+            const textTix = `Beli tiket masuk (HTM) penonton ${eventTitle} secara online di sini:`;
+            btnShareTix.onclick = () => window.bagikanNative('Tiket HTM Penonton SCS', textTix, publicTicketLink);
+        }
+
+        const btnQrTix = document.getElementById('btnPreviewQR_Tix');
+        if (btnQrTix) {
+            btnQrTix.addEventListener('click', () => {
+                generateFramedQR(publicTicketLink, `QR_TiketHTM_${eventTitle.replace(/\s+/g, '_')}.png`, eventTitle, "Scan Beli Tiket HTM");
+            });
+        }
+
+        const btnKelolaTiketHtm = document.getElementById('btnKelolaTiketHtm');
+        if (btnKelolaTiketHtm) {
+            btnKelolaTiketHtm.addEventListener('click', () => openModalKelolaTiket());
+        }
+
+        const btnSimpanSettingHtm = document.getElementById('btnSimpanSettingHtm');
+        if (btnSimpanSettingHtm) {
+            btnSimpanSettingHtm.addEventListener('click', async () => {
+                const harga = Math.max(0, Number(document.getElementById('inputSettingHargaHtm').value || 0));
+                const aktif = document.getElementById('selectSettingAktifHtm').value === 'true';
+                const rek = document.getElementById('inputSettingRekHtm').value.trim();
+
+                btnSimpanSettingHtm.innerText = "Menyimpan...";
+                btnSimpanSettingHtm.disabled = true;
+                try {
+                    const updatedConfig = {
+                        ...(currentEventData?.config || {}),
+                        harga_tiket_htm: harga,
+                        aktif_tiket_htm: aktif,
+                        rekening_tiket_htm: rek
+                    };
+                    const { error: upErr } = await supabaseClient
+                        .from('events')
+                        .update({ config: updatedConfig })
+                        .eq('id', currentEventId);
+                    if (upErr) throw upErr;
+
+                    currentEventData.config = updatedConfig;
+                    alert("✅ Pengaturan Tiket HTM berhasil disimpan!");
+                } catch (err) {
+                    alert("Gagal menyimpan pengaturan HTM: " + err.message);
+                } finally {
+                    btnSimpanSettingHtm.innerText = "💾 Simpan Setting HTM";
+                    btnSimpanSettingHtm.disabled = false;
+                }
+            });
+        }
+
         // TAUTAN HALAMAN
         document.getElementById('btnSettingsLomba').onclick = () => window.location.href = `/settings-lomba.html?id=${currentEventId}`;
         const btnEventCashflow = document.getElementById('btnEventCashflow');
@@ -478,36 +556,148 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         const btnExcel = document.getElementById('btnMenuCetakExcel');
-        if(btnExcel) {
+        if (btnExcel) {
             btnExcel.onclick = async () => {
                 const originalHtml = btnExcel.innerHTML;
-                btnExcel.innerHTML = '<div class="text-emerald-700 font-bold text-sm py-2 text-center w-full">Mengekspor Data... ⏳</div>';
-                
+                btnExcel.innerHTML = '<div class="text-emerald-700 font-bold text-sm py-2 text-center w-full">Mengekspor Data Terpadu... ⏳</div>';
+
                 try {
-                    const { data: regData, error: regError } = await supabaseClient
-                        .from('event_registrations')
-                        .select('*')
-                        .eq('event_id', currentEventId);
-                        
-                    if (regError) throw regError;
-                    
-                    if (!regData || regData.length === 0) {
-                        alert("Belum ada data pendaftar untuk event ini.");
+                    const [regRes, tixRes] = await Promise.all([
+                        supabaseClient
+                            .from('event_registrations')
+                            .select('*')
+                            .eq('event_id', currentEventId)
+                            .order('klub_asal', { ascending: true })
+                            .order('nama_peserta', { ascending: true }),
+                        supabaseClient
+                            .from('event_tickets')
+                            .select('*')
+                            .eq('event_id', currentEventId)
+                            .order('created_at', { ascending: true })
+                    ]);
+
+                    if (regRes.error) throw regRes.error;
+                    const regData = regRes.data || [];
+                    const tixData = (!tixRes.error && Array.isArray(tixRes.data)) ? tixRes.data : [];
+
+                    if (regData.length === 0 && tixData.length === 0) {
+                        alert("Belum ada data pendaftar maupun tiket untuk event ini.");
                         btnExcel.innerHTML = originalHtml;
                         return;
                     }
 
-                    const excelData = regData.map((row, index) => {
+                    // Hitung tiket per registration_id & per klub_asal
+                    const tixByRegId = new Map();
+                    const clubRecapMap = new Map();
+
+                    const getClubBucket = (rawClubName) => {
+                        const label = (rawClubName || 'Individu').trim() || 'Individu';
+                        const key = label.toUpperCase();
+                        if (!clubRecapMap.has(key)) {
+                            clubRecapMap.set(key, {
+                                klub: label,
+                                jumlahPeserta: 0,
+                                totalNomorLomba: 0,
+                                tiketLunas: 0,
+                                tiketPending: 0,
+                                biayaLomba: 0,
+                                biayaTiketLunas: 0
+                            });
+                        }
+                        return clubRecapMap.get(key);
+                    };
+
+                    regData.forEach(row => {
+                        const isLunas = String(row.status_pembayaran || '').toLowerCase() === 'lunas';
+                        if (!isLunas) return;
+
+                        const bucket = getClubBucket(row.klub_asal);
+                        bucket.jumlahPeserta += 1;
+                        const countNomor = Array.isArray(row.nomor_lomba) ? row.nomor_lomba.length : 0;
+                        bucket.totalNomorLomba += countNomor;
+                        bucket.biayaLomba += Number(row.total_biaya || 0);
+                    });
+
+                    tixData.forEach(t => {
+                        const statusLow = String(t.status_pembayaran || '').toLowerCase();
+                        const qty = Number(t.jumlah_tiket || 0);
+                        const nom = Number(t.total_harga || 0);
+
+                        if (t.registration_id) {
+                            const rid = String(t.registration_id);
+                            const prev = tixByRegId.get(rid) || { lunas: 0, pending: 0 };
+                            if (statusLow === 'lunas') prev.lunas += qty;
+                            else if (statusLow === 'pending') prev.pending += qty;
+                            tixByRegId.set(rid, prev);
+                        }
+
+                        const bucket = getClubBucket(t.klub_asal);
+                        if (statusLow === 'lunas') {
+                            bucket.tiketLunas += qty;
+                            bucket.biayaTiketLunas += nom;
+                        } else if (statusLow === 'pending') {
+                            bucket.tiketPending += qty;
+                        }
+                    });
+
+                    // SHEET 1: REKAP PER KLUB / SEKOLAH (PESERTA + TIKET HTM)
+                    const sortedClubs = Array.from(clubRecapMap.values()).sort((a, b) =>
+                        a.klub.localeCompare(b.klub, 'id')
+                    );
+
+                    let sumPeserta = 0;
+                    let sumNomor = 0;
+                    let sumTixLunas = 0;
+                    let sumTixPending = 0;
+                    let sumBiayaLomba = 0;
+                    let sumBiayaTiket = 0;
+
+                    const sheet1Data = sortedClubs.map((c, idx) => {
+                        sumPeserta += c.jumlahPeserta;
+                        sumNomor += c.totalNomorLomba;
+                        sumTixLunas += c.tiketLunas;
+                        sumTixPending += c.tiketPending;
+                        sumBiayaLomba += c.biayaLomba;
+                        sumBiayaTiket += c.biayaTiketLunas;
+
+                        return {
+                            'No': idx + 1,
+                            'Klub / Sekolah Asal': c.klub,
+                            'Jumlah Peserta': c.jumlahPeserta,
+                            'Total Nomor Lomba': c.totalNomorLomba,
+                            'Total Tiket HTM (Lunas)': c.tiketLunas,
+                            'Tiket HTM (Pending)': c.tiketPending,
+                            'Tagihan Lomba (Rp)': c.biayaLomba,
+                            'Tagihan Tiket HTM (Rp)': c.biayaTiketLunas,
+                            'Total Keseluruhan (Rp)': c.biayaLomba + c.biayaTiketLunas
+                        };
+                    });
+
+                    sheet1Data.push({
+                        'No': '',
+                        'Klub / Sekolah Asal': 'TOTAL KESELURUHAN',
+                        'Jumlah Peserta': sumPeserta,
+                        'Total Nomor Lomba': sumNomor,
+                        'Total Tiket HTM (Lunas)': sumTixLunas,
+                        'Tiket HTM (Pending)': sumTixPending,
+                        'Tagihan Lomba (Rp)': sumBiayaLomba,
+                        'Tagihan Tiket HTM (Rp)': sumBiayaTiket,
+                        'Total Keseluruhan (Rp)': sumBiayaLomba + sumBiayaTiket
+                    });
+
+                    // SHEET 2: DATA PENDAFTAR + TIKET PER ATLET
+                    const sheet2Data = regData.map((row, index) => {
                         let daftarLomba = "Tidak ada lomba";
                         if (row.nomor_lomba && Array.isArray(row.nomor_lomba)) {
-                            if(typeof row.nomor_lomba[0] === 'object' && row.nomor_lomba[0] !== null) {
+                            if (typeof row.nomor_lomba[0] === 'object' && row.nomor_lomba[0] !== null) {
                                 daftarLomba = row.nomor_lomba.map(n => n.gaya).join(', ');
                             } else {
                                 daftarLomba = row.nomor_lomba.join(', ');
                             }
                         }
 
-                        let statusF1 = row.f1_id ? row.f1_id : 'Non-F1 (Guest)';
+                        const statusF1 = row.f1_id ? row.f1_id : 'Non-F1 (Guest)';
+                        const tixInfo = tixByRegId.get(String(row.id)) || { lunas: 0, pending: 0 };
 
                         return {
                             'No': index + 1,
@@ -518,16 +708,35 @@ document.addEventListener('DOMContentLoaded', async () => {
                             'Tanggal Lahir': row.tanggal_lahir || '-',
                             'Kelompok Umur': row.kelompok_umur || '-',
                             'Daftar Nomor Lomba': daftarLomba,
-                            'Total Biaya': row.total_biaya || 0,
-                            'Status Pembayaran': row.status_pembayaran || '-'
+                            'Total Biaya Lomba': row.total_biaya || 0,
+                            'Status Lomba': row.status_pembayaran || '-',
+                            'Tiket HTM Atlet (Lunas)': tixInfo.lunas,
+                            'Tiket HTM Atlet (Pending)': tixInfo.pending
                         };
                     });
 
-                    const ws = XLSX.utils.json_to_sheet(excelData);
+                    // SHEET 3: DETAIL TRANSAKSI TIKET HTM
+                    const sheet3Data = tixData.map((t, index) => ({
+                        'No': index + 1,
+                        'Kode E-Ticket': t.kode_tiket || '-',
+                        'Waktu Pesan': t.created_at ? new Date(t.created_at).toLocaleString('id-ID') : '-',
+                        'Klub / Sekolah Asal': t.klub_asal || '-',
+                        'Atlet Terkait': t.nama_atlet || 'Kolektif Klub',
+                        'Nama Pemesan': t.nama_pembeli || '-',
+                        'No WhatsApp': t.no_wa || '-',
+                        'Qty Tiket': Number(t.jumlah_tiket || 0),
+                        'Harga Satuan (Rp)': Number(t.harga_satuan || 0),
+                        'Total Bayar (Rp)': Number(t.total_harga || 0),
+                        'Status Pembayaran': t.status_pembayaran || '-',
+                        'Bukti Transfer': t.bukti_url || '-'
+                    }));
+
                     const wb = XLSX.utils.book_new();
-                    XLSX.utils.book_append_sheet(wb, ws, "Data_Pendaftar");
-                    XLSX.writeFile(wb, `Data_Register_Event_${currentEventId}.xlsx`);
-                    
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(sheet1Data), "Rekap_Klub_&_Tiket");
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(sheet2Data), "Data_Pendaftar");
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(sheet3Data), "Detail_Transaksi_Tiket");
+
+                    XLSX.writeFile(wb, `Rekap_Peserta_dan_Tiket_Event_${currentEventId}.xlsx`);
                 } catch (err) {
                     console.error(err);
                     alert("Gagal mengekspor data: " + err.message);
@@ -709,3 +918,93 @@ window.removeCollab = async function(collabId) {
         alert("Gagal mencabut akses: " + err.message);
     }
 }
+
+
+// ==========================================
+// MANAJEMEN & VERIFIKASI TIKET HTM
+// ==========================================
+async function openModalKelolaTiket() {
+    const modal = document.getElementById('modalKelolaTiket');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+
+    const cfg = currentEventData?.config || {};
+    document.getElementById('inputSettingHargaHtm').value = cfg.harga_tiket_htm ?? 0;
+    document.getElementById('selectSettingAktifHtm').value = cfg.aktif_tiket_htm === false ? 'false' : 'true';
+    document.getElementById('inputSettingRekHtm').value = cfg.rekening_tiket_htm || '';
+
+    await loadTransaksiTiketHtm();
+}
+
+async function loadTransaksiTiketHtm() {
+    const container = document.getElementById('listTransaksiTiketContainer');
+    const badge = document.getElementById('badgeRingkasanTiket');
+    if (!container) return;
+
+    container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">Memuat transaksi tiket...</p>';
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('event_tickets')
+            .select('*')
+            .eq('event_id', currentEventId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        const rows = data || [];
+
+        const totalLunas = rows
+            .filter(r => String(r.status_pembayaran || '').toLowerCase() === 'lunas')
+            .reduce((acc, r) => acc + Number(r.jumlah_tiket || 0), 0);
+        if (badge) badge.innerText = `${totalLunas} Tiket Lunas`;
+
+        if (rows.length === 0) {
+            container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6 border border-dashed border-slate-200 rounded-xl">Belum ada pembelian tiket HTM masuk.</p>';
+            return;
+        }
+
+        container.innerHTML = rows.map(r => {
+            const st = String(r.status_pembayaran || 'Pending');
+            const isLunas = st.toLowerCase() === 'lunas';
+            const isDitolak = st.toLowerCase() === 'ditolak';
+            const badgeCls = isLunas
+                ? 'bg-emerald-100 text-emerald-800'
+                : (isDitolak ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800');
+
+            return `
+                <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="space-y-1 text-xs">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="font-mono font-black text-slate-900 dark:text-white">${r.kode_tiket}</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase ${badgeCls}">${st}</span>
+                            <span class="font-black text-amber-700 dark:text-amber-400">${r.jumlah_tiket} Tiket • Rp ${Number(r.total_harga || 0).toLocaleString('id-ID')}</span>
+                        </div>
+                        <p class="font-bold text-slate-700 dark:text-slate-300 uppercase">${r.klub_asal} ${r.nama_atlet ? `(${r.nama_atlet})` : ''}</p>
+                        <p class="text-[11px] text-slate-500">Pemesan: ${r.nama_pembeli} (${r.no_wa || '-'})</p>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        ${r.bukti_url ? `<a href="${r.bukti_url}" target="_blank" class="px-2.5 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-[11px] font-bold hover:bg-blue-100">Bukti</a>` : ''}
+                        ${!isLunas ? `<button type="button" onclick="window.verifTiketHtm(${r.id}, 'Lunas')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold">ACC Lunas</button>` : ''}
+                        ${!isDitolak ? `<button type="button" onclick="window.verifTiketHtm(${r.id}, 'Ditolak')" class="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-lg text-[11px] font-bold">Tolak</button>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch (err) {
+        container.innerHTML = `<p class="text-xs text-red-500 font-bold text-center py-4">Gagal memuat tiket: ${err.message}</p>`;
+    }
+}
+
+window.verifTiketHtm = async function(ticketId, newStatus) {
+    try {
+        const { error } = await supabaseClient
+            .from('event_tickets')
+            .update({ status_pembayaran: newStatus })
+            .eq('id', ticketId)
+            .eq('event_id', currentEventId);
+        if (error) throw error;
+        await loadTransaksiTiketHtm();
+    } catch (err) {
+        alert("Gagal memperbarui status tiket: " + err.message);
+    }
+};

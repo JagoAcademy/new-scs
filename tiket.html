@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiket HTM Penonton | SCS</title>
+    <link rel="stylesheet" href="/src/style.css">
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 pb-20">
+
+    <!-- Header -->
+    <div class="bg-slate-900 text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-2xl mx-auto px-4 py-3.5 flex justify-between items-center">
+            <div class="min-w-0 pr-3">
+                <span class="text-[10px] font-black tracking-widest text-amber-400 uppercase block">🎟️ E-TICKET HTM PENONTON</span>
+                <h1 id="headerEventName" class="text-sm md:text-base font-black text-white uppercase truncate">MEMUAT EVENT...</h1>
+            </div>
+            <span class="text-[11px] font-mono font-black text-slate-400 shrink-0">f1swimming.com</span>
+        </div>
+    </div>
+
+    <div class="max-w-2xl mx-auto px-4 mt-6 space-y-6">
+
+        <!-- Info Event & Harga HTM -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 to-orange-500"></div>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <p id="eventDateLoc" class="text-xs font-bold text-slate-500 mb-1">Memuat jadwal & lokasi...</p>
+                    <p class="text-xs text-slate-500">Data kontingen & atlet tersinkron otomatis dari pendaftaran terbaru.</p>
+                </div>
+                <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-left sm:text-right shrink-0">
+                    <span class="text-[10px] font-black text-amber-700 uppercase tracking-wider block">Harga HTM / Orang</span>
+                    <span id="displayHargaHtm" class="text-xl font-black text-slate-900">Rp 0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs: Beli Tiket vs Cek E-Ticket -->
+        <div class="flex bg-slate-200/80 p-1 rounded-xl">
+            <button id="tabBeliTiket" type="button" class="flex-1 py-2.5 text-xs font-black rounded-lg bg-white text-slate-900 shadow-sm transition">
+                🛒 Beli Tiket HTM
+            </button>
+            <button id="tabCekTiket" type="button" class="flex-1 py-2.5 text-xs font-black rounded-lg text-slate-600 hover:text-slate-900 transition">
+                🔍 Cek Status E-Ticket
+            </button>
+        </div>
+
+        <!-- PANEL 1: FORM BELI TIKET -->
+        <div id="panelBeliTiket" class="space-y-5">
+            <div id="closedBanner" class="hidden bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+                <p class="text-2xl mb-2">🔒</p>
+                <h2 class="font-black text-red-800 text-base">Penjualan Tiket HTM Online Ditutup</h2>
+                <p class="text-xs text-red-600 mt-1">Silakan hubungi panitia di lokasi perlombaan untuk informasi tiket masuk.</p>
+            </div>
+
+            <form id="formBeliTiket" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 md:p-6 space-y-5">
+                
+                <!-- 1. Pilih Klub / Sekolah -->
+                <div>
+                    <label class="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1.5">
+                        1. Pilih Klub / Sekolah Asal Atlet <span class="text-red-500">*</span>
+                    </label>
+                    <select id="selectKlub" required class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-amber-500 outline-none">
+                        <option value="">Memuat daftar klub terbaru...</option>
+                    </select>
+                    <p class="text-[11px] text-slate-400 mt-1">Pilih klub/sekolah agar jumlah tiket otomatis tergabung di rekap kontingen.</p>
+                </div>
+
+                <!-- 2. Pilih Nama Peserta (Opsional / Terfilter per Klub) -->
+                <div id="wrapperPilihAtlet">
+                    <label class="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1.5">
+                        2. Nama Atlet Terkait <span class="text-slate-400 font-normal">(Opsional jika beli kolektif 1 klub)</span>
+                    </label>
+                    <select id="selectAtlet" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-amber-500 outline-none">
+                        <option value="">-- Semua / Kolektif Klub --</option>
+                    </select>
+                </div>
+
+                <!-- 3. Data Pembeli & Jumlah Tiket -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1.5">
+                            Nama Pemesan / Wali <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="inputNamaPembeli" required placeholder="Nama lengkap pemesan" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-amber-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1.5">
+                            No. WhatsApp <span class="text-red-500">*</span>
+                        </label>
+                        <input type="tel" id="inputNoWa" required placeholder="08xxxxxxxxxx" class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-amber-500 outline-none">
+                    </div>
+                </div>
+
+                <!-- Stepper Jumlah Tiket -->
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center justify-between gap-4">
+                    <div>
+                        <span class="text-xs font-black text-slate-800 uppercase block">Jumlah Tiket HTM</span>
+                        <span class="text-[11px] text-slate-500">1 tiket berlaku untuk 1 orang pendamping</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button type="button" id="btnMinusQty" class="w-10 h-10 rounded-xl bg-white border border-slate-300 font-black text-lg text-slate-700 hover:bg-slate-100 active:scale-95">-</button>
+                        <input type="number" id="inputQty" value="1" min="1" max="100" required class="w-14 text-center py-2 bg-white border border-slate-300 rounded-xl font-black text-base text-slate-900 outline-none">
+                        <button type="button" id="btnPlusQty" class="w-10 h-10 rounded-xl bg-slate-900 text-white font-black text-lg hover:bg-slate-800 active:scale-95">+</button>
+                    </div>
+                </div>
+
+                <!-- Ringkasan Total & Info Rekening -->
+                <div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 space-y-3">
+                    <div class="flex justify-between items-center border-b border-amber-200 pb-2.5">
+                        <span class="text-xs font-bold text-amber-900">Total Pembayaran Tiket</span>
+                        <span id="displayTotalBayar" class="text-xl font-black text-amber-900">Rp 0</span>
+                    </div>
+                    <div id="infoRekeningBox" class="text-xs text-slate-700 space-y-1">
+                        <p class="font-bold text-slate-800">Tujuan Transfer:</p>
+                        <p id="textRekeningTujuan" class="font-mono font-bold text-blue-800">Memuat info pembayaran...</p>
+                    </div>
+                </div>
+
+                <!-- Upload Bukti Bayar -->
+                <div id="wrapperBuktiBayar">
+                    <label class="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1.5">
+                        Upload Bukti Transfer <span id="reqBuktiStar" class="text-red-500">*</span>
+                    </label>
+                    <input type="file" id="inputBuktiBayar" accept="image/jpeg,image/png,image/webp" class="w-full text-xs file:bg-slate-900 file:text-white file:rounded-lg file:border-0 file:px-4 file:py-2.5 file:font-bold file:mr-3 file:cursor-pointer bg-slate-50 border border-slate-300 rounded-xl p-1.5">
+                    <p class="text-[10px] text-slate-400 mt-1">Foto otomatis dikompresi agar cepat terunggah dari HP.</p>
+                </div>
+
+                <button type="submit" id="btnSubmitTiket" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl shadow-lg transition transform active:scale-98 text-sm uppercase tracking-wider">
+                    🎟️ Pesan & Terbitkan E-Ticket
+                </button>
+            </form>
+
+            <!-- KARTU E-TICKET BERHASIL -->
+            <div id="ticketReceiptCard" class="hidden bg-white rounded-3xl shadow-lg border-2 border-emerald-500 p-6 space-y-4">
+                <div class="text-center border-b border-dashed border-slate-300 pb-4">
+                    <span class="inline-block bg-emerald-100 text-emerald-800 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest mb-2">Pesanan Tiket Tercatat</span>
+                    <h2 id="resKodeTiket" class="text-2xl font-mono font-black text-slate-900 tracking-wider">HTM-000000</h2>
+                    <p class="text-[11px] text-slate-500 mt-1">Simpan / screenshot kode tiket ini untuk ditunjukkan di meja registrasi.</p>
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                        <span class="text-slate-400 block text-[10px] font-bold uppercase">Nama Pemesan</span>
+                        <span id="resNamaPembeli" class="font-black text-slate-800">-</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px] font-bold uppercase">Klub / Sekolah</span>
+                        <span id="resKlub" class="font-black text-slate-800 uppercase">-</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px] font-bold uppercase">Atlet Terkait</span>
+                        <span id="resAtlet" class="font-bold text-slate-700">-</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px] font-bold uppercase">Jumlah & Total</span>
+                        <span id="resQtyTotal" class="font-black text-emerald-700">-</span>
+                    </div>
+                </div>
+                <div class="bg-slate-50 rounded-xl p-3 flex items-center justify-between border border-slate-200">
+                    <span class="text-xs font-bold text-slate-600">Status Verifikasi:</span>
+                    <span id="resStatus" class="text-xs font-black px-2.5 py-1 rounded-md bg-amber-100 text-amber-800 uppercase">PENDING</span>
+                </div>
+                <button type="button" id="btnBeliLagi" class="w-full py-3 bg-slate-900 text-white font-bold text-xs rounded-xl hover:bg-slate-800">
+                    + Pesan Tiket Lainnya
+                </button>
+            </div>
+        </div>
+
+        <!-- PANEL 2: CEK STATUS E-TICKET -->
+        <div id="panelCekTiket" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 p-5 md:p-6 space-y-4">
+            <label class="block text-xs font-black text-slate-700 uppercase tracking-wider">Masukkan Kode E-Ticket</label>
+            <div class="flex gap-2">
+                <input type="text" id="inputCariKode" placeholder="Contoh: HTM-829104" class="flex-1 px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-mono font-black uppercase outline-none focus:ring-2 focus:ring-blue-500">
+                <button type="button" id="btnCariKode" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-3 rounded-xl text-xs">Cek</button>
+            </div>
+            <div id="hasilCekTiket"></div>
+        </div>
+
+    </div>
+
+    <script type="module" src="/src/tiket.js"></script>
+</body>
+</html>
