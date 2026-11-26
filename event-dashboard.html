@@ -531,50 +531,56 @@
         <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col max-h-[90vh]">
             <div class="p-5 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
                 <div>
-                    <h3 class="font-black text-slate-900 dark:text-white text-lg">🎟️ Manajemen Tiket HTM Penonton</h3>
-                    <p class="text-xs text-slate-500">Atur harga tiket HTM & verifikasi pembayaran masuk.</p>
+                    <h3 class="font-black text-slate-900 dark:text-white text-lg">🎟️ Manajemen Tiket Gelang (HTM)</h3>
+                    <p class="text-xs text-slate-500">Atur tipe tiket, harga, & verifikasi manual bukti transfer masuk.</p>
                 </div>
                 <button type="button" class="btn-close-modal text-slate-400 hover:text-red-500 text-2xl font-bold">&times;</button>
             </div>
 
             <div class="p-5 overflow-y-auto space-y-5">
-                <!-- Pengaturan Harga HTM -->
+                <!-- Pengaturan Tipe & Harga Tiket -->
                 <div class="bg-amber-50/70 dark:bg-slate-900 border border-amber-200 dark:border-slate-700 rounded-2xl p-4 space-y-3">
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="flex justify-between items-center">
+                        <label class="text-[11px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">Daftar Tipe Tiket & Harga</label>
+                        <button type="button" id="btnAddTicketType" class="text-[11px] font-black bg-amber-500 hover:bg-amber-600 text-slate-900 px-3 py-1 rounded-lg transition cursor-pointer">
+                            + Tambah Tipe Tiket
+                        </button>
+                    </div>
+
+                    <div id="ticketTypesEditorList" class="space-y-2"></div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                         <div>
-                            <label class="block text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase mb-1">Harga HTM (Rp)</label>
-                            <input type="number" id="inputSettingHargaHtm" placeholder="15000" class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-sm font-black outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase mb-1">Status Penjualan</label>
-                            <select id="selectSettingAktifHtm" class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-sm font-bold outline-none">
+                            <label class="block text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase mb-1">Status Pemesanan Publik</label>
+                            <select id="selectSettingAktifHtm" class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-xs font-bold outline-none">
                                 <option value="true">🟢 Buka (Aktif)</option>
                                 <option value="false">🔴 Tutup</option>
                             </select>
                         </div>
-                        <div class="flex items-end">
-                            <button type="button" id="btnSimpanSettingHtm" class="w-full bg-slate-900 dark:bg-amber-500 dark:text-slate-900 text-white font-black py-2 px-4 rounded-xl text-xs hover:opacity-90 transition">
-                                💾 Simpan Setting HTM
-                            </button>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase mb-1">Info Rekening Transfer</label>
+                            <input type="text" id="inputSettingRekHtm" placeholder="Misal: BCA 1234567890 a.n. Panitia" class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-xs font-bold outline-none">
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase mb-1">Info Rekening Transfer HTM (Opsional)</label>
-                        <input type="text" id="inputSettingRekHtm" placeholder="Misal: BCA 1234567890 a.n. Panitia Lomba" class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-xs font-bold outline-none">
-                    </div>
+
+                    <button type="button" id="btnSimpanSettingHtm" class="w-full bg-slate-900 dark:bg-amber-500 dark:text-slate-900 text-white font-black py-2.5 px-4 rounded-xl text-xs hover:opacity-90 transition cursor-pointer">
+                        💾 Simpan Pengaturan Tiket
+                    </button>
                 </div>
 
-                <!-- Ringkasan Cepat Per Klub -->
+                <!-- Daftar Pemesanan Masuk -->
                 <div>
                     <div class="flex justify-between items-center mb-2">
-                        <h4 class="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">Daftar Pembelian Tiket HTM</h4>
-                        <span id="badgeRingkasanTiket" class="text-[11px] font-black text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full">0 Tiket Lunas</span>
+                        <h4 class="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">Verifikasi Pemesanan Tiket</h4>
+                        <span id="badgeRingkasanTiket" class="text-[11px] font-black text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full">0 Tiket Terverifikasi</span>
                     </div>
                     <div id="listTransaksiTiketContainer" class="space-y-2.5">
-                        <p class="text-xs text-slate-400 text-center py-6">Memuat transaksi tiket...</p>
+                        <p class="text-xs text-slate-400 text-center py-6">Memuat daftar pemesanan...</p>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
         </div>
     </div>
 

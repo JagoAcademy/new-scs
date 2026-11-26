@@ -451,10 +451,32 @@ document.addEventListener('DOMContentLoaded', async () => {
             btnKelolaTiketHtm.addEventListener('click', () => openModalKelolaTiket());
         }
 
+        const btnAddTicketType = document.getElementById('btnAddTicketType');
+        if (btnAddTicketType) {
+            btnAddTicketType.addEventListener('click', () => {
+                appendTicketTypeRow({ nama: 'Tiket Gelang', harga: 0 });
+            });
+        }
+
         const btnSimpanSettingHtm = document.getElementById('btnSimpanSettingHtm');
         if (btnSimpanSettingHtm) {
             btnSimpanSettingHtm.addEventListener('click', async () => {
-                const harga = Math.max(0, Number(document.getElementById('inputSettingHargaHtm').value || 0));
+                const rows = document.querySelectorAll('#ticketTypesEditorList .ticket-type-row');
+                const parsedTypes = [];
+                rows.forEach((row, idx) => {
+                    const nama = row.querySelector('.input-type-name')?.value.trim() || 'Tiket Gelang';
+                    const harga = Math.max(0, Number(row.querySelector('.input-type-price')?.value || 0));
+                    parsedTypes.push({
+                        id: `type_${idx + 1}_${Date.now().toString().slice(-3)}`,
+                        nama,
+                        harga
+                    });
+                });
+
+                if (parsedTypes.length === 0) {
+                    parsedTypes.push({ id: 'gelang_default', nama: 'Tiket Gelang', harga: 0 });
+                }
+
                 const aktif = document.getElementById('selectSettingAktifHtm').value === 'true';
                 const rek = document.getElementById('inputSettingRekHtm').value.trim();
 
@@ -463,7 +485,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 try {
                     const updatedConfig = {
                         ...(currentEventData?.config || {}),
-                        harga_tiket_htm: harga,
+                        ticket_types: parsedTypes,
+                        harga_tiket_htm: parsedTypes[0].harga,
                         aktif_tiket_htm: aktif,
                         rekening_tiket_htm: rek
                     };
@@ -474,11 +497,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (upErr) throw upErr;
 
                     currentEventData.config = updatedConfig;
-                    alert("✅ Pengaturan Tiket HTM berhasil disimpan!");
+                    alert("✅ Pengaturan Tipe & Harga Tiket berhasil disimpan!");
                 } catch (err) {
-                    alert("Gagal menyimpan pengaturan HTM: " + err.message);
+                    alert("Gagal menyimpan pengaturan tiket: " + err.message);
                 } finally {
-                    btnSimpanSettingHtm.innerText = "💾 Simpan Setting HTM";
+                    btnSimpanSettingHtm.innerText = "💾 Simpan Pengaturan Tiket";
                     btnSimpanSettingHtm.disabled = false;
                 }
             });
@@ -718,7 +741,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     // SHEET 3: DETAIL TRANSAKSI TIKET HTM
                     const sheet3Data = tixData.map((t, index) => ({
                         'No': index + 1,
-                        'Kode E-Ticket': t.kode_tiket || '-',
+                        'Kode Referensi': t.kode_tiket || '-',
+                        'Tipe Tiket': t.tipe_tiket || 'Tiket Gelang',
                         'Waktu Pesan': t.created_at ? new Date(t.created_at).toLocaleString('id-ID') : '-',
                         'Klub / Sekolah Asal': t.klub_asal || '-',
                         'Atlet Terkait': t.nama_atlet || 'Kolektif Klub',
@@ -921,15 +945,51 @@ window.removeCollab = async function(collabId) {
 
 
 // ==========================================
-// MANAJEMEN & VERIFIKASI TIKET HTM
+// MANAJEMEN & VERIFIKASI TIKET GELANG (HTM)
 // ==========================================
+function appendTicketTypeRow(item = { nama: 'Tiket Gelang', harga: 0 }) {
+    const list = document.getElementById('ticketTypesEditorList');
+    if (!list) return;
+
+    const div = document.createElement('div');
+    div.className = 'ticket-type-row grid grid-cols-12 gap-2 items-center';
+    div.innerHTML = `
+        <div class="col-span-6">
+            <input type="text" value="${String(item.nama || 'Tiket Gelang').replace(/"/g, '&quot;')}" placeholder="Nama tipe (misal: Tiket Gelang)" class="input-type-name w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-xs font-bold outline-none">
+        </div>
+        <div class="col-span-4">
+            <input type="number" value="${Number(item.harga || 0)}" placeholder="Harga (Rp)" class="input-type-price w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-xs font-black outline-none">
+        </div>
+        <div class="col-span-2 flex justify-end">
+            <button type="button" class="btn-del-type px-2.5 py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold">🗑️</button>
+        </div>
+    `;
+
+    div.querySelector('.btn-del-type').addEventListener('click', () => {
+        if (list.querySelectorAll('.ticket-type-row').length <= 1) {
+            return alert("Minimal harus ada 1 tipe tiket.");
+        }
+        div.remove();
+    });
+
+    list.appendChild(div);
+}
+
 async function openModalKelolaTiket() {
     const modal = document.getElementById('modalKelolaTiket');
     if (!modal) return;
     modal.classList.remove('hidden');
 
     const cfg = currentEventData?.config || {};
-    document.getElementById('inputSettingHargaHtm').value = cfg.harga_tiket_htm ?? 0;
+    const list = document.getElementById('ticketTypesEditorList');
+    if (list) {
+        list.innerHTML = '';
+        const types = Array.isArray(cfg.ticket_types) && cfg.ticket_types.length > 0
+            ? cfg.ticket_types
+            : [{ nama: 'Tiket Gelang', harga: Number(cfg.harga_tiket_htm || 0) }];
+        types.forEach(t => appendTicketTypeRow(t));
+    }
+
     document.getElementById('selectSettingAktifHtm').value = cfg.aktif_tiket_htm === false ? 'false' : 'true';
     document.getElementById('inputSettingRekHtm').value = cfg.rekening_tiket_htm || '';
 
@@ -941,7 +1001,7 @@ async function loadTransaksiTiketHtm() {
     const badge = document.getElementById('badgeRingkasanTiket');
     if (!container) return;
 
-    container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">Memuat transaksi tiket...</p>';
+    container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">Memuat daftar pemesanan...</p>';
 
     try {
         const { data, error } = await supabaseClient
@@ -956,10 +1016,10 @@ async function loadTransaksiTiketHtm() {
         const totalLunas = rows
             .filter(r => String(r.status_pembayaran || '').toLowerCase() === 'lunas')
             .reduce((acc, r) => acc + Number(r.jumlah_tiket || 0), 0);
-        if (badge) badge.innerText = `${totalLunas} Tiket Lunas`;
+        if (badge) badge.innerText = `${totalLunas} Tiket Terverifikasi`;
 
         if (rows.length === 0) {
-            container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6 border border-dashed border-slate-200 rounded-xl">Belum ada pembelian tiket HTM masuk.</p>';
+            container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6 border border-dashed border-slate-200 rounded-xl">Belum ada pemesanan tiket masuk.</p>';
             return;
         }
 
@@ -967,6 +1027,7 @@ async function loadTransaksiTiketHtm() {
             const st = String(r.status_pembayaran || 'Pending');
             const isLunas = st.toLowerCase() === 'lunas';
             const isDitolak = st.toLowerCase() === 'ditolak';
+            const statusText = isLunas ? 'TERVERIFIKASI' : (isDitolak ? 'DITOLAK' : 'MENUNGGU VERIFIKASI');
             const badgeCls = isLunas
                 ? 'bg-emerald-100 text-emerald-800'
                 : (isDitolak ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800');
@@ -976,14 +1037,14 @@ async function loadTransaksiTiketHtm() {
                     <div class="space-y-1 text-xs">
                         <div class="flex items-center gap-2 flex-wrap">
                             <span class="font-mono font-black text-slate-900 dark:text-white">${r.kode_tiket}</span>
-                            <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase ${badgeCls}">${st}</span>
-                            <span class="font-black text-amber-700 dark:text-amber-400">${r.jumlah_tiket} Tiket • Rp ${Number(r.total_harga || 0).toLocaleString('id-ID')}</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase ${badgeCls}">${statusText}</span>
+                            <span class="font-black text-amber-700 dark:text-amber-400">${r.tipe_tiket || 'Tiket Gelang'} • ${r.jumlah_tiket} Tiket (Rp ${Number(r.total_harga || 0).toLocaleString('id-ID')})</span>
                         </div>
                         <p class="font-bold text-slate-700 dark:text-slate-300 uppercase">${r.klub_asal} ${r.nama_atlet ? `(${r.nama_atlet})` : ''}</p>
                         <p class="text-[11px] text-slate-500">Pemesan: ${r.nama_pembeli} (${r.no_wa || '-'})</p>
                     </div>
                     <div class="flex items-center gap-1.5 shrink-0">
-                        ${r.bukti_url ? `<a href="${r.bukti_url}" target="_blank" class="px-2.5 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-[11px] font-bold hover:bg-blue-100">Bukti</a>` : ''}
+                        ${r.bukti_url ? `<a href="${r.bukti_url}" target="_blank" class="px-2.5 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-[11px] font-bold hover:bg-blue-100">Cek Bukti</a>` : ''}
                         ${!isLunas ? `<button type="button" onclick="window.verifTiketHtm(${r.id}, 'Lunas')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold">ACC Lunas</button>` : ''}
                         ${!isDitolak ? `<button type="button" onclick="window.verifTiketHtm(${r.id}, 'Ditolak')" class="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-lg text-[11px] font-bold">Tolak</button>` : ''}
                     </div>
@@ -991,7 +1052,7 @@ async function loadTransaksiTiketHtm() {
             `;
         }).join('');
     } catch (err) {
-        container.innerHTML = `<p class="text-xs text-red-500 font-bold text-center py-4">Gagal memuat tiket: ${err.message}</p>`;
+        container.innerHTML = `<p class="text-xs text-red-500 font-bold text-center py-4">Gagal memuat pemesanan: ${err.message}</p>`;
     }
 }
 
@@ -1005,6 +1066,6 @@ window.verifTiketHtm = async function(ticketId, newStatus) {
         if (error) throw error;
         await loadTransaksiTiketHtm();
     } catch (err) {
-        alert("Gagal memperbarui status tiket: " + err.message);
+        alert("Gagal memperbarui status pemesanan: " + err.message);
     }
 };

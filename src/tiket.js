@@ -3,7 +3,8 @@ import { supabaseClient } from './supabase.js';
 let currentEventId = null;
 let eventRecord = null;
 let activeParticipants = [];
-let hargaSatuan = 0;
+let ticketTypes = [];
+let selectedTicketType = { id: 'gelang_default', nama: 'Tiket Gelang', harga: 0 };
 
 function formatRupiah(angka) {
     return 'Rp ' + Number(angka || 0).toLocaleString('id-ID');
@@ -82,7 +83,7 @@ async function resolveEventId() {
 document.addEventListener('DOMContentLoaded', async () => {
     currentEventId = await resolveEventId();
     if (!currentEventId) {
-        alert("Link tiket tidak valid. ID Event tidak ditemukan.");
+        alert("Link pemesanan tiket tidak valid. ID Event tidak ditemukan.");
         return;
     }
 
@@ -134,9 +135,48 @@ function setupTabsAndStepper() {
     document.getElementById('btnCariKode').onclick = cekStatusTiket;
 }
 
+function renderTicketTypes() {
+    const container = document.getElementById('ticketTypeContainer');
+    if (!container) return;
+
+    container.innerHTML = ticketTypes.map((t, idx) => {
+        const isSelected = selectedTicketType && selectedTicketType.id === t.id;
+        const borderCls = isSelected
+            ? 'border-amber-500 bg-amber-50/80 ring-2 ring-amber-400/50'
+            : 'border-slate-200 bg-slate-50 hover:border-slate-300';
+
+        return `
+            <button type="button" data-type-idx="${idx}" class="btn-select-ticket-type text-left p-3.5 rounded-xl border transition flex items-center justify-between gap-2 cursor-pointer ${borderCls}">
+                <div class="min-w-0">
+                    <span class="text-xs font-black text-slate-800 block truncate">${escapeHtml(t.nama)}</span>
+                    <span class="text-[11px] font-bold text-amber-700">${Number(t.harga) > 0 ? formatRupiah(t.harga) : 'Gratis / Rp 0'}</span>
+                </div>
+                <span class="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${isSelected ? 'bg-amber-500 text-white' : 'bg-white border border-slate-300 text-transparent'}">✓</span>
+            </button>
+        `;
+    }).join('');
+
+    container.querySelectorAll('.btn-select-ticket-type').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const idx = Number(btn.getAttribute('data-type-idx'));
+            if (ticketTypes[idx]) {
+                selectedTicketType = ticketTypes[idx];
+                renderTicketTypes();
+                updateTotalDisplay();
+            }
+        });
+    });
+}
+
 function updateTotalDisplay() {
     const qty = Math.max(1, parseInt(document.getElementById('inputQty').value || '1', 10));
+    const hargaSatuan = Number(selectedTicketType?.harga || 0);
+    const namaTipe = selectedTicketType?.nama || 'Tiket Gelang';
     const total = qty * hargaSatuan;
+
+    document.getElementById('displaySelectedTypeLabel').innerText = namaTipe;
+    document.getElementById('displayHargaHtm').innerText = hargaSatuan > 0 ? formatRupiah(hargaSatuan) : 'Rp 0';
+    document.getElementById('summaryTypeNote').innerText = `${namaTipe} (${qty} x ${formatRupiah(hargaSatuan)})`;
     document.getElementById('displayTotalBayar').innerText = formatRupiah(total);
 
     const buktiInput = document.getElementById('inputBuktiBayar');
@@ -166,17 +206,29 @@ async function loadEventAndParticipants() {
         activeParticipants = Array.isArray(data.participants) ? data.participants : [];
 
         const config = eventRecord.config || {};
-        hargaSatuan = Number(config.harga_tiket_htm || 0);
-        const isTiketAktif = config.aktif_tiket_htm !== false; // default aktif
+        const isTiketAktif = config.aktif_tiket_htm !== false;
+
+        if (Array.isArray(config.ticket_types) && config.ticket_types.length > 0) {
+            ticketTypes = config.ticket_types.map((item, i) => ({
+                id: item.id || `type_${i}`,
+                nama: (item.nama || 'Tiket Gelang').trim(),
+                harga: Number(item.harga || 0)
+            }));
+        } else {
+            ticketTypes = [{
+                id: 'gelang_default',
+                nama: 'Tiket Gelang',
+                harga: Number(config.harga_tiket_htm || 0)
+            }];
+        }
+        selectedTicketType = ticketTypes[0];
 
         document.getElementById('headerEventName').innerText = eventRecord.event_name || 'EVENT RENANG';
-        document.getElementById('displayHargaHtm').innerText = hargaSatuan > 0 ? formatRupiah(hargaSatuan) : 'GRATIS / Rp 0';
 
         const rawDate = eventRecord.start_date || eventRecord.event_date || '';
         const lokasi = [config.nama_kolam, eventRecord.kota, eventRecord.provinsi].filter(Boolean).join(' • ');
         document.getElementById('eventDateLoc').innerText = [rawDate, lokasi].filter(Boolean).join(' | ') || 'Official Swimming Event';
 
-        // Info Rekening
         const rekText = config.rekening_tiket_htm
             || [config.nama_bank, config.no_rekening, config.atas_nama ? `a.n. ${config.atas_nama}` : ''].filter(Boolean).join(' • ')
             || 'Transfer sesuai instruksi panitia perlombaan';
@@ -189,6 +241,7 @@ async function loadEventAndParticipants() {
         }
 
         populateKlubDropdown();
+        renderTicketTypes();
         updateTotalDisplay();
     } catch (err) {
         console.error(err);
@@ -204,16 +257,16 @@ function populateKlubDropdown() {
         const rawClub = (p.klub_asal || 'Individu').trim();
         const key = rawClub.toUpperCase();
         if (!clubMap.has(key)) {
-            clubMap.set(key, { name: rawClub, count: 0 });
+            clubMap.set(key, rawClub);
         }
-        clubMap.get(key).count++;
     });
 
-    const sortedClubs = Array.from(clubMap.values()).sort((a, b) => a.name.localeCompare(b.name, 'id'));
+    const sortedClubs = Array.from(clubMap.values()).sort((a, b) => a.localeCompare(b, 'id'));
 
+    // Tampilkan nama klub/sekolah saja TANPA jumlah peserta
     let html = '<option value="">-- Pilih Klub / Sekolah Asal --</option>';
-    sortedClubs.forEach(c => {
-        html += `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)} (${c.count} Peserta Terdaftar)</option>`;
+    sortedClubs.forEach(clubName => {
+        html += `<option value="${escapeHtml(clubName)}">${escapeHtml(clubName)}</option>`;
     });
     html += '<option value="Umum / Non-Kontingen">Umum / Penonton Non-Kontingen</option>';
 
@@ -259,6 +312,8 @@ document.getElementById('formBeliTiket').addEventListener('submit', async (e) =>
     const namaPembeli = document.getElementById('inputNamaPembeli').value.trim();
     const noWa = document.getElementById('inputNoWa').value.trim();
     const qty = Math.max(1, parseInt(document.getElementById('inputQty').value || '1', 10));
+    const hargaSatuan = Number(selectedTicketType?.harga || 0);
+    const tipeTiket = selectedTicketType?.nama || 'Tiket Gelang';
     const totalHarga = qty * hargaSatuan;
     const buktiFile = document.getElementById('inputBuktiBayar').files[0];
 
@@ -268,7 +323,7 @@ document.getElementById('formBeliTiket').addEventListener('submit', async (e) =>
 
     const btn = document.getElementById('btnSubmitTiket');
     const origText = btn.innerText;
-    btn.innerText = "⏳ Memproses E-Ticket...";
+    btn.innerText = "⏳ Mengirim Pemesanan...";
     btn.disabled = true;
 
     try {
@@ -287,43 +342,41 @@ document.getElementById('formBeliTiket').addEventListener('submit', async (e) =>
             buktiUrl = pubData.publicUrl;
         }
 
-        const kodeTiket = `HTM-${Date.now().toString().slice(-4)}${Math.floor(10 + Math.random() * 89)}`;
-        const statusAwal = totalHarga <= 0 ? 'Lunas' : 'Pending';
+        // Gunakan kode referensi pemesanan (ORD), selalu Pending untuk pengecekan manual panitia
+        const kodeOrder = `ORD-${Date.now().toString().slice(-4)}${Math.floor(10 + Math.random() * 89)}`;
 
         const { error: insErr } = await supabaseClient
             .from('event_tickets')
             .insert([{
                 event_id: eventRecord.id,
-                kode_tiket: kodeTiket,
+                kode_tiket: kodeOrder,
                 registration_id: regId,
                 nama_atlet: namaAtlet,
                 klub_asal: klubAsal,
+                tipe_tiket: tipeTiket,
                 nama_pembeli: namaPembeli,
                 no_wa: noWa,
                 jumlah_tiket: qty,
                 harga_satuan: hargaSatuan,
                 total_harga: totalHarga,
                 bukti_url: buktiUrl,
-                status_pembayaran: statusAwal
+                status_pembayaran: 'Pending'
             }]);
 
         if (insErr) throw insErr;
 
-        // Tampilkan Kartu E-Ticket
-        document.getElementById('resKodeTiket').innerText = kodeTiket;
+        document.getElementById('resKodeTiket').innerText = kodeOrder;
         document.getElementById('resNamaPembeli').innerText = namaPembeli;
         document.getElementById('resKlub').innerText = klubAsal;
+        document.getElementById('resTipeTiket').innerText = tipeTiket;
         document.getElementById('resAtlet').innerText = namaAtlet || 'Kolektif Kontingen';
         document.getElementById('resQtyTotal').innerText = `${qty} Tiket (${formatRupiah(totalHarga)})`;
-        document.getElementById('resStatus').innerText = statusAwal.toUpperCase();
-        document.getElementById('resStatus').className = statusAwal === 'Lunas'
-            ? "text-xs font-black px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 uppercase"
-            : "text-xs font-black px-2.5 py-1 rounded-md bg-amber-100 text-amber-800 uppercase";
+        document.getElementById('resStatus').innerText = 'MENUNGGU VERIFIKASI MANUAL';
 
         document.getElementById('formBeliTiket').classList.add('hidden');
         document.getElementById('ticketReceiptCard').classList.remove('hidden');
     } catch (err) {
-        alert("Gagal memesan tiket: " + err.message);
+        alert("Gagal mengirim pemesanan: " + err.message);
     } finally {
         btn.innerText = origText;
         btn.disabled = false;
@@ -333,35 +386,50 @@ document.getElementById('formBeliTiket').addEventListener('submit', async (e) =>
 async function cekStatusTiket() {
     const kode = document.getElementById('inputCariKode').value.trim();
     const box = document.getElementById('hasilCekTiket');
-    if (!kode) return alert("Masukkan kode tiket terlebih dahulu.");
+    if (!kode) return alert("Masukkan kode referensi pemesanan terlebih dahulu.");
 
-    box.innerHTML = `<p class="text-xs text-slate-400 font-bold text-center py-4">Mencari tiket...</p>`;
+    box.innerHTML = `<p class="text-xs text-slate-400 font-bold text-center py-4">Mengecek status pemesanan...</p>`;
     try {
         const { data, error } = await supabaseClient.rpc('get_public_ticket_receipt', {
             p_kode_tiket: kode
         });
         if (error) throw error;
         if (!data) {
-            box.innerHTML = `<p class="text-xs text-red-600 font-bold text-center py-4">Kode tiket "${escapeHtml(kode)}" tidak ditemukan.</p>`;
+            box.innerHTML = `<p class="text-xs text-red-600 font-bold text-center py-4">Kode pemesanan "${escapeHtml(kode)}" tidak ditemukan.</p>`;
             return;
         }
 
-        const isLunas = String(data.status_pembayaran || '').toLowerCase() === 'lunas';
+        const stRaw = String(data.status_pembayaran || 'Pending').toLowerCase();
+        const isLunas = stRaw === 'lunas';
+        const isDitolak = stRaw === 'ditolak';
+
+        const statusLabel = isLunas
+            ? 'TERVERIFIKASI (SIAP AMBIL GELANG)'
+            : (isDitolak ? 'DITOLAK PANITIA' : 'MENUNGGU VERIFIKASI MANUAL');
+        const statusCls = isLunas
+            ? 'bg-emerald-100 text-emerald-800'
+            : (isDitolak ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800');
+
         box.innerHTML = `
             <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2 text-xs mt-2">
-                <div class="flex justify-between items-center border-b border-slate-200 pb-2">
+                <div class="flex justify-between items-center border-b border-slate-200 pb-2 gap-2">
                     <span class="font-mono font-black text-sm text-slate-900">${escapeHtml(data.kode_tiket)}</span>
-                    <span class="px-2.5 py-0.5 rounded font-black text-[10px] uppercase ${isLunas ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
-                        ${escapeHtml(data.status_pembayaran)}
+                    <span class="px-2.5 py-0.5 rounded font-black text-[10px] uppercase ${statusCls}">
+                        ${statusLabel}
                     </span>
                 </div>
                 <p><strong>Pemesan:</strong> ${escapeHtml(data.nama_pembeli)}</p>
                 <p><strong>Klub / Sekolah:</strong> ${escapeHtml(data.klub_asal)}</p>
                 <p><strong>Atlet Terkait:</strong> ${escapeHtml(data.nama_atlet || 'Kolektif Klub')}</p>
+                <p><strong>Tipe Tiket:</strong> ${escapeHtml(data.tipe_tiket || 'Tiket Gelang')}</p>
                 <p><strong>Jumlah:</strong> ${data.jumlah_tiket} Tiket (${formatRupiah(data.total_harga)})</p>
+                ${isLunas
+                    ? '<p class="text-[11px] font-bold text-emerald-700 pt-1">✅ Pembayaran sudah diverifikasi. Silakan tunjukkan kode ini di meja registrasi untuk mengambil tiket gelang.</p>'
+                    : '<p class="text-[11px] text-slate-500 pt-1">⏳ Pembayaran sedang dicek manual oleh panitia. Tiket gelang akan diberikan setelah diverifikasi.</p>'
+                }
             </div>
         `;
     } catch (err) {
-        box.innerHTML = `<p class="text-xs text-red-600 font-bold text-center py-4">Gagal mengecek tiket: ${escapeHtml(err.message)}</p>`;
+        box.innerHTML = `<p class="text-xs text-red-600 font-bold text-center py-4">Gagal mengecek status: ${escapeHtml(err.message)}</p>`;
     }
 }
