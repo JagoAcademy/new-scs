@@ -202,9 +202,120 @@ let pageBelumBayar = 1;
 let pageSudahBayar = 1;
 let keywordSudahBayar = '';
 
-// Peta Counter Kuota Real-Time
+// Peta Counter Kuota Real-Time & Cache Registrasi Event
 let kuotaMapSpecific = {}; // Key: "NamaNomor|||KU|||Gender" -> jumlah terisi
 let kuotaMapTotal = {};    // Key: "NamaNomor" -> jumlah terisi total
+window.allCurrentEventRegs = [];
+
+function hitungHargaPaketIndividu(qty, config = {}) {
+    if (qty <= 0) return 0;
+    const validTiers = (config.tarif_individu || [])
+        .filter(t => Number(t.qty) > 0 && t.price !== "" && t.price !== null && t.price !== undefined)
+        .map(t => ({ qty: Number(t.qty), price: Number(t.price) }))
+        .sort((a, b) => a.qty - b.qty);
+
+    const extraPrice = Number(config.tarif_tambahan ?? config.biaya_normal ?? 0);
+
+    if (validTiers.length > 0) {
+        const maxTier = validTiers[validTiers.length - 1];
+        const exactTier = validTiers.find(t => t.qty === qty);
+        if (exactTier) return exactTier.price;
+        if (qty > maxTier.qty) {
+            return maxTier.price + ((qty - maxTier.qty) * extraPrice);
+        }
+        const lowerTier = [...validTiers].reverse().find(t => t.qty < qty);
+        if (lowerTier) {
+            return lowerTier.price + ((qty - lowerTier.qty) * extraPrice);
+        }
+        return qty * extraPrice;
+    }
+
+    return qty >= Number(config.min_diskon || 999)
+        ? qty * Number(config.biaya_diskon || 0)
+        : qty * Number(config.biaya_normal || 0);
+}
+
+function getExistingAthleteRegistrationInfo() {
+    const mapNomorStatus = new Map();
+    let existingAktaUrl = null;
+    let existingGender = null;
+
+    if (!currentEvent || !Array.isArray(window.allCurrentEventRegs)) {
+        return { mapNomorStatus, existingAktaUrl, existingGender };
+    }
+
+    const dropdownAtlet = document.getElementById('dropdownAtlet');
+    const selectedF1Id = isKlubLoggedIn ? (dropdownAtlet?.value || '').trim() : '';
+    const manualName = !isKlubLoggedIn ? (document.getElementById('inputCariAtlet')?.value || '').trim().toLowerCase() : '';
+    const manualDob = !isKlubLoggedIn ? (document.getElementById('inputTglLahir')?.value || '').trim() : '';
+
+    if (isKlubLoggedIn && !selectedF1Id) {
+        return { mapNomorStatus, existingAktaUrl, existingGender };
+    }
+    if (!isKlubLoggedIn && (!manualName || !manualDob)) {
+        return { mapNomorStatus, existingAktaUrl, existingGender };
+    }
+
+    window.allCurrentEventRegs.forEach(reg => {
+        if (reg.gender === 'Regu/Tim') return;
+        const isMatch = isKlubLoggedIn
+            ? (String(reg.f1_id || '').trim() === selectedF1Id)
+            : ((reg.nama_peserta || '').trim().toLowerCase() === manualName && (reg.tanggal_lahir || '').trim() === manualDob);
+
+        if (isMatch) {
+            if (reg.akta_url && !existingAktaUrl) existingAktaUrl = reg.akta_url;
+            if (reg.gender && !existingGender) existingGender = reg.gender;
+            const listNomor = Array.isArray(reg.nomor_lomba) ? reg.nomor_lomba : [];
+            listNomor.forEach(n => {
+                const namaNomor = typeof n === 'object' ? n.gaya : n;
+                if (namaNomor) {
+                    mapNomorStatus.set(namaNomor, reg.status_pembayaran || 'Terdaftar');
+                }
+            });
+        }
+    });
+
+    return { mapNomorStatus, existingAktaUrl, existingGender };
+}
+
+function updatePreviewBiayaIndividu() {
+    const boxPreview = document.getElementById('boxPreviewBiayaIndividu');
+    const lblJudul = document.getElementById('labelPreviewBiayaJudul');
+    const lblDetail = document.getElementById('labelPreviewBiayaDetail');
+    const nilaiEl = document.getElementById('nilaiPreviewBiayaIndividu');
+    const btnSubmit = document.getElementById('btnKirimPendaftaran');
+    if (!boxPreview || !currentEvent) return;
+
+    const { mapNomorStatus } = getExistingAthleteRegistrationInfo();
+    const prevQty = mapNomorStatus.size;
+    const selectedCount = document.querySelectorAll('input[name="nomor_lomba"]:checked').length;
+
+    if (btnSubmit && !btnSubmit.disabled) {
+        btnSubmit.innerHTML = prevQty > 0
+            ? "Tambah Nomor Lomba, Masuk Antrian ➕"
+            : "Daftar Individu, Masuk Antrian";
+    }
+
+    if (selectedCount === 0) {
+        boxPreview.classList.add('hidden');
+        return;
+    }
+
+    const config = currentEvent.config || {};
+    const hargaSebelumnya = hitungHargaPaketIndividu(prevQty, config);
+    const hargaTotalBaru = hitungHargaPaketIndividu(prevQty + selectedCount, config);
+    const biayaTagihanBaru = Math.max(0, hargaTotalBaru - hargaSebelumnya);
+
+    boxPreview.classList.remove('hidden');
+    if (prevQty > 0) {
+        if (lblJudul) lblJudul.innerText = "Biaya Tambah Nomor Lomba";
+        if (lblDetail) lblDetail.innerText = `Sudah terdaftar ${prevQty} nomor + ${selectedCount} nomor baru (Total ${prevQty + selectedCount} nomor)`;
+    } else {
+        if (lblJudul) lblJudul.innerText = "Estimasi Biaya Pendaftaran";
+        if (lblDetail) lblDetail.innerText = `${selectedCount} nomor lomba dipilih`;
+    }
+    if (nilaiEl) nilaiEl.innerText = `Rp ${biayaTagihanBaru.toLocaleString('id-ID')}`;
+}
 
 function hitungUlangPetaKuota(regsList) {
     kuotaMapSpecific = {};
@@ -230,10 +341,11 @@ async function refreshKuotaCounter() {
     if (!currentEvent) return [];
     const { data, error } = await supabaseClient
         .from('event_registrations')
-        .select('f1_id, nama_peserta, tanggal_lahir, nomor_lomba, kelompok_umur, gender')
+        .select('f1_id, nama_peserta, tanggal_lahir, nomor_lomba, kelompok_umur, gender, status_pembayaran, akta_url')
         .eq('event_id', currentEvent.id);
 
     if (!error && data) {
+        window.allCurrentEventRegs = data;
         hitungUlangPetaKuota(data);
         updateStatusNomorLomba();
         return data;
@@ -244,6 +356,47 @@ async function refreshKuotaCounter() {
 function updateStatusNomorLomba() {
     const currentKUName = (document.getElementById('inputAutoKU')?.value || '').trim();
     const currentGender = (document.getElementById('inputGender')?.value || '').trim();
+    const { mapNomorStatus, existingAktaUrl, existingGender } = getExistingAthleteRegistrationInfo();
+
+    // Auto-fill gender & sembunyikan upload akta jika tamu sudah pernah upload akta di event ini
+    if (!isKlubLoggedIn && mapNomorStatus.size > 0) {
+        const genderEl = document.getElementById('inputGender');
+        if (genderEl && !genderEl.value && existingGender) {
+            genderEl.value = existingGender;
+        }
+        const areaAktaEl = document.getElementById('areaAkta');
+        if (areaAktaEl && existingAktaUrl) {
+            areaAktaEl.classList.add('hidden');
+        }
+    }
+
+    // Tampilkan banner ringkasan nomor yang sudah terdaftar
+    const bannerTerdaftar = document.getElementById('infoAtletSudahTerdaftar');
+    if (bannerTerdaftar) {
+        if (mapNomorStatus.size > 0) {
+            const itemsHtml = Array.from(mapNomorStatus.entries()).map(([nm, st]) => {
+                const badgeCls = st === 'Lunas'
+                    ? 'bg-emerald-600 text-white'
+                    : (st === 'Menunggu Konfirmasi' ? 'bg-amber-500 text-white' : 'bg-slate-600 text-white');
+                const labelSt = st === 'Lunas' ? 'Lunas' : (st === 'Menunggu Konfirmasi' ? 'Proses' : 'Keranjang');
+                return `<span class="inline-flex items-center gap-1 bg-white border border-emerald-200 px-2 py-0.5 rounded-lg text-[11px] font-bold text-slate-700">${nm} <span class="${badgeCls} text-[9px] px-1.5 py-0.2 rounded uppercase">${labelSt}</span></span>`;
+            }).join(' ');
+
+            bannerTerdaftar.innerHTML = `
+                <p class="font-extrabold text-emerald-900 flex items-center gap-1.5 mb-1.5">
+                    <span>🏊‍♂️ Mode Tambah Gaya — Sudah Terdaftar (${mapNomorStatus.size} Nomor):</span>
+                </p>
+                <div class="flex flex-wrap gap-1.5 mb-2">${itemsHtml}</div>
+                <p class="text-[11px] text-emerald-800 leading-relaxed">
+                    Nomor di atas sudah dikunci otomatis. Silakan centang <strong>nomor gaya tambahan</strong> saja di bawah ini (biaya otomatis menghitung selisih paket / tarif ekstra).
+                </p>
+            `;
+            bannerTerdaftar.classList.remove('hidden');
+        } else {
+            bannerTerdaftar.classList.add('hidden');
+            bannerTerdaftar.innerHTML = '';
+        }
+    }
 
     const checkboxes = document.querySelectorAll('input[name="nomor_lomba"]');
     checkboxes.forEach(cb => {
@@ -273,6 +426,16 @@ function updateStatusNomorLomba() {
             }
             if (badgeKuota) badgeKuota.innerHTML = badgeHtml || '';
         };
+
+        // 0. Cek apakah nomor ini sudah didaftarkan sebelumnya oleh atlet ini
+        if (mapNomorStatus.has(namaNomor)) {
+            const stPrev = mapNomorStatus.get(namaNomor);
+            const labelPrev = stPrev === 'Lunas'
+                ? '✅ Sudah Terdaftar (Lunas)'
+                : (stPrev === 'Menunggu Konfirmasi' ? '⏳ Sudah Terdaftar (Proses)' : '🛒 Sudah di Keranjang');
+            setDisabled(true, `<span class="text-[9px] font-extrabold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">${labelPrev}</span>`);
+            return;
+        }
 
         // 1. Cek validitas KU & Blacklist terlebih dahulu
         if (currentKUName === "Di Luar Rentang KU") {
@@ -322,6 +485,7 @@ function updateStatusNomorLomba() {
             setDisabled(false, '');
         }
     });
+    updatePreviewBiayaIndividu();
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -673,6 +837,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         // LOGIKA DETEKSI PERUBAHAN GENDER & UPDATE STATUS KUOTA
         document.getElementById('inputGender').addEventListener('change', () => {
             updateStatusNomorLomba();
+        });
+
+        // DETEKSI INPUT NAMA TAMU UNTUK MODE TAMBAH GAYA
+        document.getElementById('inputCariAtlet')?.addEventListener('blur', () => {
+            updateStatusNomorLomba();
+        });
+
+        // UPDATE PREVIEW BIAYA SAAT CHECKBOX NOMOR LOMBA DICENTANG
+        document.getElementById('containerNomorLomba')?.addEventListener('change', (e) => {
+            if (e.target && e.target.name === 'nomor_lomba') {
+                updatePreviewBiayaIndividu();
+            }
         });
 
         // =========================================================
@@ -1036,6 +1212,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const selectedNomor = checkboxesNomor.map(cb => cb.value);
         if(selectedNomor.length === 0) return alert("Pilih minimal 1 nomor lomba!");
 
+        const { existingAktaUrl: prevGuestAktaUrl } = getExistingAthleteRegistrationInfo();
+        if (!isKlubLoggedIn && prevGuestAktaUrl) {
+            requiresAktaUpload = false;
+        }
+
         const fileAkta = document.getElementById('inputAkta').files[0];
         if (requiresAktaUpload && !fileAkta) return alert("Anda wajib mengunggah foto Akta Kelahiran atau KIA!");
 
@@ -1102,42 +1283,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // =========================================================
-            // KALKULASI TARIF BERJENJANG + NOMOR EKSTRA
+            // KALKULASI TARIF BERJENJANG + NOMOR EKSTRA (MENDUKUNG TAMBAH GAYA)
             // =========================================================
             const config = currentEvent.config || {};
-            let qty = selectedNomor.length;
-            let totalBiaya = 0;
-
-            const validTiers = (config.tarif_individu || [])
-                .filter(t => Number(t.qty) > 0 && t.price !== '' && t.price !== null && t.price !== undefined)
-                .map(t => ({ qty: Number(t.qty), price: Number(t.price) }))
-                .sort((a, b) => a.qty - b.qty);
-
-            const extraPrice = Number(config.tarif_tambahan ?? config.biaya_normal ?? 0);
-
-            if (validTiers.length > 0) {
-                let maxTier = validTiers[validTiers.length - 1];
-                let exactTier = validTiers.find(t => t.qty === qty);
-                
-                if (exactTier) {
-                    totalBiaya = exactTier.price;
-                } else if (qty > maxTier.qty) {
-                    let basePrice = maxTier.price;
-                    let extraQty = qty - maxTier.qty;
-                    totalBiaya = basePrice + (extraQty * extraPrice);
-                } else {
-                    let lowerTier = [...validTiers].reverse().find(t => t.qty < qty);
-                    if (lowerTier) {
-                        totalBiaya = lowerTier.price + ((qty - lowerTier.qty) * extraPrice);
-                    } else {
-                        totalBiaya = qty * extraPrice;
-                    }
-                }
-            } else {
-                totalBiaya = qty >= Number(config.min_diskon || 999) 
-                    ? qty * Number(config.biaya_diskon || 0) 
-                    : qty * Number(config.biaya_normal || 0);
-            }
+            const prevNomorCount = nomorSudahAda.length;
+            const qty = selectedNomor.length;
+            const hargaPaketLama = hitungHargaPaketIndividu(prevNomorCount, config);
+            const hargaPaketTotal = hitungHargaPaketIndividu(prevNomorCount + qty, config);
+            const totalBiaya = Math.max(0, hargaPaketTotal - hargaPaketLama);
 
             btn.innerHTML = "Menambahkan... ⏳"; 
 
@@ -1153,6 +1306,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (isKlubLoggedIn && f1_id) await supabaseClient.from('athletes').update({ akta_url: finalAktaUrl }).eq('f1_id', f1_id);
             } else if (isKlubLoggedIn) {
                 finalAktaUrl = dropdownAtlet.options[dropdownAtlet.selectedIndex].getAttribute('data-akta');
+            } else if (prevGuestAktaUrl) {
+                finalAktaUrl = prevGuestAktaUrl;
             }
 
             if (!isKlubLoggedIn && !f1_id) {

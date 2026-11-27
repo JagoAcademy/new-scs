@@ -152,7 +152,8 @@
             </div>
 
             <div class="pt-2 border-t border-slate-100 mt-4">
-                <label class="block text-xs font-bold text-slate-600 mb-3 mt-4">Pilih Nomor Lomba (Maks sesuai aturan)</label>
+                <div id="infoAtletSudahTerdaftar" class="hidden mb-3 mt-2 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 shadow-sm"></div>
+                <label class="block text-xs font-bold text-slate-600 mb-3 mt-3">Pilih Nomor Lomba (Maks sesuai aturan)</label>
                 <div id="containerNomorLomba" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
             </div>
 
@@ -172,8 +173,17 @@
                 </div>
             </div>
 
+            <!-- PREVIEW BIAYA REAL-TIME -->
+            <div id="boxPreviewBiayaIndividu" class="hidden mt-4 p-4 rounded-2xl bg-blue-50/80 border border-blue-200 flex items-center justify-between gap-3">
+                <div>
+                    <p id="labelPreviewBiayaJudul" class="text-[11px] font-extrabold text-blue-900 uppercase tracking-wider">Estimasi Biaya Pendaftaran</p>
+                    <p id="labelPreviewBiayaDetail" class="text-xs text-blue-700 font-medium mt-0.5">0 nomor dipilih</p>
+                </div>
+                <p id="nilaiPreviewBiayaIndividu" class="text-lg md:text-xl font-black text-blue-900 shrink-0">Rp 0</p>
+            </div>
+
             <!-- TOMBOL UTAMA -->
-            <button id="btnKirimPendaftaran" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl shadow-lg transition-all mt-6 flex items-center justify-center gap-2 text-lg">
+            <button id="btnKirimPendaftaran" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl shadow-lg transition-all mt-4 flex items-center justify-center gap-2 text-lg">
                 Daftar Individu, Masuk Antrian
             </button>
         </div>
