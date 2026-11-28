@@ -8,6 +8,10 @@ let activeTab = 'kontingen';
 let idleSortMode = 'participants'; // 'participants' | 'random'
 let randomSeedMap = new Map();
 let resolvedEventId = null;
+let isEventMaker = false;
+let simulateAllParticipants = false;
+let makerAllRegistrations = [];
+let publicLineupRegistrations = [];
 
 function escapeHtml(str) {
     return String(str ?? '')
@@ -276,6 +280,9 @@ function buildAggregations(medals, registrations) {
 
         uniqueGlobalAthletes.add(athleteUid);
 
+        const rawStatus = String(reg.status_pembayaran || 'Lunas').trim();
+        const isLunasRow = rawStatus.toLowerCase() === 'lunas';
+
         if (!kontingenMap.has(klubInfo.key)) {
             kontingenMap.set(klubInfo.key, {
                 key: klubInfo.key,
@@ -283,7 +290,11 @@ function buildAggregations(medals, registrations) {
                 isIndividuGroup: klubInfo.isIndividuGroup,
                 athleteSet: new Set(),
                 athleteNames: new Set(),
+                athleteStatusMap: new Map(),
+                lunasAthleteSet: new Set(),
+                antrianAthleteSet: new Set(),
                 athleteCount: 0,
+                antrianAthleteCount: 0,
                 entryCount: 0,
                 emas: 0,
                 perak: 0,
@@ -295,8 +306,19 @@ function buildAggregations(medals, registrations) {
         const kEntry = kontingenMap.get(klubInfo.key);
         kEntry.athleteSet.add(athleteUid);
         kEntry.athleteNames.add(nama);
+        if (isLunasRow) kEntry.lunasAthleteSet.add(athleteUid);
+        else kEntry.antrianAthleteSet.add(athleteUid);
         kEntry.athleteCount = kEntry.athleteSet.size;
+        kEntry.antrianAthleteCount = Array.from(kEntry.antrianAthleteSet).filter(id => !kEntry.lunasAthleteSet.has(id)).length;
         kEntry.entryCount += entries;
+
+        const prevAthleteStatus = kEntry.athleteStatusMap.get(nama) || { hasLunas: false, hasAntrian: false, lastRaw: rawStatus };
+        if (isLunasRow) prevAthleteStatus.hasLunas = true;
+        else {
+            prevAthleteStatus.hasAntrian = true;
+            prevAthleteStatus.lastRaw = rawStatus || 'Belum Bayar';
+        }
+        kEntry.athleteStatusMap.set(nama, prevAthleteStatus);
 
         const indKey = `${nama.toLowerCase()}__${klubInfo.key}`;
         if (!individuMap.has(indKey)) {
@@ -306,6 +328,9 @@ function buildAggregations(medals, registrations) {
                 klubLabel: klubInfo.label,
                 kelompokUmur: reg.kelompok_umur || '',
                 gender: reg.gender || '',
+                hasLunas: false,
+                hasAntrian: false,
+                lastStatus: rawStatus,
                 athleteCount: 1,
                 entryCount: 0,
                 emas: 0,
@@ -316,6 +341,11 @@ function buildAggregations(medals, registrations) {
             });
         }
         const iEntry = individuMap.get(indKey);
+        if (isLunasRow) iEntry.hasLunas = true;
+        else {
+            iEntry.hasAntrian = true;
+            iEntry.lastStatus = rawStatus || 'Belum Bayar';
+        }
         iEntry.entryCount += entries;
     });
 
@@ -391,7 +421,14 @@ function buildAggregations(medals, registrations) {
 
     const idleBanner = document.getElementById('idleNoticeBanner');
     const statusPill = document.getElementById('liveStatusPill');
-    if (medals.length === 0) {
+    if (isEventMaker && simulateAllParticipants) {
+        if (idleBanner && medals.length === 0) idleBanner.classList.remove('hidden');
+        else if (idleBanner) idleBanner.classList.add('hidden');
+        if (statusPill) {
+            statusPill.innerText = `🧪 Simulasi Maker • Lunas + Antrian`;
+            statusPill.className = 'inline-flex items-center gap-1.5 bg-amber-400/25 text-amber-200 border border-amber-300/40 text-[10px] font-bold px-2.5 py-0.5 rounded uppercase tracking-wider';
+        }
+    } else if (medals.length === 0) {
         if (idleBanner) idleBanner.classList.remove('hidden');
         if (statusPill) {
             statusPill.innerText = '⏳ Pre-Race / Idle Lineup';
@@ -501,7 +538,23 @@ function renderAllViews() {
                     <div class="bg-white rounded-lg border border-slate-200/80 p-3 text-xs">
                         <p class="font-bold text-slate-500 mb-1.5">🏊‍♂️ Daftar Atlet Terdaftar (${namesList.length} Atlet • ${k.entryCount} Nomor):</p>
                         <div class="flex flex-wrap gap-1.5">
-                            ${namesList.map(nm => `<span class="bg-slate-100 text-slate-700 font-bold px-2.5 py-1 rounded-md uppercase text-[11px]">${escapeHtml(nm)}</span>`).join('')}
+                            ${namesList.map(nm => {
+                                let stTag = '';
+                                if (isEventMaker && simulateAllParticipants && k.athleteStatusMap?.has(nm)) {
+                                    const stObj = k.athleteStatusMap.get(nm);
+                                    if (stObj.hasAntrian && !stObj.hasLunas) {
+                                        const isProses = String(stObj.lastRaw || '').toLowerCase().includes('konfirmasi');
+                                        stTag = isProses
+                                            ? ` <span class="bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded text-[9px] font-black">PROSES</span>`
+                                            : ` <span class="bg-rose-100 text-rose-700 px-1.5 py-0.2 rounded text-[9px] font-black">ANTRIAN</span>`;
+                                    } else if (stObj.hasAntrian && stObj.hasLunas) {
+                                        stTag = ` <span class="bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded text-[9px] font-black">LUNAS+ANTRIAN</span>`;
+                                    } else {
+                                        stTag = ` <span class="bg-emerald-100 text-emerald-700 px-1.5 py-0.2 rounded text-[9px] font-black">LUNAS</span>`;
+                                    }
+                                }
+                                return `<span class="bg-slate-100 text-slate-700 font-bold px-2.5 py-1 rounded-md uppercase text-[11px] inline-flex items-center gap-1">${escapeHtml(nm)}${stTag}</span>`;
+                            }).join('')}
                         </div>
                     </div>
                 `;
@@ -514,6 +567,7 @@ function renderAllViews() {
                         <div class="flex items-center gap-2 flex-wrap">
                             <span class="font-black text-slate-900 uppercase">${escapeHtml(k.label)}</span>
                             ${k.isIndividuGroup ? '<span class="text-[9px] font-black bg-purple-100 text-purple-700 px-2 py-0.5 rounded uppercase">Individu</span>' : ''}
+                            ${(isEventMaker && simulateAllParticipants && (k.antrianAthleteCount || 0) > 0) ? `<span class="text-[9px] font-black bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded uppercase">+${k.antrianAthleteCount} Antrian</span>` : ''}
                             <span class="text-[10px] text-blue-600 font-bold">▾</span>
                         </div>
                     </td>
@@ -564,7 +618,18 @@ function renderAllViews() {
                 <tr class="hover:bg-blue-50/40 transition ${isTop1 ? 'bg-amber-50/50' : ''}">
                     <td class="py-3.5 px-3 text-center font-black ${hasMedals ? 'text-amber-600' : 'text-slate-400'}">${ind.displayRank}</td>
                     <td class="py-3.5 px-3">
-                        <p class="font-black text-slate-900 uppercase">${escapeHtml(ind.label)}</p>
+                        <p class="font-black text-slate-900 uppercase flex items-center gap-1.5 flex-wrap">
+                            <span>${escapeHtml(ind.label)}</span>
+                            ${(isEventMaker && simulateAllParticipants) ? (
+                                ind.hasAntrian && !ind.hasLunas
+                                    ? (String(ind.lastStatus || '').toLowerCase().includes('konfirmasi')
+                                        ? '<span class="text-[9px] font-black bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded uppercase">Proses</span>'
+                                        : '<span class="text-[9px] font-black bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded uppercase">Antrian</span>')
+                                    : (ind.hasAntrian && ind.hasLunas
+                                        ? '<span class="text-[9px] font-black bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded uppercase">Lunas + Antrian</span>'
+                                        : '<span class="text-[9px] font-black bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded uppercase">Lunas</span>')
+                            ) : ''}
+                        </p>
                         <p class="text-[11px] font-bold text-slate-500">🏠 ${escapeHtml(ind.klubLabel)}</p>
                         <div>${badgesNomor}</div>
                     </td>
@@ -654,6 +719,42 @@ function switchTab(tabName) {
     });
 }
 
+function applyMakerSimulationState() {
+    if (!isEventMaker) {
+        rawRegistrations = publicLineupRegistrations;
+        return;
+    }
+
+    const lunasList = makerAllRegistrations.filter(r => String(r.status_pembayaran || '').toLowerCase() === 'lunas');
+    const antrianList = makerAllRegistrations.filter(r => String(r.status_pembayaran || '').toLowerCase() !== 'lunas');
+
+    const statsEl = document.getElementById('makerSimulasiStats');
+    const labelEl = document.getElementById('labelSimulasiPeserta');
+    const badgeEl = document.getElementById('makerSimulasiBadge');
+
+    if (statsEl) {
+        statsEl.innerHTML = `Data terdaftar: <strong class="text-emerald-700">${lunasList.length} Lunas</strong> • <strong class="text-amber-700">${antrianList.length} Antrian</strong> (Belum Bayar / Proses) • Total Simulasi: <strong class="text-slate-900">${makerAllRegistrations.length} Data</strong>.`;
+    }
+    if (labelEl) {
+        labelEl.innerText = simulateAllParticipants ? 'Semua (Lunas + Antrian)' : 'Lunas Saja';
+        labelEl.className = simulateAllParticipants
+            ? 'text-[11px] font-black text-amber-800 uppercase tracking-wider'
+            : 'text-[11px] font-black text-slate-600 uppercase tracking-wider';
+    }
+    if (badgeEl) {
+        if (simulateAllParticipants) badgeEl.classList.remove('hidden');
+        else badgeEl.classList.add('hidden');
+    }
+
+    if (simulateAllParticipants) {
+        rawRegistrations = makerAllRegistrations;
+    } else {
+        rawRegistrations = lunasList.length > 0 ? lunasList : publicLineupRegistrations;
+    }
+
+    buildAggregations(rawMedals, rawRegistrations);
+}
+
 async function loadMedalData() {
     const loadingEl = document.getElementById('loadingIndicator');
     loadingEl.classList.remove('hidden');
@@ -672,10 +773,10 @@ async function loadMedalData() {
             btnToLeaderboard.href = `/event-leaderboard.html?id=${resolvedEventId}`;
         }
 
-        const [evRes, lineupRows, lbRes] = await Promise.all([
+        const [evRes, lineupRows, lbRes, sessionRes] = await Promise.all([
             supabaseClient
                 .from('events')
-                .select('event_name, event_date, end_date, kota, provinsi')
+                .select('*')
                 .eq('id', resolvedEventId)
                 .single(),
             fetchParticipantLineup(resolvedEventId),
@@ -685,8 +786,12 @@ async function loadMedalData() {
                 .eq('event_id', resolvedEventId)
                 .in('peringkat', [1, 2, 3])
                 .order('nomor_lomba', { ascending: true })
-                .order('peringkat', { ascending: true })
+                .order('peringkat', { ascending: true }),
+            supabaseClient.auth.getSession()
         ]);
+
+        const currentUserId = sessionRes?.data?.session?.user?.id || null;
+        isEventMaker = false;
 
         if (evRes.data) {
             const ev = evRes.data;
@@ -695,12 +800,49 @@ async function loadMedalData() {
             const tgl = ev.event_date ? (ev.end_date && ev.end_date !== ev.event_date ? `${ev.event_date} s/d ${ev.end_date}` : ev.event_date) : '';
             document.getElementById('eventMeta').innerText = [lokasi, tgl].filter(Boolean).join(' • ') || 'Klasemen Medali Resmi';
             await fetchAndRenderSponsors(resolvedEventId);
+
+            if (currentUserId) {
+                const ownerIds = [ev.user_id, ev.creator_id, ev.owner_id, ev.created_by]
+                    .filter(Boolean)
+                    .map(v => String(v));
+                if (ownerIds.includes(String(currentUserId))) {
+                    isEventMaker = true;
+                } else {
+                    try {
+                        const { data: collabRow } = await supabaseClient
+                            .from('event_collaborators')
+                            .select('id')
+                            .eq('event_id', resolvedEventId)
+                            .eq('user_id', currentUserId)
+                            .maybeSingle();
+                        if (collabRow) isEventMaker = true;
+                    } catch (_) {}
+                }
+            }
         }
 
-        rawRegistrations = Array.isArray(lineupRows) ? lineupRows : [];
+        publicLineupRegistrations = Array.isArray(lineupRows) ? lineupRows : [];
+        makerAllRegistrations = [...publicLineupRegistrations];
+
+        if (isEventMaker) {
+            try {
+                const { data: allRegs, error: allRegsErr } = await supabaseClient
+                    .from('event_registrations')
+                    .select('f1_id, nama_peserta, klub_asal, gender, kelompok_umur, nomor_lomba, status_pembayaran')
+                    .eq('event_id', resolvedEventId);
+
+                if (!allRegsErr && Array.isArray(allRegs)) {
+                    makerAllRegistrations = allRegs;
+                }
+            } catch (_) {}
+
+            const makerBanner = document.getElementById('makerSimulationBanner');
+            if (makerBanner) makerBanner.classList.remove('hidden');
+        }
+
         rawMedals = (!lbRes.error && Array.isArray(lbRes.data)) ? lbRes.data : [];
 
-        buildAggregations(rawMedals, rawRegistrations);
+        applyMakerSimulationState();
 
         loadingEl.classList.add('hidden');
         switchTab(activeTab);
@@ -730,6 +872,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btnSortToolbar')?.addEventListener('click', toggleSortMode);
     document.getElementById('btnToggleIdleSort')?.addEventListener('click', toggleSortMode);
+
+    document.getElementById('toggleSimulasiSemuaPeserta')?.addEventListener('change', (e) => {
+        simulateAllParticipants = Boolean(e.target.checked);
+        applyMakerSimulationState();
+        renderAllViews();
+    });
 
     document.getElementById('btnShareMedal')?.addEventListener('click', async () => {
         const shareUrl = window.location.href;
